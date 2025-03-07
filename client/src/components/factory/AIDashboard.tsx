@@ -13,13 +13,17 @@ export default function AIDashboard({
   investInData,
   investInAlgorithm,
 }: AIDashboardProps) {
-  const { smartnessScore, levels, resources, investCosts } = gameState;
+  const { intelligence, levels, resources, investCosts, agiThreshold } = gameState;
 
   const getAIStatus = () => {
-    if (smartnessScore < 200) return "Basic AI";
-    if (smartnessScore < 500) return "Intermediate AI";
-    if (smartnessScore < 800) return "Advanced AI";
-    return "Cutting-Edge AI";
+    // Calculate status based on percentage progress to AGI
+    const progressPercent = (intelligence / agiThreshold) * 100;
+    
+    if (progressPercent < 20) return "Basic AI";
+    if (progressPercent < 50) return "Intermediate AI";
+    if (progressPercent < 80) return "Advanced AI";
+    if (progressPercent < 100) return "Cutting-Edge AI";
+    return "Artificial General Intelligence";
   };
 
   const getComputeProgress = () => {
@@ -47,12 +51,26 @@ export default function AIDashboard({
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
       <h2 className="text-xl font-semibold mb-4">AI Dashboard</h2>
       
-      {/* AI Smartness Score */}
+      {/* AI Intelligence Score */}
       <div className="bg-gray-700 rounded-lg p-4 mb-5 text-center">
-        <h3 className="text-lg font-medium mb-2">AI Smartness</h3>
-        <div className="text-4xl font-bold text-white mb-2">{smartnessScore}</div>
-        <div className="flex justify-center">
-          <div className="px-3 py-1 bg-gray-600 rounded-full text-sm">{getAIStatus()}</div>
+        <h3 className="text-lg font-medium mb-2">AI Intelligence</h3>
+        <div className="text-4xl font-bold text-white mb-2">{intelligence}</div>
+        <div className="flex flex-col items-center">
+          <div className="px-3 py-1 bg-gray-600 rounded-full text-sm mb-2">{getAIStatus()}</div>
+          
+          {/* AGI Progress Bar */}
+          <div className="w-full mt-2">
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <span>Progress to AGI:</span>
+              <span>{Math.min(Math.round((intelligence / agiThreshold) * 100), 100)}%</span>
+            </div>
+            <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-yellow-400 h-full" 
+                style={{ width: `${Math.min((intelligence / agiThreshold) * 100, 100)}%` }}
+              ></div>
+            </div>
+          </div>
         </div>
       </div>
       

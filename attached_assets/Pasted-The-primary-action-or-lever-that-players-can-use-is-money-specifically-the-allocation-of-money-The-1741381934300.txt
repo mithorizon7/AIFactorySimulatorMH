@@ -1,0 +1,17 @@
+The primary action or lever that players can use is money, specifically the allocation of money. They can earn money through customers in two ways: B2B: like Anthropics API use by Developers, by B2C like ChatGPT’s monthly subscriptions. Separately they can also raise money through investors, but they have to have substantial growth in intelligence to lure investors. 
+
+They need to start with a certain amount of money and they need to spend money largely on the enabling inputs associated across the three main resources. The game then becomes a resource allocation game where they need to properly allocate money towards the right things to develop intelligence. There should be realistic scenarios that slow down or work against their growth at various stages, which illustrate the importance of where you choose to spend your funds. 
+
+Also, as with games like factorio/civiliations, As with games like factorio or the Civilization series, things progress as we move forward through the game. For example, some Potential Factorio-like Gameplay Loops (though we can come up with whatever is most realistic and functional for the game):
+	•	Early Game:
+	•	Basic compute infrastructure set up; web-scraping operations start.
+	•	Rapid scaling of simple data quantity resources.
+	•	Initial algorithm research yields early transformer-like breakthroughs.
+	•	Mid Game:
+	•	Expansion into better-quality data (curation, diversity labs).
+	•	Specialized data factories appear, enabling early reasoning capabilities.
+	•	Algorithm breakthroughs (distillation, sparse modeling) increase compute efficiency, driving faster research.
+	•	Late Game:
+	•	Complex multimodal and synthetic data pipelines optimize data design.
+	•	Regulatory constraints appear, adding strategic complexity (balancing compute, data, and algorithm development against risk of regulatory shutdown or slowdown).
+	•	Advanced reasoning and intelligence unlocks sophisticated capabilities (AI agents, multimodal interactions, highly efficient models).
