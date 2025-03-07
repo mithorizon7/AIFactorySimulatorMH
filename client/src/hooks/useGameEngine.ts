@@ -118,7 +118,7 @@ export function useGameEngine() {
         const newState = { ...prevState };
         newState.resources.data -= prevState.investCosts.data;
         newState.levels.data += 1;
-        newState.smartnessScore += 50;
+        newState.intelligence += 50;
         newState.investCosts.data = Math.round(prevState.investCosts.data * 1.8);
         
         // Check for breakthroughs
@@ -141,7 +141,7 @@ export function useGameEngine() {
         const newState = { ...prevState };
         newState.resources.algorithm -= prevState.investCosts.algorithm;
         newState.levels.algorithm += 1;
-        newState.smartnessScore += 50;
+        newState.intelligence += 50;
         newState.investCosts.algorithm = Math.round(prevState.investCosts.algorithm * 1.8);
         
         // Check for breakthroughs
@@ -176,7 +176,7 @@ export function useGameEngine() {
         
         if (allRequirementsMet) {
           breakthrough.unlocked = true;
-          state.smartnessScore += 100; // Increase smartness on breakthrough
+          state.intelligence += 100; // Increase intelligence on breakthrough
           
           // Find next unlocked breakthrough for goal
           const nextBreakthrough = updatedBreakthroughs.find(b => !b.unlocked);

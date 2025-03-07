@@ -11,7 +11,7 @@ export const users = pgTable("users", {
 export const gameStates = pgTable("game_states", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
-  smartnessScore: integer("smartness_score").notNull(),
+  intelligence: integer("intelligence").notNull(),
   timeRemaining: integer("time_remaining").notNull(),
   resourceCompute: integer("resource_compute").notNull(),
   resourceData: integer("resource_data").notNull(),
