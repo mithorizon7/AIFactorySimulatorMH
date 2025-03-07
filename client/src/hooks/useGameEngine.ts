@@ -95,7 +95,7 @@ export function useGameEngine() {
         const newState = { ...prevState };
         newState.resources.compute -= prevState.investCosts.compute;
         newState.levels.compute += 1;
-        newState.smartnessScore += 50;
+        newState.intelligence += 50;
         newState.investCosts.compute = Math.round(prevState.investCosts.compute * 1.8);
         
         // Check for breakthroughs
