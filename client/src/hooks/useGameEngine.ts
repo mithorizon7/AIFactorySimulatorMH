@@ -373,6 +373,157 @@ export function useGameEngine() {
     }
   }, [timeLeft, isRunning]);
 
+  // Additional money allocation functions for enabling inputs
+  const allocateMoneyToElectricity = () => {
+    if (gameState.money >= 85) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 85;
+        newState.computeInputs.electricity += 1;
+        
+        // Improve compute production based on better electricity
+        newState.production.compute *= 1.08;
+        
+        // Electricity is foundational, so it has a smaller but broader effect
+        newState.bonuses.computeToData *= 1.03;
+        newState.bonuses.computeToAlgorithm *= 1.03;
+        newState.bonuses.computeToIntelligence *= 1.03;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Power Infrastructure Improved",
+        description: "Your AI now has more efficient and reliable electricity!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $85 to improve power infrastructure.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToHardware = () => {
+    if (gameState.money >= 150) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 150;
+        newState.computeInputs.hardware += 1;
+        
+        // Hardware has a strong effect on compute production
+        newState.production.compute *= 1.2;
+        
+        // Hardware quality has significant impact on intelligence
+        newState.bonuses.computeToIntelligence *= 1.1;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Hardware Quality Upgraded",
+        description: "You've acquired more powerful GPUs/TPUs for your AI system!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $150 to upgrade hardware quality.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToRegulations = () => {
+    if (gameState.money >= 120) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 120;
+        newState.computeInputs.regulation += 1;
+        
+        // Regulatory compliance helps remove barriers to compute
+        newState.production.compute *= 1.15;
+        
+        // Regulatory environment affects investor confidence
+        newState.revenue.investors += 200;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Regulatory Compliance Improved",
+        description: "Your favorable regulatory position has attracted investor interest!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $120 to improve regulatory compliance.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToDataQuantity = () => {
+    if (gameState.money >= 60) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 60;
+        newState.dataInputs.quantity += 1;
+        
+        // More data means higher production
+        newState.production.data *= 1.15;
+        
+        // Quantity has a more modest effect on intelligence than quality
+        newState.bonuses.dataToIntelligence *= 1.03;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Data Collection Expanded",
+        description: "Your AI now has access to a larger volume of training data!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $60 to expand data collection efforts.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToDataFormats = () => {
+    if (gameState.money >= 90) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 90;
+        newState.dataInputs.formats += 1;
+        
+        // New data formats have a significant effect on data production
+        newState.production.data *= 1.12;
+        
+        // Multimodal data substantially improves intelligence
+        newState.bonuses.dataToIntelligence *= 1.08;
+        
+        // Format innovation also improves algorithmic efficiency
+        newState.bonuses.dataToAlgorithm *= 1.05;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Multimodal Data Integration",
+        description: "Your AI can now process new types of data like images, audio, and more!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $90 to integrate new data formats.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     gameState,
     isRunning,
@@ -385,9 +536,20 @@ export function useGameEngine() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    // Basic money allocation
     allocateMoneyToCompute,
     allocateMoneyToData,
     allocateMoneyToAlgorithm,
+    // Detailed compute inputs
+    allocateMoneyToElectricity,
+    allocateMoneyToHardware,
+    allocateMoneyToRegulations,
+    // Detailed data inputs
+    allocateMoneyToDataQuality: allocateMoneyToData, // Reusing existing function for quality
+    allocateMoneyToDataQuantity,
+    allocateMoneyToDataFormats,
+    // Detailed algorithm inputs
+    allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
     timeLeft,
     formattedTime
   };

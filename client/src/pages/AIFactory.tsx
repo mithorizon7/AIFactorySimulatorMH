@@ -5,6 +5,7 @@ import EconomicSection from "@/components/factory/EconomicSection";
 import BreakthroughSection from "@/components/factory/BreakthroughSection";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
+import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
 import GameTimer from "@/components/factory/GameTimer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -26,9 +27,20 @@ export default function AIFactory() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    // Basic money allocation
     allocateMoneyToCompute,
     allocateMoneyToData,
     allocateMoneyToAlgorithm,
+    // Detailed compute inputs
+    allocateMoneyToElectricity,
+    allocateMoneyToHardware,
+    allocateMoneyToRegulations,
+    // Detailed data inputs
+    allocateMoneyToDataQuality,
+    allocateMoneyToDataQuantity,
+    allocateMoneyToDataFormats,
+    // Detailed algorithm inputs
+    allocateMoneyToAlgorithmArchitectures,
     timeLeft,
     formattedTime,
   } = useGameEngine();
@@ -36,6 +48,7 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
+  const [showResourceDetail, setShowResourceDetail] = useState<boolean>(false);
 
   // Save game state periodically
   useEffect(() => {
@@ -106,6 +119,14 @@ export default function AIFactory() {
     setShowSummaryModal(false);
     resetGame();
   }
+  
+  function handleOpenResourceDetail() {
+    setShowResourceDetail(true);
+  }
+  
+  function handleCloseResourceDetail() {
+    setShowResourceDetail(false);
+  }
 
   return (
     <div className="bg-background text-white min-h-screen font-sans">
@@ -175,6 +196,16 @@ export default function AIFactory() {
           </div>
         </div>
 
+        {/* Resource Detail Button */}
+        <div className="fixed bottom-6 right-6">
+          <Button 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md"
+            onClick={handleOpenResourceDetail}
+          >
+            Advanced Resource Management
+          </Button>
+        </div>
+
         {/* Modals */}
         {showBreakthroughModal && currentBreakthrough && (
           <BreakthroughModal 
@@ -188,6 +219,21 @@ export default function AIFactory() {
             gameState={gameState}
             onClose={handleCloseSummaryModal}
             onReset={handleResetAndCloseSummary}
+          />
+        )}
+        
+        {showResourceDetail && (
+          <ResourceDetailPage
+            gameState={gameState}
+            allocateMoneyToCompute={allocateMoneyToCompute}
+            allocateMoneyToElectricity={allocateMoneyToElectricity}
+            allocateMoneyToHardware={allocateMoneyToHardware}
+            allocateMoneyToRegulations={allocateMoneyToRegulations}
+            allocateMoneyToDataQuality={allocateMoneyToDataQuality}
+            allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
+            allocateMoneyToDataFormats={allocateMoneyToDataFormats}
+            allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+            onClose={handleCloseResourceDetail}
           />
         )}
       </div>

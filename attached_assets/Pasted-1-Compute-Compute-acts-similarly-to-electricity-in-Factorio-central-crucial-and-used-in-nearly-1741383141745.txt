@@ -1,0 +1,103 @@
+1. Compute
+
+Compute acts similarly to “electricity” in Factorio—central, crucial, and used in nearly every process.
+
+Inputs to Compute (these would be raw resources and processes):
+	•	Money (Funding)
+	•	Secured through investor rounds, governmental funding, commercial success, or licensing.
+	•	Electricity
+	•	Generated from sources like renewable, coal, nuclear—each with different cost/efficiency/environmental trade-offs.
+	•	Hardware Availability (GPUs/TPUs)
+	•	NVIDIA breakthroughs unlock better hardware tech (e.g., new GPU architectures: Hopper, Blackwell, etc.).
+	•	Regulatory Environment
+	•	Regulations impact available compute. Stricter regulations can reduce compute availability or increase costs, while favorable regulations lower barriers.
+
+Output from Compute:
+	•	Compute Capacity
+	•	Higher compute unlocks the ability to train larger, more capable models, or multiple specialized models in parallel.
+	•	Cheaper usage cost per compute cycle
+	•	Efficiency breakthroughs decrease compute cost over time, enabling more complex training at lower expense.
+
+⸻
+
+2. Data
+
+Data is analogous to raw materials (iron, copper, coal, oil) that have diverse qualities and forms. Data feeds into model intelligence directly.
+
+Data breaks down into three primary categories:
+
+A. Quantity of Data
+
+Analogous to mining operations—more and faster extraction provides volume.
+	•	Processes:
+	•	Web Scraping (automated extraction from internet sources)
+	•	Digitization Facilities (analog records → digital data)
+	•	Licensing Deals (Reddit, NYT, specialized datasets)
+	•	Synthetic Data Factories (data generation from models)
+	•	Outputs:
+	•	Increased volume and availability of data for training models.
+	•	Early-game critical; diminished returns late-game without quality improvements.
+
+⸻
+
+B. Quality of Data
+
+Quality improvements act like refining ore into more usable alloys—better inputs yield higher-quality outcomes.
+	•	Processes:
+	•	Curation Teams (human reviewers or advanced filtering algorithms)
+	•	Diversity Collection Initiatives (efforts to collect data from diverse cultural, linguistic, or situational contexts)
+	•	Bias Detection & Removal Labs (teams/processes dedicated to improving fairness and accuracy)
+	•	Outputs:
+	•	More accurate, fairer, robust AI models.
+	•	Vital for mid-to-late game to avoid diminishing returns from merely increasing quantity.
+
+⸻
+
+C. Format & Structure of Data (Data Design)
+
+Analogous to “advanced circuits,” crafted through targeted combination of basic data resources.
+	•	Processes:
+	•	Specialized Datasets (e.g., Chain-of-Thought reasoning datasets)
+	•	Multimodal Data Fusion Labs (text+images+audio data pipelines)
+	•	Algorithmically Enhanced Data Design (new methods unlocked by algorithm breakthroughs—reasoning algorithms, prompt engineering methods)
+	•	Outputs:
+	•	Improved cognitive capabilities in models (logical reasoning, complex task-solving).
+	•	High-value late-game resource with significant leverage on intelligence.
+
+⸻
+
+3. Algorithm Lab
+
+Think of Algorithm Labs as “research labs” in Factorio that unlock entirely new technologies, recipes, and efficiency.
+	•	Inputs:
+	•	Funding (money)
+	•	Highly Skilled AI Researchers (trained via education or acquired)
+	•	Compute (training experiments, iterative development)
+	•	Early-Access to Cutting-edge Data (new datasets, specialized high-quality data)
+	•	Outputs:
+	•	Breakthroughs in Model Architectures:
+	•	Transformers, diffusion models, multimodal architectures.
+	•	Efficiency Breakthroughs:
+	•	Model distillation, quantization, sparsity—allowing models to perform better with less compute.
+	•	New Data Processing Methods:
+	•	Reasoning strategies (Chain-of-thought, Tree-of-thought)
+	•	Improved synthetic data generation
+
+These unlock fundamentally new capabilities or significantly enhance existing ones.
+
+⸻
+
+Conceptual Interrelation & Gameplay Dynamics:
+
+In your game, each resource pipeline will interconnect and feed back into others:
+	•	Compute → Intelligence:
+	•	More compute means training larger models, unlocking higher AI intelligence capabilities.
+	•	Algorithm breakthroughs reduce compute costs, making previously infeasible training feasible.
+	•	Data → Intelligence:
+	•	Quantity gives generalization power (early game)
+	•	Quality improves fairness and accuracy, becoming critical as complexity grows (mid-game)
+	•	Format and structure of data directly enhance intelligence by enabling specialized reasoning (late game).
+	•	Algorithm Lab ↔ Compute ↔ Data (cyclical relationship):
+	•	Algorithmic advances improve compute efficiency (distillation, quantization).
+	•	More compute enables faster, more expansive algorithm research.
+	•	New algorithmic breakthroughs enable radically new types of data and data processing, improving data quality and format.

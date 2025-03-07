@@ -91,9 +91,16 @@ export class MemStorage implements IStorage {
 
   async saveGameState(gameState: InsertGameState): Promise<GameState> {
     const id = this.currentGameStateId++;
-    const newGameState: GameState = { ...gameState, id };
-    this.gameStates.set(id, newGameState);
-    return newGameState;
+    // Ensure required fields are set with default values if not provided
+    const normalizedGameState = {
+      ...gameState,
+      money: gameState.money || 1000, 
+      userId: gameState.userId === undefined ? null : gameState.userId,
+      id,
+      createdAt: new Date().toISOString()
+    };
+    this.gameStates.set(id, normalizedGameState);
+    return normalizedGameState;
   }
 
   async getAllBreakthroughs(): Promise<Breakthrough[]> {
