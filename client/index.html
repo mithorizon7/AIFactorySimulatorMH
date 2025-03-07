@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Factory - Educational Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Custom global styles */
+    @keyframes pulse-compute {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    }
+    
+    @keyframes pulse-data {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    }
+    
+    @keyframes pulse-algorithm {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+    }
+
+    .pulse-compute { animation: pulse-compute 2s infinite; }
+    .pulse-data { animation: pulse-data 2s infinite; }
+    .pulse-algorithm { animation: pulse-algorithm 2s infinite; }
+    
+    /* Tooltip styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      max-width: 300px;
+      background-color: #374151;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
