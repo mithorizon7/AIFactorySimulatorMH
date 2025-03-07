@@ -7,6 +7,7 @@ import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
 import GameTimer from "@/components/factory/GameTimer";
+import SynergyDashboard from "@/components/factory/SynergyDashboard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
