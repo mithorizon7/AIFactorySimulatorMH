@@ -48,7 +48,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
           </div>
           <span className="text-sm font-medium text-amber-400">{agiProgress}%</span>
         </div>
-        <Progress value={agiProgress} className="h-2" />
+        <Progress value={agiProgress} className="h-2 [&>div]:bg-amber-400" />
       </div>
       
       {/* Synergy Navigation */}
@@ -166,7 +166,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.computeToData - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
               <p className="text-xs text-gray-400 mt-2">
                 Faster compute enables better data processing capabilities
               </p>
@@ -186,7 +186,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.computeToAlgorithm - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
               <p className="text-xs text-gray-400 mt-2">
                 More compute allows experimentation with larger models
               </p>
@@ -216,7 +216,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.dataToCompute - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
               <p className="text-xs text-gray-400 mt-2">
                 Better data helps optimize compute usage and training efficiency
               </p>
@@ -236,7 +236,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.dataToAlgorithm - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
               <p className="text-xs text-gray-400 mt-2">
                 Rich, diverse data drives algorithmic innovation and testing
               </p>
@@ -266,7 +266,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.algorithmToCompute - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
               <p className="text-xs text-gray-400 mt-2">
                 Better algorithms optimize compute usage and efficiency
               </p>
@@ -286,7 +286,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 </div>
               </div>
               <Progress value={Math.round((bonuses.algorithmToData - 1) * 100)} 
-                className="h-1.5 bg-gray-600" />
+                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
               <p className="text-xs text-gray-400 mt-2">
                 Advanced algorithms improve data extraction and utilization
               </p>
