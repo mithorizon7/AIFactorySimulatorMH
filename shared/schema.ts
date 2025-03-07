@@ -13,12 +13,17 @@ export const gameStates = pgTable("game_states", {
   userId: integer("user_id").references(() => users.id),
   intelligence: integer("intelligence").notNull(),
   timeRemaining: integer("time_remaining").notNull(),
+  money: integer("money").default(1000).notNull(),
   resourceCompute: integer("resource_compute").notNull(),
   resourceData: integer("resource_data").notNull(),
   resourceAlgorithm: integer("resource_algorithm").notNull(),
   computeLevel: integer("compute_level").notNull(),
   dataLevel: integer("data_level").notNull(),
   algorithmLevel: integer("algorithm_level").notNull(),
+  // Revenue streams
+  revenueB2B: integer("revenue_b2b").default(0),
+  revenueB2C: integer("revenue_b2c").default(0),
+  revenueInvestors: integer("revenue_investors").default(0),
   unlockedBreakthroughs: jsonb("unlocked_breakthroughs").notNull(),
   createdAt: text("created_at").notNull(),
 });
