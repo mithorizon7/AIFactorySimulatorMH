@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import FactorySection from "@/components/factory/FactorySection";
 import AIDashboard from "@/components/factory/AIDashboard";
+import EconomicSection from "@/components/factory/EconomicSection";
 import BreakthroughSection from "@/components/factory/BreakthroughSection";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
@@ -25,6 +26,9 @@ export default function AIFactory() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    allocateMoneyToCompute,
+    allocateMoneyToData,
+    allocateMoneyToAlgorithm,
     timeLeft,
     formattedTime,
   } = useGameEngine();
@@ -159,7 +163,16 @@ export default function AIFactory() {
             investInAlgorithm={investInAlgorithm}
           />
           
-          <BreakthroughSection gameState={gameState} />
+          <div className="flex flex-col gap-6">
+            <EconomicSection 
+              gameState={gameState}
+              allocateMoneyToCompute={allocateMoneyToCompute}
+              allocateMoneyToData={allocateMoneyToData}
+              allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            />
+            
+            <BreakthroughSection gameState={gameState} />
+          </div>
         </div>
 
         {/* Modals */}
