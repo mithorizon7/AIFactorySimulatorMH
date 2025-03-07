@@ -68,7 +68,8 @@ export default function AIFactory() {
     try {
       await apiRequest("POST", "/api/game-state", {
         userId: null,
-        smartnessScore: gameState.smartnessScore,
+        intelligence: gameState.intelligence,
+        money: gameState.money,
         timeRemaining: timeLeft,
         resourceCompute: Math.floor(gameState.resources.compute),
         resourceData: Math.floor(gameState.resources.data),
@@ -76,6 +77,10 @@ export default function AIFactory() {
         computeLevel: gameState.levels.compute,
         dataLevel: gameState.levels.data,
         algorithmLevel: gameState.levels.algorithm,
+        // Save revenue information
+        revenueB2B: gameState.revenue.b2b,
+        revenueB2C: gameState.revenue.b2c,
+        revenueInvestors: gameState.revenue.investors,
         unlockedBreakthroughs: gameState.breakthroughs
           .filter(b => b.unlocked)
           .map(b => b.id),

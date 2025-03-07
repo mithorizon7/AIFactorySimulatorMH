@@ -191,6 +191,128 @@ export function useGameEngine() {
     return updatedBreakthroughs;
   };
 
+  // Calculate revenue from resources and levels
+  const calculateRevenue = (state: GameStateType) => {
+    const newState = { ...state };
+    
+    // B2B Revenue: Scales with compute and algorithm levels
+    // Companies paying to use your AI APIs
+    newState.revenue.b2b = Math.floor(
+      2 * state.levels.compute * state.levels.algorithm * 
+      state.bonuses.computeToIntelligence * state.bonuses.algorithmToIntelligence
+    );
+    
+    // B2C Revenue: Scales with data quality and user experience
+    // Direct consumers paying for subscriptions
+    newState.revenue.b2c = Math.floor(
+      3 * state.levels.data * 
+      state.bonuses.dataToIntelligence * 
+      (state.intelligence / 200) // Revenue scales with intelligence
+    );
+    
+    // Investor Funding: One-time boosts when breakthroughs happen
+    // This is handled separately in the breakthrough logic
+    
+    // Add revenue to money
+    newState.money += newState.revenue.b2b + newState.revenue.b2c;
+    
+    return newState;
+  };
+
+  // Money allocation functions
+  const allocateMoneyToCompute = () => {
+    if (gameState.money >= 100) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 100;
+        newState.computeInputs.money += 1;
+        
+        // Increase compute production based on money input
+        newState.production.compute *= 1.1;
+        
+        // Improve cross-resource bonuses
+        newState.bonuses.computeToData *= 1.05;
+        newState.bonuses.computeToAlgorithm *= 1.05;
+        newState.bonuses.computeToIntelligence *= 1.05;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Money Allocated to Compute",
+        description: "Your AI now has better computational resources!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $100 to improve compute resources.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToData = () => {
+    if (gameState.money >= 75) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 75;
+        newState.dataInputs.quality += 1;
+        
+        // Increase data production based on quality improvements
+        newState.production.data *= 1.1;
+        
+        // Improve cross-resource bonuses
+        newState.bonuses.dataToCompute *= 1.05;
+        newState.bonuses.dataToAlgorithm *= 1.05;
+        newState.bonuses.dataToIntelligence *= 1.05;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Money Allocated to Data",
+        description: "Your AI now has access to higher quality data!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $75 to improve data quality.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const allocateMoneyToAlgorithm = () => {
+    if (gameState.money >= 125) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 125;
+        newState.algorithmInputs.architectures += 1;
+        
+        // Increase algorithm production based on architecture improvements
+        newState.production.algorithm *= 1.15;
+        
+        // Improve cross-resource bonuses
+        newState.bonuses.algorithmToCompute *= 1.05;
+        newState.bonuses.algorithmToData *= 1.05;
+        newState.bonuses.algorithmToIntelligence *= 1.07; // Algorithms have slightly more impact on intelligence
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Money Allocated to Algorithm Research",
+        description: "Your AI now uses more advanced algorithmic architectures!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $125 to improve algorithmic architectures.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Game loop
   useEffect(() => {
     if (isRunning) {
@@ -209,6 +331,26 @@ export function useGameEngine() {
           newState.resources.compute += prevState.production.compute;
           newState.resources.data += prevState.production.data;
           newState.resources.algorithm += prevState.production.algorithm;
+          
+          // Update intelligence based on resource levels and bonuses
+          // This creates a multiplicative effect when resources work together
+          const computeContribution = prevState.levels.compute * prevState.bonuses.computeToIntelligence;
+          const dataContribution = prevState.levels.data * prevState.bonuses.dataToIntelligence;
+          const algorithmContribution = prevState.levels.algorithm * prevState.bonuses.algorithmToIntelligence;
+          
+          // Synergy bonus when all three resources are developed together
+          const synergyMultiplier = Math.min(prevState.levels.compute, prevState.levels.data, prevState.levels.algorithm) * 0.05;
+          
+          // Apply a small intelligence increase each tick
+          newState.intelligence += 
+            0.02 * (computeContribution + dataContribution + algorithmContribution) * 
+            (1 + synergyMultiplier);
+          
+          // Calculate revenue every 5 seconds (adjust as needed)
+          const secondsElapsed = initialGameState.timer - timeLeft;
+          if (secondsElapsed > 0 && secondsElapsed % 5 === 0) {
+            return calculateRevenue(newState);
+          }
           
           return newState;
         });
@@ -243,6 +385,9 @@ export function useGameEngine() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    allocateMoneyToCompute,
+    allocateMoneyToData,
+    allocateMoneyToAlgorithm,
     timeLeft,
     formattedTime
   };
