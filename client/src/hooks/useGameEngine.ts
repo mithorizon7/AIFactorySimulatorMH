@@ -300,7 +300,7 @@ export function useGameEngine() {
     // Display era advancement toast with educational information
     toast({
       title: `Era Advanced: ${newEra}`,
-      description: newEra === Era.GPT3 || newEra === Era.GPT4 ? 
+      description: (newEra === Era.GPT2 || newEra === Era.GPT3 || newEra === Era.GPT4) ? 
         `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
         `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
       duration: 5000,
