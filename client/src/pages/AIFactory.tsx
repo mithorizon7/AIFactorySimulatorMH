@@ -8,6 +8,7 @@ import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
 import GameTimer from "@/components/factory/GameTimer";
 import SynergyDashboard from "@/components/factory/SynergyDashboard";
+import EraProgressionPanel from "@/components/factory/EraProgressionPanel";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
@@ -169,6 +170,11 @@ export default function AIFactory() {
           </div>
         </div>
 
+        {/* Era Progression Panel */}
+        <div className="mb-6">
+          <EraProgressionPanel gameState={gameState} />
+        </div>
+        
         {/* Main Game Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FactorySection 

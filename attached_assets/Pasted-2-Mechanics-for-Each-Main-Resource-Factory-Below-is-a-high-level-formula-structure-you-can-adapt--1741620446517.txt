@@ -1,0 +1,92 @@
+2. Mechanics for Each Main Resource Factory
+
+Below is a high-level formula structure you can adapt. For each resource R ∈ {Compute, Data, Algorithms}, we’ll define:
+
+\text{ProductionRate}(R)
+= \bigl[\text{Base Rate}_R + \text{Enabling Inputs Bonuses}\bigr]
+\times \bigl[1 + \Sigma(\text{Synergy Bonuses})\bigr]
+
+Where:
+	•	Base Rate_R: a default production speed (small but can be upgraded).
+	•	Enabling Inputs Bonuses: bonuses provided by secondary resources directly tied to R (e.g., money, electricity, hardware, regulation, etc.).
+	•	Synergy Bonuses: percentage-based multipliers provided by growth in other main resources (and Intelligence).
+
+2.1 Compute Factory
+	•	Primary Resource: Compute
+	•	Enabling Inputs:
+	1.	Money
+	•	\$ \rightarrow invests in new servers, data centers, or GPU clusters.
+	•	Could be a slider or a discrete “Purchase HPC Hardware” button that boosts your compute capacity over time.
+	2.	Electricity
+	•	Must be sufficient to power your servers.
+	•	If electricity is low or expensive, your compute production is throttled (penalties).
+	3.	Hardware Availability
+	•	If NVIDIA releases a new GPU architecture, you unlock a new “hardware tier” that raises your maximum compute production.
+	•	If a global GPU shortage event happens, you face compute slowdowns or higher costs.
+	4.	Regulatory Environment
+	•	Negative regulations might impose a cap on data center expansions or extra costs (like carbon taxes, privacy compliance).
+	•	Positive or neutral regulations reduce overhead, boosting compute production.
+	•	Synergy Bonuses (per each other main resource):
+	•	Data synergy:** Distilled in real life as “larger or more relevant data sets” → better model performance → bigger budgets for compute or better optimization. This might translate to:
++(\alpha \times \text{Data Level})
+a mild positive multiplier if your Data is advanced.
+	•	Algorithms synergy:** Distillation, quantization, or new architectures reduce compute cost or let you use hardware more efficiently. Could be expressed as a +X% efficiency bonus to compute capacity.
+	•	Intelligence synergy:** Once your Intelligence score is high, your AI can help optimize hardware usage (auto-scaling, dynamic load balancing). Another small synergy factor.
+
+The final production rate for Compute might look like:
+
+\[
+\text{ComputeProductionRate}
+= \Bigl[\text{BaseComputeRate} + \underbrace{f(\text{Money}, \text{Electricity}, \text{Hardware}, \text{RegEnv})}{\text{Enabling Inputs}}\Bigr]
+\times \Bigl[1 + b{data} + b_{algo} + b_{intel}\Bigr]
+\]
+
+where b_{data}, b_{algo}, and b_{intel} are synergy bonuses (like +0.05 each for 5% if certain thresholds are met).
+
+⸻
+
+2.2 Data Factory
+	•	Primary Resource: Data
+	•	Enabling Inputs:
+	1.	Quality of Data
+	•	E.g., better curation, more diverse sets, advanced data-cleaning pipelines.
+	•	High quality might raise the baseline “Data Value” and reduce negative outcomes (like model bias).
+	2.	Quantity of Data
+	•	Sheer volume from web scraping, licensing deals, user data, etc.
+	•	Initially large volume is critical, but suffers diminishing returns over time.
+	3.	New Data Formats
+	•	Multimodal data, specialized chain-of-thought sets, audio/visual.
+	•	Unlock these formats with mid/late-game breakthroughs, drastically boosting data utility.
+	•	Synergy Bonuses:
+	•	Compute synergy:** If you have high compute, you can process data more effectively (faster ingestion, large-scale cleaning).
+	•	Algorithms synergy:** Advanced models can generate synthetic data or better “data augmentation,” effectively multiplying your data production.
+	•	Intelligence synergy:** As your overall AI becomes smarter, it may refine or self-curate data, increasing your data quality or quantity generation rates.
+
+So a simplified formula:
+
+\[
+\text{DataProductionRate}
+= \Bigl[\text{BaseDataRate} + \underbrace{f(\text{Quality}, \text{Quantity}, \text{Formats})}{\text{Enabling Inputs}}\Bigr]
+\times \Bigl[1 + b{compute} + b_{algo} + b_{intel}\Bigr]
+\]
+
+⸻
+
+2.3 Algorithm Lab Factory
+	•	Primary Resource: Algorithms
+	•	Enabling Input: Breakthroughs in Model Architectures
+	•	This can be a discrete set of “research goals” or “tech tree steps” (e.g., Transformers → Instruction Tuning → Chain-of-Thought → Distillation → etc.).
+	•	Each breakthrough spawns additional synergy effects (like lowering compute cost, boosting data usage efficiency).
+	•	Possibly also require “Research Funding” as a cost, or “Talent / Researchers” as a gating factor.
+	•	Synergy Bonuses:
+	•	Compute synergy:** The more compute you have, the faster you can run experiments to discover new algorithms.
+	•	Data synergy:** Large or high-quality data might produce faster or more robust research results (simulating real-world big labs with enormous data advantage).
+	•	Intelligence synergy:** A partially self-improving system: advanced AI can help itself produce new breakthroughs faster.
+
+Formula concept:
+
+\[
+\text{AlgorithmResearchRate}
+= \Bigl[\text{BaseAlgorithmRate} + \underbrace{f(\text{ResearchBudget}, \text{Talent}, \text{BreakthroughsUnlocked})}{\text{Enabling Inputs}}\Bigr]
+\times \Bigl[1 + b{compute} + b_{data} + b_{intel}\Bigr]
+\]

@@ -265,6 +265,11 @@ export function useGameEngine() {
     
     // Map of historical AI system information for educational content
     const eraInfo = {
+      [Era.GPT2]: {
+        year: "2019",
+        parameterCount: "1.5 billion",
+        significance: "GPT-2 was a breakthrough in language modeling capabilities and coherent text generation."
+      },
       [Era.GPT3]: {
         year: "2020",
         parameterCount: "175 billion",
