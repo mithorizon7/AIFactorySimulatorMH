@@ -1,3 +1,28 @@
+// Era definition for phase-based progression
+export enum Era {
+  GPT2 = "GPT-2",    // Early Phase (~2019)
+  GPT3 = "GPT-3",    // Mid Phase I (~2020-2021)
+  GPT4 = "GPT-4",    // Mid Phase II (~2022-2023)
+  GPT5 = "GPT-5",    // Late Phase I (Near Future)
+  GPT6 = "GPT-6",    // Late Phase II (Future)
+  GPT7 = "GPT-7"     // Final Phase (AGI Threshold)
+}
+
+// Game events that can occur during gameplay 
+export interface GameEvent {
+  id: number;
+  title: string;
+  description: string;
+  triggered: boolean;
+  era: Era;           // Era during which this event can occur
+  effect: {
+    type: 'compute' | 'data' | 'algorithm' | 'money' | 'regulation' | 'hardware' | 'multiple';
+    impact: 'positive' | 'negative' | 'mixed';
+    magnitude: number; // Percentage or absolute impact
+  };
+  realWorldContext: string; // Educational tie-in
+}
+
 export interface GameStateType {
   isRunning: boolean;
   timer: number;
@@ -5,6 +30,10 @@ export interface GameStateType {
   // Core Metrics
   money: number;
   intelligence: number; // Renamed from smartnessScore to better reflect AGI goal
+  
+  // Game Era/Phase Tracking
+  currentEra: Era;       // Current game era/phase (GPT-2, GPT-3, etc.)
+  daysElapsed: number;   // Game time tracking for events
   
   // Primary Resources
   resources: {
@@ -86,6 +115,9 @@ export interface GameStateType {
   // AI Breakthroughs
   breakthroughs: Breakthrough[];
   
+  // Game Events
+  events: GameEvent[];
+  
   // Current Goal
   currentGoal: {
     id: number;
@@ -108,6 +140,7 @@ export interface Breakthrough {
   };
   type: 'compute' | 'data' | 'algorithm' | 'combined';
   realWorldParallel: string;
+  era?: Era; // Optional era association
 }
 
 export const initialGameState: GameStateType = {
@@ -117,6 +150,10 @@ export const initialGameState: GameStateType = {
   // Core metrics
   money: 1000, // Starting capital
   intelligence: 100, // Intelligence score (AGI progress metric)
+  
+  // Game Era/Phase Tracking
+  currentEra: Era.GPT2, // Start in GPT-2 era
+  daysElapsed: 0,       // No time elapsed yet
   
   // Primary resources
   resources: {
@@ -195,43 +232,226 @@ export const initialGameState: GameStateType = {
     algorithm: 120
   },
   
-  // Breakthroughs
+  // Breakthroughs - Organized by AI eras
   breakthroughs: [
+    // GPT-2 Era Breakthroughs (Early Phase)
     {
       id: 1,
-      name: "Basic Language Understanding",
-      description: "Your AI can now form coherent sentences by processing text examples!",
-      unlocked: false,
-      requiredLevels: { data: 2 },
-      type: "data",
-      realWorldParallel: "Just like how large language models like GPT learn to generate text by analyzing patterns in vast amounts of written data."
-    },
-    {
-      id: 2,
-      name: "Mathematical Problem Solving",
-      description: "Your AI can now solve math problems by breaking them down into steps!",
+      name: "Transformer Architecture",
+      description: "Your AI now uses attention mechanisms to process sequences more effectively!",
       unlocked: false,
       requiredLevels: { algorithm: 2 },
       type: "algorithm",
-      realWorldParallel: "Similar to how Chain-of-Thought prompting helps AI models reason through complex problems step by step."
+      era: Era.GPT2,
+      realWorldParallel: "The 2017 'Attention Is All You Need' paper introduced transformers, revolutionizing how models handle sequential data like text."
     },
     {
+      id: 2,
+      name: "Unsupervised Pre-training",
+      description: "Your AI can now learn language patterns without explicit supervision!",
+      unlocked: false,
+      requiredLevels: { data: 2 },
+      type: "data",
+      era: Era.GPT2,
+      realWorldParallel: "GPT-2 was built on unsupervised pre-training on diverse internet text, allowing it to learn language patterns without labeled examples."
+    },
+    
+    // GPT-3 Era Breakthroughs (Mid Phase I)
+    {
       id: 3,
-      name: "Image & Text Integration",
-      description: "Your AI can now process and understand both images and text together!",
+      name: "Massive Parameter Scaling",
+      description: "Your AI can now scale to billions of parameters, dramatically increasing capabilities!",
       unlocked: false,
       requiredLevels: { compute: 3 },
       type: "compute",
-      realWorldParallel: "Just like multimodal models such as GPT-4 Vision that can process both text and images simultaneously thanks to increased computational resources."
+      era: Era.GPT3,
+      realWorldParallel: "GPT-3's leap to 175 billion parameters (vs GPT-2's 1.5B) demonstrated how scale could dramatically improve capabilities."
     },
     {
       id: 4,
-      name: "Advanced Reasoning",
-      description: "Your AI can now handle complex logical reasoning tasks!",
+      name: "Few-Shot Learning",
+      description: "Your AI can now learn new tasks from just a few examples in its prompt!",
       unlocked: false,
       requiredLevels: { algorithm: 3, data: 3 },
       type: "combined",
-      realWorldParallel: "Similar to how modern AI systems combine high-quality reasoning datasets with sophisticated training methods to solve complex problems."
+      era: Era.GPT3,
+      realWorldParallel: "GPT-3 demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt."
+    },
+    
+    // GPT-4 Era Breakthroughs (Mid Phase II)
+    {
+      id: 5,
+      name: "Instruction Tuning",
+      description: "Your AI can now reliably follow human instructions and better align with user intentions!",
+      unlocked: false,
+      requiredLevels: { algorithm: 4 },
+      type: "algorithm",
+      era: Era.GPT4,
+      realWorldParallel: "InstructGPT and ChatGPT demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety."
+    },
+    {
+      id: 6,
+      name: "Multimodal Integration",
+      description: "Your AI can now process and understand both images and text together!",
+      unlocked: false,
+      requiredLevels: { compute: 4, data: 4 },
+      type: "combined",
+      era: Era.GPT4,
+      realWorldParallel: "GPT-4 Vision can process both text and images simultaneously, opening up new applications and capabilities."
+    },
+    
+    // GPT-5 Era Breakthroughs (Late Phase I - Near Future)
+    {
+      id: 7,
+      name: "Advanced Reasoning",
+      description: "Your AI can now break down complex problems into logical steps for better solutions!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 5 },
+      type: "combined",
+      era: Era.GPT5,
+      realWorldParallel: "Future AI systems are expected to have dramatically improved reasoning abilities, approaching human-like problem-solving."
+    },
+    {
+      id: 8,
+      name: "Self-Improvement Capabilities",
+      description: "Your AI can now improve its own code and architecture!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6 },
+      type: "algorithm",
+      era: Era.GPT5,
+      realWorldParallel: "Advanced AI systems may eventually help optimize their own code, create more efficient algorithms, and improve their architecture."
+    },
+    
+    // GPT-6 Era Breakthroughs (Late Phase II - Future)
+    {
+      id: 9,
+      name: "Advanced Tool Use",
+      description: "Your AI can effectively use multiple external tools and APIs to solve problems!",
+      unlocked: false,
+      requiredLevels: { algorithm: 7, compute: 6 },
+      type: "combined",
+      era: Era.GPT6,
+      realWorldParallel: "Future AI systems will likely have sophisticated abilities to use external tools, APIs, and services to extend their capabilities."
+    },
+    
+    // GPT-7 Era Breakthroughs (Final Phase - AGI Threshold)
+    {
+      id: 10,
+      name: "General Problem Solving",
+      description: "Your AI can now solve novel problems across domains without specific training!",
+      unlocked: false,
+      requiredLevels: { algorithm: 8, data: 7, compute: 7 },
+      type: "combined",
+      era: Era.GPT7,
+      realWorldParallel: "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence."
+    }
+  ],
+  
+  // Game Events
+  events: [
+    {
+      id: 1,
+      title: "Transformer Architecture Breakthrough",
+      description: "Researchers have developed a new architecture called 'transformers' that revolutionizes how AI processes sequences of data!",
+      triggered: false,
+      era: Era.GPT2,
+      effect: {
+        type: 'algorithm',
+        impact: 'positive',
+        magnitude: 15 // 15% boost to algorithm production
+      },
+      realWorldContext: "In 2017, the paper 'Attention Is All You Need' introduced transformers, which became the foundation for all modern language models like GPT."
+    },
+    {
+      id: 2,
+      title: "Large-Scale Web Scraping Initiative",
+      description: "Your team has developed tools to rapidly collect training data from the web.",
+      triggered: false,
+      era: Era.GPT2,
+      effect: {
+        type: 'data',
+        impact: 'positive',
+        magnitude: 20 // 20% boost to data production
+      },
+      realWorldContext: "Early language models like GPT-2 were trained on vast amounts of web text, including data from Reddit, Wikipedia, and millions of websites."
+    },
+    {
+      id: 3,
+      title: "Scaling Laws Discovered",
+      description: "Researchers have discovered mathematical relationships between model size, compute, and performance!",
+      triggered: false,
+      era: Era.GPT3,
+      effect: {
+        type: 'multiple',
+        impact: 'positive',
+        magnitude: 10 // 10% boost to compute and algorithm production
+      },
+      realWorldContext: "In 2020, OpenAI published 'Scaling Laws for Neural Language Models,' showing how performance improves predictably with scale."
+    },
+    {
+      id: 4,
+      title: "GPU Shortage Crisis",
+      description: "A global chip shortage has made high-end GPUs scarce and expensive.",
+      triggered: false,
+      era: Era.GPT3,
+      effect: {
+        type: 'compute',
+        impact: 'negative',
+        magnitude: 25 // 25% reduction in compute production
+      },
+      realWorldContext: "From 2020-2022, global chip shortages severely constrained GPU availability for AI research, significantly increasing costs and slowing progress."
+    },
+    {
+      id: 5,
+      title: "Instruction Tuning Breakthrough",
+      description: "Your team has discovered techniques to make models follow instructions more reliably!",
+      triggered: false,
+      era: Era.GPT4,
+      effect: {
+        type: 'algorithm',
+        impact: 'positive',
+        magnitude: 30 // 30% boost to algorithm efficiency
+      },
+      realWorldContext: "Instruction tuning, demonstrated in systems like InstructGPT and ChatGPT, allowed models to follow human instructions more reliably."
+    },
+    {
+      id: 6,
+      title: "AI Regulation Bill Passes",
+      description: "Government has implemented new regulations affecting AI development and deployment.",
+      triggered: false,
+      era: Era.GPT4,
+      effect: {
+        type: 'regulation',
+        impact: 'mixed',
+        magnitude: 15 // Initially negative, but can be mitigated with investment
+      },
+      realWorldContext: "Around 2022-2023, many countries began developing AI regulations to manage risks while fostering innovation."
+    },
+    {
+      id: 7,
+      title: "Multimodal Data Integration",
+      description: "Your team can now process and align multiple types of data: text, images, audio!",
+      triggered: false,
+      era: Era.GPT5,
+      effect: {
+        type: 'data',
+        impact: 'positive',
+        magnitude: 40 // 40% boost to data effectiveness
+      },
+      realWorldContext: "GPT-4V (Vision) and other multimodal models combine different types of data, greatly expanding AI capabilities."
+    },
+    {
+      id: 8,
+      title: "Quantum Computing Milestone",
+      description: "Access to early quantum computing resources enables unprecedented parallelization.",
+      triggered: false,
+      era: Era.GPT6,
+      effect: {
+        type: 'hardware',
+        impact: 'positive',
+        magnitude: 50 // 50% boost to hardware effectiveness
+      },
+      realWorldContext: "While still speculative, quantum computing may eventually provide massive speedups for certain AI workloads."
     }
   ],
   

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { initialGameState, GameStateType } from "@/lib/gameState";
+import { initialGameState, GameStateType, Era, GameEvent } from "@/lib/gameState";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 
@@ -159,9 +159,10 @@ export function useGameEngine() {
     }
   };
 
-  // Check for breakthroughs
+  // Check for breakthroughs and trigger era progression when appropriate
   const checkBreakthroughs = (state: GameStateType) => {
     const updatedBreakthroughs = [...state.breakthroughs];
+    let breakthroughUnlocked = false;
     
     updatedBreakthroughs.forEach(breakthrough => {
       if (!breakthrough.unlocked) {
@@ -176,8 +177,14 @@ export function useGameEngine() {
         }
         
         if (allRequirementsMet) {
+          breakthroughUnlocked = true;
           breakthrough.unlocked = true;
           state.intelligence += 100; // Increase intelligence on breakthrough
+          
+          toast({
+            title: `Breakthrough: ${breakthrough.name}`,
+            description: breakthrough.description,
+          });
           
           // Find next unlocked breakthrough for goal
           const nextBreakthrough = updatedBreakthroughs.find(b => !b.unlocked);
@@ -189,7 +196,214 @@ export function useGameEngine() {
       }
     });
     
+    // Check if we should advance to the next era
+    if (breakthroughUnlocked) {
+      checkEraMilestones(state);
+    }
+    
     return updatedBreakthroughs;
+  };
+  
+  // Check if player has met criteria to advance to the next AI era
+  const checkEraMilestones = (state: GameStateType) => {
+    const { currentEra, intelligence, levels } = state;
+    
+    // Count breakthroughs unlocked in the current era
+    const eraBreakthroughs = state.breakthroughs.filter(
+      b => b.era === currentEra && b.unlocked
+    ).length;
+    
+    // Define thresholds for moving to the next era
+    // Each era requires more intelligence and higher resource levels
+    switch (currentEra) {
+      case Era.GPT2:
+        // Move to GPT-3 Era when player has sufficient intelligence and unlocked GPT-2 breakthroughs
+        if (intelligence >= 200 && eraBreakthroughs >= 1 && levels.compute >= 2) {
+          advanceToNextEra(state, Era.GPT3);
+        }
+        break;
+        
+      case Era.GPT3:
+        // Move to GPT-4 Era
+        if (intelligence >= 400 && eraBreakthroughs >= 1 && levels.data >= 3) {
+          advanceToNextEra(state, Era.GPT4);
+        }
+        break;
+        
+      case Era.GPT4:
+        // Move to GPT-5 Era
+        if (intelligence >= 600 && eraBreakthroughs >= 1 && levels.algorithm >= 4) {
+          advanceToNextEra(state, Era.GPT5);
+        }
+        break;
+        
+      case Era.GPT5:
+        // Move to GPT-6 Era
+        if (intelligence >= 800 && eraBreakthroughs >= 1 && 
+            levels.compute >= 5 && levels.data >= 5 && levels.algorithm >= 5) {
+          advanceToNextEra(state, Era.GPT6);
+        }
+        break;
+        
+      case Era.GPT6:
+        // Move to GPT-7 Era (Final Phase)
+        if (intelligence >= 900 && eraBreakthroughs >= 1 && 
+            levels.compute >= 6 && levels.data >= 6 && levels.algorithm >= 6) {
+          advanceToNextEra(state, Era.GPT7);
+        }
+        break;
+        
+      default:
+        // GPT-7 is the final era, no further advancement
+        break;
+    }
+  };
+  
+  // Advance to the next era and trigger educational content and effects
+  const advanceToNextEra = (state: GameStateType, newEra: Era) => {
+    state.currentEra = newEra;
+    
+    // Map of historical AI system information for educational content
+    const eraInfo = {
+      [Era.GPT3]: {
+        year: "2020",
+        parameterCount: "175 billion",
+        significance: "GPT-3 demonstrated emergent abilities with few-shot learning and could perform tasks it wasn't explicitly trained on."
+      },
+      [Era.GPT4]: {
+        year: "2023",
+        parameterCount: "Over a trillion",
+        significance: "GPT-4 introduced multimodal capabilities and significantly improved reasoning and instruction following."
+      },
+      [Era.GPT5]: {
+        year: "Near future",
+        parameterCount: "Unknown",
+        significance: "Hypothetical future model with enhanced reasoning and problem-solving capabilities."
+      },
+      [Era.GPT6]: {
+        year: "Future",
+        parameterCount: "Unknown",
+        significance: "Speculative model with advanced tool use and possibly approaching general intelligence."
+      },
+      [Era.GPT7]: {
+        year: "Future",
+        parameterCount: "Unknown",
+        significance: "Theoretical model at the threshold of Artificial General Intelligence."
+      }
+    };
+    
+    // Display era advancement toast with educational information
+    toast({
+      title: `Era Advanced: ${newEra}`,
+      description: newEra === Era.GPT3 || newEra === Era.GPT4 ? 
+        `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
+        `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
+      duration: 5000,
+    });
+    
+    // Each era has unique bonus effects to represent the technological leap
+    switch (newEra) {
+      case Era.GPT3:
+        // GPT-3 was about massive scaling
+        state.production.compute *= 1.5;
+        state.bonuses.computeToIntelligence *= 1.3;
+        break;
+        
+      case Era.GPT4:
+        // GPT-4 was about multimodal and improved reasoning
+        state.production.algorithm *= 1.5;
+        state.bonuses.algorithmToIntelligence *= 1.4;
+        break;
+        
+      case Era.GPT5:
+        // Hypothetical future advance with better data utilization
+        state.production.data *= 1.6;
+        state.bonuses.dataToIntelligence *= 1.5;
+        break;
+        
+      case Era.GPT6:
+        // Major future leap with dramatic improvements across all dimensions
+        state.production.compute *= 1.7;
+        state.production.data *= 1.7;
+        state.production.algorithm *= 1.7;
+        break;
+        
+      case Era.GPT7:
+        // Final era with path to AGI
+        state.bonuses.computeToIntelligence *= 2.0;
+        state.bonuses.dataToIntelligence *= 2.0;
+        state.bonuses.algorithmToIntelligence *= 2.0;
+        break;
+    }
+    
+    // Trigger era-specific events
+    checkAndTriggerEvents(state);
+  };
+  
+  // Check for and trigger events specific to the current era
+  const checkAndTriggerEvents = (state: GameStateType) => {
+    // Process events that match the current era and haven't been triggered yet
+    const currentEraEvents = state.events.filter(
+      event => event.era === state.currentEra && !event.triggered
+    );
+    
+    // For simplicity, trigger the first untriggered event for this era
+    if (currentEraEvents.length > 0) {
+      const event = currentEraEvents[0];
+      event.triggered = true;
+      
+      // Apply event effects
+      applyEventEffect(state, event);
+      
+      // Notify the player
+      toast({
+        title: `Event: ${event.title}`,
+        description: `${event.description}\n\nHistorical Context: ${event.realWorldContext}`,
+        duration: 5000,
+      });
+    }
+  };
+  
+  // Apply the effects of an event to the game state
+  const applyEventEffect = (state: GameStateType, event: GameEvent) => {
+    const { effect } = event;
+    const impactModifier = effect.impact === 'positive' ? 1 + effect.magnitude/100 : 
+                           effect.impact === 'negative' ? 1 - effect.magnitude/100 : 1;
+    
+    switch (effect.type) {
+      case 'compute':
+        state.production.compute *= impactModifier;
+        break;
+        
+      case 'data':
+        state.production.data *= impactModifier;
+        break;
+        
+      case 'algorithm':
+        state.production.algorithm *= impactModifier;
+        break;
+        
+      case 'money':
+        state.money *= impactModifier;
+        break;
+        
+      case 'regulation':
+        state.computeInputs.regulation = Math.max(1, 
+          state.computeInputs.regulation + (effect.impact === 'positive' ? 1 : -1));
+        break;
+        
+      case 'hardware':
+        state.computeInputs.hardware = Math.max(1, 
+          state.computeInputs.hardware + (effect.impact === 'positive' ? 1 : -1));
+        break;
+        
+      case 'multiple':
+        // For multiple effects, apply a smaller boost to several areas
+        state.production.compute *= Math.sqrt(impactModifier);
+        state.production.data *= Math.sqrt(impactModifier);
+        state.production.algorithm *= Math.sqrt(impactModifier);
+        break;
+    }
   };
 
   // Calculate revenue from resources and levels
@@ -416,6 +630,10 @@ export function useGameEngine() {
           newState.resources.data += newState.production.data;
           newState.resources.algorithm += newState.production.algorithm;
           
+          // Increment game days elapsed (representing time passing)
+          // Each real second = 1 in-game day
+          newState.daysElapsed += 1;
+          
           // Update intelligence based on resource levels and bonuses
           // This creates a multiplicative effect when resources work together
           const computeContribution = newState.levels.compute * newState.bonuses.computeToIntelligence;
@@ -438,7 +656,12 @@ export function useGameEngine() {
           // Calculate revenue every 5 seconds (adjust as needed)
           const secondsElapsed = initialGameState.timer - timeLeft;
           if (secondsElapsed > 0 && secondsElapsed % 5 === 0) {
-            return calculateRevenue(newState);
+            newState = calculateRevenue(newState);
+          }
+          
+          // Random event check (approximately every 30 days/seconds with 20% chance)
+          if (newState.daysElapsed % 30 === 0 && Math.random() < 0.20) {
+            checkAndTriggerEvents(newState);
           }
           
           return newState;
