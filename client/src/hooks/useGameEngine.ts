@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { initialGameState, GameStateType } from "@/lib/gameState";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/lib/utils";
 
 export function useGameEngine() {
   const [gameState, setGameState] = useState<GameStateType>({ ...initialGameState });
@@ -195,26 +196,58 @@ export function useGameEngine() {
   const calculateRevenue = (state: GameStateType) => {
     const newState = { ...state };
     
-    // B2B Revenue: Scales with compute and algorithm levels
-    // Companies paying to use your AI APIs
+    // B2B Revenue: Companies paying to use your AI APIs
+    // Scales with compute power (infrastructure), algorithm sophistication (API capabilities),
+    // and how well these improve intelligence (practical value to businesses)
+    const apiCapability = state.levels.compute * state.levels.algorithm;
+    const apiEffectiveness = state.bonuses.computeToIntelligence * state.bonuses.algorithmToIntelligence;
+    
     newState.revenue.b2b = Math.floor(
-      2 * state.levels.compute * state.levels.algorithm * 
-      state.bonuses.computeToIntelligence * state.bonuses.algorithmToIntelligence
+      5 * apiCapability * apiEffectiveness
     );
     
-    // B2C Revenue: Scales with data quality and user experience
-    // Direct consumers paying for subscriptions
+    // B2C Revenue: Direct consumers paying for subscriptions
+    // Scales primarily with data quality (user experience) and overall intelligence
+    // People care about data quality (relevance, absence of bias) and overall capabilities
+    const userExperience = state.levels.data * state.dataInputs.quality;
+    const intelligenceImpact = Math.pow(state.intelligence / 200, 1.2);  // Superlinear growth
+    
     newState.revenue.b2c = Math.floor(
-      3 * state.levels.data * 
-      state.bonuses.dataToIntelligence * 
-      (state.intelligence / 200) // Revenue scales with intelligence
+      8 * userExperience * state.bonuses.dataToIntelligence * intelligenceImpact
     );
     
-    // Investor Funding: One-time boosts when breakthroughs happen
-    // This is handled separately in the breakthrough logic
+    // Investor Funding: Based on regulatory environment and breakthrough potential
+    // Investors like companies with good regulatory compliance and technical breakthroughs
     
-    // Add revenue to money
-    newState.money += newState.revenue.b2b + newState.revenue.b2c;
+    // Base investor confidence depends on regulation level and breakthroughs
+    const unlockedBreakthroughs = state.breakthroughs.filter(b => b.unlocked).length;
+    const regulatoryConfidence = state.computeInputs.regulation * 0.5;
+    
+    // Intelligence growth rate: investors love rapid progress
+    const growthPotential = (state.bonuses.computeToIntelligence + 
+                          state.bonuses.dataToIntelligence + 
+                          state.bonuses.algorithmToIntelligence - 3) * 50;
+    
+    // Calculate potential investor funding
+    // Note: Actual investor funding will be triggered by specific events
+    newState.revenue.investors = Math.floor(
+      unlockedBreakthroughs * 150 + regulatoryConfidence * 100 + growthPotential
+    );
+    
+    // Periodically attract investors (not every income cycle)
+    // This simulates periodic funding rounds
+    const secondsElapsed = initialGameState.timer - timeLeft;
+    if (secondsElapsed % 30 === 0 && state.intelligence > 200) {
+      // Investor round happens every 30 seconds after initial growth
+      newState.money += newState.revenue.investors;
+      toast({
+        title: "Investor Funding Received!",
+        description: `You've secured $${formatCurrency(newState.revenue.investors)} in new funding based on your progress!`,
+      });
+    } else {
+      // Regular operational revenue
+      newState.money += newState.revenue.b2b + newState.revenue.b2c;
+    }
     
     return newState;
   };
@@ -313,6 +346,55 @@ export function useGameEngine() {
     }
   };
 
+  // Calculate production rates based on enabling inputs and synergy bonuses
+  const calculateProductionRates = (state: GameStateType) => {
+    const newState = { ...state };
+    
+    // Compute production formula:
+    // Base rate + (enabling inputs bonuses) × (1 + sum of synergy bonuses)
+    const computeEnablingInputsBonus = 
+      0.2 * state.computeInputs.money + 
+      0.15 * state.computeInputs.electricity + 
+      0.3 * state.computeInputs.hardware + 
+      0.1 * state.computeInputs.regulation;
+    
+    const computeSynergyBonus = 
+      (state.bonuses.dataToCompute - 1) + 
+      (state.bonuses.algorithmToCompute - 1);
+    
+    newState.production.compute = 
+      (state.production.compute * 0.8) + // Base production with mild decay to prevent runaway growth
+      computeEnablingInputsBonus * (1 + computeSynergyBonus);
+    
+    // Data production formula
+    const dataEnablingInputsBonus = 
+      0.25 * state.dataInputs.quality + 
+      0.2 * state.dataInputs.quantity + 
+      0.15 * state.dataInputs.formats;
+    
+    const dataSynergyBonus = 
+      (state.bonuses.computeToData - 1) + 
+      (state.bonuses.algorithmToData - 1);
+    
+    newState.production.data = 
+      (state.production.data * 0.8) + 
+      dataEnablingInputsBonus * (1 + dataSynergyBonus);
+    
+    // Algorithm production formula
+    const algoEnablingInputsBonus = 
+      0.35 * state.algorithmInputs.architectures;
+    
+    const algoSynergyBonus = 
+      (state.bonuses.computeToAlgorithm - 1) + 
+      (state.bonuses.dataToAlgorithm - 1);
+    
+    newState.production.algorithm = 
+      (state.production.algorithm * 0.8) + 
+      algoEnablingInputsBonus * (1 + algoSynergyBonus);
+    
+    return newState;
+  };
+  
   // Game loop
   useEffect(() => {
     if (isRunning) {
@@ -326,20 +408,27 @@ export function useGameEngine() {
         });
 
         setGameState(prevState => {
+          // Calculate updated production rates based on enabling inputs and synergies
+          let newState = calculateProductionRates(prevState);
+          
           // Update resources based on production rates
-          const newState = { ...prevState };
-          newState.resources.compute += prevState.production.compute;
-          newState.resources.data += prevState.production.data;
-          newState.resources.algorithm += prevState.production.algorithm;
+          newState.resources.compute += newState.production.compute;
+          newState.resources.data += newState.production.data;
+          newState.resources.algorithm += newState.production.algorithm;
           
           // Update intelligence based on resource levels and bonuses
           // This creates a multiplicative effect when resources work together
-          const computeContribution = prevState.levels.compute * prevState.bonuses.computeToIntelligence;
-          const dataContribution = prevState.levels.data * prevState.bonuses.dataToIntelligence;
-          const algorithmContribution = prevState.levels.algorithm * prevState.bonuses.algorithmToIntelligence;
+          const computeContribution = newState.levels.compute * newState.bonuses.computeToIntelligence;
+          const dataContribution = newState.levels.data * newState.bonuses.dataToIntelligence;
+          const algorithmContribution = newState.levels.algorithm * newState.bonuses.algorithmToIntelligence;
           
           // Synergy bonus when all three resources are developed together
-          const synergyMultiplier = Math.min(prevState.levels.compute, prevState.levels.data, prevState.levels.algorithm) * 0.05;
+          // The more balanced your development, the stronger the synergy
+          const synergyMultiplier = Math.min(
+            newState.levels.compute, 
+            newState.levels.data, 
+            newState.levels.algorithm
+          ) * 0.05;
           
           // Apply a small intelligence increase each tick
           newState.intelligence += 
