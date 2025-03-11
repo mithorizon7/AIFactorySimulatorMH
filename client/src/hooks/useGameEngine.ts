@@ -415,28 +415,52 @@ export function useGameEngine() {
   const calculateRevenue = (state: GameStateType) => {
     const newState = { ...state };
     
-    // B2B Revenue: Companies paying to use your AI APIs
-    // Scales with compute power (infrastructure), algorithm sophistication (API capabilities),
-    // and how well these improve intelligence (practical value to businesses)
-    const apiCapability = state.levels.compute * state.levels.algorithm;
-    const apiEffectiveness = state.bonuses.computeToIntelligence * state.bonuses.algorithmToIntelligence;
+    // ===== B2B Revenue: Companies paying to use your AI APIs =====
+    // Formula: B2B Income = Base API Rate × (1 + Intelligence Level) × (1 + Developer Tools Bonus)
     
+    // Intelligence impact on B2B revenue (automatically scales with intelligence)
+    const intelligenceLevel = state.intelligence / 100; // Normalized intelligence impact
+    
+    // Developer tools bonus: 5% per level
+    const developerToolsBonus = state.revenue.developerToolsLevel * 0.05;
+    
+    // Calculate B2B revenue
     newState.revenue.b2b = Math.floor(
-      5 * apiCapability * apiEffectiveness
+      state.revenue.baseApiRate * (1 + intelligenceLevel) * (1 + developerToolsBonus)
     );
     
-    // B2C Revenue: Direct consumers paying for subscriptions
-    // Scales primarily with data quality (user experience) and overall intelligence
-    // People care about data quality (relevance, absence of bias) and overall capabilities
-    const userExperience = state.levels.data * state.dataInputs.quality;
-    const intelligenceImpact = Math.pow(state.intelligence / 200, 1.2);  // Superlinear growth
+    // ===== B2C Revenue: End-User Subscriptions =====
+    // Formula: B2C Income = Subscribers × Monthly Fee
     
+    // Calculate subscriber growth based on intelligence and data quality milestone
+    // Only update subscribers on a periodic basis (monthly equivalent: every 10 seconds)
+    if (timeElapsed % 10 === 0 && timeElapsed > 0) {
+      // Intelligence & Data Quality impact on subscriber growth
+      const intelligenceImpact = Math.pow(state.intelligence / 200, 1.1);
+      const dataQualityImpact = state.dataInputs.quality * 0.1;
+      
+      // Base growth rate (1-2% per period)
+      const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
+      
+      // Chatbot improvement bonus (5% more subscribers per level)
+      const chatbotBonus = state.revenue.chatbotImprovementLevel * 0.05;
+      
+      // Calculate total subscriber growth rate
+      const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
+      
+      // Update subscriber count with growth
+      newState.revenue.subscribers = Math.floor(
+        state.revenue.subscribers * (1 + totalGrowthRate)
+      );
+    }
+    
+    // Calculate B2C revenue from subscribers
     newState.revenue.b2c = Math.floor(
-      8 * userExperience * state.bonuses.dataToIntelligence * intelligenceImpact
+      state.revenue.subscribers * state.revenue.monthlyFee
     );
     
-    // Investor Funding: Based on regulatory environment and breakthrough potential
-    // Investors like companies with good regulatory compliance and technical breakthroughs
+    // ===== Investor Funding: Simplified as special events =====
+    // We've simplified investor funding as a periodic bonus rather than a continuous revenue stream
     
     // Base investor confidence depends on regulation level and breakthroughs
     const unlockedBreakthroughs = state.breakthroughs.filter(b => b.unlocked).length;
@@ -447,8 +471,8 @@ export function useGameEngine() {
                           state.bonuses.dataToIntelligence + 
                           state.bonuses.algorithmToIntelligence - 3) * 50;
     
-    // Calculate potential investor funding
-    // Note: Actual investor funding will be triggered by specific events
+    // Calculate potential investor funding for next round
+    // Note: Actual investor funding will be triggered by periodic events
     newState.revenue.investors = Math.floor(
       unlockedBreakthroughs * 150 + regulatoryConfidence * 100 + growthPotential
     );
@@ -839,6 +863,93 @@ export function useGameEngine() {
     }
   };
 
+  // New revenue enhancement functions
+  
+  // Function to improve developer tools (improves B2B revenue)
+  const improveDeveloperTools = () => {
+    const toolUpgradeCost = 5000; // $5,000 cost per upgrade
+    
+    if (gameState.money >= toolUpgradeCost) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= toolUpgradeCost;
+        newState.revenue.developerToolsLevel += 1;
+        
+        // Increasing developer tools gives +5% permanent bonus to B2B revenue
+        // This is already handled in the calculateRevenue function
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Developer Tools Improved",
+        description: "You've enhanced your API's developer tools, boosting your B2B revenue by 5%!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: `You need at least $${toolUpgradeCost.toLocaleString()} to improve developer tools.`,
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Function to improve chatbot capabilities (improves B2C subscriber growth)
+  const improveChatbot = () => {
+    const chatbotUpgradeCost = 10000; // $10,000 cost per upgrade
+    
+    if (gameState.money >= chatbotUpgradeCost) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= chatbotUpgradeCost;
+        newState.revenue.chatbotImprovementLevel += 1;
+        
+        // Increasing chatbot capabilities gives +5% permanent bonus to subscriber growth
+        // This is already handled in the calculateRevenue function
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Chatbot Capabilities Improved",
+        description: "You've enhanced your AI chatbot, permanently increasing your subscriber growth rate by 5%!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: `You need at least $${chatbotUpgradeCost.toLocaleString()} to improve chatbot capabilities.`,
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Function to run an advertising campaign (instantly adds subscribers)
+  const runAdvertisingCampaign = () => {
+    const adCampaignCost = 10000; // $10,000 cost per campaign
+    const subscribersGained = 1000; // Gain 1000 subscribers per campaign
+    
+    if (gameState.money >= adCampaignCost) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= adCampaignCost;
+        newState.revenue.subscribers += subscribersGained;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Advertising Campaign Launched",
+        description: `Your campaign was successful! You've gained ${subscribersGained.toLocaleString()} new subscribers immediately.`,
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: `You need at least $${adCampaignCost.toLocaleString()} to launch an advertising campaign.`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     gameState,
     isRunning,
@@ -865,6 +976,10 @@ export function useGameEngine() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
+    // New revenue enhancement functions
+    improveDeveloperTools,
+    improveChatbot,
+    runAdvertisingCampaign,
     timeElapsed,
     formattedTime
   };

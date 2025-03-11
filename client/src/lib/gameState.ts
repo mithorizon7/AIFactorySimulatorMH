@@ -82,6 +82,14 @@ export interface GameStateType {
     b2b: number;           // API usage by developers
     b2c: number;           // Monthly subscriptions
     investors: number;     // Funding from investors
+    
+    // New revenue enhancement fields
+    baseApiRate: number;   // Base API rate for B2B calculations
+    developerToolsLevel: number; // Level of developer tools (improves B2B revenue)
+    
+    subscribers: number;   // Number of subscribers for B2C calculations
+    monthlyFee: number;    // Monthly fee per subscriber
+    chatbotImprovementLevel: number; // Level of chatbot improvements (improves B2C revenue)
   };
   
   // Bonus Multipliers (cross-resource effects)
@@ -201,7 +209,15 @@ export const initialGameState: GameStateType = {
   revenue: {
     b2b: 0,        // Initial B2B API revenue
     b2c: 0,        // Initial B2C subscription revenue
-    investors: 0   // Initial investor funding
+    investors: 0,  // Initial investor funding
+    
+    // New revenue enhancement fields
+    baseApiRate: 10000,   // Base API rate for B2B calculations ($10K/week starting point)
+    developerToolsLevel: 0, // Level of developer tools (improves B2B revenue)
+    
+    subscribers: 100,     // Initial 100 subscribers for B2C calculations
+    monthlyFee: 10,       // $10 monthly fee per subscriber
+    chatbotImprovementLevel: 0 // Level of chatbot improvements (improves B2C revenue)
   },
   
   // Cross-resource bonus multipliers (all start at 1.0 = no effect)

@@ -41,6 +41,10 @@ export default function AIFactory() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures,
+    // New revenue enhancement functions
+    improveDeveloperTools,
+    improveChatbot,
+    runAdvertisingCampaign,
     timeElapsed,
     formattedTime,
   } = useGameEngine();
