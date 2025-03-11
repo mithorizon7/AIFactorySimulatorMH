@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
-import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
@@ -51,7 +50,6 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
-  const [showResourceDetail, setShowResourceDetail] = useState<boolean>(false);
 
   // Show introduction when game first starts or is reset
   useEffect(() => {
@@ -134,14 +132,6 @@ export default function AIFactory() {
     setShowSummaryModal(false);
     resetGame();
   }
-  
-  function handleOpenResourceDetail() {
-    setShowResourceDetail(true);
-  }
-  
-  function handleCloseResourceDetail() {
-    setShowResourceDetail(false);
-  }
 
   return (
     <div className="bg-gradient-to-b from-gray-950 to-gray-900 text-white min-h-screen font-sans">
@@ -169,7 +159,13 @@ export default function AIFactory() {
           allocateMoneyToCompute={allocateMoneyToCompute}
           allocateMoneyToData={allocateMoneyToData}
           allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
-          handleOpenResourceDetail={handleOpenResourceDetail}
+          allocateMoneyToElectricity={allocateMoneyToElectricity}
+          allocateMoneyToHardware={allocateMoneyToHardware}
+          allocateMoneyToRegulations={allocateMoneyToRegulations}
+          allocateMoneyToDataQuality={allocateMoneyToDataQuality}
+          allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
+          allocateMoneyToDataFormats={allocateMoneyToDataFormats}
+          allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
         />
 
         {/* Help Panel (floating button) */}
@@ -195,21 +191,6 @@ export default function AIFactory() {
             gameState={gameState}
             onClose={handleCloseSummaryModal}
             onReset={handleResetAndCloseSummary}
-          />
-        )}
-        
-        {showResourceDetail && (
-          <ResourceDetailPage
-            gameState={gameState}
-            allocateMoneyToCompute={allocateMoneyToCompute}
-            allocateMoneyToElectricity={allocateMoneyToElectricity}
-            allocateMoneyToHardware={allocateMoneyToHardware}
-            allocateMoneyToRegulations={allocateMoneyToRegulations}
-            allocateMoneyToDataQuality={allocateMoneyToDataQuality}
-            allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
-            allocateMoneyToDataFormats={allocateMoneyToDataFormats}
-            allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
-            onClose={handleCloseResourceDetail}
           />
         )}
       </div>

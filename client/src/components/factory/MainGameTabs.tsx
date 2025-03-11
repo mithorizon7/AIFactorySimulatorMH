@@ -22,7 +22,14 @@ interface MainGameTabsProps {
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
   allocateMoneyToAlgorithm: () => void;
-  handleOpenResourceDetail: () => void;
+  // Advanced inputs
+  allocateMoneyToElectricity: () => void;
+  allocateMoneyToHardware: () => void;
+  allocateMoneyToRegulations: () => void;
+  allocateMoneyToDataQuality: () => void;
+  allocateMoneyToDataQuantity: () => void;
+  allocateMoneyToDataFormats: () => void;
+  allocateMoneyToAlgorithmArchitectures: () => void;
 }
 
 export default function MainGameTabs({
@@ -36,7 +43,14 @@ export default function MainGameTabs({
   allocateMoneyToCompute,
   allocateMoneyToData,
   allocateMoneyToAlgorithm,
-  handleOpenResourceDetail
+  // Advanced allocation functions
+  allocateMoneyToElectricity,
+  allocateMoneyToHardware,
+  allocateMoneyToRegulations,
+  allocateMoneyToDataQuality,
+  allocateMoneyToDataQuantity,
+  allocateMoneyToDataFormats,
+  allocateMoneyToAlgorithmArchitectures
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
@@ -152,16 +166,15 @@ export default function MainGameTabs({
             upgradeCompute={upgradeCompute}
             upgradeData={upgradeData}
             upgradeAlgorithm={upgradeAlgorithm}
+            allocateMoneyToCompute={allocateMoneyToCompute}
+            allocateMoneyToElectricity={allocateMoneyToElectricity}
+            allocateMoneyToHardware={allocateMoneyToHardware}
+            allocateMoneyToRegulations={allocateMoneyToRegulations}
+            allocateMoneyToDataQuality={allocateMoneyToDataQuality}
+            allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
+            allocateMoneyToDataFormats={allocateMoneyToDataFormats}
+            allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
           />
-          
-          <div className="flex justify-center">
-            <button 
-              onClick={handleOpenResourceDetail}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
-            >
-              Advanced Resource Management
-            </button>
-          </div>
         </div>
       </TabsContent>
       
