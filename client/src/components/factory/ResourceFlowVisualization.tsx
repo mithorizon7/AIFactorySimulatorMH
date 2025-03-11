@@ -548,10 +548,11 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       <>
         {/* Compute Label */}
         <div 
-          className="absolute font-bold uppercase text-blue-500 border-2 border-blue-500 bg-blue-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          className="absolute font-bold uppercase text-blue-500 border-2 border-blue-500 bg-blue-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-blue-900/30 z-20"
           style={{ 
-            left: `${nodePositions.compute.x - 25}px`, 
-            top: `${nodePositions.compute.y - 60}px`,
+            left: `${nodePositions.compute.x - 35}px`, 
+            top: `${nodePositions.compute.y - 25}px`,
+            transform: 'translateY(-100%)'
           }}
         >
           COMPUTE
@@ -559,10 +560,11 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
         
         {/* Data Label */}
         <div 
-          className="absolute font-bold uppercase text-green-500 border-2 border-green-500 bg-green-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          className="absolute font-bold uppercase text-green-500 border-2 border-green-500 bg-green-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-green-900/30 z-20"
           style={{ 
-            left: `${nodePositions.data.x - 15}px`, 
-            top: `${nodePositions.data.y - 60}px`,
+            left: `${nodePositions.data.x - 22}px`, 
+            top: `${nodePositions.data.y - 25}px`,
+            transform: 'translateY(-100%)'
           }}
         >
           DATA
@@ -570,10 +572,10 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
         
         {/* Algorithm Label */}
         <div 
-          className="absolute font-bold uppercase text-purple-500 border-2 border-purple-500 bg-purple-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          className="absolute font-bold uppercase text-purple-500 border-2 border-purple-500 bg-purple-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-purple-900/30 z-20"
           style={{ 
             left: `${nodePositions.algorithm.x - 35}px`, 
-            top: `${nodePositions.algorithm.y + 40}px`,
+            top: `${nodePositions.algorithm.y + 25}px`,
           }}
         >
           ALGORITHM
@@ -581,10 +583,11 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
         
         {/* Intelligence Label */}
         <div 
-          className="absolute font-bold uppercase text-amber-400 border-2 border-amber-400 bg-amber-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          className="absolute font-bold uppercase text-amber-400 border-2 border-amber-400 bg-amber-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-amber-900/30 z-20"
           style={{ 
             left: `${nodePositions.intelligence.x - 45}px`, 
-            top: `${nodePositions.intelligence.y - 65}px`,
+            top: `${nodePositions.intelligence.y - 25}px`,
+            transform: 'translateY(-100%)'
           }}
         >
           INTELLIGENCE
