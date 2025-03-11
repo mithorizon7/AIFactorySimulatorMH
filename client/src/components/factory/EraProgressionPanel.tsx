@@ -3,7 +3,23 @@ import { GameStateType, Era, Breakthrough } from "@/lib/gameState";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { HistoryIcon, MapPinIcon, SparklesIcon, CheckCircleIcon, LockIcon } from "lucide-react";
+import { HistoryIcon, MapPinIcon, SparklesIcon, CheckCircleIcon, LockIcon, InfoIcon } from "lucide-react";
+import { EducationalTooltip } from "@/components/ui/educational-tooltip";
+import { eraEducationalContent } from "@/lib/educationalContent";
+
+// Helper function to map Era enum values to educational content keys
+function getEraContentKey(era: Era): keyof typeof eraEducationalContent {
+  // Map Era.GNT2 (value: "GNT-2") to "GNT2" for eraEducationalContent lookup
+  switch (era) {
+    case Era.GNT2: return "GNT2";
+    case Era.GNT3: return "GNT3";
+    case Era.GNT4: return "GNT4";
+    case Era.GNT5: return "GNT5";
+    case Era.GNT6: return "GNT6";
+    case Era.GNT7: return "GNT7";
+    default: return "GNT2"; // Fallback to first era if somehow we get an invalid value
+  }
+}
 
 interface EraProgressionPanelProps {
   gameState: GameStateType;
@@ -167,7 +183,33 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <SparklesIcon className="h-4 w-4 mr-2 text-amber-400" />
-            <h3 className="text-lg font-medium">Current Era: {currentEra}</h3>
+            <EducationalTooltip 
+              content={
+                <div className="space-y-2">
+                  <p className="font-bold">{eraEducationalContent[getEraContentKey(currentEra)].title}</p>
+                  <p>{eraEducationalContent[getEraContentKey(currentEra)].description}</p>
+                  {(currentEra === Era.GNT2 || currentEra === Era.GNT3 || currentEra === Era.GNT4) && (
+                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                      <span className="font-semibold">Historical context:</span> {
+                        // Type assertion to safely access historical era content
+                        (eraEducationalContent[getEraContentKey(currentEra)] as {realWorldParallel: string}).realWorldParallel
+                      }
+                    </p>
+                  )}
+                  {(currentEra === Era.GNT5 || currentEra === Era.GNT6 || currentEra === Era.GNT7) && (
+                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                      <span className="font-semibold">Possible future:</span> {
+                        // Type assertion to safely access future era content
+                        (eraEducationalContent[getEraContentKey(currentEra)] as {speculativeDevelopments: string}).speculativeDevelopments
+                      }
+                    </p>
+                  )}
+                </div>
+              }
+              icon={<InfoIcon className="h-4 w-4 text-amber-400 ml-1" />}
+            >
+              <h3 className="text-lg font-medium">Current Era: {currentEra}</h3>
+            </EducationalTooltip>
           </div>
           <Badge>{eraContext.year}</Badge>
         </div>
@@ -179,7 +221,32 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
         {/* Progress to next era */}
         <div className="mb-2">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm">Progress to {nextEra}</span>
+            <EducationalTooltip
+              content={
+                <div className="space-y-2">
+                  <p className="font-bold">{eraEducationalContent[getEraContentKey(nextEra)].title}</p>
+                  <p>{eraEducationalContent[getEraContentKey(nextEra)].description}</p>
+                  {(nextEra === Era.GNT3 || nextEra === Era.GNT4) && (
+                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                      <span className="font-semibold">Industry impact:</span> {
+                        // Type assertion to safely access earlier era content
+                        (eraEducationalContent[getEraContentKey(nextEra)] as {industryImpact: string}).industryImpact
+                      }
+                    </p>
+                  )}
+                  {(nextEra === Era.GNT5 || nextEra === Era.GNT6 || nextEra === Era.GNT7) && (
+                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                      <span className="font-semibold">Potential impact:</span> {
+                        // Type assertion to safely access future era content
+                        (eraEducationalContent[getEraContentKey(nextEra)] as {potentialImpact: string}).potentialImpact
+                      }
+                    </p>
+                  )}
+                </div>
+              }
+            >
+              <span className="text-sm">Progress to {nextEra}</span>
+            </EducationalTooltip>
             <span className="text-sm font-medium">{getNextEraProgress()}%</span>
           </div>
           <Progress value={getNextEraProgress()} className="h-2" />
@@ -209,8 +276,22 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
                     <LockIcon className="h-5 w-5 text-gray-500" />
                   )}
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium">{breakthrough.name}</h4>
+                <div className="flex-1">
+                  <EducationalTooltip
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-bold">{breakthrough.name}</p>
+                        <p>{breakthrough.description}</p>
+                        {breakthrough.realWorldParallel && (
+                          <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                            <span className="font-semibold">Real-world parallel:</span> {breakthrough.realWorldParallel}
+                          </p>
+                        )}
+                      </div>
+                    }
+                  >
+                    <h4 className="text-sm font-medium">{breakthrough.name}</h4>
+                  </EducationalTooltip>
                   <div className="flex space-x-2 mt-1">
                     {Object.entries(breakthrough.requiredLevels).map(([resource, level]) => (
                       <Badge 

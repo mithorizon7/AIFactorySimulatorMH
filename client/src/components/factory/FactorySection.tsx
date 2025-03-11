@@ -168,13 +168,24 @@ export default function FactorySection({
             <span>Research Rate:</span>
             <span className="text-[#8B5CF6]">{production.algorithm.toFixed(1)}/s</span>
           </div>
-          <div className="tooltip relative">
+          <div className="relative">
             <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
               <div className="bg-[#8B5CF6] h-full" style={{ width: getAlgorithmBarWidth() }}></div>
             </div>
-            <div className="tooltip-text invisible absolute z-10 w-64 bg-gray-800 text-white text-center p-2 rounded-md bottom-full left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100 group-hover:visible mb-2">
-              Algorithm resources represent better ways to teach your AI. Improved algorithms help the AI learn more efficiently from the same data.
-            </div>
+            <ResourceTooltip 
+              resourceType="algorithm"
+              content={
+                <div className="space-y-2">
+                  <p className="font-bold">{resourceDefinitions.algorithm.title}</p>
+                  <p>{resourceDefinitions.algorithm.description}</p>
+                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.algorithm.realWorldExample}
+                  </p>
+                </div>
+              }
+            >
+              <span className="absolute -top-5 right-0 text-xs text-purple-400 cursor-help">Learn more</span>
+            </ResourceTooltip>
           </div>
         </div>
         
