@@ -54,12 +54,12 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       const { width, height } = containerRef.current.getBoundingClientRect();
       setContainerSize({ width, height });
       
-      // Update node positions based on container size - adjusted for smaller height
+      // Update node positions based on container size - adjusted for taller container
       setNodePositions({
-        compute: { x: width * 0.2, y: height * 0.35 },
-        data: { x: width * 0.8, y: height * 0.35 },
-        algorithm: { x: width * 0.5, y: height * 0.65 },
-        intelligence: { x: width * 0.5, y: height * 0.25 },
+        compute: { x: width * 0.2, y: height * 0.3 },
+        data: { x: width * 0.8, y: height * 0.3 },
+        algorithm: { x: width * 0.5, y: height * 0.5 },
+        intelligence: { x: width * 0.5, y: height * 0.15 },
       });
     };
     
@@ -147,7 +147,9 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   // Helper function to draw a curved path between two points
   const getCurvedPath = (start: NodePosition, end: NodePosition): string => {
     const controlPointX = (start.x + end.x) / 2;
-    const controlPointY = (start.y + end.y) / 2 - 30;
+    // Adjust the curve height based on the points' vertical positions
+    const heightFactor = Math.abs(start.y - end.y) > 80 ? 50 : 30;
+    const controlPointY = (start.y + end.y) / 2 - heightFactor;
     return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
   };
   
@@ -218,9 +220,17 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     // Calculate line thickness based on importance
     const strokeWidth = getFlowImportance(getBonusValue());
     
-    // Calculate midpoint for placing the label
+    // Calculate midpoint for placing the label, with better positioning for the taller container
     const midX = (start.x + end.x) / 2;
-    const midY = (start.y + end.y) / 2 - 15; // Adjust vertical position to avoid overlap
+    // Adjust label position based on the connection type
+    let verticalOffset = 15;
+    
+    // For connections to Intelligence, place labels higher
+    if (endNode === 'intelligence' || startNode === 'intelligence') {
+      verticalOffset = 25;
+    }
+    
+    const midY = (start.y + end.y) / 2 - verticalOffset;
     
     // Get label for this relationship
     const relationshipLabel = getRelationshipLabel(startNode, endNode);
@@ -553,7 +563,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-blue-500 bg-blue-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-blue-900/30 z-20"
           style={{ 
             left: `${nodePositions.compute.x - 25}px`, 
-            top: `${nodePositions.compute.y - 28}px`,
+            top: `${nodePositions.compute.y - 35}px`,
           }}
         >
           Compute
@@ -564,7 +574,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-green-500 bg-green-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-green-900/30 z-20"
           style={{ 
             left: `${nodePositions.data.x - 17}px`, 
-            top: `${nodePositions.data.y - 28}px`,
+            top: `${nodePositions.data.y - 35}px`,
           }}
         >
           Data
@@ -598,7 +608,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full h-64 bg-gray-800 rounded-lg p-4 overflow-hidden border border-gray-700 shadow-lg"
+      className="relative w-full h-96 bg-gray-800 rounded-lg p-6 overflow-hidden border border-gray-700 shadow-lg"
     >
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-semibold">Resource Interactions</h2>
@@ -695,8 +705,8 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
         />
       </svg>
       
-      <div className="absolute bottom-4 left-4 right-4">
-        <div className="text-xs text-gray-400 mb-1">Resource synergy effects:</div>
+      <div className="absolute bottom-6 left-6 right-6">
+        <div className="text-sm text-gray-300 mb-2">Resource synergy effects:</div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
           {/* Compute Effects Group */}
