@@ -14,7 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 interface GameHeaderProps {
   gameState: GameStateType;
   isRunning: boolean;
-  timeLeft: number;
+  timeElapsed: number;
   formattedTime: string;
   startGame: () => void;
   pauseGame: () => void;
@@ -24,7 +24,7 @@ interface GameHeaderProps {
 export default function GameHeader({
   gameState,
   isRunning,
-  timeLeft,
+  timeElapsed,
   formattedTime,
   startGame,
   pauseGame,
@@ -73,7 +73,7 @@ export default function GameHeader({
             <div className="bg-gray-800 px-4 py-2 rounded-lg border border-blue-900/30">
               <div className="flex items-center gap-1 text-sm text-gray-300">
                 <Clock className="h-4 w-4 text-blue-400" />
-                Time Left
+                Time Elapsed
               </div>
               <div className="text-xl font-bold text-blue-400">
                 {formattedTime}
@@ -89,7 +89,7 @@ export default function GameHeader({
                 onClick={startGame}
               >
                 <PlayCircle className="h-5 w-5" />
-                {timeLeft < 1200 ? "Resume" : "Start Game"}
+                {timeElapsed > 0 ? "Resume" : "Start Game"}
               </Button>
             ) : (
               <Button 

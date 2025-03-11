@@ -42,7 +42,7 @@ export default function AIFactory() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures,
-    timeLeft,
+    timeElapsed,
     formattedTime,
   } = useGameEngine();
 
@@ -55,10 +55,10 @@ export default function AIFactory() {
 
   // Show introduction when game first starts or is reset
   useEffect(() => {
-    if (timeLeft === 1200 && !isRunning) {
+    if (timeElapsed === 0 && !isRunning) {
       setShowIntroduction(true);
     }
-  }, [timeLeft, isRunning]);
+  }, [timeElapsed, isRunning]);
 
   // Save game state periodically
   useEffect(() => {
@@ -83,13 +83,13 @@ export default function AIFactory() {
     }
   }, [gameState.breakthroughs]);
 
-  // End game when time is up
+  // End game when AGI threshold is reached
   useEffect(() => {
-    if (timeLeft <= 0 && isRunning) {
+    if (gameState.intelligence >= gameState.agiThreshold && isRunning) {
       pauseGame();
       setShowSummaryModal(true);
     }
-  }, [timeLeft, isRunning]);
+  }, [gameState.intelligence, isRunning, gameState.agiThreshold]);
 
   async function saveGameState() {
     try {
@@ -97,7 +97,7 @@ export default function AIFactory() {
         userId: null,
         intelligence: gameState.intelligence,
         money: gameState.money,
-        timeRemaining: timeLeft,
+        timeElapsed: timeElapsed,
         resourceCompute: Math.floor(gameState.resources.compute),
         resourceData: Math.floor(gameState.resources.data),
         resourceAlgorithm: Math.floor(gameState.resources.algorithm),
@@ -150,7 +150,7 @@ export default function AIFactory() {
         <GameHeader 
           gameState={gameState}
           isRunning={isRunning}
-          timeLeft={timeLeft}
+          timeElapsed={timeElapsed}
           formattedTime={formattedTime}
           startGame={startGame}
           pauseGame={pauseGame}
