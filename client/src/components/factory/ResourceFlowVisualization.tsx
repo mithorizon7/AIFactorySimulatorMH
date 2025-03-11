@@ -542,6 +542,57 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     );
   };
   
+  // Generate persistent node labels
+  const renderNodeLabels = () => {
+    return (
+      <>
+        {/* Compute Label */}
+        <div 
+          className="absolute font-bold uppercase text-blue-500 border-2 border-blue-500 bg-blue-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          style={{ 
+            left: `${nodePositions.compute.x - 25}px`, 
+            top: `${nodePositions.compute.y - 60}px`,
+          }}
+        >
+          COMPUTE
+        </div>
+        
+        {/* Data Label */}
+        <div 
+          className="absolute font-bold uppercase text-green-500 border-2 border-green-500 bg-green-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          style={{ 
+            left: `${nodePositions.data.x - 15}px`, 
+            top: `${nodePositions.data.y - 60}px`,
+          }}
+        >
+          DATA
+        </div>
+        
+        {/* Algorithm Label */}
+        <div 
+          className="absolute font-bold uppercase text-purple-500 border-2 border-purple-500 bg-purple-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          style={{ 
+            left: `${nodePositions.algorithm.x - 35}px`, 
+            top: `${nodePositions.algorithm.y + 40}px`,
+          }}
+        >
+          ALGORITHM
+        </div>
+        
+        {/* Intelligence Label */}
+        <div 
+          className="absolute font-bold uppercase text-amber-400 border-2 border-amber-400 bg-amber-900/30 px-2 py-1 rounded-full text-xs tracking-wider"
+          style={{ 
+            left: `${nodePositions.intelligence.x - 45}px`, 
+            top: `${nodePositions.intelligence.y - 65}px`,
+          }}
+        >
+          INTELLIGENCE
+        </div>
+      </>
+    );
+  };
+
   return (
     <div 
       ref={containerRef} 
@@ -558,6 +609,9 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           </div>
         </div>
       </div>
+      
+      {/* Fixed Resource Labels */}
+      {renderNodeLabels()}
       
       <svg width="100%" height="100%" className="absolute top-0 left-0 pt-12">
         {/* Flow connections */}
