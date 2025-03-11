@@ -121,9 +121,6 @@ export default function MainGameTabs({
             </div>
           </div>
           
-          {/* Resource Flow Visualization */}
-          <ResourceFlowVisualization gameState={gameState} />
-          
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AIDashboard 
@@ -134,6 +131,15 @@ export default function MainGameTabs({
             />
             
             <SynergyDashboard gameState={gameState} />
+          </div>
+          
+          {/* Resource Flow Visualization - Moved to bottom */}
+          <div className="mt-6">
+            <h3 className="text-lg font-medium mb-2 flex items-center">
+              <Zap className="h-4 w-4 mr-2 text-amber-400" />
+              Resource Flow Visualization
+            </h3>
+            <ResourceFlowVisualization gameState={gameState} />
           </div>
         </div>
       </TabsContent>
