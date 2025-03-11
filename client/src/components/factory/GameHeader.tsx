@@ -54,7 +54,7 @@ export default function GameHeader({
                 Intelligence
               </div>
               <div className="text-xl font-bold text-amber-400">
-                {gameState.intelligence.toFixed(0)} / {gameState.agiThreshold}
+                {gameState.intelligence.toFixed(2)} / {gameState.agiThreshold}
               </div>
             </div>
             

@@ -31,7 +31,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
             
             <div className="flex items-center justify-center mb-4">
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">{gameState.intelligence.toFixed(0)}</div>
+                <div className="text-4xl font-bold text-white mb-2">{gameState.intelligence.toFixed(2)}</div>
                 <div className="text-sm text-gray-300">Intelligence Score</div>
               </div>
             </div>

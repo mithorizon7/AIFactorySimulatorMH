@@ -54,7 +54,7 @@ export default function AIDashboard({
       {/* AI Intelligence Score */}
       <div className="bg-gray-700 rounded-lg p-4 mb-5 text-center">
         <h3 className="text-lg font-medium mb-2">AI Intelligence</h3>
-        <div className="text-4xl font-bold text-white mb-2">{intelligence}</div>
+        <div className="text-4xl font-bold text-white mb-2">{intelligence.toFixed(2)}</div>
         <div className="flex flex-col items-center">
           <div className="px-3 py-1 bg-gray-600 rounded-full text-sm mb-2">{getAIStatus()}</div>
           

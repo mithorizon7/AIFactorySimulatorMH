@@ -116,8 +116,15 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   
   const nextEraRequirements = getNextEraRequirements();
   
+  // Define type for era context
+  interface EraContext {
+    phase: string;
+    description: string;
+    size: string;
+  }
+  
   // Get historical context for current era
-  const getEraContext = () => {
+  const getEraContext = (): EraContext => {
     switch (currentEra) {
       case Era.GNT2:
         return {
@@ -211,7 +218,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
               <h3 className="text-lg font-medium">Current Era: {currentEra}</h3>
             </EducationalTooltip>
           </div>
-          <Badge>{eraContext.year}</Badge>
+          <Badge>{eraContext.phase}</Badge>
         </div>
         <p className="text-sm text-gray-300 mb-3">{eraContext.description}</p>
         <div className="flex items-center text-xs text-gray-400 mb-4">
@@ -337,7 +344,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
                   className="h-1.5 w-20 bg-gray-600 [&>div]:bg-amber-400" 
                 />
                 <span className="text-xs ml-2">
-                  {intelligence}/{nextEraRequirements.intelligence}
+                  {intelligence.toFixed(2)}/{nextEraRequirements.intelligence}
                 </span>
               </div>
             </div>
