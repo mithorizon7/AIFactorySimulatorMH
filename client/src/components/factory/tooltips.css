@@ -1,0 +1,80 @@
+/* Tooltip Styles */
+.tooltip-trigger {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-trigger .tooltip {
+  visibility: hidden;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(30, 30, 36, 0.95);
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  border-radius: 6px;
+  width: 250px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  border: 1px solid rgba(90, 90, 100, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+.tooltip-trigger:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Add an arrow */
+.tooltip-trigger .tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(30, 30, 36, 0.95) transparent transparent transparent;
+}
+
+/* Position the tooltip differently based on screen position */
+.tooltip-trigger .tooltip.tooltip-left {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
+}
+
+.tooltip-trigger .tooltip.tooltip-right {
+  left: 0;
+  transform: translateX(0);
+}
+
+/* Style for strong text inside tooltips */
+.tooltip strong {
+  color: #38bdf8;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+
+/* Style for emphasized text inside tooltips */
+.tooltip em {
+  color: #94a3b8;
+  font-style: italic;
+  display: block;
+  margin-top: 4px;
+  font-size: 0.7rem;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Cursor style for elements with tooltips */
+.cursor-help {
+  cursor: help;
+}
