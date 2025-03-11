@@ -3,6 +3,7 @@
   offset-distance: 0%;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
 }
 
 @keyframes flowParticle {
@@ -27,6 +28,59 @@
 }
 
 .resource-node:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   filter: brightness(1.2);
+}
+
+/* Animation for intelligence node's pulsing outer ring */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse-ring 3s ease-out infinite;
+}
+
+/* Animation for resource flow labels */
+@keyframes flow-label-fade {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.flow-label {
+  animation: flow-label-fade 4s ease-in-out infinite;
+}
+
+/* Resource progress animation */
+@keyframes progress-fill {
+  0% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+}
+
+.progress-ring {
+  animation: progress-fill 3s ease-in-out infinite;
 }

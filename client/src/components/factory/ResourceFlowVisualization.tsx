@@ -157,6 +157,33 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     return { x: point.x, y: point.y };
   };
   
+  // Helper function to get relationship explanation
+  const getRelationshipLabel = (sourceType: string, targetType: string): string => {
+    if (targetType === 'intelligence') {
+      return `Improves ${sourceType === 'compute' ? 'model scale' : 
+              sourceType === 'data' ? 'model knowledge' : 'model capabilities'}`;
+    }
+    
+    if (sourceType === 'compute' && targetType === 'data') {
+      return 'Accelerates data processing';
+    }
+    
+    if (sourceType === 'data' && targetType === 'algorithm') {
+      return 'Enables model improvements';
+    }
+    
+    if (sourceType === 'algorithm' && targetType === 'compute') {
+      return 'Optimizes compute efficiency';
+    }
+    
+    return '';
+  };
+  
+  // Get importance based on bonus value
+  const getFlowImportance = (bonusValue: number): number => {
+    return Math.min(Math.max(bonusValue * 3, 0.5), 3); // Scale between 0.5 and 3
+  };
+  
   // Render a flow line with animated particles
   const renderFlowLine = (
     id: string, 
@@ -172,25 +199,79 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     const pathId = `path-${id}`;
     const path = getCurvedPath(start, end);
     
+    // Get bonus value for this relationship
+    const getBonusValue = () => {
+      if (startNode === 'compute') {
+        if (endNode === 'data') return gameState.bonuses.computeToData;
+        if (endNode === 'intelligence') return gameState.bonuses.computeToIntelligence;
+      } else if (startNode === 'data') {
+        if (endNode === 'algorithm') return gameState.bonuses.dataToAlgorithm;
+        if (endNode === 'intelligence') return gameState.bonuses.dataToIntelligence;
+      } else if (startNode === 'algorithm') {
+        if (endNode === 'compute') return gameState.bonuses.algorithmToCompute;
+        if (endNode === 'intelligence') return gameState.bonuses.algorithmToIntelligence;
+      }
+      return 0;
+    };
+    
+    // Calculate line thickness based on importance
+    const strokeWidth = getFlowImportance(getBonusValue());
+    
+    // Calculate midpoint for placing the label
+    const midX = (start.x + end.x) / 2;
+    const midY = (start.y + end.y) / 2 - 15; // Adjust vertical position to avoid overlap
+    
+    // Get label for this relationship
+    const relationshipLabel = getRelationshipLabel(startNode, endNode);
+    
+    // Number of particles scales with flow importance
+    const particleCount = Math.max(2, Math.floor(getBonusValue() * 5));
+    
     return (
       <g key={id}>
         <path
           id={pathId}
           d={path}
           stroke={`${color}30`}
-          strokeWidth={3}
+          strokeWidth={strokeWidth}
           fill="none"
         />
         
+        {/* Flow label */}
+        <g transform={`translate(${midX}, ${midY})`} className="flow-label">
+          <rect
+            x={-60}
+            y={-12}
+            width={120}
+            height={16}
+            rx={4}
+            fill={`${color}20`}
+            stroke={`${color}40`}
+            strokeWidth={1}
+          />
+          <text
+            x={0}
+            y={0}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={color}
+            className="text-[8px]"
+          >
+            {relationshipLabel}
+          </text>
+        </g>
+        
         {/* Animated particles */}
-        {[0.1, 0.3, 0.5, 0.7, 0.9].map((offset, i) => {
+        {Array.from({ length: particleCount }, (_, i) => {
+          const offset = i / particleCount;
           const particlePos = (flow.progress + offset) % 1;
+          const particleSize = 2 + getBonusValue(); // Larger particles for important flows
           
           return (
             <circle
               key={`particle-${id}-${i}`}
               className="flow-particle"
-              r={3}
+              r={particleSize}
               fill={color}
               opacity={0.7}
               // Use Framer Motion for smooth animation
@@ -218,17 +299,45 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     iconPath: string
   }) => {
     const isIntelligence = type === 'intelligence';
-    const nodeSize = isIntelligence ? 50 : 40;
+    // Make intelligence node clearly larger
+    const nodeSize = isIntelligence ? 70 : 50;
     
-    // Educational content for tooltips
+    // Get resource values for display
+    const getResourceValue = () => {
+      if (isIntelligence) {
+        return Math.floor(gameState.intelligence);
+      }
+      return Math.floor(gameState.resources[type]);
+    };
+    
+    // Get production rate for display
+    const getProductionRate = () => {
+      if (isIntelligence) {
+        // Calculate intelligence growth from all sources
+        const totalGrowth = 
+          gameState.bonuses.computeToIntelligence + 
+          gameState.bonuses.dataToIntelligence + 
+          gameState.bonuses.algorithmToIntelligence;
+        return `+${(totalGrowth * 10).toFixed(1)}/min`;
+      }
+      return `+${gameState.production[type].toFixed(1)}/min`;
+    };
+    
+    // Educational content for tooltips with more focused explanation
     const getTooltipContent = () => {
       if (type === 'intelligence') {
         return (
           <div className="space-y-2">
-            <p className="font-bold">Intelligence Score</p>
-            <p>The culmination of your Compute, Data, and Algorithm investments. This represents the AI's overall capabilities.</p>
+            <p className="font-bold">Intelligence Score: {Math.floor(gameState.intelligence)}</p>
+            <p>The culmination of your Compute, Data, and Algorithm investments. This is your main goal metric.</p>
+            <p className="mt-1">
+              <span className="font-semibold">Current Growth:</span> {getProductionRate()}
+            </p>
             <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
               <span className="font-semibold">Real-world parallel:</span> The performance metrics used to evaluate AI systems like accuracy, reasoning ability, and general capabilities.
+            </p>
+            <p className="text-xs mt-1 text-amber-400">
+              <span className="font-semibold">Goal:</span> Reach {gameState.agiThreshold} to achieve AGI
             </p>
           </div>
         );
@@ -236,13 +345,32 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       
       return (
         <div className="space-y-2">
-          <p className="font-bold">{resourceDefinitions[type].title}</p>
+          <p className="font-bold">{resourceDefinitions[type].title}: {getResourceValue()}</p>
           <p>{resourceDefinitions[type].description}</p>
+          <p className="mt-1">
+            <span className="font-semibold">Production:</span> {getProductionRate()}
+          </p>
           <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
             <span className="font-semibold">Real-world example:</span> {resourceDefinitions[type].realWorldExample}
           </p>
         </div>
       );
+    };
+    
+    // Get level-based stroke width to indicate importance
+    const getStrokeWidth = () => {
+      if (isIntelligence) return 3;
+      return 1 + (gameState.levels[type] * 0.3); // Scale stroke width with level importance
+    };
+    
+    // Determine node fill based on progress and type
+    const getNodeFill = () => {
+      if (isIntelligence) {
+        // Calculate progress to AGI
+        const progress = gameState.intelligence / gameState.agiThreshold;
+        return `url(#intelligenceGradient-${Math.min(Math.floor(progress * 5), 4)})`;
+      }
+      return `${color}20`;
     };
     
     return (
@@ -253,32 +381,87 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
             content={getTooltipContent()}
           >
             <g className="cursor-pointer">
+              {/* Intelligence node has a gradient fill to show progress */}
+              <defs>
+                {[0, 1, 2, 3, 4].map(level => (
+                  <radialGradient
+                    key={`intelligenceGradient-${level}`}
+                    id={`intelligenceGradient-${level}`}
+                    cx="50%"
+                    cy="50%"
+                    r="50%"
+                    fx="50%"
+                    fy="50%"
+                  >
+                    <stop offset="0%" stopColor="#FFC107" stopOpacity={(level + 1) * 0.15} />
+                    <stop offset="70%" stopColor="#FFC107" stopOpacity={(level + 1) * 0.1} />
+                    <stop offset="100%" stopColor="#FFC107" stopOpacity={(level + 1) * 0.05} />
+                  </radialGradient>
+                ))}
+              </defs>
+              
+              {/* Pulsing outer ring to draw attention */}
+              <circle 
+                cx={nodeSize/2} 
+                cy={nodeSize/2} 
+                r={nodeSize/2 + 5}
+                fill="none"
+                stroke="#FFC10740"
+                strokeWidth={1}
+                className="animate-pulse"
+              />
+              
               <circle 
                 cx={nodeSize/2} 
                 cy={nodeSize/2} 
                 r={nodeSize/2} 
-                fill="#FFC107" 
-                fillOpacity={0.2}
+                fill={getNodeFill()}
+                stroke="#FFC107"
+                strokeWidth={getStrokeWidth()}
+              />
+              
+              {/* AGI progress circle */}
+              <circle
+                cx={nodeSize/2}
+                cy={nodeSize/2}
+                r={nodeSize/2 - 5}
+                fill="none"
                 stroke="#FFC107"
                 strokeWidth={2}
+                strokeDasharray={`${(gameState.intelligence / gameState.agiThreshold) * (2 * Math.PI * (nodeSize/2 - 5))} ${2 * Math.PI * (nodeSize/2 - 5)}`}
+                strokeDashoffset="0"
+                transform={`rotate(-90 ${nodeSize/2} ${nodeSize/2})`}
+                className="progress-ring"
               />
+              
               <text 
                 x={nodeSize/2} 
-                y={nodeSize/2} 
+                y={nodeSize/2 - 5} 
                 textAnchor="middle" 
                 dominantBaseline="middle"
-                className="text-xs font-bold text-amber-400"
+                className="text-base font-bold text-amber-400"
               >
                 {Math.floor(gameState.intelligence)}
               </text>
+              
               <text 
                 x={nodeSize/2} 
-                y={nodeSize/2 + 16} 
+                y={nodeSize/2 + 13} 
                 textAnchor="middle" 
                 dominantBaseline="middle"
                 className="text-[9px] text-amber-200"
               >
                 Intelligence
+              </text>
+              
+              <text 
+                x={nodeSize/2} 
+                y={nodeSize/2 + 25} 
+                textAnchor="middle" 
+                dominantBaseline="middle"
+                className="text-[8px] text-amber-400/80"
+              >
+                {getProductionRate()}
               </text>
             </g>
           </ResourceTooltip>
@@ -287,31 +470,70 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
             resourceType={type}
             content={getTooltipContent()}
           >
-            <g className="cursor-pointer">
+            <g className="cursor-pointer resource-node">
               <circle 
                 cx={nodeSize/2} 
                 cy={nodeSize/2} 
                 r={nodeSize/2} 
-                fill={`${color}20`}
+                fill={getNodeFill()}
                 stroke={color}
-                strokeWidth={2}
+                strokeWidth={getStrokeWidth()}
               />
+              
+              {/* Resource level indicator */}
+              <circle
+                cx={nodeSize/2}
+                cy={nodeSize/2}
+                r={nodeSize/2 - 4}
+                fill="none"
+                stroke={color}
+                strokeWidth={1.5}
+                strokeDasharray={`${(gameState.levels[type] / 10) * (2 * Math.PI * (nodeSize/2 - 4))} ${2 * Math.PI * (nodeSize/2 - 4)}`}
+                strokeDashoffset="0"
+                transform={`rotate(-90 ${nodeSize/2} ${nodeSize/2})`}
+                strokeLinecap="round"
+                className="progress-ring"
+              />
+              
               <path 
                 d={iconPath} 
                 fill="none" 
                 stroke={color} 
                 strokeWidth="1.5"
-                transform={`translate(${nodeSize/2 - 10}, ${nodeSize/2 - 10}) scale(0.8)`}
+                transform={`translate(${nodeSize/2 - 12}, ${nodeSize/2 - 22}) scale(1)`}
               />
+              
               <text 
                 x={nodeSize/2} 
-                y={nodeSize/2 + 16} 
+                y={nodeSize/2 + 3} 
+                textAnchor="middle" 
+                dominantBaseline="middle"
+                className="text-sm font-medium"
+                fill={color}
+              >
+                {getResourceValue()}
+              </text>
+              
+              <text 
+                x={nodeSize/2} 
+                y={nodeSize/2 + 18} 
                 textAnchor="middle" 
                 dominantBaseline="middle"
                 className="text-[9px]"
                 fill={color}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
+              </text>
+              
+              <text 
+                x={nodeSize/2} 
+                y={nodeSize/2 + 28} 
+                textAnchor="middle" 
+                dominantBaseline="middle"
+                className="text-[8px] opacity-80"
+                fill={color}
+              >
+                {getProductionRate()}
               </text>
             </g>
           </ResourceTooltip>
@@ -325,9 +547,19 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       ref={containerRef} 
       className="relative w-full h-80 bg-gray-800 rounded-lg p-4 overflow-hidden"
     >
-      <h2 className="text-xl font-semibold mb-6">Resource Flow Visualization</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-xl font-semibold">Resource Flow Visualization</h2>
+        
+        {/* Help tooltip */}
+        <div className="bg-gray-700 p-2 rounded text-xs text-gray-300 max-w-xs">
+          <span className="font-semibold text-amber-400">Goal:</span> Reach {gameState.agiThreshold} Intelligence to achieve AGI
+          <div className="mt-1 text-[10px] border-t border-gray-600 pt-1">
+            Resources flow between systems and intelligence. Stronger connections improve production rates.
+          </div>
+        </div>
+      </div>
       
-      <svg width="100%" height="100%" className="absolute top-0 left-0">
+      <svg width="100%" height="100%" className="absolute top-0 left-0 pt-12">
         {/* Flow connections */}
         {renderFlowLine(
           'compute-to-data', 
