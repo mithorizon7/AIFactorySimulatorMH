@@ -1,4 +1,6 @@
 import { GameStateType } from "@/lib/gameState";
+import { ResourceTooltip } from "@/components/ui/educational-tooltip";
+import { resourceDefinitions } from "@/lib/educationalContent";
 
 interface FactorySectionProps {
   gameState: GameStateType;
@@ -48,13 +50,24 @@ export default function FactorySection({
             <span>Production Rate:</span>
             <span className="text-[#3B82F6]">{production.compute.toFixed(1)}/s</span>
           </div>
-          <div className="tooltip relative">
+          <div className="relative">
             <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
               <div className="bg-[#3B82F6] h-full" style={{ width: getComputeBarWidth() }}></div>
             </div>
-            <div className="tooltip-text invisible absolute z-10 w-64 bg-gray-800 text-white text-center p-2 rounded-md bottom-full left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100 group-hover:visible mb-2">
-              Compute resources represent the processing power available to your AI. More compute means faster training and more complex capabilities.
-            </div>
+            <ResourceTooltip 
+              resourceType="compute"
+              content={
+                <div className="space-y-2">
+                  <p className="font-bold">{resourceDefinitions.compute.title}</p>
+                  <p>{resourceDefinitions.compute.description}</p>
+                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.compute.realWorldExample}
+                  </p>
+                </div>
+              }
+            >
+              <span className="absolute -top-5 right-0 text-xs text-blue-400 cursor-help">Learn more</span>
+            </ResourceTooltip>
           </div>
         </div>
         
@@ -96,13 +109,24 @@ export default function FactorySection({
             <span>Collection Rate:</span>
             <span className="text-[#10B981]">{production.data.toFixed(1)}/s</span>
           </div>
-          <div className="tooltip relative">
+          <div className="relative">
             <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
               <div className="bg-[#10B981] h-full" style={{ width: getDataBarWidth() }}></div>
             </div>
-            <div className="tooltip-text invisible absolute z-10 w-64 bg-gray-800 text-white text-center p-2 rounded-md bottom-full left-1/2 transform -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100 group-hover:visible mb-2">
-              Data resources represent examples your AI learns from. Better data means better understanding and more accurate outputs.
-            </div>
+            <ResourceTooltip 
+              resourceType="data"
+              content={
+                <div className="space-y-2">
+                  <p className="font-bold">{resourceDefinitions.data.title}</p>
+                  <p>{resourceDefinitions.data.description}</p>
+                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.data.realWorldExample}
+                  </p>
+                </div>
+              }
+            >
+              <span className="absolute -top-5 right-0 text-xs text-green-400 cursor-help">Learn more</span>
+            </ResourceTooltip>
           </div>
         </div>
         
