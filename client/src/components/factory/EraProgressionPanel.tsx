@@ -206,7 +206,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
                   )}
                 </div>
               }
-              icon={<InfoIcon className="h-4 w-4 text-amber-400 ml-1" />}
+              resourceColor="amber-400"
             >
               <h3 className="text-lg font-medium">Current Era: {currentEra}</h3>
             </EducationalTooltip>
@@ -244,6 +244,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
                   )}
                 </div>
               }
+              resourceColor="blue-400"
             >
               <span className="text-sm">Progress to {nextEra}</span>
             </EducationalTooltip>
@@ -289,6 +290,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
                         )}
                       </div>
                     }
+                    resourceColor="green-400"
                   >
                     <h4 className="text-sm font-medium">{breakthrough.name}</h4>
                   </EducationalTooltip>

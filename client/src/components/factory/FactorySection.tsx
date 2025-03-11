@@ -36,12 +36,25 @@ export default function FactorySection({
       {/* Compute Factory */}
       <div className="resource-card bg-gray-700 rounded-lg p-4 mb-4 border-l-4 border-[#3B82F6]">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-medium flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#3B82F6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Compute Factory
-          </h3>
+          <ResourceTooltip 
+            resourceType="compute"
+            content={
+              <div className="space-y-2">
+                <p className="font-bold">{resourceDefinitions.compute.title}</p>
+                <p>{resourceDefinitions.compute.description}</p>
+                <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                  <span className="font-semibold">Real-world example:</span> {resourceDefinitions.compute.realWorldExample}
+                </p>
+              </div>
+            }
+          >
+            <h3 className="text-lg font-medium flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#3B82F6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Compute Factory
+            </h3>
+          </ResourceTooltip>
           <span className="text-[#3B82F6] font-bold">{Math.floor(resources.compute)}</span>
         </div>
         
@@ -54,20 +67,6 @@ export default function FactorySection({
             <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
               <div className="bg-[#3B82F6] h-full" style={{ width: getComputeBarWidth() }}></div>
             </div>
-            <ResourceTooltip 
-              resourceType="compute"
-              content={
-                <div className="space-y-2">
-                  <p className="font-bold">{resourceDefinitions.compute.title}</p>
-                  <p>{resourceDefinitions.compute.description}</p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.compute.realWorldExample}
-                  </p>
-                </div>
-              }
-            >
-              <span className="absolute -top-5 right-0 text-xs text-blue-400 cursor-help">Learn more</span>
-            </ResourceTooltip>
           </div>
         </div>
         
