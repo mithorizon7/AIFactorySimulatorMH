@@ -74,40 +74,40 @@ export const enablingInputs = {
 // Era Information
 export const eraEducationalContent = {
   GNT2: {
-    title: "GNT-2 Era (2019)",
+    title: "GNT-2 Era",
     description: "The GNT-2 era represented the early application of transformer models at moderate scale. These models could generate coherent text and demonstrated basic language understanding, though with frequent factual errors and limited context length.",
-    realWorldParallel: "GPT-2 was released by OpenAI in 2019 with 1.5 billion parameters. Initially, OpenAI was concerned about potential misuse and released it in stages.",
+    realWorldParallel: "The real-world parallel had 1.5 billion parameters. Initially, researchers were concerned about potential misuse and released it in stages.",
     technicalSignificance: "GNT-2 proved that scaling transformer models beyond previous sizes could produce qualitatively different capabilities in text generation.",
     industryImpact: "This era began to show the commercial potential of generative AI, though practical applications were still limited."
   },
   GNT3: {
-    title: "GNT-3 Era (2020-2021)",
+    title: "GNT-3 Era",
     description: "The GNT-3 era demonstrated that massive scaling of parameters and training data could produce emergent capabilities not present in smaller models, including few-shot learning and better world knowledge.",
-    realWorldParallel: "GPT-3 was released with 175 billion parameters, more than 100x larger than GPT-2, and showed surprising abilities to perform tasks it wasn't explicitly trained on.",
+    realWorldParallel: "The real-world parallel was released with 175 billion parameters, more than 100x larger than previous models, and showed surprising abilities to perform tasks it wasn't explicitly trained on.",
     technicalSignificance: "This era established the 'scaling laws' that showed predictable improvements from larger models and datasets.",
     industryImpact: "API access to GPT-3 led to thousands of applications and startups building on large language model technology."
   },
   GNT4: {
-    title: "GNT-4 Era (2022-2023)",
+    title: "GNT-4 Era",
     description: "The GNT-4 era focused on alignment, safety, and multimodal capabilities. Models became more helpful, harmless, and honest through techniques like RLHF (Reinforcement Learning from Human Feedback).",
-    realWorldParallel: "ChatGPT and GPT-4 transformed the industry by making advanced AI accessible to everyday users through conversational interfaces and multimodal capabilities.",
+    realWorldParallel: "The real-world parallel transformed the industry by making advanced AI accessible to everyday users through conversational interfaces and multimodal capabilities.",
     technicalSignificance: "This era showed that alignment techniques could dramatically improve usefulness while reducing harmful outputs.",
-    industryImpact: "The release of ChatGPT triggered unprecedented adoption and investment in AI, with major implications across industries."
+    industryImpact: "The release triggered unprecedented adoption and investment in AI, with major implications across industries."
   },
   GNT5: {
-    title: "GNT-5 Era (Near Future)",
+    title: "GNT-5 Era",
     description: "The GNT-5 era is expected to bring enhanced reasoning, improved factuality, and more sophisticated planning abilities.",
     speculativeDevelopments: "Models may develop more reliable reasoning, better long-context understanding, and improved ability to use external tools and knowledge sources.",
     potentialImpact: "These abilities could make AI assistants truly reliable for complex knowledge work and creative collaboration."
   },
   GNT6: {
-    title: "GNT-6 Era (Future)",
+    title: "GNT-6 Era",
     description: "The GNT-6 era might introduce systems with sophisticated autonomous capabilities, true multi-step reasoning, and general problem-solving across domains.",
     speculativeDevelopments: "Models might develop persistent memory, causal understanding, and the ability to operate effectively without constant human oversight.",
     potentialImpact: "These systems could potentially automate complex workflows across industries and advance scientific research."
   },
   GNT7: {
-    title: "GNT-7 Era (AGI Threshold)",
+    title: "GNT-7 Era",
     description: "The GNT-7 era represents the theoretical threshold of Artificial General Intelligence - systems that match or exceed human capabilities across virtually all cognitive tasks.",
     speculativeDevelopments: "True AGI would require robust common sense, causal reasoning, transfer learning, and potentially self-improvement capabilities.",
     potentialImpact: "The achievement of AGI would represent a fundamental transformation in human civilization with profound and unpredictable implications."

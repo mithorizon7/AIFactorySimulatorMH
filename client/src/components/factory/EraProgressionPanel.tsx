@@ -121,43 +121,43 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
     switch (currentEra) {
       case Era.GNT2:
         return {
-          year: "2019",
+          phase: "Early Phase",
           description: "The GNT-2 era represented early transformer models with basic language capabilities. Early Generative Neural Transformers were notable for being able to generate coherent text from prompts.",
           size: "1.5 billion parameters"
         };
       case Era.GNT3:
         return {
-          year: "2020",
+          phase: "Mid Phase I",
           description: "GNT-3 showed massive scaling with 175B parameters and demonstrated few-shot learning capabilities - the ability to learn new tasks with minimal examples.",
           size: "175 billion parameters"
         };
       case Era.GNT4:
         return {
-          year: "2023",
+          phase: "Mid Phase II",
           description: "GNT-4 introduced multimodal capabilities and significantly improved reasoning, enabling complex problem-solving and better alignment with human instructions.",
           size: "Trillions of parameters"
         };
       case Era.GNT5:
         return {
-          year: "Near future",
+          phase: "Late Phase I",
           description: "A hypothetical future model with enhanced reasoning and problem-solving capabilities, approaching human-level performance on many tasks.",
           size: "Unknown"
         };
       case Era.GNT6:
         return {
-          year: "Future",
+          phase: "Late Phase II",
           description: "A speculative future model with advanced tool use and possibly approaching aspects of general intelligence.",
           size: "Unknown"
         };
       case Era.GNT7:
         return {
-          year: "Future",
+          phase: "Final Phase",
           description: "A theoretical model at the threshold of Artificial General Intelligence.",
           size: "Unknown"
         };
       default:
         return {
-          year: "Unknown",
+          phase: "Unknown",
           description: "Unknown era",
           size: "Unknown"
         };

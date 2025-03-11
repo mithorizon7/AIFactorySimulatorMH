@@ -263,42 +263,42 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
                 <div className="space-y-3">
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-2' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-2' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-2 Era (~2019)
+                      GNT-2 Era
                     </h4>
                     <p className="text-xs text-gray-400">Early language models with basic capabilities</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-3' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-3' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-3 Era (~2020-2021)
+                      GNT-3 Era
                     </h4>
                     <p className="text-xs text-gray-400">Significantly larger models with improved capabilities</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-4' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-4' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-4 Era (~2022-2023)
+                      GNT-4 Era
                     </h4>
                     <p className="text-xs text-gray-400">Advanced reasoning and multimodal capabilities</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-5' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-5' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-5 Era (Near Future)
+                      GNT-5 Era
                     </h4>
                     <p className="text-xs text-gray-400">Enhanced reasoning and specialized expertise</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-6' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-6' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-6 Era (Future)
+                      GNT-6 Era
                     </h4>
                     <p className="text-xs text-gray-400">Advanced autonomous capabilities approaching AGI</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-7' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-7' ? 'text-amber-400' : 'text-gray-300'}`}>
-                      GNT-7 Era (AGI Threshold)
+                      GNT-7 Era
                     </h4>
                     <p className="text-xs text-gray-400">Artificial General Intelligence achievement</p>
                   </div>
