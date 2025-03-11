@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import FactorySection from "@/components/factory/FactorySection";
-import AIDashboard from "@/components/factory/AIDashboard";
-import EconomicSection from "@/components/factory/EconomicSection";
-import BreakthroughSection from "@/components/factory/BreakthroughSection";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
-import ResourceFlowVisualization from "@/components/factory/ResourceFlowVisualization";
-import GameTimer from "@/components/factory/GameTimer";
-import SynergyDashboard from "@/components/factory/SynergyDashboard";
-import EraProgressionPanel from "@/components/factory/EraProgressionPanel";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
 import { apiRequest } from "@/lib/queryClient";
 import "@/components/factory/resourceFlow.css";
+
+// New UI Components
+import WelcomeIntroduction from "@/components/factory/WelcomeIntroduction";
+import GameHeader from "@/components/factory/GameHeader";
+import MainGameTabs from "@/components/factory/MainGameTabs";
+import HelpPanel from "@/components/factory/HelpPanel";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -49,10 +46,19 @@ export default function AIFactory() {
     formattedTime,
   } = useGameEngine();
 
+  // State for modals and UI
+  const [showIntroduction, setShowIntroduction] = useState<boolean>(true);
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const [showResourceDetail, setShowResourceDetail] = useState<boolean>(false);
+
+  // Show introduction when game first starts or is reset
+  useEffect(() => {
+    if (timeLeft === 1200 && !isRunning) {
+      setShowIntroduction(true);
+    }
+  }, [timeLeft, isRunning]);
 
   // Save game state periodically
   useEffect(() => {
@@ -111,6 +117,11 @@ export default function AIFactory() {
     }
   }
 
+  // Handler functions
+  function handleCloseIntroduction() {
+    setShowIntroduction(false);
+  }
+
   function handleCloseBreakthroughModal() {
     setShowBreakthroughModal(false);
   }
@@ -133,94 +144,45 @@ export default function AIFactory() {
   }
 
   return (
-    <div className="bg-background text-white min-h-screen font-sans">
+    <div className="bg-gradient-to-b from-gray-950 to-gray-900 text-white min-h-screen font-sans">
       <div className="container mx-auto px-4 py-6 max-w-6xl">
-        {/* Game Header */}
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold text-center">AI Factory</h1>
-          <p className="text-center text-gray-300 mt-2">
-            Build and evolve your AI by balancing key resources
-          </p>
-        </header>
+        {/* Game Header with Controls and Key Metrics */}
+        <GameHeader 
+          gameState={gameState}
+          isRunning={isRunning}
+          timeLeft={timeLeft}
+          formattedTime={formattedTime}
+          startGame={startGame}
+          pauseGame={pauseGame}
+          resetGame={resetGame}
+        />
 
-        {/* Game Timer and Controls */}
-        <div className="flex justify-between items-center mb-6">
-          <GameTimer timeLeft={timeLeft} formattedTime={formattedTime} />
-          
-          <div>
-            {!isRunning ? (
-              <Button 
-                className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md"
-                onClick={startGame}
-              >
-                {timeLeft < 1200 ? "Resume" : "Start Game"}
-              </Button>
-            ) : (
-              <Button 
-                className="bg-amber-600 hover:bg-amber-700 text-white font-medium shadow-md"
-                onClick={pauseGame}
-              >
-                Pause
-              </Button>
-            )}
-            <Button 
-              className="bg-gray-600 hover:bg-gray-700 text-white font-medium shadow-md ml-2"
-              onClick={resetGame}
-            >
-              Reset
-            </Button>
-          </div>
-        </div>
+        {/* Main Game Content */}
+        <MainGameTabs 
+          gameState={gameState}
+          upgradeCompute={upgradeCompute}
+          upgradeData={upgradeData}
+          upgradeAlgorithm={upgradeAlgorithm}
+          investInCompute={investInCompute}
+          investInData={investInData}
+          investInAlgorithm={investInAlgorithm}
+          allocateMoneyToCompute={allocateMoneyToCompute}
+          allocateMoneyToData={allocateMoneyToData}
+          allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+          handleOpenResourceDetail={handleOpenResourceDetail}
+        />
 
-        {/* Era Progression Panel */}
-        <div className="mb-6">
-          <EraProgressionPanel gameState={gameState} />
-        </div>
-
-        {/* Resource Flow Visualization */}
-        <div className="mb-6">
-          <ResourceFlowVisualization gameState={gameState} />
-        </div>
-        
-        {/* Main Game Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FactorySection 
-            gameState={gameState}
-            upgradeCompute={upgradeCompute}
-            upgradeData={upgradeData}
-            upgradeAlgorithm={upgradeAlgorithm}
-          />
-          
-          <AIDashboard 
-            gameState={gameState}
-            investInCompute={investInCompute}
-            investInData={investInData}
-            investInAlgorithm={investInAlgorithm}
-          />
-          
-          <div className="flex flex-col gap-6">
-            <EconomicSection 
-              gameState={gameState}
-              allocateMoneyToCompute={allocateMoneyToCompute}
-              allocateMoneyToData={allocateMoneyToData}
-              allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
-            />
-            
-            <BreakthroughSection gameState={gameState} />
-          </div>
-        </div>
-
-        {/* Resource Detail Button */}
-        <div className="fixed bottom-6 right-6">
-          <Button 
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-md"
-            onClick={handleOpenResourceDetail}
-          >
-            Advanced Resource Management
-          </Button>
-        </div>
+        {/* Help Panel (floating button) */}
+        <HelpPanel currentEra={gameState.currentEra} />
 
         {/* Modals */}
+        {showIntroduction && (
+          <WelcomeIntroduction 
+            onClose={handleCloseIntroduction}
+            currentEra={gameState.currentEra}
+          />
+        )}
+
         {showBreakthroughModal && currentBreakthrough && (
           <BreakthroughModal 
             breakthrough={currentBreakthrough} 
