@@ -26,7 +26,7 @@ export interface GameEvent {
 
 export interface GameStateType {
   isRunning: boolean;
-  timer: number;
+  timeElapsed: number;
   
   // Core Metrics
   money: number;
@@ -146,7 +146,7 @@ export interface Breakthrough {
 
 export const initialGameState: GameStateType = {
   isRunning: false,
-  timer: 1200, // 20 minutes in seconds
+  timeElapsed: 0, // Counting up from 0 seconds
   
   // Core metrics
   money: 1000, // Starting capital

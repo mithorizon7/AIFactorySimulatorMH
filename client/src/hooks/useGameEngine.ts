@@ -6,12 +6,12 @@ import { formatCurrency } from "@/lib/utils";
 export function useGameEngine() {
   const [gameState, setGameState] = useState<GameStateType>({ ...initialGameState });
   const [isRunning, setIsRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(initialGameState.timer);
+  const [timeElapsed, setTimeElapsed] = useState(initialGameState.timeElapsed);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   // Format time as MM:SS
-  const formattedTime = `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
+  const formattedTime = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
 
   // Start the game
   const startGame = () => {
@@ -26,7 +26,7 @@ export function useGameEngine() {
   // Reset the game
   const resetGame = () => {
     setIsRunning(false);
-    setTimeLeft(initialGameState.timer);
+    setTimeElapsed(initialGameState.timeElapsed);
     setGameState({ ...initialGameState });
     toast({
       title: "Game Reset",
@@ -618,13 +618,8 @@ export function useGameEngine() {
   useEffect(() => {
     if (isRunning) {
       const handleGameTick = () => {
-        setTimeLeft(prevTime => {
-          if (prevTime <= 0) {
-            setIsRunning(false);
-            return 0;
-          }
-          return prevTime - 1;
-        });
+        // Increment time elapsed
+        setTimeElapsed(prevTime => prevTime + 1);
 
         setGameState(prevState => {
           // Calculate updated production rates based on enabling inputs and synergies
@@ -658,9 +653,8 @@ export function useGameEngine() {
             0.02 * (computeContribution + dataContribution + algorithmContribution) * 
             (1 + synergyMultiplier);
           
-          // Calculate revenue every 5 seconds (adjust as needed)
-          const secondsElapsed = initialGameState.timer - timeLeft;
-          if (secondsElapsed > 0 && secondsElapsed % 5 === 0) {
+          // Calculate revenue every 5 seconds
+          if (timeElapsed > 0 && timeElapsed % 5 === 0) {
             newState = calculateRevenue(newState);
           }
           
@@ -683,12 +677,17 @@ export function useGameEngine() {
     };
   }, [isRunning]);
 
-  // Pause game when time runs out
+  // Check if player has reached AGI threshold
   useEffect(() => {
-    if (timeLeft <= 0 && isRunning) {
+    if (gameState.intelligence >= gameState.agiThreshold && isRunning) {
       setIsRunning(false);
+      toast({
+        title: "Victory! AGI Achieved",
+        description: `Congratulations! You've developed AGI in ${formattedTime}! Your time has been recorded.`,
+        duration: 8000,
+      });
     }
-  }, [timeLeft, isRunning]);
+  }, [gameState.intelligence, isRunning, formattedTime]);
 
   // Additional money allocation functions for enabling inputs
   const allocateMoneyToElectricity = () => {
@@ -867,7 +866,7 @@ export function useGameEngine() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
-    timeLeft,
+    timeElapsed,
     formattedTime
   };
 }
