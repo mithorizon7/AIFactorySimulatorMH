@@ -461,7 +461,14 @@ export default function FactorySection({
               </div>
               
               {/* Data Formats */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Multimodal Data Formats"
+                  category="data"
+                  description="Multimodal AI development requires training on diverse data types beyond text: images, audio, video, code, structured data, and more. Each new data format enables new capabilities and applications for AI systems."
+                  realWorldExample="OpenAI's DALL-E and Midjourney were trained on billions of image-text pairs. GPT-4V's visual capabilities came from incorporating image data alongside text. Google's Gemini was trained from the start on multiple modalities including text, images, audio, and video."
+                  importance="Expanding to new data formats allows AI to understand and generate new types of content. Text-only models can't truly 'see' or 'hear' - each new modality provides a different way of understanding the world. Models trained on diverse formats can make connections between concepts across different modalities."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <LayoutGrid className="h-4 w-4 text-green-400" />
@@ -555,7 +562,14 @@ export default function FactorySection({
           <AccordionContent className="pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Model Architectures */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Neural Network Architectures"
+                  category="algorithm"
+                  description="The architecture of an AI model determines how information flows through it and what kinds of patterns it can learn. Architectural innovations have been responsible for many of the most significant breakthroughs in AI capabilities over the past decade."
+                  realWorldExample="The Transformer architecture, introduced in 2017, revolutionized natural language processing and enabled models like GPT. Diffusion models enabled the breakthrough in image generation seen in DALL-E and Midjourney. MoE (Mixture of Experts) architectures have enabled even larger and more efficient models."
+                  importance="Architecture is often the bottleneck to AI progress—changing how models process information can unlock capabilities that were previously impossible regardless of scale. The right architecture can make a model more parameter-efficient, reduce training costs, and enable entirely new capabilities like long-context reasoning."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Workflow className="h-4 w-4 text-purple-400" />
