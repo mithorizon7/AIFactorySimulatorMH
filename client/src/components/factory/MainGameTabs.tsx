@@ -30,6 +30,10 @@ interface MainGameTabsProps {
   allocateMoneyToDataQuantity: () => void;
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
+  // Revenue enhancement functions
+  improveDeveloperTools?: () => void;
+  improveChatbot?: () => void;
+  runAdvertisingCampaign?: () => void;
 }
 
 export default function MainGameTabs({
@@ -50,7 +54,11 @@ export default function MainGameTabs({
   allocateMoneyToDataQuality,
   allocateMoneyToDataQuantity,
   allocateMoneyToDataFormats,
-  allocateMoneyToAlgorithmArchitectures
+  allocateMoneyToAlgorithmArchitectures,
+  // Revenue enhancement functions
+  improveDeveloperTools,
+  improveChatbot,
+  runAdvertisingCampaign
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
@@ -186,6 +194,9 @@ export default function MainGameTabs({
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToData={allocateMoneyToData}
             allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            improveDeveloperTools={improveDeveloperTools}
+            improveChatbot={improveChatbot}
+            runAdvertisingCampaign={runAdvertisingCampaign}
           />
         </div>
       </TabsContent>

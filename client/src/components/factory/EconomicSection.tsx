@@ -6,6 +6,9 @@ interface EconomicSectionProps {
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
   allocateMoneyToAlgorithm: () => void;
+  improveDeveloperTools?: () => void;
+  improveChatbot?: () => void;
+  runAdvertisingCampaign?: () => void;
 }
 
 export default function EconomicSection({
@@ -13,6 +16,9 @@ export default function EconomicSection({
   allocateMoneyToCompute,
   allocateMoneyToData,
   allocateMoneyToAlgorithm,
+  improveDeveloperTools,
+  improveChatbot,
+  runAdvertisingCampaign,
 }: EconomicSectionProps) {
   const { money, revenue } = gameState;
 
@@ -47,6 +53,12 @@ export default function EconomicSection({
             <span className="text-blue-400">${formatCurrency(revenue.b2b)}/tick</span>
           </div>
           
+          {/* Developer Tools Level */}
+          <div className="flex justify-between items-center p-2 bg-gray-700 rounded text-sm text-gray-300">
+            <span>Developer Tools Level:</span>
+            <span className="font-medium">{revenue.developerToolsLevel}</span>
+          </div>
+          
           {/* B2C Revenue */}
           <div className="flex justify-between items-center p-2 bg-gray-600 rounded">
             <div className="flex items-center">
@@ -54,6 +66,18 @@ export default function EconomicSection({
               <span>Subscriptions (B2C)</span>
             </div>
             <span className="text-purple-400">${formatCurrency(revenue.b2c)}/tick</span>
+          </div>
+          
+          {/* Subscribers count */}
+          <div className="flex justify-between items-center p-2 bg-gray-700 rounded text-sm text-gray-300">
+            <span>Active Subscribers:</span>
+            <span className="font-medium">{revenue.subscribers.toLocaleString()}</span>
+          </div>
+          
+          {/* Chatbot Quality Level */}
+          <div className="flex justify-between items-center p-2 bg-gray-700 rounded text-sm text-gray-300">
+            <span>Chatbot Quality Level:</span>
+            <span className="font-medium">{revenue.chatbotImprovementLevel}</span>
           </div>
           
           {/* Investor Funding */}
@@ -68,7 +92,7 @@ export default function EconomicSection({
       </div>
       
       {/* Money Allocation */}
-      <div className="bg-gray-700 rounded-lg p-4">
+      <div className="bg-gray-700 rounded-lg p-4 mb-5">
         <h3 className="text-lg font-medium mb-3">Allocate Resources</h3>
         <p className="text-sm text-gray-400 mb-3">
           Invest money to improve your AI capabilities
@@ -116,6 +140,85 @@ export default function EconomicSection({
             <span className="text-sm">Research Algorithm Breakthroughs</span>
             <span className="bg-gray-700 text-purple-400 px-2 py-1 rounded text-xs">$125</span>
           </button>
+        </div>
+      </div>
+      
+      {/* Revenue Enhancement */}
+      <div className="bg-gray-700 rounded-lg p-4">
+        <h3 className="text-lg font-medium mb-3">Revenue Enhancement</h3>
+        <p className="text-sm text-gray-400 mb-3">
+          Invest in improving your revenue streams
+        </p>
+        
+        <div className="grid grid-cols-1 gap-3">
+          {/* Improve Developer Tools */}
+          <div className="bg-gray-800 p-3 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-blue-300">Developer Tools</h4>
+              <span className="text-xs bg-gray-700 text-blue-300 px-2 py-1 rounded">Level {revenue.developerToolsLevel}</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-2">
+              Improve your API documentation and SDK, increasing B2B revenue by 5% per level.
+            </p>
+            <button 
+              className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                money >= 5000 && improveDeveloperTools
+                  ? "bg-blue-700 hover:bg-blue-600 text-white"
+                  : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+              }`}
+              onClick={improveDeveloperTools}
+              disabled={money < 5000 || !improveDeveloperTools}
+            >
+              <span>Upgrade Developer Tools</span>
+              <span className="bg-gray-700 text-blue-300 px-2 py-1 rounded text-xs">$5,000</span>
+            </button>
+          </div>
+          
+          {/* Improve Chatbot Quality */}
+          <div className="bg-gray-800 p-3 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-purple-300">Chatbot Quality</h4>
+              <span className="text-xs bg-gray-700 text-purple-300 px-2 py-1 rounded">Level {revenue.chatbotImprovementLevel}</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-2">
+              Enhance your AI chatbot capabilities, increasing subscriber growth by 5% per level.
+            </p>
+            <button 
+              className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                money >= 10000 && improveChatbot
+                  ? "bg-purple-700 hover:bg-purple-600 text-white"
+                  : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+              }`}
+              onClick={improveChatbot}
+              disabled={money < 10000 || !improveChatbot}
+            >
+              <span>Improve Chatbot</span>
+              <span className="bg-gray-700 text-purple-300 px-2 py-1 rounded text-xs">$10,000</span>
+            </button>
+          </div>
+          
+          {/* Run Advertising Campaign */}
+          <div className="bg-gray-800 p-3 rounded-lg">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium text-amber-300">Advertising</h4>
+              <span className="text-xs bg-gray-700 text-amber-300 px-2 py-1 rounded">{revenue.subscribers.toLocaleString()} Subscribers</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-2">
+              Launch an advertising campaign to immediately gain 1,000 new subscribers.
+            </p>
+            <button 
+              className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                money >= 10000 && runAdvertisingCampaign
+                  ? "bg-amber-700 hover:bg-amber-600 text-white"
+                  : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+              }`}
+              onClick={runAdvertisingCampaign}
+              disabled={money < 10000 || !runAdvertisingCampaign}
+            >
+              <span>Launch Campaign</span>
+              <span className="bg-gray-700 text-amber-300 px-2 py-1 rounded text-xs">$10,000</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

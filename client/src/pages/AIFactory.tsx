@@ -170,6 +170,9 @@ export default function AIFactory() {
           allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
           allocateMoneyToDataFormats={allocateMoneyToDataFormats}
           allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+          improveDeveloperTools={improveDeveloperTools}
+          improveChatbot={improveChatbot}
+          runAdvertisingCampaign={runAdvertisingCampaign}
         />
 
         {/* Help Panel (floating button) */}
