@@ -3,7 +3,18 @@ import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { resourceDefinitions } from "@/lib/educationalContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow } from "lucide-react";
+import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info } from "lucide-react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface FactorySectionProps {
   gameState: GameStateType;
@@ -19,6 +30,69 @@ interface FactorySectionProps {
   allocateMoneyToDataQuantity: () => void;
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
+}
+
+// Learning Dialog Component for Advanced Options
+interface LearningDialogProps {
+  title: string;
+  description: string;
+  realWorldExample: string;
+  importance: string;
+  category: "compute" | "data" | "algorithm";
+}
+
+function LearningDialog({ title, description, realWorldExample, importance, category }: LearningDialogProps) {
+  const categoryColors = {
+    compute: "text-blue-400",
+    data: "text-green-400",
+    algorithm: "text-purple-400"
+  };
+  
+  const categoryBgColors = {
+    compute: "bg-blue-900/20",
+    data: "bg-green-900/20",
+    algorithm: "bg-purple-900/20"
+  };
+  
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-5 w-5 absolute right-2 top-2">
+          <GraduationCap className={`h-4 w-4 ${categoryColors[category]}`} />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50`}>
+        <DialogHeader>
+          <DialogTitle className={`${categoryColors[category]} flex items-center gap-2`}>
+            <Info className="h-5 w-5" />
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-gray-300">
+            Learn how this works in real AI development
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Description</h4>
+            <p className="text-gray-300 text-sm">{description}</p>
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Real World Example</h4>
+            <p className="text-gray-300 text-sm">{realWorldExample}</p>
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Why It Matters</h4>
+            <p className="text-gray-300 text-sm">{importance}</p>
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" className="border-gray-700 hover:bg-gray-700">Close</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function FactorySection({
@@ -121,7 +195,14 @@ export default function FactorySection({
           <AccordionContent className="pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Direct Compute Investment */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Computing Infrastructure"
+                  category="compute"
+                  description="Computing infrastructure refers to the servers, clusters, and datacenters that provide raw computational power for AI training and inference. Increasing this resource directly improves the amount and speed of neural network operations."
+                  realWorldExample="Companies like OpenAI spent an estimated $100M+ on computing infrastructure for training GPT-4, utilizing thousands of high-end GPUs/TPUs in specialized datacenters. Google's TPU v4 pods represent some of the largest AI computing clusters, with some containing over 4,000 chips."
+                  importance="More computing power allows for larger models with more parameters to be trained faster. The improvements in recent large language models (LLMs) directly correlate with exponential increases in computing power—GPT-4 used approximately 10x the computing resources of GPT-3."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Server className="h-4 w-4 text-blue-400" />
@@ -147,7 +228,14 @@ export default function FactorySection({
               </div>
               
               {/* Electricity */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Power Generation & Efficiency"
+                  category="compute"
+                  description="Energy consumption is a critical factor in AI development. As models grow larger, their electricity requirements increase dramatically. Innovations in power infrastructure and efficiency directly impact AI costs and environmental footprint."
+                  realWorldExample="A single training run for a large language model can consume as much electricity as 100+ U.S. homes use in a year. Companies like Microsoft and Google have invested in renewable energy plants specifically to power their AI datacenters, while others use specialized cooling systems to reduce power needs."
+                  importance="Power efficiency determines not only operating costs but also the practical limits of model size. Google's TPUs, for instance, were designed to be 15-30x more energy efficient than contemporary GPUs for machine learning workloads. Sustainable AI requires continued innovation in power technology."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <PlugZap className="h-4 w-4 text-blue-400" />
@@ -173,7 +261,14 @@ export default function FactorySection({
               </div>
               
               {/* Hardware */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Specialized AI Hardware"
+                  category="compute"
+                  description="Modern AI relies on specialized hardware accelerators designed specifically for neural network operations. These include GPUs, TPUs, and custom ASICs that dramatically outperform general-purpose CPUs for machine learning tasks."
+                  realWorldExample="NVIDIA's H100 GPUs represent the current state-of-the-art in commercial AI hardware, with 80 billion transistors and specialized Tensor Cores. Google's TPU v4 chips and Meta's Research SuperCluster use custom interconnects to allow thousands of processors to work together on a single AI model."
+                  importance="Hardware innovations enable entirely new classes of AI models. The shift from CPUs to GPUs enabled deep learning; the shift to specialized AI chips enabled trillion-parameter models. Hardware design decisions directly influence what architectures are practical and how efficiently they can train and operate."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <HardDrive className="h-4 w-4 text-blue-400" />
@@ -199,7 +294,14 @@ export default function FactorySection({
               </div>
               
               {/* Regulatory Environment */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Regulatory Compliance & Ethics"
+                  category="compute"
+                  description="AI development operates within a complex regulatory landscape that controls how computing resources can be deployed, especially for high-risk applications. Different countries impose varying restrictions on AI development and export."
+                  realWorldExample="Export controls limit which countries can access the most advanced AI chips, with regulations like ITAR in the US restricting high-end GPU exports. In the EU, the AI Act classifies systems by risk level and imposes restrictions on how computing can be used for systems deemed 'high risk'."
+                  importance="Regulatory compliance affects not just where AI can be developed but how. Requirements for transparency, fairness testing, and impact assessments may add computational overhead. Companies must balance rapid development with ensuring their systems meet evolving regulatory standards."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Scale className="h-4 w-4 text-blue-400" />
@@ -293,7 +395,14 @@ export default function FactorySection({
           <AccordionContent className="pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Data Quality */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Data Quality & Curation"
+                  category="data"
+                  description="Data quality refers to how accurate, relevant, and reliable the information used to train AI models is. This includes how well-labeled, diverse, and free from biases the data is. High-quality data directly translates to more accurate and reliable AI behaviors."
+                  realWorldExample="When GPT-4 was trained, OpenAI invested heavily in data curation, including having humans review and rate outputs for harmfulness and accuracy. Similarly, Google's Palm 2 required extensive curation of 'high-quality' internet data to avoid learning harmful content."
+                  importance="The GIGO principle ('Garbage In, Garbage Out') applies strongly to AI. Better data quality means fewer hallucinations, more accurate responses, and better understanding of complex concepts. A model trained on higher quality data will consistently outperform an identical model trained on poor quality data."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Layers className="h-4 w-4 text-green-400" />
@@ -319,7 +428,14 @@ export default function FactorySection({
               </div>
               
               {/* Data Quantity */}
-              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <LearningDialog
+                  title="Data Scale & Quantity"
+                  category="data"
+                  description="The sheer volume of training data is critical for AI development. Modern language models require trillions of tokens (words or word-pieces) to learn language patterns effectively. The scale of data directly influences what an AI can learn."
+                  realWorldExample="OpenAI's GPT models have been trained on progressively larger datasets; GPT-3 used hundreds of billions of tokens, while GPT-4 likely used trillions. Google's PaLM model was trained on 780 billion tokens across 339 billion words from diverse sources including web documents, books, code, and conversations."
+                  importance="More data allows AI to encounter more diverse examples, learn rare patterns, and develop more nuanced understandings. The 'scaling law' phenomenon observed in AI research suggests that performance continues to improve predictably as data quantity increases, though with diminishing returns."
+                />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Boxes className="h-4 w-4 text-green-400" />
