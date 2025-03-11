@@ -56,9 +56,9 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       
       // Update node positions based on container size - adjusted for taller container
       setNodePositions({
-        compute: { x: width * 0.2, y: height * 0.3 },
-        data: { x: width * 0.8, y: height * 0.3 },
-        algorithm: { x: width * 0.5, y: height * 0.5 },
+        compute: { x: width * 0.2, y: height * 0.25 },
+        data: { x: width * 0.8, y: height * 0.25 },
+        algorithm: { x: width * 0.5, y: height * 0.4 },
         intelligence: { x: width * 0.5, y: height * 0.15 },
       });
     };
@@ -147,9 +147,12 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   // Helper function to draw a curved path between two points
   const getCurvedPath = (start: NodePosition, end: NodePosition): string => {
     const controlPointX = (start.x + end.x) / 2;
-    // Adjust the curve height based on the points' vertical positions
-    const heightFactor = Math.abs(start.y - end.y) > 80 ? 50 : 30;
-    const controlPointY = (start.y + end.y) / 2 - heightFactor;
+    // Adjust the curve height based on the points' vertical positions and distance
+    const distance = Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
+    const heightFactor = Math.abs(start.y - end.y) > 100 ? 70 : Math.abs(start.y - end.y) > 60 ? 50 : 30;
+    // Add a small random offset to make curves more distinct when overlapping
+    const randomOffset = (start.x + end.y) % 10;
+    const controlPointY = (start.y + end.y) / 2 - heightFactor - randomOffset;
     return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
   };
   
@@ -585,7 +588,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-purple-500 bg-purple-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-purple-900/30 z-20"
           style={{ 
             left: `${nodePositions.algorithm.x - 28}px`, 
-            top: `${nodePositions.algorithm.y - 28}px`,
+            top: `${nodePositions.algorithm.y - 35}px`,
           }}
         >
           Algorithm
@@ -596,7 +599,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-amber-400 bg-amber-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-amber-900/30 z-20"
           style={{ 
             left: `${nodePositions.intelligence.x - 34}px`, 
-            top: `${nodePositions.intelligence.y - 32}px`,
+            top: `${nodePositions.intelligence.y - 38}px`,
           }}
         >
           Intelligence
