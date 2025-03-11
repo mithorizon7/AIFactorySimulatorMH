@@ -1,0 +1,32 @@
+.flow-particle {
+  offset-path: path('');
+  offset-distance: 0%;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes flowParticle {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* For browsers that support motion path */
+@supports (offset-path: path('')) {
+  .flow-particle {
+    animation: flowParticle 3s linear infinite;
+  }
+}
+
+/* Pulse animation for nodes */
+.resource-node {
+  transition: all 0.3s ease;
+}
+
+.resource-node:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}

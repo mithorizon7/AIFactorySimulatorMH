@@ -6,6 +6,7 @@ import BreakthroughSection from "@/components/factory/BreakthroughSection";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import ResourceDetailPage from "@/components/factory/ResourceDetailPage";
+import ResourceFlowVisualization from "@/components/factory/ResourceFlowVisualization";
 import GameTimer from "@/components/factory/GameTimer";
 import SynergyDashboard from "@/components/factory/SynergyDashboard";
 import EraProgressionPanel from "@/components/factory/EraProgressionPanel";
@@ -14,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
 import { apiRequest } from "@/lib/queryClient";
+import "@/components/factory/resourceFlow.css";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -173,6 +175,11 @@ export default function AIFactory() {
         {/* Era Progression Panel */}
         <div className="mb-6">
           <EraProgressionPanel gameState={gameState} />
+        </div>
+
+        {/* Resource Flow Visualization */}
+        <div className="mb-6">
+          <ResourceFlowVisualization gameState={gameState} />
         </div>
         
         {/* Main Game Grid */}

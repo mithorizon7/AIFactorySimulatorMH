@@ -99,12 +99,13 @@ export function ResourceTooltip({
   content,
   resourceType,
   buttonPosition,
-}: Omit<EducationalTooltipProps, "resourceColor"> & { resourceType: "compute" | "data" | "algorithm" }) {
+}: Omit<EducationalTooltipProps, "resourceColor"> & { resourceType: "compute" | "data" | "algorithm" | "intelligence" }) {
   // Colored resources 
   const resourceColors = {
     compute: "blue-400",
     data: "green-400",
-    algorithm: "purple-400"
+    algorithm: "purple-400",
+    intelligence: "amber-400"
   };
 
   return (
