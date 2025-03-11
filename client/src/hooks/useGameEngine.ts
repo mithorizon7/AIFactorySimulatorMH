@@ -455,8 +455,7 @@ export function useGameEngine() {
     
     // Periodically attract investors (not every income cycle)
     // This simulates periodic funding rounds
-    const secondsElapsed = initialGameState.timer - timeLeft;
-    if (secondsElapsed % 30 === 0 && state.intelligence > 200) {
+    if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > 200) {
       // Investor round happens every 30 seconds after initial growth
       newState.money += newState.revenue.investors;
       toast({
