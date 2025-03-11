@@ -54,12 +54,12 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       const { width, height } = containerRef.current.getBoundingClientRect();
       setContainerSize({ width, height });
       
-      // Update node positions based on container size
+      // Update node positions based on container size - adjusted for smaller height
       setNodePositions({
-        compute: { x: width * 0.2, y: height * 0.3 },
-        data: { x: width * 0.8, y: height * 0.3 },
-        algorithm: { x: width * 0.5, y: height * 0.7 },
-        intelligence: { x: width * 0.5, y: height * 0.2 },
+        compute: { x: width * 0.2, y: height * 0.35 },
+        data: { x: width * 0.8, y: height * 0.35 },
+        algorithm: { x: width * 0.5, y: height * 0.65 },
+        intelligence: { x: width * 0.5, y: height * 0.25 },
       });
     };
     
@@ -300,8 +300,8 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     iconPath: string
   }) => {
     const isIntelligence = type === 'intelligence';
-    // Make intelligence node clearly larger
-    const nodeSize = isIntelligence ? 70 : 50;
+    // Make intelligence node clearly larger but adjust for smaller container
+    const nodeSize = isIntelligence ? 60 : 45;
     
     // Get resource values for display
     const getResourceValue = () => {
@@ -547,48 +547,49 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   const renderNodeLabels = () => {
     return (
       <>
+        {/* Label styles simplified for more compact display */}
         {/* Compute Label */}
         <div 
-          className="absolute font-bold uppercase text-blue-500 border-2 border-blue-500 bg-blue-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-blue-900/30 z-20"
+          className="absolute font-bold uppercase text-blue-500 bg-blue-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-blue-900/30 z-20"
           style={{ 
-            left: `${nodePositions.compute.x - 35}px`, 
-            top: `${nodePositions.compute.y + 8}px`,
+            left: `${nodePositions.compute.x - 25}px`, 
+            top: `${nodePositions.compute.y - 28}px`,
           }}
         >
-          COMPUTE
+          Compute
         </div>
         
         {/* Data Label */}
         <div 
-          className="absolute font-bold uppercase text-green-500 border-2 border-green-500 bg-green-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-green-900/30 z-20"
+          className="absolute font-bold uppercase text-green-500 bg-green-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-green-900/30 z-20"
           style={{ 
-            left: `${nodePositions.data.x - 22}px`, 
-            top: `${nodePositions.data.y + 8}px`,
+            left: `${nodePositions.data.x - 17}px`, 
+            top: `${nodePositions.data.y - 28}px`,
           }}
         >
-          DATA
+          Data
         </div>
         
         {/* Algorithm Label */}
         <div 
-          className="absolute font-bold uppercase text-purple-500 border-2 border-purple-500 bg-purple-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-purple-900/30 z-20"
+          className="absolute font-bold uppercase text-purple-500 bg-purple-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-purple-900/30 z-20"
           style={{ 
-            left: `${nodePositions.algorithm.x - 35}px`, 
-            top: `${nodePositions.algorithm.y + 8}px`,
+            left: `${nodePositions.algorithm.x - 28}px`, 
+            top: `${nodePositions.algorithm.y - 28}px`,
           }}
         >
-          ALGORITHM
+          Algorithm
         </div>
         
         {/* Intelligence Label */}
         <div 
-          className="absolute font-bold uppercase text-amber-400 border-2 border-amber-400 bg-amber-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-amber-900/30 z-20"
+          className="absolute font-bold uppercase text-amber-400 bg-amber-900/80 px-1.5 py-0 rounded text-[10px] tracking-wide shadow-md shadow-amber-900/30 z-20"
           style={{ 
-            left: `${nodePositions.intelligence.x - 45}px`, 
-            top: `${nodePositions.intelligence.y + 8}px`,
+            left: `${nodePositions.intelligence.x - 34}px`, 
+            top: `${nodePositions.intelligence.y - 32}px`,
           }}
         >
-          INTELLIGENCE
+          Intelligence
         </div>
       </>
     );
@@ -597,10 +598,10 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full h-80 bg-gray-800 rounded-lg p-4 overflow-hidden"
+      className="relative w-full h-64 bg-gray-800 rounded-lg p-4 overflow-hidden border border-gray-700 shadow-lg"
     >
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-semibold">Resource Flow Visualization</h2>
+        <h2 className="text-lg font-semibold">Resource Interactions</h2>
         
         {/* Help tooltip */}
         <div className="bg-gray-700 p-2 rounded text-xs text-gray-300 max-w-xs">
@@ -614,7 +615,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       {/* Fixed Resource Labels */}
       {renderNodeLabels()}
       
-      <svg width="100%" height="100%" className="absolute top-0 left-0 pt-12">
+      <svg width="100%" height="100%" className="absolute top-0 left-0 pt-10">
         {/* Flow connections */}
         {renderFlowLine(
           'compute-to-data', 
