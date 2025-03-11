@@ -551,8 +551,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-blue-500 border-2 border-blue-500 bg-blue-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-blue-900/30 z-20"
           style={{ 
             left: `${nodePositions.compute.x - 35}px`, 
-            top: `${nodePositions.compute.y - 25}px`,
-            transform: 'translateY(-100%)'
+            top: `${nodePositions.compute.y + 8}px`,
           }}
         >
           COMPUTE
@@ -563,8 +562,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-green-500 border-2 border-green-500 bg-green-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-green-900/30 z-20"
           style={{ 
             left: `${nodePositions.data.x - 22}px`, 
-            top: `${nodePositions.data.y - 25}px`,
-            transform: 'translateY(-100%)'
+            top: `${nodePositions.data.y + 8}px`,
           }}
         >
           DATA
@@ -575,7 +573,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-purple-500 border-2 border-purple-500 bg-purple-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-purple-900/30 z-20"
           style={{ 
             left: `${nodePositions.algorithm.x - 35}px`, 
-            top: `${nodePositions.algorithm.y + 25}px`,
+            top: `${nodePositions.algorithm.y + 8}px`,
           }}
         >
           ALGORITHM
@@ -586,8 +584,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           className="absolute font-bold uppercase text-amber-400 border-2 border-amber-400 bg-amber-900/80 px-2 py-0.5 rounded-md text-xs tracking-wider shadow-lg shadow-amber-900/30 z-20"
           style={{ 
             left: `${nodePositions.intelligence.x - 45}px`, 
-            top: `${nodePositions.intelligence.y - 25}px`,
-            transform: 'translateY(-100%)'
+            top: `${nodePositions.intelligence.y + 8}px`,
           }}
         >
           INTELLIGENCE
@@ -698,7 +695,8 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       
       <div className="absolute bottom-4 left-4 right-4">
         <div className="text-xs text-gray-400 mb-1">Resource synergy effects:</div>
-        <div className="flex flex-wrap gap-2 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs max-h-24 overflow-y-auto pr-1">
+          {/* Resource to Resource synergies */}
           <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
             Compute → Data: {(gameState.bonuses.computeToData * 100).toFixed(0)}%
           </span>
@@ -707,6 +705,28 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
           </span>
           <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
             Algorithm → Compute: {(gameState.bonuses.algorithmToCompute * 100).toFixed(0)}%
+          </span>
+          
+          {/* Resource to Intelligence synergies */}
+          <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
+            Compute → Intelligence: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
+          </span>
+          <span className="bg-green-400/20 px-2 py-0.5 rounded text-green-400">
+            Data → Intelligence: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
+          </span>
+          <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
+            Algorithm → Intelligence: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
+          </span>
+          
+          {/* Additional synergies */}
+          <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
+            Compute → Algorithm: {(gameState.bonuses.computeToAlgorithm * 100).toFixed(0)}%
+          </span>
+          <span className="bg-green-400/20 px-2 py-0.5 rounded text-green-400">
+            Data → Compute: {(gameState.bonuses.dataToCompute * 100).toFixed(0)}%
+          </span>
+          <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
+            Algorithm → Data: {(gameState.bonuses.algorithmToData * 100).toFixed(0)}%
           </span>
         </div>
       </div>
