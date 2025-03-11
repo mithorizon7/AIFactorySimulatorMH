@@ -216,45 +216,45 @@ export function useGameEngine() {
     // Define thresholds for moving to the next era
     // Each era requires more intelligence and higher resource levels
     switch (currentEra) {
-      case Era.GPT2:
-        // Move to GPT-3 Era when player has sufficient intelligence and unlocked GPT-2 breakthroughs
+      case Era.GNT2:
+        // Move to GNT-3 Era when player has sufficient intelligence and unlocked GNT-2 breakthroughs
         if (intelligence >= 200 && eraBreakthroughs >= 1 && levels.compute >= 2) {
-          advanceToNextEra(state, Era.GPT3);
+          advanceToNextEra(state, Era.GNT3);
         }
         break;
         
-      case Era.GPT3:
-        // Move to GPT-4 Era
+      case Era.GNT3:
+        // Move to GNT-4 Era
         if (intelligence >= 400 && eraBreakthroughs >= 1 && levels.data >= 3) {
-          advanceToNextEra(state, Era.GPT4);
+          advanceToNextEra(state, Era.GNT4);
         }
         break;
         
-      case Era.GPT4:
-        // Move to GPT-5 Era
+      case Era.GNT4:
+        // Move to GNT-5 Era
         if (intelligence >= 600 && eraBreakthroughs >= 1 && levels.algorithm >= 4) {
-          advanceToNextEra(state, Era.GPT5);
+          advanceToNextEra(state, Era.GNT5);
         }
         break;
         
-      case Era.GPT5:
-        // Move to GPT-6 Era
+      case Era.GNT5:
+        // Move to GNT-6 Era
         if (intelligence >= 800 && eraBreakthroughs >= 1 && 
             levels.compute >= 5 && levels.data >= 5 && levels.algorithm >= 5) {
-          advanceToNextEra(state, Era.GPT6);
+          advanceToNextEra(state, Era.GNT6);
         }
         break;
         
-      case Era.GPT6:
-        // Move to GPT-7 Era (Final Phase)
+      case Era.GNT6:
+        // Move to GNT-7 Era (Final Phase)
         if (intelligence >= 900 && eraBreakthroughs >= 1 && 
             levels.compute >= 6 && levels.data >= 6 && levels.algorithm >= 6) {
-          advanceToNextEra(state, Era.GPT7);
+          advanceToNextEra(state, Era.GNT7);
         }
         break;
         
       default:
-        // GPT-7 is the final era, no further advancement
+        // GNT-7 is the final era, no further advancement
         break;
     }
   };
@@ -265,32 +265,32 @@ export function useGameEngine() {
     
     // Map of historical AI system information for educational content
     const eraInfo = {
-      [Era.GPT2]: {
+      [Era.GNT2]: {
         year: "2019",
         parameterCount: "1.5 billion",
-        significance: "GPT-2 was a breakthrough in language modeling capabilities and coherent text generation."
+        significance: "GNT-2 was a breakthrough in language modeling capabilities and coherent text generation."
       },
-      [Era.GPT3]: {
+      [Era.GNT3]: {
         year: "2020",
         parameterCount: "175 billion",
-        significance: "GPT-3 demonstrated emergent abilities with few-shot learning and could perform tasks it wasn't explicitly trained on."
+        significance: "GNT-3 demonstrated emergent abilities with few-shot learning and could perform tasks it wasn't explicitly trained on."
       },
-      [Era.GPT4]: {
+      [Era.GNT4]: {
         year: "2023",
         parameterCount: "Over a trillion",
-        significance: "GPT-4 introduced multimodal capabilities and significantly improved reasoning and instruction following."
+        significance: "GNT-4 introduced multimodal capabilities and significantly improved reasoning and instruction following."
       },
-      [Era.GPT5]: {
+      [Era.GNT5]: {
         year: "Near future",
         parameterCount: "Unknown",
         significance: "Hypothetical future model with enhanced reasoning and problem-solving capabilities."
       },
-      [Era.GPT6]: {
+      [Era.GNT6]: {
         year: "Future",
         parameterCount: "Unknown",
         significance: "Speculative model with advanced tool use and possibly approaching general intelligence."
       },
-      [Era.GPT7]: {
+      [Era.GNT7]: {
         year: "Future",
         parameterCount: "Unknown",
         significance: "Theoretical model at the threshold of Artificial General Intelligence."
@@ -300,7 +300,7 @@ export function useGameEngine() {
     // Display era advancement toast with educational information
     toast({
       title: `Era Advanced: ${newEra}`,
-      description: (newEra === Era.GPT2 || newEra === Era.GPT3 || newEra === Era.GPT4) ? 
+      description: (newEra === Era.GNT2 || newEra === Era.GNT3 || newEra === Era.GNT4) ? 
         `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
         `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
       duration: 5000,
@@ -308,32 +308,32 @@ export function useGameEngine() {
     
     // Each era has unique bonus effects to represent the technological leap
     switch (newEra) {
-      case Era.GPT3:
-        // GPT-3 was about massive scaling
+      case Era.GNT3:
+        // GNT-3 was about massive scaling
         state.production.compute *= 1.5;
         state.bonuses.computeToIntelligence *= 1.3;
         break;
         
-      case Era.GPT4:
-        // GPT-4 was about multimodal and improved reasoning
+      case Era.GNT4:
+        // GNT-4 was about multimodal and improved reasoning
         state.production.algorithm *= 1.5;
         state.bonuses.algorithmToIntelligence *= 1.4;
         break;
         
-      case Era.GPT5:
+      case Era.GNT5:
         // Hypothetical future advance with better data utilization
         state.production.data *= 1.6;
         state.bonuses.dataToIntelligence *= 1.5;
         break;
         
-      case Era.GPT6:
+      case Era.GNT6:
         // Major future leap with dramatic improvements across all dimensions
         state.production.compute *= 1.7;
         state.production.data *= 1.7;
         state.production.algorithm *= 1.7;
         break;
         
-      case Era.GPT7:
+      case Era.GNT7:
         // Final era with path to AGI
         state.bonuses.computeToIntelligence *= 2.0;
         state.bonuses.dataToIntelligence *= 2.0;

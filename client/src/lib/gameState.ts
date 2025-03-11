@@ -1,11 +1,12 @@
 // Era definition for phase-based progression
+// GNT = Generative Neural Transformer
 export enum Era {
-  GPT2 = "GPT-2",    // Early Phase (~2019)
-  GPT3 = "GPT-3",    // Mid Phase I (~2020-2021)
-  GPT4 = "GPT-4",    // Mid Phase II (~2022-2023)
-  GPT5 = "GPT-5",    // Late Phase I (Near Future)
-  GPT6 = "GPT-6",    // Late Phase II (Future)
-  GPT7 = "GPT-7"     // Final Phase (AGI Threshold)
+  GNT2 = "GNT-2",    // Early Phase (~2019)
+  GNT3 = "GNT-3",    // Mid Phase I (~2020-2021)
+  GNT4 = "GNT-4",    // Mid Phase II (~2022-2023)
+  GNT5 = "GNT-5",    // Late Phase I (Near Future)
+  GNT6 = "GNT-6",    // Late Phase II (Future)
+  GNT7 = "GNT-7"     // Final Phase (AGI Threshold)
 }
 
 // Game events that can occur during gameplay 
@@ -152,7 +153,7 @@ export const initialGameState: GameStateType = {
   intelligence: 100, // Intelligence score (AGI progress metric)
   
   // Game Era/Phase Tracking
-  currentEra: Era.GPT2, // Start in GPT-2 era
+  currentEra: Era.GNT2, // Start in GNT-2 era
   daysElapsed: 0,       // No time elapsed yet
   
   // Primary resources
@@ -234,7 +235,7 @@ export const initialGameState: GameStateType = {
   
   // Breakthroughs - Organized by AI eras
   breakthroughs: [
-    // GPT-2 Era Breakthroughs (Early Phase)
+    // GNT-2 Era Breakthroughs (Early Phase)
     {
       id: 1,
       name: "Transformer Architecture",
@@ -242,7 +243,7 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 2 },
       type: "algorithm",
-      era: Era.GPT2,
+      era: Era.GNT2,
       realWorldParallel: "The 2017 'Attention Is All You Need' paper introduced transformers, revolutionizing how models handle sequential data like text."
     },
     {
@@ -252,11 +253,11 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { data: 2 },
       type: "data",
-      era: Era.GPT2,
-      realWorldParallel: "GPT-2 was built on unsupervised pre-training on diverse internet text, allowing it to learn language patterns without labeled examples."
+      era: Era.GNT2,
+      realWorldParallel: "Early generative models were built on unsupervised pre-training on diverse internet text, allowing them to learn language patterns without labeled examples."
     },
     
-    // GPT-3 Era Breakthroughs (Mid Phase I)
+    // GNT-3 Era Breakthroughs (Mid Phase I)
     {
       id: 3,
       name: "Massive Parameter Scaling",
@@ -264,8 +265,8 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { compute: 3 },
       type: "compute",
-      era: Era.GPT3,
-      realWorldParallel: "GPT-3's leap to 175 billion parameters (vs GPT-2's 1.5B) demonstrated how scale could dramatically improve capabilities."
+      era: Era.GNT3,
+      realWorldParallel: "The leap to 175 billion parameters in large language models demonstrated how scale could dramatically improve capabilities."
     },
     {
       id: 4,
@@ -274,11 +275,11 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 3, data: 3 },
       type: "combined",
-      era: Era.GPT3,
-      realWorldParallel: "GPT-3 demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt."
+      era: Era.GNT3,
+      realWorldParallel: "Advanced language models demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt."
     },
     
-    // GPT-4 Era Breakthroughs (Mid Phase II)
+    // GNT-4 Era Breakthroughs (Mid Phase II)
     {
       id: 5,
       name: "Instruction Tuning",
@@ -286,8 +287,8 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 4 },
       type: "algorithm",
-      era: Era.GPT4,
-      realWorldParallel: "InstructGPT and ChatGPT demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety."
+      era: Era.GNT4,
+      realWorldParallel: "Instruction tuning demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety."
     },
     {
       id: 6,
@@ -296,11 +297,11 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { compute: 4, data: 4 },
       type: "combined",
-      era: Era.GPT4,
-      realWorldParallel: "GPT-4 Vision can process both text and images simultaneously, opening up new applications and capabilities."
+      era: Era.GNT4,
+      realWorldParallel: "Multimodal AI systems can process both text and images simultaneously, opening up new applications and capabilities."
     },
     
-    // GPT-5 Era Breakthroughs (Late Phase I - Near Future)
+    // GNT-5 Era Breakthroughs (Late Phase I - Near Future)
     {
       id: 7,
       name: "Advanced Reasoning",
@@ -308,7 +309,7 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 5, data: 5 },
       type: "combined",
-      era: Era.GPT5,
+      era: Era.GNT5,
       realWorldParallel: "Future AI systems are expected to have dramatically improved reasoning abilities, approaching human-like problem-solving."
     },
     {
@@ -318,11 +319,11 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 6 },
       type: "algorithm",
-      era: Era.GPT5,
+      era: Era.GNT5,
       realWorldParallel: "Advanced AI systems may eventually help optimize their own code, create more efficient algorithms, and improve their architecture."
     },
     
-    // GPT-6 Era Breakthroughs (Late Phase II - Future)
+    // GNT-6 Era Breakthroughs (Late Phase II - Future)
     {
       id: 9,
       name: "Advanced Tool Use",
@@ -330,11 +331,11 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 7, compute: 6 },
       type: "combined",
-      era: Era.GPT6,
+      era: Era.GNT6,
       realWorldParallel: "Future AI systems will likely have sophisticated abilities to use external tools, APIs, and services to extend their capabilities."
     },
     
-    // GPT-7 Era Breakthroughs (Final Phase - AGI Threshold)
+    // GNT-7 Era Breakthroughs (Final Phase - AGI Threshold)
     {
       id: 10,
       name: "General Problem Solving",
@@ -342,7 +343,7 @@ export const initialGameState: GameStateType = {
       unlocked: false,
       requiredLevels: { algorithm: 8, data: 7, compute: 7 },
       type: "combined",
-      era: Era.GPT7,
+      era: Era.GNT7,
       realWorldParallel: "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence."
     }
   ],
@@ -354,46 +355,46 @@ export const initialGameState: GameStateType = {
       title: "Transformer Architecture Breakthrough",
       description: "Researchers have developed a new architecture called 'transformers' that revolutionizes how AI processes sequences of data!",
       triggered: false,
-      era: Era.GPT2,
+      era: Era.GNT2,
       effect: {
         type: 'algorithm',
         impact: 'positive',
         magnitude: 15 // 15% boost to algorithm production
       },
-      realWorldContext: "In 2017, the paper 'Attention Is All You Need' introduced transformers, which became the foundation for all modern language models like GPT."
+      realWorldContext: "In 2017, the paper 'Attention Is All You Need' introduced transformers, which became the foundation for all modern language models."
     },
     {
       id: 2,
       title: "Large-Scale Web Scraping Initiative",
       description: "Your team has developed tools to rapidly collect training data from the web.",
       triggered: false,
-      era: Era.GPT2,
+      era: Era.GNT2,
       effect: {
         type: 'data',
         impact: 'positive',
         magnitude: 20 // 20% boost to data production
       },
-      realWorldContext: "Early language models like GPT-2 were trained on vast amounts of web text, including data from Reddit, Wikipedia, and millions of websites."
+      realWorldContext: "Early generative models were trained on vast amounts of web text, including data from Reddit, Wikipedia, and millions of websites."
     },
     {
       id: 3,
       title: "Scaling Laws Discovered",
       description: "Researchers have discovered mathematical relationships between model size, compute, and performance!",
       triggered: false,
-      era: Era.GPT3,
+      era: Era.GNT3,
       effect: {
         type: 'multiple',
         impact: 'positive',
         magnitude: 10 // 10% boost to compute and algorithm production
       },
-      realWorldContext: "In 2020, OpenAI published 'Scaling Laws for Neural Language Models,' showing how performance improves predictably with scale."
+      realWorldContext: "In 2020, researchers published scaling laws showing how AI performance improves predictably with scale."
     },
     {
       id: 4,
       title: "GPU Shortage Crisis",
       description: "A global chip shortage has made high-end GPUs scarce and expensive.",
       triggered: false,
-      era: Era.GPT3,
+      era: Era.GNT3,
       effect: {
         type: 'compute',
         impact: 'negative',
@@ -406,20 +407,20 @@ export const initialGameState: GameStateType = {
       title: "Instruction Tuning Breakthrough",
       description: "Your team has discovered techniques to make models follow instructions more reliably!",
       triggered: false,
-      era: Era.GPT4,
+      era: Era.GNT4,
       effect: {
         type: 'algorithm',
         impact: 'positive',
         magnitude: 30 // 30% boost to algorithm efficiency
       },
-      realWorldContext: "Instruction tuning, demonstrated in systems like InstructGPT and ChatGPT, allowed models to follow human instructions more reliably."
+      realWorldContext: "Instruction tuning allowed AI models to follow human instructions more reliably, greatly improving their usefulness and safety."
     },
     {
       id: 6,
       title: "AI Regulation Bill Passes",
       description: "Government has implemented new regulations affecting AI development and deployment.",
       triggered: false,
-      era: Era.GPT4,
+      era: Era.GNT4,
       effect: {
         type: 'regulation',
         impact: 'mixed',
@@ -432,20 +433,20 @@ export const initialGameState: GameStateType = {
       title: "Multimodal Data Integration",
       description: "Your team can now process and align multiple types of data: text, images, audio!",
       triggered: false,
-      era: Era.GPT5,
+      era: Era.GNT5,
       effect: {
         type: 'data',
         impact: 'positive',
         magnitude: 40 // 40% boost to data effectiveness
       },
-      realWorldContext: "GPT-4V (Vision) and other multimodal models combine different types of data, greatly expanding AI capabilities."
+      realWorldContext: "Multimodal AI models combine different types of data, greatly expanding their capabilities beyond just text."
     },
     {
       id: 8,
       title: "Quantum Computing Milestone",
       description: "Access to early quantum computing resources enables unprecedented parallelization.",
       triggered: false,
-      era: Era.GPT6,
+      era: Era.GNT6,
       effect: {
         type: 'hardware',
         impact: 'positive',

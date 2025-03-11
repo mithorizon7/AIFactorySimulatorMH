@@ -15,17 +15,17 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   // Calculate progress to next era based on current era and intelligence
   const getNextEraProgress = () => {
     switch (currentEra) {
-      case Era.GPT2:
+      case Era.GNT2:
         return Math.min(100, Math.round((intelligence / 200) * 100));
-      case Era.GPT3:
+      case Era.GNT3:
         return Math.min(100, Math.round(((intelligence - 200) / 200) * 100));
-      case Era.GPT4:
+      case Era.GNT4:
         return Math.min(100, Math.round(((intelligence - 400) / 200) * 100));
-      case Era.GPT5:
+      case Era.GNT5:
         return Math.min(100, Math.round(((intelligence - 600) / 200) * 100));
-      case Era.GPT6:
+      case Era.GNT6:
         return Math.min(100, Math.round(((intelligence - 800) / 100) * 100));
-      case Era.GPT7:
+      case Era.GNT7:
         return Math.min(100, Math.round((intelligence / agiThreshold) * 100));
       default:
         return 0;
@@ -38,12 +38,12 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   // Get breakthroughs for the next era
   const getNextEra = () => {
     switch (currentEra) {
-      case Era.GPT2: return Era.GPT3;
-      case Era.GPT3: return Era.GPT4;
-      case Era.GPT4: return Era.GPT5;
-      case Era.GPT5: return Era.GPT6;
-      case Era.GPT6: return Era.GPT7;
-      default: return Era.GPT7;
+      case Era.GNT2: return Era.GNT3;
+      case Era.GNT3: return Era.GNT4;
+      case Era.GNT4: return Era.GNT5;
+      case Era.GNT5: return Era.GNT6;
+      case Era.GNT6: return Era.GNT7;
+      default: return Era.GNT7;
     }
   };
   
@@ -53,35 +53,35 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   // Get requirements for the next era
   const getNextEraRequirements = () => {
     switch (currentEra) {
-      case Era.GPT2:
+      case Era.GNT2:
         return {
           intelligence: 200,
           compute: 2,
           data: 1,
           algorithm: 1
         };
-      case Era.GPT3:
+      case Era.GNT3:
         return {
           intelligence: 400,
           compute: 2,
           data: 3,
           algorithm: 2
         };
-      case Era.GPT4:
+      case Era.GNT4:
         return {
           intelligence: 600,
           compute: 3,
           data: 3,
           algorithm: 4
         };
-      case Era.GPT5:
+      case Era.GNT5:
         return {
           intelligence: 800,
           compute: 5,
           data: 5,
           algorithm: 5
         };
-      case Era.GPT6:
+      case Era.GNT6:
         return {
           intelligence: 900,
           compute: 6,
@@ -103,40 +103,46 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   // Get historical context for current era
   const getEraContext = () => {
     switch (currentEra) {
-      case Era.GPT2:
+      case Era.GNT2:
         return {
           year: "2019",
-          description: "The GPT-2 era represented early transformer models with basic language capabilities. OpenAI's GPT-2 was notable for being able to generate coherent text from prompts.",
+          description: "The GNT-2 era represented early transformer models with basic language capabilities. Early Generative Neural Transformers were notable for being able to generate coherent text from prompts.",
           size: "1.5 billion parameters"
         };
-      case Era.GPT3:
+      case Era.GNT3:
         return {
           year: "2020",
-          description: "GPT-3 showed massive scaling with 175B parameters and demonstrated few-shot learning capabilities - the ability to learn new tasks with minimal examples.",
+          description: "GNT-3 showed massive scaling with 175B parameters and demonstrated few-shot learning capabilities - the ability to learn new tasks with minimal examples.",
           size: "175 billion parameters"
         };
-      case Era.GPT4:
+      case Era.GNT4:
         return {
           year: "2023",
-          description: "GPT-4 introduced multimodal capabilities and significantly improved reasoning, enabling complex problem-solving and better alignment with human instructions.",
+          description: "GNT-4 introduced multimodal capabilities and significantly improved reasoning, enabling complex problem-solving and better alignment with human instructions.",
           size: "Trillions of parameters"
         };
-      case Era.GPT5:
+      case Era.GNT5:
         return {
           year: "Near future",
           description: "A hypothetical future model with enhanced reasoning and problem-solving capabilities, approaching human-level performance on many tasks.",
           size: "Unknown"
         };
-      case Era.GPT6:
+      case Era.GNT6:
         return {
           year: "Future",
           description: "A speculative future model with advanced tool use and possibly approaching aspects of general intelligence.",
           size: "Unknown"
         };
-      case Era.GPT7:
+      case Era.GNT7:
         return {
           year: "Future",
           description: "A theoretical model at the threshold of Artificial General Intelligence.",
+          size: "Unknown"
+        };
+      default:
+        return {
+          year: "Unknown",
+          description: "Unknown era",
           size: "Unknown"
         };
     }
