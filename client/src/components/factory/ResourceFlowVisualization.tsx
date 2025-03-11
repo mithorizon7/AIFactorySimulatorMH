@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { GameStateType } from "@/lib/gameState";
 import { motion } from "framer-motion";
 import { EducationalTooltip, ResourceTooltip } from "@/components/ui/educational-tooltip";
-import { resourceDefinitions } from "@/lib/educationalContent";
+import { resourceDefinitions, synergyEffects } from "@/lib/educationalContent";
+import "./resourceFlow.css";
 
 // Types for node positions
 interface NodePosition {
@@ -695,39 +696,112 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       
       <div className="absolute bottom-4 left-4 right-4">
         <div className="text-xs text-gray-400 mb-1">Resource synergy effects:</div>
-        <div className="flex flex-wrap gap-2 text-xs max-h-24 overflow-y-auto pr-1">
-          {/* Resource to Resource synergies */}
-          <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
-            Compute → Data: {(gameState.bonuses.computeToData * 100).toFixed(0)}%
-          </span>
-          <span className="bg-green-400/20 px-2 py-0.5 rounded text-green-400">
-            Data → Algorithm: {(gameState.bonuses.dataToAlgorithm * 100).toFixed(0)}%
-          </span>
-          <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
-            Algorithm → Compute: {(gameState.bonuses.algorithmToCompute * 100).toFixed(0)}%
-          </span>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+          {/* Compute Effects Group */}
+          <div className="space-y-1">
+            <div className="text-blue-400 font-medium mb-1">Compute Effects:</div>
+            <div className="tooltip-trigger">
+              <div className="bg-blue-400/20 px-2 py-1 rounded text-blue-400 cursor-help">
+                → Data: {(gameState.bonuses.computeToData * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Compute → Data</strong><br/>
+                  {synergyEffects.computeToData.description}<br/>
+                  <em>Example: {synergyEffects.computeToData.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-blue-400/20 px-2 py-1 rounded text-blue-400 cursor-help">
+                → Algorithm: {(gameState.bonuses.computeToAlgorithm * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Compute → Algorithm</strong><br/>
+                  {synergyEffects.computeToAlgorithm.description}<br/>
+                  <em>Example: {synergyEffects.computeToAlgorithm.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-blue-400/20 px-2 py-1 rounded text-blue-400 cursor-help">
+                → Intelligence: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Compute → Intelligence</strong><br/>
+                  {synergyEffects.computeToIntelligence.description}<br/>
+                  <em>Example: {synergyEffects.computeToIntelligence.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+          </div>
           
-          {/* Resource to Intelligence synergies */}
-          <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
-            Compute → Intelligence: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
-          </span>
-          <span className="bg-green-400/20 px-2 py-0.5 rounded text-green-400">
-            Data → Intelligence: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
-          </span>
-          <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
-            Algorithm → Intelligence: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
-          </span>
+          {/* Data Effects Group */}
+          <div className="space-y-1">
+            <div className="text-green-400 font-medium mb-1">Data Effects:</div>
+            <div className="tooltip-trigger">
+              <div className="bg-green-400/20 px-2 py-1 rounded text-green-400 cursor-help">
+                → Compute: {(gameState.bonuses.dataToCompute * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Data → Compute</strong><br/>
+                  {synergyEffects.dataToCompute.description}<br/>
+                  <em>Example: {synergyEffects.dataToCompute.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-green-400/20 px-2 py-1 rounded text-green-400 cursor-help">
+                → Algorithm: {(gameState.bonuses.dataToAlgorithm * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Data → Algorithm</strong><br/>
+                  {synergyEffects.dataToAlgorithm.description}<br/>
+                  <em>Example: {synergyEffects.dataToAlgorithm.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-green-400/20 px-2 py-1 rounded text-green-400 cursor-help">
+                → Intelligence: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Data → Intelligence</strong><br/>
+                  {synergyEffects.dataToIntelligence.description}<br/>
+                  <em>Example: {synergyEffects.dataToIntelligence.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+          </div>
           
-          {/* Additional synergies */}
-          <span className="bg-blue-400/20 px-2 py-0.5 rounded text-blue-400">
-            Compute → Algorithm: {(gameState.bonuses.computeToAlgorithm * 100).toFixed(0)}%
-          </span>
-          <span className="bg-green-400/20 px-2 py-0.5 rounded text-green-400">
-            Data → Compute: {(gameState.bonuses.dataToCompute * 100).toFixed(0)}%
-          </span>
-          <span className="bg-purple-400/20 px-2 py-0.5 rounded text-purple-400">
-            Algorithm → Data: {(gameState.bonuses.algorithmToData * 100).toFixed(0)}%
-          </span>
+          {/* Algorithm Effects Group */}
+          <div className="space-y-1">
+            <div className="text-purple-400 font-medium mb-1">Algorithm Effects:</div>
+            <div className="tooltip-trigger">
+              <div className="bg-purple-400/20 px-2 py-1 rounded text-purple-400 cursor-help">
+                → Compute: {(gameState.bonuses.algorithmToCompute * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Algorithm → Compute</strong><br/>
+                  {synergyEffects.algorithmToCompute.description}<br/>
+                  <em>Example: {synergyEffects.algorithmToCompute.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-purple-400/20 px-2 py-1 rounded text-purple-400 cursor-help">
+                → Data: {(gameState.bonuses.algorithmToData * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Algorithm → Data</strong><br/>
+                  {synergyEffects.algorithmToData.description}<br/>
+                  <em>Example: {synergyEffects.algorithmToData.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+            <div className="tooltip-trigger">
+              <div className="bg-purple-400/20 px-2 py-1 rounded text-purple-400 cursor-help">
+                → Intelligence: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
+                <span className="tooltip">
+                  <strong>Algorithm → Intelligence</strong><br/>
+                  {synergyEffects.algorithmToIntelligence.description}<br/>
+                  <em>Example: {synergyEffects.algorithmToIntelligence.realWorldExample}</em>
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

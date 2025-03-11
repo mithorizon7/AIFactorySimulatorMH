@@ -36,7 +36,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
             <CardContent className="space-y-4 pt-4">
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-amber-400">What is AI Factory?</h3>
-                <p>
+                <p className="text-gray-300">
                   AI Factory is an educational simulation that puts you in charge of developing advanced 
                   artificial intelligence. You'll manage resources, make strategic decisions, and witness 
                   how your choices impact AI development - just like real AI companies do.
@@ -48,7 +48,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
                     <li>Manage three core resources: Compute, Data, and Algorithms</li>
                     <li>Allocate money strategically to grow your AI capabilities</li>
                     <li>Unlock breakthroughs that mirror real-world AI advancements</li>
-                    <li>Progress through historical AI eras from GPT-2 to AGI</li>
+                    <li>Progress through historical AI eras from GNT-2 to AGI</li>
                     <li>Complete the game by reaching sufficient intelligence within 20 minutes</li>
                   </ul>
                 </div>
@@ -136,7 +136,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
             <CardContent className="space-y-4 pt-4">
               <div className="space-y-3">
                 <h3 className="text-xl font-semibold text-amber-400">Your Mission</h3>
-                <p>
+                <p className="text-gray-300">
                   Your goal is to develop Artificial General Intelligence (AGI) - AI capable of 
                   understanding, learning, and applying knowledge across a wide range of tasks 
                   at a human level or beyond.
