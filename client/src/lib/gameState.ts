@@ -102,19 +102,38 @@ export interface GameStateType {
     b2c: number;           // Monthly subscriptions
     investors: number;     // Funding from investors
     
-    // Revenue Enablement Flags
-    apiEnabled: boolean;   // Whether the company is offering API services
-    chatbotEnabled: boolean; // Whether the company is offering chatbot services
+    // Era-based Revenue Availability
+    apiAvailable: boolean;  // Whether API service is available yet (era-gated)
+    chatbotAvailable: boolean; // Whether chatbot service is available yet (era-gated)
+    
+    // Revenue Service Status
+    apiEnabled: boolean;   // Whether the company has activated API service (user choice)
+    chatbotEnabled: boolean; // Whether the company has activated chatbot service (user choice)
+    
+    // Developer Growth Metrics (B2B)
+    developers: number;      // Number of developers using the API
+    developerGrowthRate: number; // Rate at which new developers join per update
     
     // B2B Revenue Fields
-    baseApiRate: number;   // Base API rate for B2B calculations
+    baseApiRate: number;     // Base API rate for B2B calculations
     developerToolsLevel: number; // Level of developer tools (improves B2B revenue)
+    developerToolsCost: number; // Cost to upgrade developer tools level
     
     // B2C Revenue Fields
-    subscribers: number;   // Number of subscribers for B2C calculations
-    monthlyFee: number;    // Monthly fee per subscriber
+    subscribers: number;     // Number of subscribers for B2C calculations
+    subscriberGrowthRate: number; // Rate at which new subscribers join per update
+    monthlyFee: number;      // Monthly fee per subscriber
     chatbotImprovementLevel: number; // Level of chatbot improvements (improves B2C revenue)
+    chatbotImprovementCost: number; // Cost to upgrade chatbot quality level
+    
+    // Marketing Campaign Metrics
+    marketingCampaignCost: number; // Cost of running a marketing campaign
+    lastMarketingCampaign: number; // Timestamp of the last marketing campaign
   };
+  
+  // Investment Milestones/Funding Rounds
+  investmentMilestones: InvestmentMilestone[];
+  nextMilestoneId: number; // ID of the next milestone to be reached
   
   // Bonus Multipliers (cross-resource effects)
   bonuses: {
@@ -242,19 +261,79 @@ export const initialGameState: GameStateType = {
     b2c: 0,        // Initial B2C subscription revenue
     investors: 0,  // Initial investor funding
     
-    // Revenue Enablement Flags - Both start disabled
-    apiEnabled: false,    // API service not enabled initially
-    chatbotEnabled: false, // Chatbot service not enabled initially
+    // Era-based Revenue Availability (initially unavailable)
+    apiAvailable: false,      // API service not available until GNT-3 era
+    chatbotAvailable: false,  // Chatbot service not available until GNT-4 era
+    
+    // Revenue Service Status (user choices, both start disabled)
+    apiEnabled: false,        // API service not enabled initially
+    chatbotEnabled: false,    // Chatbot service not enabled initially
+    
+    // Developer Growth Metrics (B2B)
+    developers: 0,            // Start with no developers
+    developerGrowthRate: 0,   // Initial growth rate
     
     // B2B Revenue Fields
-    baseApiRate: 1000,    // Base API rate for B2B calculations ($1K/week starting point)
-    developerToolsLevel: 0, // Level of developer tools (improves B2B revenue)
+    baseApiRate: 1000,        // Base API rate for B2B calculations ($1K/week starting point)
+    developerToolsLevel: 0,   // Level of developer tools (improves B2B revenue)
+    developerToolsCost: 5000, // Initial cost to upgrade developer tools level
     
     // B2C Revenue Fields
-    subscribers: 0,       // Start with no subscribers
-    monthlyFee: 10,       // $10 monthly fee per subscriber
-    chatbotImprovementLevel: 0 // Level of chatbot improvements (improves B2C revenue)
+    subscribers: 0,           // Start with no subscribers
+    subscriberGrowthRate: 0,  // Initial growth rate
+    monthlyFee: 10,           // $10 monthly fee per subscriber
+    chatbotImprovementLevel: 0, // Level of chatbot improvements (improves B2C revenue)
+    chatbotImprovementCost: 10000, // Initial cost to upgrade chatbot quality level
+    
+    // Marketing Campaign Metrics
+    marketingCampaignCost: 10000, // Initial cost of running a marketing campaign
+    lastMarketingCampaign: 0      // No marketing campaigns run initially
   },
+  
+  // Investment Milestones/Funding Rounds
+  investmentMilestones: [
+    {
+      id: 1,
+      name: "Seed Funding",
+      requiredIntelligence: 0, // Already unlocked at start
+      funding: 1000, // Initial $1,000 (already accounted for in starting money)
+      unlocked: true,
+      era: Era.GNT2,
+      description: "Initial funding to begin AI research and development.",
+      realWorldParallel: "Early AI research labs started with small seed investments to prove basic concepts."
+    },
+    {
+      id: 2,
+      name: "Series A",
+      requiredIntelligence: 50, // Intelligence threshold for Series A
+      funding: 5000, // $5,000 funding
+      unlocked: false,
+      era: Era.GNT3,
+      description: "First major investment round as your AI shows promising capabilities.",
+      realWorldParallel: "AI companies secure Series A funding when they demonstrate working prototypes with basic capabilities."
+    },
+    {
+      id: 3,
+      name: "Series B",
+      requiredIntelligence: 200, // Intelligence threshold for Series B
+      funding: 25000, // $25,000 funding
+      unlocked: false,
+      era: Era.GNT4,
+      description: "Major investment as your AI demonstrates commercial potential.",
+      realWorldParallel: "Series B typically comes when AI companies show product-market fit and early revenue streams."
+    },
+    {
+      id: 4,
+      name: "Series C",
+      requiredIntelligence: 500, // Intelligence threshold for Series C
+      funding: 100000, // $100,000 funding
+      unlocked: false,
+      era: Era.GNT5,
+      description: "Massive investment round as your AI approaches transformative capabilities.",
+      realWorldParallel: "Large AI companies secure hundreds of millions in Series C funding when they demonstrate transformative technology potential."
+    }
+  ],
+  nextMilestoneId: 2, // Next milestone to reach is Series A (id: 2)
   
   // Cross-resource bonus multipliers (all start at 1.0 = no effect)
   bonuses: {
