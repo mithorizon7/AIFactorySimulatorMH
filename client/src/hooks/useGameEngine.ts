@@ -1028,6 +1028,8 @@ export function useGameEngine() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    // Train model function
+    trainModel,
     // Basic money allocation
     allocateMoneyToCompute,
     allocateMoneyToData,

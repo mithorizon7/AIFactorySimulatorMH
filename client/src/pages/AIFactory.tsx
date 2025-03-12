@@ -11,6 +11,7 @@ import "@/components/factory/resourceFlow.css";
 import WelcomeIntroduction from "@/components/factory/WelcomeIntroduction";
 import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
+import ComputePanel from "@/components/factory/ComputePanel";
 import HelpPanel from "@/components/factory/HelpPanel";
 
 export default function AIFactory() {
@@ -27,6 +28,8 @@ export default function AIFactory() {
     investInCompute,
     investInData,
     investInAlgorithm,
+    // Train model function
+    trainModel,
     // Basic money allocation
     allocateMoneyToCompute,
     allocateMoneyToData,
