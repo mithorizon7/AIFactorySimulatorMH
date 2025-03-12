@@ -18,9 +18,35 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const computeUsagePercent = Math.min(100, Math.round((computeCapacity.used / computeCapacity.maxCapacity) * 100));
   const computeAvailablePercent = Math.min(100, Math.round((computeCapacity.available / computeCapacity.maxCapacity) * 100));
   
-  // Constants for training costs
-  const computeRequired = 500;
-  const moneyCost = 50000;
+  // Calculate training costs based on game progression (era)
+  const eraMultiplier = {
+    'GNT-2': 1.0,
+    'GNT-3': 1.8,
+    'GNT-4': 3.0,
+    'GNT-5': 5.0,
+    'GNT-6': 8.0,
+    'GNT-7': 12.0
+  };
+  
+  const currentMultiplier = eraMultiplier[gameState.currentEra];
+  
+  // Base requirements that scale with era
+  const baseComputeRequired = 300;
+  const baseMoneyCost = 25000;
+  
+  // Scale costs with era
+  const computeRequired = Math.ceil(baseComputeRequired * currentMultiplier);
+  const moneyCost = Math.ceil(baseMoneyCost * Math.sqrt(currentMultiplier)); // Money scales more slowly
+  
+  // Calculate expected intelligence gain
+  const dataQualityBonus = 1 + (gameState.dataInputs.quality * 0.05); // 5% per level
+  const algorithmBonus = 1 + (gameState.levels.algorithm * 0.08); // 8% per level
+  const dataQuantityBonus = 1 + (gameState.dataInputs.quantity * 0.03); // 3% per level
+  const baseIntelligenceGain = 150;
+  
+  const intelligenceGain = Math.ceil(
+    baseIntelligenceGain * currentMultiplier * dataQualityBonus * algorithmBonus * dataQuantityBonus
+  );
   
   // Check if player has enough resources to train
   const canTrain = computeCapacity.available >= computeRequired && money >= moneyCost;
@@ -110,7 +136,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           >
             <div className="flex flex-col items-start">
               <span className="text-sm font-medium">Train AI Model</span>
-              <span className="text-xs opacity-80">Gains +200 Intelligence</span>
+              <span className="text-xs opacity-80">Gains +{intelligenceGain} Intelligence</span>
             </div>
             <div className="flex flex-col items-end text-xs">
               <div className={`flex items-center ${canTrain ? 'text-blue-200' : 'text-gray-400'}`}>

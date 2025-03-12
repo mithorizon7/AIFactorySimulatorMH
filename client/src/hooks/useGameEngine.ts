@@ -91,15 +91,43 @@ export function useGameEngine() {
 
   // Train Model function - uses compute capacity and money to boost intelligence
   const trainModel = () => {
-    // Training costs: need sufficient compute capacity and money
-    const computeRequired = 500; // Large compute capacity requirement
-    const moneyCost = 50000;     // Significant monetary cost
+    // Calculate costs and benefits based on game progression (era)
+    // Higher eras = more expensive but more impactful training
+    const eraMultiplier = {
+      [Era.GNT2]: 1.0,
+      [Era.GNT3]: 1.8,
+      [Era.GNT4]: 3.0,
+      [Era.GNT5]: 5.0,
+      [Era.GNT6]: 8.0,
+      [Era.GNT7]: 12.0
+    };
+    
+    const currentMultiplier = eraMultiplier[gameState.currentEra];
+    
+    // Base requirements that scale with era
+    const baseComputeRequired = 300;
+    const baseMoneyCost = 25000;
+    const baseIntelligenceGain = 150;
+    
+    // Scale costs and benefits with era
+    const computeRequired = Math.ceil(baseComputeRequired * currentMultiplier);
+    const moneyCost = Math.ceil(baseMoneyCost * Math.sqrt(currentMultiplier)); // Money scales more slowly
+    
+    // Calculate intelligence gain with bonuses from data and algorithm levels
+    const dataQualityBonus = 1 + (gameState.dataInputs.quality * 0.05); // 5% per level
+    const algorithmBonus = 1 + (gameState.levels.algorithm * 0.08); // 8% per level
+    const dataQuantityBonus = 1 + (gameState.dataInputs.quantity * 0.03); // 3% per level
+    
+    // Final intelligence gain with all bonuses applied
+    const intelligenceGain = Math.ceil(
+      baseIntelligenceGain * currentMultiplier * dataQualityBonus * algorithmBonus * dataQuantityBonus
+    );
     
     // Check if player has enough compute capacity available
     if (gameState.computeCapacity.available < computeRequired) {
       toast({
         title: "Insufficient Compute Capacity",
-        description: `You need ${computeRequired} compute capacity available to run this training job. Upgrade your infrastructure.`,
+        description: `You need ${computeRequired.toLocaleString()} compute capacity available to run this training job. Upgrade your infrastructure.`,
         variant: "destructive",
       });
       return;
@@ -121,11 +149,14 @@ export function useGameEngine() {
       
       // Consume the resources
       newState.computeCapacity.available -= computeRequired;
+      newState.computeCapacity.used += computeRequired; // Track used compute
       newState.money -= moneyCost;
       
-      // Large intelligence boost (bigger than regular investments)
-      const intelligenceGain = 200;
+      // Apply intelligence gain
       newState.intelligence += intelligenceGain;
+      
+      // Gradual compute recovery - the used compute will reduce over time
+      // This simulates the gradual freeing up of compute resources after a training job
       
       // Check for breakthroughs after training
       newState.breakthroughs = checkBreakthroughs(newState);
@@ -708,8 +739,13 @@ export function useGameEngine() {
           newState.daysElapsed += 1;
           
           // Update compute capacity availability
-          // Compute capacity recharges slowly over time (5% of max per tick)
-          const rechargeAmount = Math.ceil(newState.computeCapacity.maxCapacity * 0.05);
+          // Compute capacity recharges slowly over time (3% of max per tick)
+          // Base recharge rate that's affected by the power efficiency level
+          const baseRechargeRate = 0.03;
+          const powerEfficiencyBonus = 1 + (newState.computeInputs.electricity * 0.02); // 2% boost per level
+          const rechargeRate = baseRechargeRate * powerEfficiencyBonus;
+          
+          const rechargeAmount = Math.ceil(newState.computeCapacity.maxCapacity * rechargeRate);
           newState.computeCapacity.available = Math.min(
             newState.computeCapacity.maxCapacity,
             newState.computeCapacity.available + rechargeAmount
