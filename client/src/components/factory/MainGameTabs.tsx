@@ -30,6 +30,11 @@ interface MainGameTabsProps {
   allocateMoneyToDataQuantity: () => void;
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
+  // Revenue service functions
+  toggleApiService: () => void;
+  toggleChatbotService: () => void;
+  setApiRate: (rate: number) => void;
+  setMonthlyFee: (fee: number) => void;
   // Revenue enhancement functions
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
@@ -55,6 +60,11 @@ export default function MainGameTabs({
   allocateMoneyToDataQuantity,
   allocateMoneyToDataFormats,
   allocateMoneyToAlgorithmArchitectures,
+  // Revenue service functions
+  toggleApiService,
+  toggleChatbotService,
+  setApiRate,
+  setMonthlyFee,
   // Revenue enhancement functions
   improveDeveloperTools,
   improveChatbot,
@@ -194,10 +204,10 @@ export default function MainGameTabs({
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToData={allocateMoneyToData}
             allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
-            toggleApiService={() => {}}
-            toggleChatbotService={() => {}}
-            setApiRate={() => {}}
-            setMonthlyFee={() => {}}
+            toggleApiService={function() { if (toggleApiService) toggleApiService(); }}
+            toggleChatbotService={function() { if (toggleChatbotService) toggleChatbotService(); }}
+            setApiRate={function(rate: number) { if (setApiRate) setApiRate(rate); }}
+            setMonthlyFee={function(fee: number) { if (setMonthlyFee) setMonthlyFee(fee); }}
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}

@@ -186,6 +186,10 @@ export default function AIFactory() {
           allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
           allocateMoneyToDataFormats={allocateMoneyToDataFormats}
           allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+          toggleApiService={toggleApiService}
+          toggleChatbotService={toggleChatbotService}
+          setApiRate={setApiRate}
+          setMonthlyFee={setMonthlyFee}
           improveDeveloperTools={improveDeveloperTools}
           improveChatbot={improveChatbot}
           runAdvertisingCampaign={runAdvertisingCampaign}
