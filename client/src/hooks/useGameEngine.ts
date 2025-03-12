@@ -89,6 +89,56 @@ export function useGameEngine() {
     }
   };
 
+  // Train Model function - uses compute capacity and money to boost intelligence
+  const trainModel = () => {
+    // Training costs: need sufficient compute capacity and money
+    const computeRequired = 500; // Large compute capacity requirement
+    const moneyCost = 50000;     // Significant monetary cost
+    
+    // Check if player has enough compute capacity available
+    if (gameState.computeCapacity.available < computeRequired) {
+      toast({
+        title: "Insufficient Compute Capacity",
+        description: `You need ${computeRequired} compute capacity available to run this training job. Upgrade your infrastructure.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if player has enough money
+    if (gameState.money < moneyCost) {
+      toast({
+        title: "Insufficient Funds",
+        description: `You need $${moneyCost.toLocaleString()} to run this training job.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Run the training job - use compute capacity and money for immediate intelligence boost
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      
+      // Consume the resources
+      newState.computeCapacity.available -= computeRequired;
+      newState.money -= moneyCost;
+      
+      // Large intelligence boost (bigger than regular investments)
+      const intelligenceGain = 200;
+      newState.intelligence += intelligenceGain;
+      
+      // Check for breakthroughs after training
+      newState.breakthroughs = checkBreakthroughs(newState);
+      
+      toast({
+        title: "Training Complete!",
+        description: `Your AI model has been trained, gaining ${intelligenceGain} intelligence points!`,
+      });
+      
+      return newState;
+    });
+  };
+
   // Investment functions
   const investInCompute = () => {
     if (gameState.resources.compute >= gameState.investCosts.compute) {
@@ -656,6 +706,22 @@ export function useGameEngine() {
           // Increment game days elapsed (representing time passing)
           // Each real second = 1 in-game day
           newState.daysElapsed += 1;
+          
+          // Update compute capacity availability
+          // Compute capacity recharges slowly over time (5% of max per tick)
+          const rechargeAmount = Math.ceil(newState.computeCapacity.maxCapacity * 0.05);
+          newState.computeCapacity.available = Math.min(
+            newState.computeCapacity.maxCapacity,
+            newState.computeCapacity.available + rechargeAmount
+          );
+          
+          // As money is invested in compute and hardware improves, max capacity increases
+          // We calculate this based on compute level and hardware level multipliers
+          if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
+            const computeMultiplier = Math.pow(1.2, newState.levels.compute);
+            const hardwareMultiplier = Math.pow(1.1, newState.computeInputs.hardware);
+            newState.computeCapacity.maxCapacity = Math.floor(2000 * computeMultiplier * hardwareMultiplier);
+          }
           
           // Update intelligence based on resource levels and bonuses
           // This creates a multiplicative effect when resources work together

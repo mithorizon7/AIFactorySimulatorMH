@@ -57,6 +57,13 @@ export interface GameStateType {
     algorithm: number;
   };
   
+  // Compute Capacity and Usage Metrics
+  computeCapacity: {
+    available: number;   // Total compute capacity available
+    used: number;        // Amount of compute currently being used
+    maxCapacity: number; // Maximum possible compute capacity
+  };
+  
   // Enabling Inputs for Compute
   computeInputs: {
     money: number;         // Investment into compute infrastructure
@@ -183,6 +190,13 @@ export const initialGameState: GameStateType = {
     compute: 1,
     data: 1,
     algorithm: 1
+  },
+
+  // Compute capacity metrics
+  computeCapacity: {
+    available: 1000,   // Initial compute capacity
+    used: 0,           // No compute used initially
+    maxCapacity: 2000  // Initial maximum capacity
   },
   
   // Enabling inputs for Compute
