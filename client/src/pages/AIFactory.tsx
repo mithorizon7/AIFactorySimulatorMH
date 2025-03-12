@@ -44,7 +44,12 @@ export default function AIFactory() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures,
-    // New revenue enhancement functions
+    // Revenue service controls
+    toggleApiService,
+    toggleChatbotService,
+    setApiRate,
+    setMonthlyFee,
+    // Revenue enhancement functions
     improveDeveloperTools,
     improveChatbot,
     runAdvertisingCampaign,

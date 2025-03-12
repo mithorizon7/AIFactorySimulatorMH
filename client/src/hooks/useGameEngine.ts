@@ -1072,7 +1072,103 @@ export function useGameEngine() {
     }
   };
 
-  // New revenue enhancement functions
+  // Revenue service management functions
+  const toggleApiService = () => {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.revenue.apiEnabled = !newState.revenue.apiEnabled;
+      
+      // If activating for the first time and intelligence is high enough, suggest setting a higher API rate
+      if (newState.revenue.apiEnabled && newState.intelligence > 200 && newState.revenue.baseApiRate < 1500) {
+        newState.revenue.baseApiRate = 1500; // Higher starting rate for more advanced models
+      }
+      
+      return newState;
+    });
+    
+    toast({
+      title: gameState.revenue.apiEnabled ? "API Service Disabled" : "API Service Enabled",
+      description: gameState.revenue.apiEnabled 
+        ? "You've disabled your API service. B2B revenue will stop." 
+        : "You've enabled your API service. Companies can now use your AI via API.",
+    });
+  };
+  
+  const toggleChatbotService = () => {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.revenue.chatbotEnabled = !newState.revenue.chatbotEnabled;
+      
+      // If disabling when we have subscribers, warn about potential loss
+      if (!newState.revenue.chatbotEnabled && newState.revenue.subscribers > 100) {
+        toast({
+          title: "Warning: Subscribers at Risk",
+          description: "Disabling the chatbot will prevent new subscriptions and may cause subscriber loss.",
+          variant: "destructive",
+        });
+      }
+      
+      return newState;
+    });
+    
+    toast({
+      title: gameState.revenue.chatbotEnabled ? "Chatbot Service Disabled" : "Chatbot Service Enabled",
+      description: gameState.revenue.chatbotEnabled 
+        ? "You've disabled your chatbot service. No new subscribers will join." 
+        : "You've enabled your chatbot service. Users can now subscribe to your AI assistant.",
+    });
+  };
+  
+  const setApiRate = (rate: number) => {
+    // Ensure the rate is in valid range
+    const validRate = Math.max(500, Math.min(5000, rate));
+    
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.revenue.baseApiRate = validRate;
+      return newState;
+    });
+    
+    toast({
+      title: "API Rate Updated",
+      description: `Your API rate is now $${formatCurrency(validRate)}/tick.`,
+    });
+  };
+  
+  const setMonthlyFee = (fee: number) => {
+    // Ensure the fee is in valid range
+    const validFee = Math.max(5, Math.min(25, fee));
+    
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.revenue.monthlyFee = validFee;
+      
+      // If fee increases too much, we may lose some subscribers
+      if (validFee > prevState.revenue.monthlyFee * 1.5 && prevState.revenue.subscribers > 100) {
+        const attritionRate = 0.05; // 5% subscriber loss on significant price increases
+        const previousSubscribers = newState.revenue.subscribers;
+        newState.revenue.subscribers = Math.floor(newState.revenue.subscribers * (1 - attritionRate));
+        
+        const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
+        if (lostSubscribers > 10) {
+          toast({
+            title: "Price Increase Impact",
+            description: `${lostSubscribers} subscribers left due to the significant price increase.`,
+            variant: "destructive",
+          });
+        }
+      }
+      
+      return newState;
+    });
+    
+    toast({
+      title: "Monthly Fee Updated",
+      description: `Your subscription fee is now $${formatCurrency(validFee)}/month.`,
+    });
+  };
+
+  // Revenue enhancement functions
   
   // Function to improve developer tools (improves B2B revenue)
   const improveDeveloperTools = () => {
@@ -1187,7 +1283,12 @@ export function useGameEngine() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
-    // New revenue enhancement functions
+    // Revenue service controls
+    toggleApiService,
+    toggleChatbotService,
+    setApiRate,
+    setMonthlyFee,
+    // Revenue enhancement functions
     improveDeveloperTools,
     improveChatbot,
     runAdvertisingCampaign,

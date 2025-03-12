@@ -94,12 +94,20 @@ export function EducationalTooltip({
   );
 }
 
+interface ResourceTooltipProps extends Omit<EducationalTooltipProps, "resourceColor"> {
+  resourceType?: "compute" | "data" | "algorithm" | "intelligence";
+  resourceColor?: string;
+}
+
 export function ResourceTooltip({
   children,
   content,
   resourceType,
+  resourceColor,
   buttonPosition,
-}: Omit<EducationalTooltipProps, "resourceColor"> & { resourceType: "compute" | "data" | "algorithm" | "intelligence" }) {
+  side,
+  align
+}: ResourceTooltipProps) {
   // Colored resources 
   const resourceColors = {
     compute: "blue-400",
@@ -108,11 +116,22 @@ export function ResourceTooltip({
     intelligence: "amber-400"
   };
 
+  // Use either the resourceType's mapped color or direct resourceColor
+  let colorToUse = "amber-400"; // Default
+  
+  if (resourceType) {
+    colorToUse = resourceColors[resourceType];
+  } else if (resourceColor) {
+    colorToUse = resourceColor;
+  }
+
   return (
     <EducationalTooltip 
       content={content}
-      resourceColor={resourceColors[resourceType]}
+      resourceColor={colorToUse}
       buttonPosition={buttonPosition}
+      side={side}
+      align={align}
     >
       {children}
     </EducationalTooltip>
