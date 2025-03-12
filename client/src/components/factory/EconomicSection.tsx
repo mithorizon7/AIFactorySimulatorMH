@@ -365,15 +365,15 @@ export default function EconomicSection({
             </p>
             <button 
               className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
-                money >= 5000 && improveDeveloperTools
+                money >= revenue.developerToolsCost && improveDeveloperTools
                   ? "bg-blue-700 hover:bg-blue-600 text-white"
                   : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
               }`}
               onClick={improveDeveloperTools}
-              disabled={money < 5000 || !improveDeveloperTools}
+              disabled={money < revenue.developerToolsCost || !improveDeveloperTools}
             >
               <span>Upgrade Developer Tools</span>
-              <span className="bg-gray-700 text-blue-300 px-2 py-1 rounded text-xs">$5,000</span>
+              <span className="bg-gray-700 text-blue-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.developerToolsCost)}</span>
             </button>
           </div>
           
@@ -388,15 +388,15 @@ export default function EconomicSection({
             </p>
             <button 
               className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
-                money >= 10000 && improveChatbot
+                money >= revenue.chatbotImprovementCost && improveChatbot
                   ? "bg-purple-700 hover:bg-purple-600 text-white"
                   : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
               }`}
               onClick={improveChatbot}
-              disabled={money < 10000 || !improveChatbot}
+              disabled={money < revenue.chatbotImprovementCost || !improveChatbot}
             >
               <span>Improve Chatbot</span>
-              <span className="bg-gray-700 text-purple-300 px-2 py-1 rounded text-xs">$10,000</span>
+              <span className="bg-gray-700 text-purple-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.chatbotImprovementCost)}</span>
             </button>
           </div>
           
@@ -411,15 +411,15 @@ export default function EconomicSection({
             </p>
             <button 
               className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
-                money >= 10000 && runAdvertisingCampaign
+                money >= revenue.marketingCampaignCost && runAdvertisingCampaign
                   ? "bg-amber-700 hover:bg-amber-600 text-white"
                   : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
               }`}
               onClick={runAdvertisingCampaign}
-              disabled={money < 10000 || !runAdvertisingCampaign}
+              disabled={money < revenue.marketingCampaignCost || !runAdvertisingCampaign}
             >
               <span>Launch Campaign</span>
-              <span className="bg-gray-700 text-amber-300 px-2 py-1 rounded text-xs">$10,000</span>
+              <span className="bg-gray-700 text-amber-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.marketingCampaignCost)}</span>
             </button>
           </div>
         </div>
