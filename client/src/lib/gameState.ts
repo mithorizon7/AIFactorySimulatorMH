@@ -24,6 +24,18 @@ export interface GameEvent {
   realWorldContext: string; // Educational tie-in
 }
 
+// Investment milestones representing different funding rounds
+export interface InvestmentMilestone {
+  id: number;
+  name: string;           // Name of the funding round (e.g., "Seed", "Series A")
+  requiredIntelligence: number; // Intelligence threshold to unlock
+  funding: number;        // Amount of money provided
+  unlocked: boolean;      // Whether this milestone has been reached
+  era: Era;               // Era associated with this milestone
+  description: string;    // Description of the milestone
+  realWorldParallel: string; // Educational tie-in
+}
+
 export interface GameStateType {
   isRunning: boolean;
   timeElapsed: number;
