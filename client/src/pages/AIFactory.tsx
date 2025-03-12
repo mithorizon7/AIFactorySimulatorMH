@@ -90,6 +90,8 @@ export default function AIFactory() {
     if (newBreakthrough && isRunning) {
       setCurrentBreakthrough(newBreakthrough);
       setShowBreakthroughModal(true);
+      // Pause the game when showing a breakthrough
+      pauseGame();
     }
   }, [gameState.breakthroughs]);
 
@@ -134,6 +136,8 @@ export default function AIFactory() {
 
   function handleCloseBreakthroughModal() {
     setShowBreakthroughModal(false);
+    // Resume the game after closing the breakthrough modal
+    startGame();
   }
 
   function handleCloseSummaryModal() {

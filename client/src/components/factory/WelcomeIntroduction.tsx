@@ -165,10 +165,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
           </TabsContent>
         </Tabs>
         
-        <CardFooter className="bg-gray-900 p-6 flex justify-end gap-4">
-          <Button variant="ghost" onClick={onClose}>
-            Skip for Now
-          </Button>
+        <CardFooter className="bg-gray-900 p-6 flex justify-end">
           <Button onClick={onClose} className="bg-amber-600 hover:bg-amber-700">
             Start Building <ChevronRight className="ml-2 h-5 w-5" />
           </Button>
