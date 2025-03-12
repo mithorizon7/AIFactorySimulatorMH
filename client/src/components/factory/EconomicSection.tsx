@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { Slider } from "@/components/ui/slider";
+import InvestmentMilestones from "./InvestmentMilestones";
 
 interface EconomicSectionProps {
   gameState: GameStateType;
@@ -105,14 +106,22 @@ export default function EconomicSection({
                 </ResourceTooltip>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs ${revenue.apiEnabled ? 'text-green-400' : 'text-gray-400'}`}>
-                  {revenue.apiEnabled ? 'Active' : 'Inactive'}
-                </span>
-                <Switch
-                  id="api-service"
-                  checked={revenue.apiEnabled}
-                  onCheckedChange={toggleApiService}
-                />
+                {revenue.apiAvailable ? (
+                  <>
+                    <span className={`text-xs ${revenue.apiEnabled ? 'text-green-400' : 'text-gray-400'}`}>
+                      {revenue.apiEnabled ? 'Active' : 'Inactive'}
+                    </span>
+                    <Switch
+                      id="api-service"
+                      checked={revenue.apiEnabled}
+                      onCheckedChange={toggleApiService}
+                    />
+                  </>
+                ) : (
+                  <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
+                    Unlocks in GNT-3 Era
+                  </span>
+                )}
               </div>
             </div>
             
@@ -124,7 +133,7 @@ export default function EconomicSection({
               </div>
               <div className="flex items-center gap-2">
                 <Slider
-                  disabled={!revenue.apiEnabled}
+                  disabled={!revenue.apiAvailable || !revenue.apiEnabled}
                   value={[tempApiRate]}
                   min={500}
                   max={5000}
@@ -135,7 +144,7 @@ export default function EconomicSection({
                 <Button 
                   size="sm" 
                   onClick={applyApiRateChanges}
-                  disabled={!revenue.apiEnabled || tempApiRate === revenue.baseApiRate}
+                  disabled={!revenue.apiAvailable || !revenue.apiEnabled || tempApiRate === revenue.baseApiRate}
                   className="ml-2 h-8"
                 >
                   Apply
@@ -144,6 +153,14 @@ export default function EconomicSection({
               <div className="text-xs text-gray-400 mt-1">
                 Current rate: ${formatCurrency(tempApiRate)}/tick
               </div>
+              {revenue.apiAvailable && revenue.apiEnabled && (
+                <div className="text-xs text-blue-300 mt-1">
+                  Active developers: {revenue.developers.toLocaleString()} 
+                  <span className="text-gray-400 ml-2">
+                    (Growth rate: {Math.round(revenue.developerGrowthRate * 100)}%/tick)
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           
@@ -160,14 +177,22 @@ export default function EconomicSection({
                 </ResourceTooltip>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs ${revenue.chatbotEnabled ? 'text-green-400' : 'text-gray-400'}`}>
-                  {revenue.chatbotEnabled ? 'Active' : 'Inactive'}
-                </span>
-                <Switch
-                  id="chatbot-service"
-                  checked={revenue.chatbotEnabled}
-                  onCheckedChange={toggleChatbotService}
-                />
+                {revenue.chatbotAvailable ? (
+                  <>
+                    <span className={`text-xs ${revenue.chatbotEnabled ? 'text-green-400' : 'text-gray-400'}`}>
+                      {revenue.chatbotEnabled ? 'Active' : 'Inactive'}
+                    </span>
+                    <Switch
+                      id="chatbot-service"
+                      checked={revenue.chatbotEnabled}
+                      onCheckedChange={toggleChatbotService}
+                    />
+                  </>
+                ) : (
+                  <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
+                    Unlocks in GNT-4 Era
+                  </span>
+                )}
               </div>
             </div>
             
@@ -179,7 +204,7 @@ export default function EconomicSection({
               </div>
               <div className="flex items-center gap-2">
                 <Slider
-                  disabled={!revenue.chatbotEnabled}
+                  disabled={!revenue.chatbotAvailable || !revenue.chatbotEnabled}
                   value={[tempMonthlyFee]}
                   min={5}
                   max={25}
@@ -190,7 +215,7 @@ export default function EconomicSection({
                 <Button 
                   size="sm" 
                   onClick={applyMonthlyFeeChanges}
-                  disabled={!revenue.chatbotEnabled || tempMonthlyFee === revenue.monthlyFee}
+                  disabled={!revenue.chatbotAvailable || !revenue.chatbotEnabled || tempMonthlyFee === revenue.monthlyFee}
                   className="ml-2 h-8"
                 >
                   Apply
@@ -199,9 +224,22 @@ export default function EconomicSection({
               <div className="text-xs text-gray-400 mt-1">
                 Current fee: ${formatCurrency(tempMonthlyFee)}/month
               </div>
+              {revenue.chatbotAvailable && revenue.chatbotEnabled && (
+                <div className="text-xs text-purple-300 mt-1">
+                  Active subscribers: {revenue.subscribers.toLocaleString()} 
+                  <span className="text-gray-400 ml-2">
+                    (Growth rate: {Math.round(revenue.subscriberGrowthRate * 100)}%/tick)
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Investment Milestones */}
+      <div className="mb-5">
+        <InvestmentMilestones gameState={gameState} />
       </div>
       
       {/* Revenue Streams */}
