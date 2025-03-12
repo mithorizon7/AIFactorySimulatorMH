@@ -496,6 +496,44 @@ export function useGameEngine() {
   const calculateRevenue = (state: GameStateType) => {
     const newState = { ...state };
     
+    // Compute usage for serving customers (test-time inference)
+    // Only start consuming compute once we have subscribers or API customers
+    if (state.revenue.subscribers > 10 || state.revenue.baseApiRate > 0) {
+      // Calculate compute consumption based on customer usage
+      const b2bComputeUsage = state.revenue.b2b > 0 ? 
+        Math.ceil((state.revenue.b2b / 1000) * 5) : 0; // 5 compute per $1000 of B2B revenue
+      
+      const b2cComputeUsage = state.revenue.subscribers > 0 ? 
+        Math.ceil(state.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
+      
+      const totalComputeUsage = b2bComputeUsage + b2cComputeUsage;
+      
+      // Apply compute usage but don't let it exceed available compute
+      if (totalComputeUsage > 0) {
+        // If we have enough compute, use it
+        if (newState.computeCapacity.available >= totalComputeUsage) {
+          newState.computeCapacity.available -= totalComputeUsage;
+          newState.computeCapacity.used += totalComputeUsage;
+        } 
+        // If we don't have enough compute, reduce revenue (unhappy customers)
+        else {
+          const availableRatio = newState.computeCapacity.available / totalComputeUsage;
+          const usedAmount = newState.computeCapacity.available; // Store before zeroing out
+          newState.computeCapacity.available = 0; // Use all available compute
+          newState.computeCapacity.used += usedAmount;
+          
+          // Reduce revenue proportionally to the compute shortage
+          newState.revenue.b2b = Math.floor(newState.revenue.b2b * (0.5 + (availableRatio * 0.5)));
+          newState.revenue.b2c = Math.floor(newState.revenue.b2c * (0.5 + (availableRatio * 0.5)));
+          
+          // Lose some subscribers due to poor service
+          if (timeElapsed % 10 === 0) {
+            newState.revenue.subscribers = Math.floor(newState.revenue.subscribers * 0.95);
+          }
+        }
+      }
+    }
+    
     // ===== B2B Revenue: Companies paying to use your AI APIs =====
     // Formula: B2B Income = Base API Rate × (1 + Intelligence Level) × (1 + Developer Tools Bonus)
     
@@ -745,11 +783,19 @@ export function useGameEngine() {
           const powerEfficiencyBonus = 1 + (newState.computeInputs.electricity * 0.02); // 2% boost per level
           const rechargeRate = baseRechargeRate * powerEfficiencyBonus;
           
+          // Recharge available capacity
           const rechargeAmount = Math.ceil(newState.computeCapacity.maxCapacity * rechargeRate);
           newState.computeCapacity.available = Math.min(
             newState.computeCapacity.maxCapacity,
             newState.computeCapacity.available + rechargeAmount
           );
+          
+          // Gradually reduce used compute over time (simulates jobs completing)
+          if (newState.computeCapacity.used > 0) {
+            // Reduce used compute by 1% per tick
+            const computeRecovery = Math.ceil(newState.computeCapacity.used * 0.01);
+            newState.computeCapacity.used = Math.max(0, newState.computeCapacity.used - computeRecovery);
+          }
           
           // As money is invested in compute and hardware improves, max capacity increases
           // We calculate this based on compute level and hardware level multipliers
