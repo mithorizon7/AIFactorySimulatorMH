@@ -1,11 +1,21 @@
 import { GameStateType } from "@/lib/gameState";
 import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ResourceTooltip } from "@/components/ui/educational-tooltip";
+import { Slider } from "@/components/ui/slider";
 
 interface EconomicSectionProps {
   gameState: GameStateType;
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
   allocateMoneyToAlgorithm: () => void;
+  toggleApiService: () => void;
+  toggleChatbotService: () => void;
+  setApiRate: (rate: number) => void;
+  setMonthlyFee: (fee: number) => void;
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
   runAdvertisingCampaign?: () => void;
@@ -16,11 +26,40 @@ export default function EconomicSection({
   allocateMoneyToCompute,
   allocateMoneyToData,
   allocateMoneyToAlgorithm,
+  toggleApiService,
+  toggleChatbotService,
+  setApiRate,
+  setMonthlyFee,
   improveDeveloperTools,
   improveChatbot,
   runAdvertisingCampaign,
 }: EconomicSectionProps) {
   const { money, revenue } = gameState;
+  
+  // Local state for API rate slider
+  const [tempApiRate, setTempApiRate] = useState(revenue.baseApiRate);
+  // Local state for monthly fee slider
+  const [tempMonthlyFee, setTempMonthlyFee] = useState(revenue.monthlyFee);
+  
+  // Handle API rate change
+  const handleApiRateChange = (value: number[]) => {
+    setTempApiRate(value[0]);
+  };
+  
+  // Apply API rate changes
+  const applyApiRateChanges = () => {
+    setApiRate(tempApiRate);
+  };
+  
+  // Handle monthly fee change
+  const handleMonthlyFeeChange = (value: number[]) => {
+    setTempMonthlyFee(value[0]);
+  };
+  
+  // Apply monthly fee changes
+  const applyMonthlyFeeChanges = () => {
+    setMonthlyFee(tempMonthlyFee);
+  };
 
   return (
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
@@ -36,6 +75,128 @@ export default function EconomicSection({
             Available Funds
           </h3>
           <span className="text-2xl font-bold text-green-400">${formatCurrency(money)}</span>
+        </div>
+      </div>
+      
+      {/* Service Controls */}
+      <div className="bg-gray-700 rounded-lg p-4 mb-5">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Service Controls
+          <ResourceTooltip 
+            content="Enable or disable revenue streams and set pricing. More services generate more revenue but consume compute resources." 
+            resourceColor="blue"
+          />
+        </h3>
+        
+        <div className="space-y-4">
+          {/* API Service Toggle */}
+          <div className="bg-gray-800 p-3 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <Label htmlFor="api-service" className="text-blue-300 font-medium">API Service</Label>
+                <ResourceTooltip 
+                  content="Companies pay to use your AI model via API. Generates B2B revenue but consumes compute resources (5 compute per $1000 revenue)." 
+                  resourceColor="blue"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs ${revenue.apiEnabled ? 'text-green-400' : 'text-gray-400'}`}>
+                  {revenue.apiEnabled ? 'Active' : 'Inactive'}
+                </span>
+                <Switch
+                  id="api-service"
+                  checked={revenue.apiEnabled}
+                  onCheckedChange={toggleApiService}
+                />
+              </div>
+            </div>
+            
+            {/* API Rate Adjustment */}
+            <div className="mt-3">
+              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <span>API Rate</span>
+                <span>${formatCurrency(revenue.baseApiRate)}/tick</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Slider
+                  disabled={!revenue.apiEnabled}
+                  value={[tempApiRate]}
+                  min={500}
+                  max={5000}
+                  step={100}
+                  onValueChange={handleApiRateChange}
+                  className="flex-grow"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={applyApiRateChanges}
+                  disabled={!revenue.apiEnabled || tempApiRate === revenue.baseApiRate}
+                  className="ml-2 h-8"
+                >
+                  Apply
+                </Button>
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Current rate: ${formatCurrency(tempApiRate)}/tick
+              </div>
+            </div>
+          </div>
+          
+          {/* Chatbot Service Toggle */}
+          <div className="bg-gray-800 p-3 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <Label htmlFor="chatbot-service" className="text-purple-300 font-medium">Chatbot Service</Label>
+                <ResourceTooltip 
+                  content="End users subscribe to your AI chatbot. Generates B2C revenue but consumes compute resources (0.01 compute per subscriber)." 
+                  resourceColor="purple"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs ${revenue.chatbotEnabled ? 'text-green-400' : 'text-gray-400'}`}>
+                  {revenue.chatbotEnabled ? 'Active' : 'Inactive'}
+                </span>
+                <Switch
+                  id="chatbot-service"
+                  checked={revenue.chatbotEnabled}
+                  onCheckedChange={toggleChatbotService}
+                />
+              </div>
+            </div>
+            
+            {/* Monthly Fee Adjustment */}
+            <div className="mt-3">
+              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <span>Monthly Fee</span>
+                <span>${formatCurrency(revenue.monthlyFee)}/month</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Slider
+                  disabled={!revenue.chatbotEnabled}
+                  value={[tempMonthlyFee]}
+                  min={5}
+                  max={25}
+                  step={1}
+                  onValueChange={handleMonthlyFeeChange}
+                  className="flex-grow"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={applyMonthlyFeeChanges}
+                  disabled={!revenue.chatbotEnabled || tempMonthlyFee === revenue.monthlyFee}
+                  className="ml-2 h-8"
+                >
+                  Apply
+                </Button>
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                Current fee: ${formatCurrency(tempMonthlyFee)}/month
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       

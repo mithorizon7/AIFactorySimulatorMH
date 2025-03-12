@@ -90,10 +90,15 @@ export interface GameStateType {
     b2c: number;           // Monthly subscriptions
     investors: number;     // Funding from investors
     
-    // New revenue enhancement fields
+    // Revenue Enablement Flags
+    apiEnabled: boolean;   // Whether the company is offering API services
+    chatbotEnabled: boolean; // Whether the company is offering chatbot services
+    
+    // B2B Revenue Fields
     baseApiRate: number;   // Base API rate for B2B calculations
     developerToolsLevel: number; // Level of developer tools (improves B2B revenue)
     
+    // B2C Revenue Fields
     subscribers: number;   // Number of subscribers for B2C calculations
     monthlyFee: number;    // Monthly fee per subscriber
     chatbotImprovementLevel: number; // Level of chatbot improvements (improves B2C revenue)
@@ -225,11 +230,16 @@ export const initialGameState: GameStateType = {
     b2c: 0,        // Initial B2C subscription revenue
     investors: 0,  // Initial investor funding
     
-    // New revenue enhancement fields
-    baseApiRate: 10000,   // Base API rate for B2B calculations ($10K/week starting point)
+    // Revenue Enablement Flags - Both start disabled
+    apiEnabled: false,    // API service not enabled initially
+    chatbotEnabled: false, // Chatbot service not enabled initially
+    
+    // B2B Revenue Fields
+    baseApiRate: 1000,    // Base API rate for B2B calculations ($1K/week starting point)
     developerToolsLevel: 0, // Level of developer tools (improves B2B revenue)
     
-    subscribers: 100,     // Initial 100 subscribers for B2C calculations
+    // B2C Revenue Fields
+    subscribers: 0,       // Start with no subscribers
     monthlyFee: 10,       // $10 monthly fee per subscriber
     chatbotImprovementLevel: 0 // Level of chatbot improvements (improves B2C revenue)
   },

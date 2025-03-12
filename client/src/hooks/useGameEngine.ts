@@ -496,92 +496,146 @@ export function useGameEngine() {
   const calculateRevenue = (state: GameStateType) => {
     const newState = { ...state };
     
-    // Compute usage for serving customers (test-time inference)
-    // Only start consuming compute once we have subscribers or API customers
-    if (state.revenue.subscribers > 10 || state.revenue.baseApiRate > 0) {
-      // Calculate compute consumption based on customer usage
-      const b2bComputeUsage = state.revenue.b2b > 0 ? 
-        Math.ceil((state.revenue.b2b / 1000) * 5) : 0; // 5 compute per $1000 of B2B revenue
+    // ===== Calculate Base Revenue First =====
+    
+    // B2B Revenue: Companies paying to use your AI APIs
+    // Formula: B2B Income = Base API Rate × (1 + Intelligence Level) × (1 + Developer Tools Bonus)
+    
+    // Intelligence impact on B2B revenue (automatically scales with intelligence)
+    const intelligenceLevel = newState.intelligence / 100; // Normalized intelligence impact
+    
+    // Developer tools bonus: 5% per level
+    const developerToolsBonus = newState.revenue.developerToolsLevel * 0.05;
+    
+    // Calculate base B2B revenue before any penalties
+    const potentialB2bRevenue = Math.floor(
+      newState.revenue.baseApiRate * (1 + intelligenceLevel) * (1 + developerToolsBonus)
+    );
+    
+    // B2C Revenue: End-User Subscriptions
+    // Formula: B2C Income = Subscribers × Monthly Fee
+    
+    // Update subscribers count (every 10 seconds = monthly)
+    if (timeElapsed % 10 === 0 && timeElapsed > 0) {
+      // Only process subscriber growth if we have any to begin with
+      // or if the player has enabled the chatbot service
+      if (newState.revenue.subscribers > 0 || newState.revenue.chatbotEnabled) {
+        // Minimum subscribers to start with if chatbot is enabled but no subscribers yet
+        if (newState.revenue.subscribers === 0 && newState.revenue.chatbotEnabled) {
+          // Initial subscribers - small number to bootstrap growth
+          newState.revenue.subscribers = 50;
+          toast({
+            title: "First Subscribers!",
+            description: "Your chatbot service has attracted its first 50 subscribers!",
+          });
+        }
       
-      const b2cComputeUsage = state.revenue.subscribers > 0 ? 
-        Math.ceil(state.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
+        // Intelligence & Data Quality impact on subscriber growth
+        const intelligenceImpact = Math.pow(newState.intelligence / 200, 1.1);
+        const dataQualityImpact = newState.dataInputs.quality * 0.1;
+        
+        // Base growth rate (1-2% per period)
+        const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
+        
+        // Chatbot improvement bonus (5% more subscribers per level)
+        const chatbotBonus = newState.revenue.chatbotImprovementLevel * 0.05;
+        
+        // Calculate total subscriber growth rate
+        const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
+        
+        // Update subscriber count with growth
+        newState.revenue.subscribers = Math.floor(
+          newState.revenue.subscribers * (1 + totalGrowthRate)
+        );
+      }
+    }
+    
+    // Calculate potential B2C revenue before any penalties
+    const potentialB2cRevenue = Math.floor(
+      newState.revenue.subscribers * newState.revenue.monthlyFee
+    );
+    
+    // ===== Apply Compute Usage and Service Quality Penalties =====
+    
+    // Only consume compute if we have active services
+    const hasActiveCustomers = newState.revenue.apiEnabled || 
+                              (newState.revenue.chatbotEnabled && newState.revenue.subscribers > 0);
+    
+    if (hasActiveCustomers) {
+      // Calculate compute consumption based on potential customer usage
+      const b2bComputeUsage = newState.revenue.apiEnabled ? 
+        Math.ceil((potentialB2bRevenue / 1000) * 5) : 0; // 5 compute per $1000 of B2B revenue
+      
+      const b2cComputeUsage = newState.revenue.subscribers > 0 ? 
+        Math.ceil(newState.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
       
       const totalComputeUsage = b2bComputeUsage + b2cComputeUsage;
       
-      // Apply compute usage but don't let it exceed available compute
+      let serviceQualityRatio = 1.0; // Default: full quality
+      
+      // Apply compute usage if needed
       if (totalComputeUsage > 0) {
         // If we have enough compute, use it
         if (newState.computeCapacity.available >= totalComputeUsage) {
           newState.computeCapacity.available -= totalComputeUsage;
           newState.computeCapacity.used += totalComputeUsage;
         } 
-        // If we don't have enough compute, reduce revenue (unhappy customers)
+        // If we don't have enough compute, reduce service quality
         else {
-          const availableRatio = newState.computeCapacity.available / totalComputeUsage;
+          serviceQualityRatio = newState.computeCapacity.available / totalComputeUsage;
           const usedAmount = newState.computeCapacity.available; // Store before zeroing out
           newState.computeCapacity.available = 0; // Use all available compute
           newState.computeCapacity.used += usedAmount;
           
-          // Reduce revenue proportionally to the compute shortage
-          newState.revenue.b2b = Math.floor(newState.revenue.b2b * (0.5 + (availableRatio * 0.5)));
-          newState.revenue.b2c = Math.floor(newState.revenue.b2c * (0.5 + (availableRatio * 0.5)));
-          
-          // Lose some subscribers due to poor service
+          // Show a warning toast when service quality drops
           if (timeElapsed % 10 === 0) {
-            newState.revenue.subscribers = Math.floor(newState.revenue.subscribers * 0.95);
+            toast({
+              title: "Insufficient Compute Capacity!",
+              description: "Your services are degraded due to compute shortage. Revenue and customers affected.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+          
+          // Lose some subscribers due to poor service quality
+          if (timeElapsed % 10 === 0 && newState.revenue.subscribers > 0) {
+            const churnRate = 0.05 * (1 - serviceQualityRatio); // Max 5% churn based on quality
+            const previousSubscribers = newState.revenue.subscribers;
+            newState.revenue.subscribers = Math.floor(
+              newState.revenue.subscribers * (1 - churnRate)
+            );
+            
+            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
+            if (lostSubscribers > 10) {
+              toast({
+                title: "Subscribers Leaving!",
+                description: `${lostSubscribers} subscribers have left due to service quality issues.`,
+                variant: "destructive",
+                duration: 3000,
+              });
+            }
           }
         }
       }
+      
+      // Apply service quality ratio to revenue (min 50% of potential revenue)
+      const qualityImpact = 0.5 + (serviceQualityRatio * 0.5);
+      
+      // Set final revenue amounts based on potential and service quality
+      newState.revenue.b2b = Math.floor(potentialB2bRevenue * qualityImpact);
+      newState.revenue.b2c = Math.floor(potentialB2cRevenue * qualityImpact);
+    } else {
+      // No active customers, so zero revenue
+      newState.revenue.b2b = 0;
+      newState.revenue.b2c = 0;
     }
-    
-    // ===== B2B Revenue: Companies paying to use your AI APIs =====
-    // Formula: B2B Income = Base API Rate × (1 + Intelligence Level) × (1 + Developer Tools Bonus)
-    
-    // Intelligence impact on B2B revenue (automatically scales with intelligence)
-    const intelligenceLevel = state.intelligence / 100; // Normalized intelligence impact
-    
-    // Developer tools bonus: 5% per level
-    const developerToolsBonus = state.revenue.developerToolsLevel * 0.05;
-    
-    // Calculate B2B revenue
-    newState.revenue.b2b = Math.floor(
-      state.revenue.baseApiRate * (1 + intelligenceLevel) * (1 + developerToolsBonus)
-    );
-    
-    // ===== B2C Revenue: End-User Subscriptions =====
-    // Formula: B2C Income = Subscribers × Monthly Fee
-    
-    // Calculate subscriber growth based on intelligence and data quality milestone
-    // Only update subscribers on a periodic basis (monthly equivalent: every 10 seconds)
-    if (timeElapsed % 10 === 0 && timeElapsed > 0) {
-      // Intelligence & Data Quality impact on subscriber growth
-      const intelligenceImpact = Math.pow(state.intelligence / 200, 1.1);
-      const dataQualityImpact = state.dataInputs.quality * 0.1;
-      
-      // Base growth rate (1-2% per period)
-      const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
-      
-      // Chatbot improvement bonus (5% more subscribers per level)
-      const chatbotBonus = state.revenue.chatbotImprovementLevel * 0.05;
-      
-      // Calculate total subscriber growth rate
-      const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
-      
-      // Update subscriber count with growth
-      newState.revenue.subscribers = Math.floor(
-        state.revenue.subscribers * (1 + totalGrowthRate)
-      );
-    }
-    
-    // Calculate B2C revenue from subscribers
-    newState.revenue.b2c = Math.floor(
-      state.revenue.subscribers * state.revenue.monthlyFee
-    );
     
     // ===== Investor Funding: Simplified as special events =====
-    // We've simplified investor funding as a periodic bonus rather than a continuous revenue stream
     
-    // Base investor confidence depends on regulation level and breakthroughs
+    // Investor funding starts earlier in the game now (100 intelligence)
+    const minIntelligenceForInvestors = 100;
+    
+    // Base investor confidence depends on regulatory compliance and breakthroughs
     const unlockedBreakthroughs = state.breakthroughs.filter(b => b.unlocked).length;
     const regulatoryConfidence = state.computeInputs.regulation * 0.5;
     
@@ -591,22 +645,29 @@ export function useGameEngine() {
                           state.bonuses.algorithmToIntelligence - 3) * 50;
     
     // Calculate potential investor funding for next round
-    // Note: Actual investor funding will be triggered by periodic events
     newState.revenue.investors = Math.floor(
       unlockedBreakthroughs * 150 + regulatoryConfidence * 100 + growthPotential
     );
     
-    // Periodically attract investors (not every income cycle)
-    // This simulates periodic funding rounds
-    if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > 200) {
-      // Investor round happens every 30 seconds after initial growth
+    // Early-game booster funding (first 2 minutes)
+    if (timeElapsed < 120 && timeElapsed % 30 === 0 && timeElapsed > 0) {
+      const seedFunding = 2000 + Math.floor(newState.intelligence * 10);
+      newState.money += seedFunding;
+      toast({
+        title: "Seed Funding Received!",
+        description: `You've secured $${formatCurrency(seedFunding)} in seed funding to help develop your AI.`,
+      });
+    }
+    // Regular investor funding rounds
+    else if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > minIntelligenceForInvestors) {
+      // Investor round happens every 30 seconds after reaching intelligence threshold
       newState.money += newState.revenue.investors;
       toast({
         title: "Investor Funding Received!",
-        description: `You've secured $${formatCurrency(newState.revenue.investors)} in new funding based on your progress!`,
+        description: `You've secured $${formatCurrency(newState.revenue.investors)} in funding based on your progress!`,
       });
     } else {
-      // Regular operational revenue
+      // Regular operational revenue from B2B and B2C
       newState.money += newState.revenue.b2b + newState.revenue.b2c;
     }
     
