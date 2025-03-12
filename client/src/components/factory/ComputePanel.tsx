@@ -42,7 +42,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               </div>
             }
             resourceType="compute"
-          />
+          >
+            <span className="sr-only">Learn about compute capacity</span>
+          </ResourceTooltip>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -80,8 +82,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             </div>
             <Progress 
               value={computeAvailablePercent} 
-              className="h-2 bg-gray-700" 
-              indicatorClassName="bg-blue-500" 
+              className="h-2 bg-gray-700 [&>div]:bg-blue-500" 
             />
           </div>
           <div>
@@ -91,8 +92,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             </div>
             <Progress 
               value={computeUsagePercent} 
-              className="h-2 bg-gray-700" 
-              indicatorClassName="bg-orange-500" 
+              className="h-2 bg-gray-700 [&>div]:bg-orange-500" 
             />
           </div>
         </div>

@@ -154,6 +154,14 @@ export default function AIFactory() {
           resetGame={resetGame}
         />
 
+        {/* Compute Capacity Section */}
+        <div className="mb-6">
+          <ComputePanel 
+            gameState={gameState}
+            trainModel={trainModel}
+          />
+        </div>
+        
         {/* Main Game Content */}
         <MainGameTabs 
           gameState={gameState}
