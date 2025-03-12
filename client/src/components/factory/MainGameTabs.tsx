@@ -72,28 +72,30 @@ export default function MainGameTabs({
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
-      <TabsList className="grid grid-cols-5 mb-6 bg-gray-800 p-1 rounded-lg border border-gray-700 shadow-md">
-        <TabsTrigger value="dashboard" className="flex items-center gap-2 text-base py-3">
-          <BarChart3 className="h-5 w-5" />
-          <span className="hidden sm:inline font-medium">Dashboard</span>
-        </TabsTrigger>
-        <TabsTrigger value="resources" className="flex items-center gap-2 text-base py-3">
-          <Zap className="h-5 w-5" />
-          <span className="hidden sm:inline font-medium">Resources</span>
-        </TabsTrigger>
-        <TabsTrigger value="economy" className="flex items-center gap-2 text-base py-3">
-          <GanttChart className="h-5 w-5" />
-          <span className="hidden sm:inline font-medium">Economy</span>
-        </TabsTrigger>
-        <TabsTrigger value="breakthroughs" className="flex items-center gap-2 text-base py-3">
-          <Lightbulb className="h-5 w-5" />
-          <span className="hidden sm:inline font-medium">Breakthroughs</span>
-        </TabsTrigger>
-        <TabsTrigger value="progression" className="flex items-center gap-2 text-base py-3">
-          <BrainCog className="h-5 w-5" />
-          <span className="hidden sm:inline font-medium">Progression</span>
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex justify-center mb-6">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl mx-auto bg-gradient-to-r from-gray-800 via-gray-750 to-gray-800 p-2 rounded-xl border border-gray-600 shadow-lg">
+          <TabsTrigger value="dashboard" className="flex items-center justify-center gap-2 py-2.5 px-2 font-medium data-[state=active]:bg-gray-700">
+            <BarChart3 className="h-5 w-5" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </TabsTrigger>
+          <TabsTrigger value="resources" className="flex items-center justify-center gap-2 py-2.5 px-2 font-medium data-[state=active]:bg-gray-700">
+            <Zap className="h-5 w-5" />
+            <span className="hidden sm:inline">Resources</span>
+          </TabsTrigger>
+          <TabsTrigger value="economy" className="flex items-center justify-center gap-2 py-2.5 px-2 font-medium data-[state=active]:bg-gray-700">
+            <GanttChart className="h-5 w-5" />
+            <span className="hidden sm:inline">Economy</span>
+          </TabsTrigger>
+          <TabsTrigger value="breakthroughs" className="flex items-center justify-center gap-2 py-2.5 px-2 font-medium data-[state=active]:bg-gray-700">
+            <Lightbulb className="h-5 w-5" />
+            <span className="hidden sm:inline">Breakthroughs</span>
+          </TabsTrigger>
+          <TabsTrigger value="progression" className="flex items-center justify-center gap-2 py-2.5 px-2 font-medium data-[state=active]:bg-gray-700">
+            <BrainCog className="h-5 w-5" />
+            <span className="hidden sm:inline">Progression</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
       
       {/* Dashboard Tab - Overview with most important metrics */}
       <TabsContent value="dashboard" className="mt-0">
