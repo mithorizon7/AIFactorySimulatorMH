@@ -194,6 +194,10 @@ export default function MainGameTabs({
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToData={allocateMoneyToData}
             allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            toggleApiService={() => {}}
+            toggleChatbotService={() => {}}
+            setApiRate={() => {}}
+            setMonthlyFee={() => {}}
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}

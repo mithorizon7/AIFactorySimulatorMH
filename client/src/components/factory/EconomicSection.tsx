@@ -87,8 +87,8 @@ export default function EconomicSection({
           Service Controls
           <ResourceTooltip 
             content="Enable or disable revenue streams and set pricing. More services generate more revenue but consume compute resources." 
-            resourceColor="blue"
-          />
+            resourceColor="blue-400"
+          >Learn</ResourceTooltip>
         </h3>
         
         <div className="space-y-4">
@@ -99,8 +99,10 @@ export default function EconomicSection({
                 <Label htmlFor="api-service" className="text-blue-300 font-medium">API Service</Label>
                 <ResourceTooltip 
                   content="Companies pay to use your AI model via API. Generates B2B revenue but consumes compute resources (5 compute per $1000 revenue)." 
-                  resourceColor="blue"
-                />
+                  resourceColor="blue-400"
+                >
+                  <span className="ml-1 text-xs text-blue-300 underline cursor-help">ⓘ</span>
+                </ResourceTooltip>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs ${revenue.apiEnabled ? 'text-green-400' : 'text-gray-400'}`}>
@@ -152,8 +154,10 @@ export default function EconomicSection({
                 <Label htmlFor="chatbot-service" className="text-purple-300 font-medium">Chatbot Service</Label>
                 <ResourceTooltip 
                   content="End users subscribe to your AI chatbot. Generates B2C revenue but consumes compute resources (0.01 compute per subscriber)." 
-                  resourceColor="purple"
-                />
+                  resourceColor="purple-400"
+                >
+                  <span className="ml-1 text-xs text-purple-300 underline cursor-help">ⓘ</span>
+                </ResourceTooltip>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs ${revenue.chatbotEnabled ? 'text-green-400' : 'text-gray-400'}`}>
