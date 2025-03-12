@@ -92,7 +92,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           </div>
           <div className="bg-gray-700 rounded p-2">
             <div className="text-xs text-gray-400 mb-1">Maximum</div>
-            <div className="font-semibold text-gray-300 flex justify-center items-center gap-1">
+            <div className="font-semibold text-purple-400 flex justify-center items-center gap-1">
               <CircuitBoardIcon className="h-3 w-3" />
               {computeCapacity.maxCapacity.toLocaleString()}
             </div>
