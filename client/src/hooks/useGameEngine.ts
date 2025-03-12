@@ -426,6 +426,52 @@ export function useGameEngine() {
     checkAndTriggerEvents(state);
   };
   
+  // Check for and process investment milestones based on intelligence level
+  const checkInvestmentMilestones = (state: GameStateType) => {
+    // Only check milestones if we have a next milestone to check
+    if (state.nextMilestoneId <= state.investmentMilestones.length) {
+      // Get the next milestone
+      const milestone = state.investmentMilestones.find(m => m.id === state.nextMilestoneId);
+      
+      if (milestone && !milestone.unlocked && state.intelligence >= milestone.requiredIntelligence) {
+        // Unlock the milestone
+        milestone.unlocked = true;
+        
+        // Add funding to the player's money
+        state.money += milestone.funding;
+        
+        // Set the next milestone to check
+        state.nextMilestoneId++;
+        
+        // Notify the player
+        toast({
+          title: `Investment Round: ${milestone.name}`,
+          description: `You've reached the intelligence threshold for ${milestone.name}! Investors have contributed $${milestone.funding.toLocaleString()}.\n\nContext: ${milestone.realWorldParallel}`,
+          duration: 7000,
+        });
+        
+        // Check if we just unlocked API or Chatbot availability with this milestone
+        if (milestone.era === Era.GNT3 && !state.revenue.apiAvailable) {
+          state.revenue.apiAvailable = true;
+          toast({
+            title: "API Service Unlocked",
+            description: "Your AI is now capable enough to offer limited API services to developers. You can enable this service in the Economy tab.",
+            duration: 5000,
+          });
+        }
+        
+        if (milestone.era === Era.GNT4 && !state.revenue.chatbotAvailable) {
+          state.revenue.chatbotAvailable = true;
+          toast({
+            title: "Chatbot Service Unlocked",
+            description: "Your AI is now capable enough to offer consumer chatbot services. You can enable this service in the Economy tab.",
+            duration: 5000,
+          });
+        }
+      }
+    }
+  };
+
   // Check for and trigger events specific to the current era
   const checkAndTriggerEvents = (state: GameStateType) => {
     // Process events that match the current era and haven't been triggered yet
@@ -496,59 +542,125 @@ export function useGameEngine() {
   const calculateRevenue = (state: GameStateType) => {
     const newState = { ...state };
     
-    // ===== Calculate Base Revenue First =====
+    // ===== Update Era-based Revenue Availability First =====
+    
+    // Check if services should be available based on current era
+    if (newState.currentEra >= Era.GNT3 && !newState.revenue.apiAvailable) {
+      newState.revenue.apiAvailable = true;
+      toast({
+        title: "API Service Unlocked",
+        description: "Your AI is now capable enough to offer limited API services to developers. You can enable this service in the Economy tab.",
+        duration: 5000,
+      });
+    }
+    
+    if (newState.currentEra >= Era.GNT4 && !newState.revenue.chatbotAvailable) {
+      newState.revenue.chatbotAvailable = true;
+      toast({
+        title: "Chatbot Service Unlocked",
+        description: "Your AI is now capable enough to offer consumer chatbot services. You can enable this service in the Economy tab.",
+        duration: 5000,
+      });
+    }
+    
+    // ===== Calculate Developer and Subscriber Growth =====
+    
+    // Only calculate if the appropriate services are available and enabled
+    if (newState.revenue.apiAvailable && newState.revenue.apiEnabled) {
+      // Developer growth is primarily driven by intelligence level
+      // Formula models how developers are attracted to more capable AI APIs
+      const intelligenceInfluence = Math.pow(newState.intelligence / 100, 1.2);
+      const developerToolsEffect = 1 + (newState.revenue.developerToolsLevel * 0.05);
+      
+      // Base growth rate (starts small and accelerates with intelligence)
+      if (timeElapsed % 5 === 0) { // Update every 5 seconds
+        // Bootstrap initial developers if none yet
+        if (newState.revenue.developers === 0) {
+          // Initial developers based on intelligence (small number to start)
+          const initialDevelopers = Math.max(5, Math.floor(newState.intelligence / 20));
+          newState.revenue.developers = initialDevelopers;
+          
+          if (initialDevelopers > 0) {
+            toast({
+              title: "First Developers!",
+              description: `Your API has attracted its first ${initialDevelopers} developers!`,
+            });
+          }
+        } else {
+          // Calculate growth rate for existing developer base
+          const baseGrowthRate = 0.05 * intelligenceInfluence;
+          const adjustedGrowthRate = baseGrowthRate * developerToolsEffect;
+          
+          // Store the growth rate for UI display
+          newState.revenue.developerGrowthRate = adjustedGrowthRate;
+          
+          // Apply growth to developer count
+          newState.revenue.developers = Math.floor(
+            newState.revenue.developers * (1 + adjustedGrowthRate)
+          );
+        }
+      }
+    }
+    
+    // Subscriber growth (only if service is available and enabled)
+    if (newState.revenue.chatbotAvailable && newState.revenue.chatbotEnabled) {
+      // Update subscribers count (every 10 seconds = monthly)
+      if (timeElapsed % 10 === 0 && timeElapsed > 0) {
+        // Bootstrap initial subscribers if none yet
+        if (newState.revenue.subscribers === 0) {
+          // Initial subscribers based on intelligence (small number to start)
+          const initialSubscribers = Math.max(50, Math.floor(newState.intelligence / 4));
+          newState.revenue.subscribers = initialSubscribers;
+          
+          toast({
+            title: "First Subscribers!",
+            description: `Your chatbot service has attracted its first ${initialSubscribers} subscribers!`,
+          });
+        } else {
+          // Intelligence & Data Quality impact on subscriber growth
+          const intelligenceImpact = Math.pow(newState.intelligence / 150, 1.3);
+          const dataQualityImpact = newState.dataInputs.quality * 0.1;
+          
+          // Base growth rate (scales with intelligence)
+          const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
+          
+          // Chatbot improvement bonus (5% more subscribers per level)
+          const chatbotBonus = newState.revenue.chatbotImprovementLevel * 0.05;
+          
+          // Calculate total subscriber growth rate
+          const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
+          
+          // Store the growth rate for UI display
+          newState.revenue.subscriberGrowthRate = totalGrowthRate;
+          
+          // Update subscriber count with growth
+          newState.revenue.subscribers = Math.floor(
+            newState.revenue.subscribers * (1 + totalGrowthRate)
+          );
+        }
+      }
+    }
+    
+    // ===== Calculate B2B Revenue Based on Developers =====
     
     // B2B Revenue: Companies paying to use your AI APIs
-    // Formula: B2B Income = Base API Rate × (1 + Intelligence Level) × (1 + Developer Tools Bonus)
-    
-    // Intelligence impact on B2B revenue (automatically scales with intelligence)
-    const intelligenceLevel = newState.intelligence / 100; // Normalized intelligence impact
+    // New formula: B2B Income = Developers × Base API Rate × (1 + Developer Tools Bonus)
     
     // Developer tools bonus: 5% per level
     const developerToolsBonus = newState.revenue.developerToolsLevel * 0.05;
     
+    // Calculate revenue per developer (scales with API rate and tools)
+    const revenuePerDeveloper = newState.revenue.baseApiRate * (1 + developerToolsBonus);
+    
     // Calculate base B2B revenue before any penalties
     const potentialB2bRevenue = Math.floor(
-      newState.revenue.baseApiRate * (1 + intelligenceLevel) * (1 + developerToolsBonus)
+      newState.revenue.developers * revenuePerDeveloper / 100 // Divide by 100 to scale appropriately
     );
+    
+    // ===== Calculate B2C Revenue Based on Subscribers =====
     
     // B2C Revenue: End-User Subscriptions
     // Formula: B2C Income = Subscribers × Monthly Fee
-    
-    // Update subscribers count (every 10 seconds = monthly)
-    if (timeElapsed % 10 === 0 && timeElapsed > 0) {
-      // Only process subscriber growth if we have any to begin with
-      // or if the player has enabled the chatbot service
-      if (newState.revenue.subscribers > 0 || newState.revenue.chatbotEnabled) {
-        // Minimum subscribers to start with if chatbot is enabled but no subscribers yet
-        if (newState.revenue.subscribers === 0 && newState.revenue.chatbotEnabled) {
-          // Initial subscribers - small number to bootstrap growth
-          newState.revenue.subscribers = 50;
-          toast({
-            title: "First Subscribers!",
-            description: "Your chatbot service has attracted its first 50 subscribers!",
-          });
-        }
-      
-        // Intelligence & Data Quality impact on subscriber growth
-        const intelligenceImpact = Math.pow(newState.intelligence / 200, 1.1);
-        const dataQualityImpact = newState.dataInputs.quality * 0.1;
-        
-        // Base growth rate (1-2% per period)
-        const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
-        
-        // Chatbot improvement bonus (5% more subscribers per level)
-        const chatbotBonus = newState.revenue.chatbotImprovementLevel * 0.05;
-        
-        // Calculate total subscriber growth rate
-        const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
-        
-        // Update subscriber count with growth
-        newState.revenue.subscribers = Math.floor(
-          newState.revenue.subscribers * (1 + totalGrowthRate)
-        );
-      }
-    }
     
     // Calculate potential B2C revenue before any penalties
     const potentialB2cRevenue = Math.floor(
@@ -836,6 +948,9 @@ export function useGameEngine() {
           // Increment game days elapsed (representing time passing)
           // Each real second = 1 in-game day
           newState.daysElapsed += 1;
+          
+          // Check and process investment milestones
+          checkInvestmentMilestones(newState);
           
           // Update compute capacity availability
           // Compute capacity recharges slowly over time (3% of max per tick)
@@ -1172,7 +1287,8 @@ export function useGameEngine() {
   
   // Function to improve developer tools (improves B2B revenue)
   const improveDeveloperTools = () => {
-    const toolUpgradeCost = 5000; // $5,000 cost per upgrade
+    // Get current cost from game state
+    const toolUpgradeCost = gameState.revenue.developerToolsCost;
     
     if (gameState.money >= toolUpgradeCost) {
       setGameState(prevState => {
@@ -1182,6 +1298,9 @@ export function useGameEngine() {
         
         // Increasing developer tools gives +5% permanent bonus to B2B revenue
         // This is already handled in the calculateRevenue function
+        
+        // Increase cost for next upgrade
+        newState.revenue.developerToolsCost = Math.round(newState.revenue.developerToolsCost * 2);
         
         return newState;
       });
@@ -1201,7 +1320,8 @@ export function useGameEngine() {
   
   // Function to improve chatbot capabilities (improves B2C subscriber growth)
   const improveChatbot = () => {
-    const chatbotUpgradeCost = 10000; // $10,000 cost per upgrade
+    // Get current cost from game state
+    const chatbotUpgradeCost = gameState.revenue.chatbotImprovementCost;
     
     if (gameState.money >= chatbotUpgradeCost) {
       setGameState(prevState => {
@@ -1211,6 +1331,9 @@ export function useGameEngine() {
         
         // Increasing chatbot capabilities gives +5% permanent bonus to subscriber growth
         // This is already handled in the calculateRevenue function
+        
+        // Increase cost for next upgrade
+        newState.revenue.chatbotImprovementCost = Math.round(newState.revenue.chatbotImprovementCost * 2.5);
         
         return newState;
       });
@@ -1230,14 +1353,24 @@ export function useGameEngine() {
   
   // Function to run an advertising campaign (instantly adds subscribers)
   const runAdvertisingCampaign = () => {
-    const adCampaignCost = 10000; // $10,000 cost per campaign
-    const subscribersGained = 1000; // Gain 1000 subscribers per campaign
+    // Get current cost from game state
+    const adCampaignCost = gameState.revenue.marketingCampaignCost;
+    
+    // Intelligence-based subscriber gain
+    const intelligenceMultiplier = Math.max(1, gameState.intelligence / 200);
+    const subscribersGained = Math.round(1000 * intelligenceMultiplier);
     
     if (gameState.money >= adCampaignCost) {
       setGameState(prevState => {
         const newState = { ...prevState };
         newState.money -= adCampaignCost;
         newState.revenue.subscribers += subscribersGained;
+        
+        // Record last campaign time
+        newState.revenue.lastMarketingCampaign = timeElapsed;
+        
+        // Increase cost for next campaign
+        newState.revenue.marketingCampaignCost = Math.round(newState.revenue.marketingCampaignCost * 1.5);
         
         return newState;
       });
