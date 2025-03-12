@@ -1,0 +1,102 @@
+Overview & Objectives
+
+What We’re Trying to Accomplish:
+	•	Build Up Compute Availability:
+The game should simulate the process of accumulating available compute capacity through money-based investments (e.g., infrastructure, power generation, hardware quality, regulation compliance). This represents building a robust data center or HPC facility.
+	•	Differentiate Compute Usage from Compute Capacity:
+Compute is not just an abstract number you upgrade; it must be consumed for critical operations:
+	•	Training Runs: When you run a major training job (a “Train Model” action), it spends a large chunk of compute capacity and some money to deliver an immediate boost in intelligence.
+	•	Test-Time Compute (Inference): Once unlocked, serving API customers or chatbot users will consume compute on an ongoing basis. If usage exceeds available compute, you’ll see negative effects like failed training runs or lost revenue from unhappy customers.
+	•	Visual Clarity:
+There should be a graphic (or clear UI element) showing Compute Availability (the total compute you have built up) and Compute Usage (the compute being consumed by training/inference) side by side. This helps players see if their compute is being overdrawn, leading to performance penalties.
+
+Why We’re Doing This:
+	•	Realism: In the real world, companies must invest money to build and maintain compute capacity, and that capacity is then actively used for training and serving models.
+	•	Strategic Depth: Players must balance spending money to boost capacity while preserving enough compute to run training jobs and serve customers.
+	•	Educational Value: By visualizing and managing the gap between available and used compute, players learn about resource constraints in modern AI development and the importance of efficient resource management.
+
+⸻
+
+Detailed Implementation Instructions
+
+A. Split Compute into Two Distinct Metrics
+	1.	Compute Capacity/Availability:
+	•	This represents the total amount of compute you have built up through investments (money spent on Infrastructure, Power, Hardware, Regulation upgrades).
+	•	Label this “Compute Available” in the UI.
+	2.	Compute Usage:
+	•	This is the amount of compute being consumed:
+	•	For Training Runs: When a player runs a “Train Model” action, it should deduct a significant portion of compute.
+	•	For Test-Time Inference: Once test-time compute is unlocked, customer/API usage should drain compute on a per-cycle basis.
+	•	Label this “Compute Used” in the UI.
+
+B. Adjust Money-Based Investment Buttons
+
+Update the existing money-based buttons (Infrastructure, Power Generation, Hardware Quality, Regulation Compliance) so that:
+	•	They increase your Compute Available (either by raising production rate or increasing capacity).
+	•	Their descriptions/tooltips should be updated to emphasize that they build up compute capacity, not that they are “spending compute.”
+
+For example:
+	•	Infrastructure: “Invest to expand data center capacity, increasing your Compute Available by X%.”
+	•	Hardware Quality: “Purchase advanced GPUs/TPUs to boost your Compute production rate and max capacity.”
+	•	Power Generation: “Improve your power infrastructure, which increases the efficiency and reliability of your compute usage.”
+	•	Regulation Compliance: “Achieve favorable regulatory status to remove limitations on compute capacity, while boosting investor confidence.”
+
+C. Implement Compute Consumption Mechanics
+	1.	Inference Consumption:
+	•	During each revenue or update cycle, calculate the compute cost of serving customers (B2B and B2C).
+	•	Subtract this cost from your Compute Available.
+	•	If Compute Used exceeds Compute Available, trigger negative effects (e.g., reduced revenue, inability to run training runs, customer dissatisfaction).
+	2.	Training Run Action (“Train Model” Button):
+	•	Create a new button/action that requires:
+	•	A specified amount of Compute Available (e.g., 2,000 units)
+	•	A monetary cost (e.g., $50,000)
+	•	Possibly meeting thresholds in Data and Algorithms.
+	•	On activation, deduct the compute cost from Compute Available and money from the bank.
+	•	Provide an immediate boost to Intelligence (e.g., +100 or +200).
+	•	Optionally, temporarily reduce the efficiency of Compute Available (to simulate downtime).
+
+D. Introduce a Visual Graphic for Compute Metrics
+	•	UI Graphic Requirement:
+	•	Add a visual display (e.g., two side-by-side progress bars or a dual-line chart) labeled “Compute Available” and “Compute Used.”
+	•	Ensure that the graphic clearly shows if Compute Used nears or exceeds Compute Available.
+	•	When overdrawn, display a warning message (e.g., “Insufficient compute capacity! Training runs and customer service may be impaired.”)
+
+E. Adjust Revenue & Customer Mechanics
+	•	API & Chatbot Revenue:
+	•	Factor in test-time compute consumption.
+	•	When test-time compute is unlocked, customer usage should drain Compute Available at a higher rate.
+	•	Ensure that if Compute Available is too low, revenue generation from API or subscriptions is reduced.
+
+F. Update Tooltips and Documentation
+	•	Clarity:
+	•	Add tooltips on all buttons and key UI elements that explain the difference between spending money (to increase Compute Available) and spending compute (for training runs).
+	•	Provide educational context within the UI: “Building compute capacity is like investing in a data center—money builds the hardware that lets you train and serve models. Running training jobs consumes compute but directly boosts your AI’s intelligence.”
+
+⸻
+
+Summary of Actions for the Developer
+	1.	Separate Compute Metrics:
+	•	Create separate state variables for Compute Available and Compute Used.
+	•	Modify the resource production code to update Compute Available based on money-based investments.
+	2.	Revise Investment Buttons:
+	•	Update Infrastructure, Power, Hardware, and Regulation buttons so they add to Compute Available.
+	•	Adjust tooltips and labels accordingly.
+	3.	Add Compute Consumption Logic:
+	•	In revenue and update cycles, deduct compute costs for inference and training.
+	•	Implement penalties if Compute Used > Compute Available.
+	4.	Implement “Train Model” Action:
+	•	Create a new button that spends a large chunk of Compute Available (plus money) to deliver an immediate boost to Intelligence.
+	•	Ensure it only activates if sufficient compute and other resource thresholds are met.
+	5.	Develop a Visual Graphic:
+	•	Add a graphic element to the UI that clearly shows “Compute Available” vs. “Compute Used.”
+	•	Make sure it is clearly labeled and highlights issues when compute usage exceeds capacity.
+	6.	Integrate Test-Time Compute Usage:
+	•	Once test-time compute is unlocked, increase the consumption rate by customers and tie that to revenue outcomes and intelligence growth.
+	7.	Documentation & UI Updates:
+	•	Update all tooltips, in-game help, and documentation to reflect these new mechanics and explain the reasoning behind them.
+
+⸻
+
+Final Note
+
+These changes will ensure that players learn the critical real-world concept: you must invest money to build a robust compute infrastructure, and that compute is a finite resource that must be carefully managed—used both for training runs (which boost intelligence) and for serving customers (which drive revenue). By clearly visualizing the gap between Compute Available and Compute Used, players can see the direct impact of their investments and operational decisions.
