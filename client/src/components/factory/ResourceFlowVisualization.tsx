@@ -155,43 +155,43 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     // Custom path adjustments based on which nodes are being connected
     if (pathId.includes('compute-to-data')) {
       // Compute to Data (horizontal, curve up)
-      heightFactor = 80;
+      heightFactor = 100;  // Increased for more space
       controlPointY = (start.y + end.y) / 2 - heightFactor;
     } 
     else if (pathId.includes('algorithm-to-compute')) {
       // Algorithm to Compute (diagonal, curve right)
-      heightFactor = 60;
+      heightFactor = 80;  // Increased for more space
       controlPointY = (start.y + end.y) / 2 - heightFactor;
       // Adjust x for better appearance
-      const controlPointXOffset = 40;
+      const controlPointXOffset = 60;  // Increased offset for wider curve
       return `M ${start.x} ${start.y} Q ${controlPointX - controlPointXOffset} ${controlPointY}, ${end.x} ${end.y}`;
     }
     else if (pathId.includes('data-to-algorithm')) {
       // Data to Algorithm (diagonal, curve left)
-      heightFactor = 40;
+      heightFactor = 80;  // Increased for more space
       controlPointY = (start.y + end.y) / 2 - heightFactor;
       // Adjust x for better appearance
-      const controlPointXOffset = 40;
+      const controlPointXOffset = 60;  // Increased offset for wider curve
       return `M ${start.x} ${start.y} Q ${controlPointX + controlPointXOffset} ${controlPointY}, ${end.x} ${end.y}`;
     }
     else if (pathId.includes('-to-intelligence')) {
       // Anything to Intelligence (vertical, spread out)
       if (pathId.includes('compute-to-intelligence')) {
-        // Curve to the left
-        return `M ${start.x} ${start.y} Q ${start.x - 50} ${(start.y + end.y) / 2}, ${end.x} ${end.y}`;
+        // Curve to the left with more arc
+        return `M ${start.x} ${start.y} Q ${start.x - 80} ${(start.y + end.y) / 2 - 20}, ${end.x} ${end.y}`;
       } else if (pathId.includes('data-to-intelligence')) {
-        // Curve to the right
-        return `M ${start.x} ${start.y} Q ${start.x + 50} ${(start.y + end.y) / 2}, ${end.x} ${end.y}`;
+        // Curve to the right with more arc
+        return `M ${start.x} ${start.y} Q ${start.x + 80} ${(start.y + end.y) / 2 - 20}, ${end.x} ${end.y}`;
       } else {
         // Algorithm to Intelligence (center path)
-        heightFactor = 50;
+        heightFactor = 60;
         controlPointY = (start.y + end.y) / 2 + heightFactor; // Curve down instead of up
         return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
       }
     }
     
     // Default fallback for any other paths
-    controlPointY = (start.y + end.y) / 2 - 50;
+    controlPointY = (start.y + end.y) / 2 - 60;
     return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
   };
   

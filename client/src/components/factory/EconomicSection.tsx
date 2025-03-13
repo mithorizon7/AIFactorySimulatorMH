@@ -79,44 +79,37 @@ export default function EconomicSection({
         </div>
       </div>
       
-      {/* Service Controls */}
+      {/* Revenue Statistics */}
       <div className="bg-gray-700 rounded-lg p-4 mb-5">
         <h3 className="text-lg font-medium mb-3 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          Service Controls
+          Revenue Statistics
           <ResourceTooltip 
-            content="Enable or disable revenue streams and set pricing. More services generate more revenue but consume compute resources." 
+            content="Your revenue streams from various services. Services automatically activate as you advance through eras." 
             resourceColor="blue-400"
           >Learn</ResourceTooltip>
         </h3>
         
         <div className="space-y-4">
-          {/* API Service Toggle */}
+          {/* API Service Stats */}
           <div className="bg-gray-800 p-3 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <Label htmlFor="api-service" className="text-blue-300 font-medium">API Service</Label>
+                <span className="text-blue-300 font-medium">API Service</span>
                 <ResourceTooltip 
-                  content="Companies pay to use your AI model via API. Generates B2B revenue but consumes compute resources (5 compute per $1000 revenue)." 
+                  content="Companies pay to use your AI model via API. Generates B2B revenue but consumes compute resources." 
                   resourceColor="blue-400"
                 >
                   <span className="ml-1 text-xs text-blue-300 underline cursor-help">ⓘ</span>
                 </ResourceTooltip>
               </div>
-              <div className="flex items-center gap-2">
+              <div>
                 {revenue.apiAvailable ? (
-                  <>
-                    <span className={`text-xs ${revenue.apiEnabled ? 'text-green-400' : 'text-gray-400'}`}>
-                      {revenue.apiEnabled ? 'Active' : 'Inactive'}
-                    </span>
-                    <Switch
-                      id="api-service"
-                      checked={revenue.apiEnabled}
-                      onCheckedChange={toggleApiService}
-                    />
-                  </>
+                  <span className="text-xs bg-blue-900/40 border border-blue-500/30 px-2 py-1 rounded">
+                    {revenue.developers.toLocaleString()} developers
+                  </span>
                 ) : (
                   <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
                     Unlocks in GNT-3 Era
@@ -125,69 +118,38 @@ export default function EconomicSection({
               </div>
             </div>
             
-            {/* API Rate Adjustment */}
-            <div className="mt-3">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
-                <span>API Rate</span>
-                <span>${formatCurrency(revenue.baseApiRate)}/tick</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Slider
-                  disabled={!revenue.apiAvailable || !revenue.apiEnabled}
-                  value={[tempApiRate]}
-                  min={500}
-                  max={5000}
-                  step={100}
-                  onValueChange={handleApiRateChange}
-                  className="flex-grow"
-                />
-                <Button 
-                  size="sm" 
-                  onClick={applyApiRateChanges}
-                  disabled={!revenue.apiAvailable || !revenue.apiEnabled || tempApiRate === revenue.baseApiRate}
-                  className="ml-2 h-8"
-                >
-                  Apply
-                </Button>
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                Current rate: ${formatCurrency(tempApiRate)}/tick
-              </div>
-              {revenue.apiAvailable && revenue.apiEnabled && (
-                <div className="text-xs text-blue-300 mt-1">
-                  Active developers: {revenue.developers.toLocaleString()} 
-                  <span className="text-gray-400 ml-2">
-                    (Growth rate: {Math.round(revenue.developerGrowthRate * 100)}%/tick)
-                  </span>
+            {/* API Statistics */}
+            {revenue.apiAvailable && (
+              <div className="text-xs text-gray-300 mt-1 grid grid-cols-2 gap-2">
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <span className="text-gray-400">Current rate:</span>
+                  <div className="text-blue-300 font-medium">${formatCurrency(revenue.baseApiRate)}/tick</div>
                 </div>
-              )}
-            </div>
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <span className="text-gray-400">Growth rate:</span>
+                  <div className="text-blue-300 font-medium">{Math.round(revenue.developerGrowthRate * 100)}%/tick</div>
+                </div>
+              </div>
+            )}
           </div>
           
-          {/* Chatbot Service Toggle */}
+          {/* Chatbot Service Stats */}
           <div className="bg-gray-800 p-3 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <Label htmlFor="chatbot-service" className="text-purple-300 font-medium">Chatbot Service</Label>
+                <span className="text-purple-300 font-medium">Chatbot Service</span>
                 <ResourceTooltip 
-                  content="End users subscribe to your AI chatbot. Generates B2C revenue but consumes compute resources (0.01 compute per subscriber)." 
+                  content="End users subscribe to your AI chatbot. Generates B2C revenue but consumes compute resources." 
                   resourceColor="purple-400"
                 >
                   <span className="ml-1 text-xs text-purple-300 underline cursor-help">ⓘ</span>
                 </ResourceTooltip>
               </div>
-              <div className="flex items-center gap-2">
+              <div>
                 {revenue.chatbotAvailable ? (
-                  <>
-                    <span className={`text-xs ${revenue.chatbotEnabled ? 'text-green-400' : 'text-gray-400'}`}>
-                      {revenue.chatbotEnabled ? 'Active' : 'Inactive'}
-                    </span>
-                    <Switch
-                      id="chatbot-service"
-                      checked={revenue.chatbotEnabled}
-                      onCheckedChange={toggleChatbotService}
-                    />
-                  </>
+                  <span className="text-xs bg-purple-900/40 border border-purple-500/30 px-2 py-1 rounded">
+                    {revenue.subscribers.toLocaleString()} subscribers
+                  </span>
                 ) : (
                   <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
                     Unlocks in GNT-4 Era
@@ -196,43 +158,19 @@ export default function EconomicSection({
               </div>
             </div>
             
-            {/* Monthly Fee Adjustment */}
-            <div className="mt-3">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
-                <span>Monthly Fee</span>
-                <span>${formatCurrency(revenue.monthlyFee)}/month</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Slider
-                  disabled={!revenue.chatbotAvailable || !revenue.chatbotEnabled}
-                  value={[tempMonthlyFee]}
-                  min={5}
-                  max={25}
-                  step={1}
-                  onValueChange={handleMonthlyFeeChange}
-                  className="flex-grow"
-                />
-                <Button 
-                  size="sm" 
-                  onClick={applyMonthlyFeeChanges}
-                  disabled={!revenue.chatbotAvailable || !revenue.chatbotEnabled || tempMonthlyFee === revenue.monthlyFee}
-                  className="ml-2 h-8"
-                >
-                  Apply
-                </Button>
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                Current fee: ${formatCurrency(tempMonthlyFee)}/month
-              </div>
-              {revenue.chatbotAvailable && revenue.chatbotEnabled && (
-                <div className="text-xs text-purple-300 mt-1">
-                  Active subscribers: {revenue.subscribers.toLocaleString()} 
-                  <span className="text-gray-400 ml-2">
-                    (Growth rate: {Math.round(revenue.subscriberGrowthRate * 100)}%/tick)
-                  </span>
+            {/* Chatbot Statistics */}
+            {revenue.chatbotAvailable && (
+              <div className="text-xs text-gray-300 mt-1 grid grid-cols-2 gap-2">
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <span className="text-gray-400">Monthly fee:</span>
+                  <div className="text-purple-300 font-medium">${formatCurrency(revenue.monthlyFee)}/month</div>
                 </div>
-              )}
-            </div>
+                <div className="bg-gray-700/50 p-2 rounded">
+                  <span className="text-gray-400">Growth rate:</span>
+                  <div className="text-purple-300 font-medium">{Math.round(revenue.subscriberGrowthRate * 100)}%/tick</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
