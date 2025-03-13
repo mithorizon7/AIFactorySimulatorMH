@@ -72,29 +72,56 @@ export default function MainGameTabs({
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
-      <div className="flex justify-center mb-6">
-        <TabsList className="grid grid-cols-5 mb-6 w-full max-w-4xl mx-auto border-b-2 border-amber-600/40">
-          <TabsTrigger value="dashboard" className="flex items-center justify-center gap-2 font-medium data-[state=active]:border-amber-500 data-[state=active]:text-amber-400 border-b-2 border-transparent px-1 py-2">
-            <BarChart3 className="h-5 w-5" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </TabsTrigger>
-          <TabsTrigger value="resources" className="flex items-center justify-center gap-2 font-medium data-[state=active]:border-blue-500 data-[state=active]:text-blue-400 border-b-2 border-transparent px-1 py-2">
-            <Zap className="h-5 w-5" />
-            <span className="hidden sm:inline">Resources</span>
-          </TabsTrigger>
-          <TabsTrigger value="economy" className="flex items-center justify-center gap-2 font-medium data-[state=active]:border-green-500 data-[state=active]:text-green-400 border-b-2 border-transparent px-1 py-2">
-            <GanttChart className="h-5 w-5" />
-            <span className="hidden sm:inline">Economy</span>
-          </TabsTrigger>
-          <TabsTrigger value="breakthroughs" className="flex items-center justify-center gap-2 font-medium data-[state=active]:border-purple-500 data-[state=active]:text-purple-400 border-b-2 border-transparent px-1 py-2">
-            <Lightbulb className="h-5 w-5" />
-            <span className="hidden sm:inline">Breakthroughs</span>
-          </TabsTrigger>
-          <TabsTrigger value="progression" className="flex items-center justify-center gap-2 font-medium data-[state=active]:border-amber-500 data-[state=active]:text-amber-400 border-b-2 border-transparent px-1 py-2">
-            <BrainCog className="h-5 w-5" />
-            <span className="hidden sm:inline">Progression</span>
-          </TabsTrigger>
-        </TabsList>
+      <div className="flex justify-center mb-8">
+        <div className="bg-gray-800 rounded-lg p-3 shadow-lg w-full border border-gray-700 max-w-4xl mx-auto">
+          <TabsList className="grid grid-cols-5 w-full bg-gray-900 rounded-md">
+            <TabsTrigger 
+              value="dashboard" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
+                data-[state=active]:bg-amber-900/20 data-[state=active]:text-amber-400 data-[state=active]:font-semibold
+                transition-all"
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="resources" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
+                data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-400 data-[state=active]:font-semibold
+                transition-all"
+            >
+              <Zap className="h-5 w-5" />
+              <span className="hidden sm:inline">Resources</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="economy" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
+                data-[state=active]:bg-green-900/20 data-[state=active]:text-green-400 data-[state=active]:font-semibold
+                transition-all"
+            >
+              <GanttChart className="h-5 w-5" />
+              <span className="hidden sm:inline">Economy</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="breakthroughs" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
+                data-[state=active]:bg-purple-900/20 data-[state=active]:text-purple-400 data-[state=active]:font-semibold
+                transition-all"
+            >
+              <Lightbulb className="h-5 w-5" />
+              <span className="hidden sm:inline">Breakthroughs</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="progression" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
+                data-[state=active]:bg-amber-900/20 data-[state=active]:text-amber-400 data-[state=active]:font-semibold
+                transition-all"
+            >
+              <BrainCog className="h-5 w-5" />
+              <span className="hidden sm:inline">Progression</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
       </div>
       
       {/* Dashboard Tab - Overview with most important metrics */}

@@ -136,8 +136,10 @@ export default function AIFactory() {
 
   function handleCloseBreakthroughModal() {
     setShowBreakthroughModal(false);
-    // Resume the game after closing the breakthrough modal
-    startGame();
+    // Resume the game after closing the breakthrough modal (if it's not already running)
+    if (!isRunning) {
+      startGame();
+    }
   }
 
   function handleCloseSummaryModal() {

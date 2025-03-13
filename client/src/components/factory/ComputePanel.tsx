@@ -57,7 +57,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
         <CardTitle className="text-xl flex justify-between items-center">
           <div className="flex items-center gap-2">
             <CpuIcon className="h-5 w-5 text-blue-400" />
-            <span>Compute Capacity</span>
+            <span className="text-white">Compute Capacity</span>
           </div>
           <ResourceTooltip 
             content={
