@@ -54,12 +54,12 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       const { width, height } = containerRef.current.getBoundingClientRect();
       setContainerSize({ width, height });
       
-      // Update node positions based on container size - adjusted for taller container
+      // Update node positions based on container size - improved spacing to avoid overlaps
       setNodePositions({
-        compute: { x: width * 0.2, y: height * 0.25 },
-        data: { x: width * 0.8, y: height * 0.25 },
-        algorithm: { x: width * 0.5, y: height * 0.4 },
-        intelligence: { x: width * 0.5, y: height * 0.15 },
+        compute: { x: width * 0.25, y: height * 0.28 },
+        data: { x: width * 0.75, y: height * 0.28 },
+        algorithm: { x: width * 0.5, y: height * 0.55 },
+        intelligence: { x: width * 0.5, y: height * 0.12 },
       });
     };
     
@@ -145,14 +145,53 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   }, [gameState.bonuses]);
 
   // Helper function to draw a curved path between two points
-  const getCurvedPath = (start: NodePosition, end: NodePosition): string => {
+  const getCurvedPath = (start: NodePosition, end: NodePosition, pathId: string): string => {
     const controlPointX = (start.x + end.x) / 2;
-    // Adjust the curve height based on the points' vertical positions and distance
-    const distance = Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
-    const heightFactor = Math.abs(start.y - end.y) > 100 ? 70 : Math.abs(start.y - end.y) > 60 ? 50 : 30;
-    // Add a small random offset to make curves more distinct when overlapping
-    const randomOffset = (start.x + end.y) % 10;
-    const controlPointY = (start.y + end.y) / 2 - heightFactor - randomOffset;
+    
+    // Different curve shapes based on path type to avoid overlaps
+    let heightFactor = 0;
+    let controlPointY = 0;
+    
+    // Custom path adjustments based on which nodes are being connected
+    if (pathId.includes('compute-to-data')) {
+      // Compute to Data (horizontal, curve up)
+      heightFactor = 80;
+      controlPointY = (start.y + end.y) / 2 - heightFactor;
+    } 
+    else if (pathId.includes('algorithm-to-compute')) {
+      // Algorithm to Compute (diagonal, curve right)
+      heightFactor = 60;
+      controlPointY = (start.y + end.y) / 2 - heightFactor;
+      // Adjust x for better appearance
+      const controlPointXOffset = 40;
+      return `M ${start.x} ${start.y} Q ${controlPointX - controlPointXOffset} ${controlPointY}, ${end.x} ${end.y}`;
+    }
+    else if (pathId.includes('data-to-algorithm')) {
+      // Data to Algorithm (diagonal, curve left)
+      heightFactor = 40;
+      controlPointY = (start.y + end.y) / 2 - heightFactor;
+      // Adjust x for better appearance
+      const controlPointXOffset = 40;
+      return `M ${start.x} ${start.y} Q ${controlPointX + controlPointXOffset} ${controlPointY}, ${end.x} ${end.y}`;
+    }
+    else if (pathId.includes('-to-intelligence')) {
+      // Anything to Intelligence (vertical, spread out)
+      if (pathId.includes('compute-to-intelligence')) {
+        // Curve to the left
+        return `M ${start.x} ${start.y} Q ${start.x - 50} ${(start.y + end.y) / 2}, ${end.x} ${end.y}`;
+      } else if (pathId.includes('data-to-intelligence')) {
+        // Curve to the right
+        return `M ${start.x} ${start.y} Q ${start.x + 50} ${(start.y + end.y) / 2}, ${end.x} ${end.y}`;
+      } else {
+        // Algorithm to Intelligence (center path)
+        heightFactor = 50;
+        controlPointY = (start.y + end.y) / 2 + heightFactor; // Curve down instead of up
+        return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
+      }
+    }
+    
+    // Default fallback for any other paths
+    controlPointY = (start.y + end.y) / 2 - 50;
     return `M ${start.x} ${start.y} Q ${controlPointX} ${controlPointY}, ${end.x} ${end.y}`;
   };
   
@@ -203,7 +242,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
     const start = nodePositions[startNode];
     const end = nodePositions[endNode];
     const pathId = `path-${id}`;
-    const path = getCurvedPath(start, end);
+    const path = getCurvedPath(start, end, id);
     
     // Get bonus value for this relationship
     const getBonusValue = () => {
@@ -611,7 +650,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full h-96 bg-gray-800 rounded-lg p-6 overflow-hidden border border-gray-700 shadow-lg"
+      className="relative w-full h-[500px] bg-gray-800 rounded-lg p-6 overflow-hidden border border-gray-700 shadow-lg"
     >
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-semibold">Resource Interactions</h2>
