@@ -56,9 +56,9 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       
       // Update node positions based on container size - improved spacing to avoid overlaps
       setNodePositions({
-        compute: { x: width * 0.25, y: height * 0.28 },
-        data: { x: width * 0.75, y: height * 0.28 },
-        algorithm: { x: width * 0.5, y: height * 0.55 },
+        compute: { x: width * 0.2, y: height * 0.3 },
+        data: { x: width * 0.8, y: height * 0.3 },
+        algorithm: { x: width * 0.5, y: height * 0.6 },
         intelligence: { x: width * 0.5, y: height * 0.12 },
       });
     };
