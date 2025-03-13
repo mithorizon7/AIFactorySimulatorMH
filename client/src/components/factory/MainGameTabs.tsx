@@ -73,12 +73,12 @@ export default function MainGameTabs({
   return (
     <Tabs defaultValue="dashboard" className="w-full">
       <div className="flex justify-center mb-8">
-        <div className="bg-gray-800 rounded-lg p-3 shadow-lg w-full border border-gray-700 max-w-4xl mx-auto">
-          <TabsList className="grid grid-cols-5 w-full bg-gray-900 rounded-md">
+        <div className="bg-gray-700 rounded-lg p-3 shadow-lg w-full border border-amber-600/30 max-w-4xl mx-auto">
+          <TabsList className="grid grid-cols-5 w-full bg-gray-800 rounded-md">
             <TabsTrigger 
               value="dashboard" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-amber-900/20 data-[state=active]:text-amber-400 data-[state=active]:font-semibold
+                data-[state=active]:bg-amber-800/40 data-[state=active]:text-amber-300 data-[state=active]:font-semibold
                 transition-all"
             >
               <BarChart3 className="h-5 w-5" />
@@ -87,7 +87,7 @@ export default function MainGameTabs({
             <TabsTrigger 
               value="resources" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-blue-900/20 data-[state=active]:text-blue-400 data-[state=active]:font-semibold
+                data-[state=active]:bg-blue-800/40 data-[state=active]:text-blue-300 data-[state=active]:font-semibold
                 transition-all"
             >
               <Zap className="h-5 w-5" />
@@ -96,7 +96,7 @@ export default function MainGameTabs({
             <TabsTrigger 
               value="economy" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-green-900/20 data-[state=active]:text-green-400 data-[state=active]:font-semibold
+                data-[state=active]:bg-green-800/40 data-[state=active]:text-green-300 data-[state=active]:font-semibold
                 transition-all"
             >
               <GanttChart className="h-5 w-5" />
@@ -105,7 +105,7 @@ export default function MainGameTabs({
             <TabsTrigger 
               value="breakthroughs" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-purple-900/20 data-[state=active]:text-purple-400 data-[state=active]:font-semibold
+                data-[state=active]:bg-purple-800/40 data-[state=active]:text-purple-300 data-[state=active]:font-semibold
                 transition-all"
             >
               <Lightbulb className="h-5 w-5" />
@@ -114,7 +114,7 @@ export default function MainGameTabs({
             <TabsTrigger 
               value="progression" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-amber-900/20 data-[state=active]:text-amber-400 data-[state=active]:font-semibold
+                data-[state=active]:bg-amber-800/40 data-[state=active]:text-amber-300 data-[state=active]:font-semibold
                 transition-all"
             >
               <BrainCog className="h-5 w-5" />
