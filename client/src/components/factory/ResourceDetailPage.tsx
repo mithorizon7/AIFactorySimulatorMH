@@ -165,9 +165,18 @@ export default function ResourceDetailPage({
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Data Quality */}
-                  <div className="bg-gray-800 p-4 rounded-lg">
+                  <div className="bg-gray-800 p-4 rounded-lg relative">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-lg font-medium">Data Quality</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-medium">Data Quality</h4>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 border border-green-500/40 bg-green-900/20 hover:bg-green-900/40 text-green-400"
+                        >
+                          What is this?
+                        </Button>
+                      </div>
                       <div className="bg-green-900 px-3 py-1 rounded-full text-sm">
                         Level: {dataInputs.quality}
                       </div>

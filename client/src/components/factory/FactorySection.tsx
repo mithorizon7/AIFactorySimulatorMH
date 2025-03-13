@@ -58,11 +58,12 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
     <Dialog>
       <DialogTrigger asChild>
         <Button 
-          variant="ghost" 
-          size="icon" 
-          className={`h-6 w-6 absolute right-2 top-2 bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-full`}
+          variant="outline" 
+          size="sm"
+          className={`text-xs px-2 py-1 h-auto absolute right-2 top-2 bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md`}
         >
-          <GraduationCap className={`h-4 w-4 ${categoryColors[category]}`} />
+          <Info className={`h-3.5 w-3.5 mr-1 ${categoryColors[category]}`} />
+          What is this?
         </Button>
       </DialogTrigger>
       <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50`}>
