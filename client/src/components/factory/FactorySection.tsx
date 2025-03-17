@@ -74,8 +74,22 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
     algorithm: "bg-purple-900/20"
   };
   
+  // Use effect to pause/resume game when dialog opens/closes
+  useEffect(() => {
+    if (isDialogOpen) {
+      gamePause.pauseForLearning();
+    } else {
+      gamePause.resumeFromLearning();
+    }
+  }, [isDialogOpen]);
+  
+  // Handle dialog open/close events
+  const handleOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
@@ -96,6 +110,15 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
             Learn how this works in real AI development
           </DialogDescription>
         </DialogHeader>
+        
+        {/* Pause indicator */}
+        {gamePause.isPausedForLearning && (
+          <div className="mb-2 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
+            <PauseIcon className="w-3 h-3 mr-1" />
+            Game timer paused while learning
+          </div>
+        )}
+        
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <h4 className="text-white font-medium">Description</h4>
@@ -112,7 +135,9 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" className="border-gray-700 hover:bg-gray-700">Close</Button>
+            <Button variant="outline" className="border-gray-700 hover:bg-gray-700">
+              Continue Building
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
