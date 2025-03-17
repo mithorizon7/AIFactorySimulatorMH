@@ -111,14 +111,6 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
           </DialogDescription>
         </DialogHeader>
         
-        {/* Pause indicator */}
-        {gamePause.isPausedForLearning && (
-          <div className="mb-2 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
-            <PauseIcon className="w-3 h-3 mr-1" />
-            Game timer paused while learning
-          </div>
-        )}
-        
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <h4 className="text-white font-medium">Description</h4>
@@ -132,6 +124,14 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
             <h4 className="text-white font-medium">Why It Matters</h4>
             <p className="text-gray-300 text-sm">{importance}</p>
           </div>
+          
+          {/* Pause indicator */}
+          {gamePause.isPausedForLearning && (
+            <div className="mt-4 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
+              <PauseIcon className="w-3 h-3 mr-1" />
+              Game timer paused while learning
+            </div>
+          )}
         </div>
         <DialogFooter>
           <DialogClose asChild>

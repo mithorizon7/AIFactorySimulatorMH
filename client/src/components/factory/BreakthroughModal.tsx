@@ -82,11 +82,6 @@ export default function BreakthroughModal({ breakthrough, onClose }: Breakthroug
           
           <h3 className="text-2xl font-bold">Breakthrough!</h3>
           <p className={`${getTextColor} font-medium mt-1`}>{breakthrough.name}</p>
-          
-          <div className="mt-2 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded-full text-yellow-400 text-xs inline-flex items-center">
-            <PauseIcon className="w-3 h-3 mr-1" />
-            Game timer paused while learning
-          </div>
         </div>
         
         <div className="mb-6">
@@ -119,6 +114,14 @@ export default function BreakthroughModal({ breakthrough, onClose }: Breakthroug
             <p className="text-sm text-gray-300">{getNextChallengeHint()}</p>
           </div>
         </div>
+        
+        {/* Pause indicator */}
+        {gamePause.isPausedForLearning && (
+          <div className="mb-4 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center justify-center">
+            <PauseIcon className="w-3 h-3 mr-1" />
+            Game timer paused while learning
+          </div>
+        )}
         
         <div className="flex justify-center">
           <Button

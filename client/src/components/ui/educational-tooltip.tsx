@@ -125,13 +125,13 @@ export function EducationalTooltip({
           className="max-w-xs p-4 text-sm bg-gray-800 border-gray-700"
         >
           <div className="text-gray-200">
+            {content}
             {gamePause?.isPausedForLearning && (
-              <div className="mb-2 px-2 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
+              <div className="mt-3 px-2 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
                 <PauseIcon className="w-3 h-3 mr-1" />
                 Game timer paused while learning
               </div>
             )}
-            {content}
           </div>
         </TooltipContent>
       </Tooltip>
