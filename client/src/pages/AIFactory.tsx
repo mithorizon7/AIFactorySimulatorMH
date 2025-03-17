@@ -6,6 +6,7 @@ import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
 import { apiRequest } from "@/lib/queryClient";
 import "@/components/factory/resourceFlow.css";
+import { GamePauseProvider } from "@/contexts/GamePauseContext";
 
 // New UI Components
 import WelcomeIntroduction from "@/components/factory/WelcomeIntroduction";
@@ -152,81 +153,87 @@ export default function AIFactory() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-950 to-gray-900 text-white min-h-screen font-sans">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        {/* Game Header with Controls and Key Metrics */}
-        <GameHeader 
-          gameState={gameState}
-          isRunning={isRunning}
-          timeElapsed={timeElapsed}
-          formattedTime={formattedTime}
-          startGame={startGame}
-          pauseGame={pauseGame}
-          resetGame={resetGame}
-        />
-
-        {/* Compute Capacity Section */}
-        <div className="mb-6">
-          <ComputePanel 
+    <GamePauseProvider 
+      pauseGame={pauseGame} 
+      startGame={startGame}
+      isRunning={isRunning}
+    >
+      <div className="bg-gradient-to-b from-gray-950 to-gray-900 text-white min-h-screen font-sans">
+        <div className="container mx-auto px-4 py-6 max-w-6xl">
+          {/* Game Header with Controls and Key Metrics */}
+          <GameHeader 
             gameState={gameState}
-            trainModel={trainModel}
+            isRunning={isRunning}
+            timeElapsed={timeElapsed}
+            formattedTime={formattedTime}
+            startGame={startGame}
+            pauseGame={pauseGame}
+            resetGame={resetGame}
           />
+
+          {/* Compute Capacity Section */}
+          <div className="mb-6">
+            <ComputePanel 
+              gameState={gameState}
+              trainModel={trainModel}
+            />
+          </div>
+          
+          {/* Main Game Content */}
+          <MainGameTabs 
+            gameState={gameState}
+            upgradeCompute={upgradeCompute}
+            upgradeData={upgradeData}
+            upgradeAlgorithm={upgradeAlgorithm}
+            investInCompute={investInCompute}
+            investInData={investInData}
+            investInAlgorithm={investInAlgorithm}
+            allocateMoneyToCompute={allocateMoneyToCompute}
+            allocateMoneyToData={allocateMoneyToData}
+            allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            allocateMoneyToElectricity={allocateMoneyToElectricity}
+            allocateMoneyToHardware={allocateMoneyToHardware}
+            allocateMoneyToRegulations={allocateMoneyToRegulations}
+            allocateMoneyToDataQuality={allocateMoneyToDataQuality}
+            allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
+            allocateMoneyToDataFormats={allocateMoneyToDataFormats}
+            allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+            toggleApiService={toggleApiService}
+            toggleChatbotService={toggleChatbotService}
+            setApiRate={setApiRate}
+            setMonthlyFee={setMonthlyFee}
+            improveDeveloperTools={improveDeveloperTools}
+            improveChatbot={improveChatbot}
+            runAdvertisingCampaign={runAdvertisingCampaign}
+          />
+
+          {/* Help Panel (floating button) */}
+          <HelpPanel currentEra={gameState.currentEra} />
+
+          {/* Modals */}
+          {showIntroduction && (
+            <WelcomeIntroduction 
+              onClose={handleCloseIntroduction}
+              currentEra={gameState.currentEra}
+            />
+          )}
+
+          {showBreakthroughModal && currentBreakthrough && (
+            <BreakthroughModal 
+              breakthrough={currentBreakthrough} 
+              onClose={handleCloseBreakthroughModal}
+            />
+          )}
+
+          {showSummaryModal && (
+            <GameSummaryModal 
+              gameState={gameState}
+              onClose={handleCloseSummaryModal}
+              onReset={handleResetAndCloseSummary}
+            />
+          )}
         </div>
-        
-        {/* Main Game Content */}
-        <MainGameTabs 
-          gameState={gameState}
-          upgradeCompute={upgradeCompute}
-          upgradeData={upgradeData}
-          upgradeAlgorithm={upgradeAlgorithm}
-          investInCompute={investInCompute}
-          investInData={investInData}
-          investInAlgorithm={investInAlgorithm}
-          allocateMoneyToCompute={allocateMoneyToCompute}
-          allocateMoneyToData={allocateMoneyToData}
-          allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
-          allocateMoneyToElectricity={allocateMoneyToElectricity}
-          allocateMoneyToHardware={allocateMoneyToHardware}
-          allocateMoneyToRegulations={allocateMoneyToRegulations}
-          allocateMoneyToDataQuality={allocateMoneyToDataQuality}
-          allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
-          allocateMoneyToDataFormats={allocateMoneyToDataFormats}
-          allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
-          toggleApiService={toggleApiService}
-          toggleChatbotService={toggleChatbotService}
-          setApiRate={setApiRate}
-          setMonthlyFee={setMonthlyFee}
-          improveDeveloperTools={improveDeveloperTools}
-          improveChatbot={improveChatbot}
-          runAdvertisingCampaign={runAdvertisingCampaign}
-        />
-
-        {/* Help Panel (floating button) */}
-        <HelpPanel currentEra={gameState.currentEra} />
-
-        {/* Modals */}
-        {showIntroduction && (
-          <WelcomeIntroduction 
-            onClose={handleCloseIntroduction}
-            currentEra={gameState.currentEra}
-          />
-        )}
-
-        {showBreakthroughModal && currentBreakthrough && (
-          <BreakthroughModal 
-            breakthrough={currentBreakthrough} 
-            onClose={handleCloseBreakthroughModal}
-          />
-        )}
-
-        {showSummaryModal && (
-          <GameSummaryModal 
-            gameState={gameState}
-            onClose={handleCloseSummaryModal}
-            onReset={handleResetAndCloseSummary}
-          />
-        )}
       </div>
-    </div>
+    </GamePauseProvider>
   );
 }

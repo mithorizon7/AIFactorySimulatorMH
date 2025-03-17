@@ -1,6 +1,7 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookOpenIcon } from "lucide-react";
+import { BookOpenIcon, PauseIcon } from "lucide-react";
+import { useGamePause } from "@/contexts/GamePauseContext";
 
 interface EducationalTooltipProps {
   children: ReactNode;
@@ -21,6 +22,34 @@ export function EducationalTooltip({
   // For backward compatibility
   icon,
 }: EducationalTooltipProps & { icon?: ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Safely access GamePauseContext using try/catch
+  let gamePause;
+  try {
+    gamePause = useGamePause();
+  } catch (error) {
+    // If context is not available, provide no-op functions
+    gamePause = {
+      isPausedForLearning: false, 
+      pauseForLearning: () => {}, 
+      resumeFromLearning: () => {},
+      pauseGameEngine: () => {},
+      resumeGameEngine: () => {}
+    };
+  }
+  
+  const { pauseForLearning, resumeFromLearning } = gamePause;
+  
+  const handleTooltipOpen = () => {
+    if (pauseForLearning) pauseForLearning();
+    setIsOpen(true);
+  };
+  
+  const handleTooltipClose = () => {
+    if (resumeFromLearning) resumeFromLearning();
+    setIsOpen(false);
+  };
   // Map resourceColor to specific Tailwind classes
   const getButtonClasses = () => {
     switch(resourceColor) {
@@ -76,7 +105,17 @@ export function EducationalTooltip({
 
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={300}>
+      <Tooltip 
+        delayDuration={300} 
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            handleTooltipOpen();
+          } else {
+            handleTooltipClose();
+          }
+        }}
+      >
         <TooltipTrigger className="cursor-help">
           {renderTriggerContent()}
         </TooltipTrigger>
@@ -86,6 +125,12 @@ export function EducationalTooltip({
           className="max-w-xs p-4 text-sm bg-gray-800 border-gray-700"
         >
           <div className="text-gray-200">
+            {gamePause?.isPausedForLearning && (
+              <div className="mb-2 px-2 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
+                <PauseIcon className="w-3 h-3 mr-1" />
+                Game timer paused while learning
+              </div>
+            )}
             {content}
           </div>
         </TooltipContent>

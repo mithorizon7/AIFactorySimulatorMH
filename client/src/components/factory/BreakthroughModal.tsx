@@ -1,5 +1,8 @@
 import { Breakthrough } from "@/lib/gameState";
 import { Button } from "@/components/ui/button";
+import { useGamePause } from "@/contexts/GamePauseContext";
+import { useEffect } from "react";
+import { PauseIcon } from "lucide-react";
 
 interface BreakthroughModalProps {
   breakthrough: Breakthrough;
@@ -7,6 +10,31 @@ interface BreakthroughModalProps {
 }
 
 export default function BreakthroughModal({ breakthrough, onClose }: BreakthroughModalProps) {
+  // Safe access to game pause context
+  let gamePause;
+  try {
+    gamePause = useGamePause();
+  } catch (error) {
+    // If context is not available, provide no-op functions
+    gamePause = {
+      isPausedForLearning: true, 
+      pauseForLearning: () => {}, 
+      resumeFromLearning: () => {},
+      pauseGameEngine: () => {},
+      resumeGameEngine: () => {}
+    };
+  }
+  
+  // Use effect to ensure game is paused when breakthrough modal is shown
+  useEffect(() => {
+    gamePause.pauseForLearning();
+    
+    // Resume game when component unmounts
+    return () => {
+      gamePause.resumeFromLearning();
+    };
+  }, []);
+  
   const getBreakthroughTypeColor = (type: string) => {
     switch (type) {
       case 'compute': return 'bg-[#3B82F6] text-[#3B82F6]';
@@ -54,6 +82,11 @@ export default function BreakthroughModal({ breakthrough, onClose }: Breakthroug
           
           <h3 className="text-2xl font-bold">Breakthrough!</h3>
           <p className={`${getTextColor} font-medium mt-1`}>{breakthrough.name}</p>
+          
+          <div className="mt-2 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded-full text-yellow-400 text-xs inline-flex items-center">
+            <PauseIcon className="w-3 h-3 mr-1" />
+            Game timer paused while learning
+          </div>
         </div>
         
         <div className="mb-6">

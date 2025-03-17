@@ -32,6 +32,10 @@ interface FactorySectionProps {
   allocateMoneyToAlgorithmArchitectures: () => void;
 }
 
+import { useGamePause } from "@/contexts/GamePauseContext";
+import { useEffect, useState } from "react";
+import { PauseIcon } from "lucide-react";
+
 // Learning Dialog Component for Advanced Options
 interface LearningDialogProps {
   title: string;
@@ -42,6 +46,22 @@ interface LearningDialogProps {
 }
 
 function LearningDialog({ title, description, realWorldExample, importance, category }: LearningDialogProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Safe access to game pause context
+  let gamePause;
+  try {
+    gamePause = useGamePause();
+  } catch (error) {
+    // If context is not available, provide no-op functions
+    gamePause = {
+      isPausedForLearning: false, 
+      pauseForLearning: () => {}, 
+      resumeFromLearning: () => {},
+      pauseGameEngine: () => {},
+      resumeGameEngine: () => {}
+    };
+  }
   const categoryColors = {
     compute: "text-blue-400",
     data: "text-green-400",
