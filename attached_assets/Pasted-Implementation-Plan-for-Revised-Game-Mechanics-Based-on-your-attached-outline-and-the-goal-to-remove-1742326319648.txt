@@ -1,0 +1,84 @@
+Implementation Plan for Revised Game Mechanics
+Based on your attached outline and the goal to remove redundant systems like "improve AI capabilities" and "allocate resources," here's a strategic plan to align our game with the new progression structure:
+
+Core System Changes
+1. Compute System Refactoring
+Current Issues:
+
+Multiple overlapping ways to increase compute (upgrade GPUs, infrastructure investment, direct allocation)
+Unclear relationship between compute metrics and capacity
+Proposed Solutions:
+
+Remove: "Allocate resources" and "Improve AI capabilities" buttons completely
+Consolidate: Focus on the infrastructure investments as the only way to increase compute capacity
+Clarify: Make three-way allocation (customer, training, research) the central gameplay mechanic
+Implementation Approach:
+
+Update UI to prominently display:
+Total compute capacity (built through infrastructure investments)
+Current breakdown of compute usage (customers, training, free/research)
+Warning indicators when approaching capacity limits (90%+)
+2. Training Run System Enhancement
+Current Issues:
+
+Training run mechanics don't clearly connect to the era progression
+Prerequisites aren't clearly visualized
+Proposed Solutions:
+
+Make training runs the only way to progress through eras
+Implement the 10× compute scaling requirement per era
+Create clear visual indicators for prerequisites
+Reserve compute explicitly during training periods
+Implementation Approach:
+
+Modify ComputePanel to show compute reservation during training
+Add visual indicators for all prerequisites (compute capacity, advanced inputs level, algorithm research progress)
+Implement the 30-day training period with compute locked during this time
+3. Algorithm Lab Revamp
+Current Issues:
+
+"Architecture research" doesn't clearly connect to engineer hiring
+Research progress isn't visually tied to training prerequisites
+Proposed Solutions:
+
+Rename to "Research Engineers" completely
+Create clear visualization of research progress toward next training run
+Show how free compute affects research rate
+Implementation Approach:
+
+Update AlgorithmInputs section to explicitly mention hiring engineers
+Create progress bar showing advancement toward next training run readiness
+Visualize how free compute provides a bonus to research rate
+UI Restructuring Plan
+1. Main Dashboard
+Focus on the three core metrics with clearer relationships:
+Compute capacity and current allocation (customers/training/research)
+Data capacity and quality levels
+Algorithm research progress toward next training requirement
+2. Training Run Panel
+Make this the central progression mechanic
+Clear visualization of all prerequisites:
+Required free compute (with indicator if sufficient)
+Advanced compute input levels (with indicators if met)
+Data quality/quantity indicators
+Algorithm research progress
+3. Advanced Input Investments
+Keep these but make their purpose clearer:
+Infrastructure/Power/Hardware/Regulation affect compute capacity
+Each must reach appropriate level for next training run
+Game Flow Adjustments
+The revised game flow would be:
+
+Build compute capacity through infrastructure investments
+Balance compute allocation between customer services and research
+Hire engineers to advance algorithm research
+Meet all prerequisites for next training run
+Initiate training run (locking compute for 30 days)
+Complete training run to advance to next era
+Repeat with higher requirements for each era
+Implementation Priority
+First, remove redundant systems (allocate resources, improve AI capabilities)
+Refactor compute system to clearly separate capacity from allocation
+Enhance training run prerequisites visualization
+Implement the compute reservation during training
+Update tooltips and educational content to reinforce new mechanics
