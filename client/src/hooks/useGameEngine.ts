@@ -118,8 +118,9 @@ export function useGameEngine() {
     }
     
     // Get the training run for the next era if it exists
-    // Note: For GNT2 era, there won't be a run in the runs object since we start at GNT2 and train toward GNT3
-    const trainingRun = nextEra in gameState.training.runs ? gameState.training.runs[nextEra] : null;
+    // Note: For GNT-2 era, there won't be a run in the runs object since we start at GNT-2 and train toward GNT-3
+    const trainingRun = Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra) ? 
+      gameState.training.runs[nextEra as keyof typeof gameState.training.runs] : null;
     
     // If we're already actively training, don't allow starting another run
     if (gameState.training.active) {
@@ -200,8 +201,9 @@ export function useGameEngine() {
         // All prerequisites met, change status to AVAILABLE
         setGameState(prevState => {
           const newState = { ...prevState };
-          if (newState.training.runs[nextEra]) {
-            newState.training.runs[nextEra].status = TrainingStatus.AVAILABLE;
+          if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
+            const typedEra = nextEra as keyof typeof newState.training.runs;
+            newState.training.runs[typedEra].status = TrainingStatus.AVAILABLE;
           }
           return newState;
         });
@@ -238,10 +240,11 @@ export function useGameEngine() {
       newState.training.computeReserved = trainingRun.computeRequired;
       
       // Update the specific training run if it exists
-      if (newState.training.runs[nextEra]) {
-        newState.training.runs[nextEra].status = TrainingStatus.IN_PROGRESS;
-        newState.training.runs[nextEra].daysRemaining = trainingRun.daysRequired;
-        newState.training.runs[nextEra].isTrainingReserveActive = true;
+      if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
+        const typedEra = nextEra as keyof typeof newState.training.runs;
+        newState.training.runs[typedEra].status = TrainingStatus.IN_PROGRESS;
+        newState.training.runs[typedEra].daysRemaining = trainingRun.daysRequired;
+        newState.training.runs[typedEra].isTrainingReserveActive = true;
       }
       
       toast({
