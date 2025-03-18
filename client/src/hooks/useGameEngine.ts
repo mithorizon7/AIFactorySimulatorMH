@@ -1094,6 +1094,37 @@ export function useGameEngine() {
       });
     }
   };
+  
+  // Function to hire a research engineer
+  const hireResearchEngineer = () => {
+    const engineerCost = 250; // Cost to hire one engineer
+    
+    if (gameState.money >= engineerCost) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= engineerCost;
+        
+        // Increment research engineers count
+        newState.algorithmInputs.researchEngineers = (newState.algorithmInputs.researchEngineers || 0) + 1;
+        
+        // Each engineer increases algorithm research rate by 0.5 per day
+        newState.training.algorithmResearchRate += 0.5;
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Research Engineer Hired",
+        description: "A new engineer has joined your research team! Algorithm research will progress faster.",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: `You need $${engineerCost} to hire a research engineer.`,
+        variant: "destructive",
+      });
+    }
+  };
 
   // Calculate production rates based on enabling inputs and synergy bonuses
   const calculateProductionRates = (state: GameStateType) => {
@@ -1779,6 +1810,7 @@ export function useGameEngine() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
+    hireResearchEngineer, // Function to hire research engineers for algorithm research
     // Revenue service controls
     toggleApiService,
     toggleChatbotService,

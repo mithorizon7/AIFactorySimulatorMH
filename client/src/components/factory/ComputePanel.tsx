@@ -9,9 +9,10 @@ import { GameStateType, Era, TrainingStatus } from '@/lib/gameState';
 interface ComputePanelProps {
   gameState: GameStateType;
   trainModel: () => void;
+  hireResearchEngineer?: () => void; // Optional for backwards compatibility
 }
 
-export default function ComputePanel({ gameState, trainModel }: ComputePanelProps) {
+export default function ComputePanel({ gameState, trainModel, hireResearchEngineer }: ComputePanelProps) {
   const { computeCapacity, money } = gameState;
   
   // Calculate percentage of compute capacity being used
