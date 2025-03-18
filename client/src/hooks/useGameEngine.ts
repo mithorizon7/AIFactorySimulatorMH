@@ -211,10 +211,10 @@ export function useGameEngine() {
     }
     
     // Check if player has enough compute capacity available for the training run
-    if (gameState.computeCapacity.available < trainingRun.computeRequired) {
+    if (!trainingRun || gameState.computeCapacity.available < trainingRun.computeRequired) {
       toast({
         title: "Insufficient Compute Capacity",
-        description: `You need ${trainingRun.computeRequired.toLocaleString()} compute capacity available to run this training job. Upgrade your infrastructure.`,
+        description: `You need ${trainingRun?.computeRequired.toLocaleString() || "more"} compute capacity available to run this training job. Upgrade your infrastructure.`,
         variant: "destructive",
       });
       return;
@@ -233,10 +233,12 @@ export function useGameEngine() {
       newState.training.daysRemaining = trainingRun.daysRequired;
       newState.training.computeReserved = trainingRun.computeRequired;
       
-      // Update the specific training run
-      newState.training.runs[nextEra].status = TrainingStatus.IN_PROGRESS;
-      newState.training.runs[nextEra].daysRemaining = trainingRun.daysRequired;
-      newState.training.runs[nextEra].isTrainingReserveActive = true;
+      // Update the specific training run if it exists
+      if (newState.training.runs[nextEra]) {
+        newState.training.runs[nextEra].status = TrainingStatus.IN_PROGRESS;
+        newState.training.runs[nextEra].daysRemaining = trainingRun.daysRequired;
+        newState.training.runs[nextEra].isTrainingReserveActive = true;
+      }
       
       toast({
         title: "Training Started!",
@@ -1056,6 +1058,13 @@ export function useGameEngine() {
             // Find the current active training run
             const activeEra = getNextEra(newState.currentEra);
             const activeTrainingRun = newState.training.runs[activeEra] || null;
+            
+            // Skip processing if no active training run exists for this era
+            if (!activeTrainingRun) {
+              newState.training.active = false;
+              newState.training.daysRemaining = 0;
+              return newState;
+            }
             
             if (activeTrainingRun && activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
               // Also update the days remaining on the specific training run
