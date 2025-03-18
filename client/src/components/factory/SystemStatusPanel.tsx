@@ -143,17 +143,64 @@ export default function SystemStatusPanel({ gameState }: SystemStatusPanelProps)
             <span className="text-gray-400">Total Compute</span>
             <span>{computeCapacity.used} / {computeCapacity.maxCapacity}</span>
           </div>
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-purple-400">Customer Usage</span>
-            <span>{computeCapacity.customerUsage || 0} units</span>
+          
+          {/* Compute Distribution Bar */}
+          <div className="h-6 bg-gray-900 rounded-md overflow-hidden mb-2 flex w-full">
+            {/* Customer Usage Section */}
+            {(computeCapacity.customerUsage || 0) > 0 && (
+              <div 
+                className="h-full bg-purple-500" 
+                style={{ 
+                  width: `${((computeCapacity.customerUsage || 0) / computeCapacity.maxCapacity) * 100}%`,
+                }}
+              ></div>
+            )}
+            
+            {/* Training Reserved Section */}
+            {(gameState.training.computeReserved || 0) > 0 && (
+              <div 
+                className="h-full bg-amber-500" 
+                style={{ 
+                  width: `${((gameState.training.computeReserved || 0) / computeCapacity.maxCapacity) * 100}%`,
+                }}
+              ></div>
+            )}
+            
+            {/* Free Compute Section */}
+            {(computeCapacity.freeCompute || 0) > 0 && (
+              <div 
+                className="h-full bg-green-500" 
+                style={{ 
+                  width: `${((computeCapacity.freeCompute || 0) / computeCapacity.maxCapacity) * 100}%`,
+                }}
+              ></div>
+            )}
+            
+            {/* Unused Space */}
+            {(computeCapacity.maxCapacity - computeCapacity.available) > 0 && (
+              <div 
+                className="h-full bg-gray-700" 
+                style={{ 
+                  width: `${((computeCapacity.maxCapacity - computeCapacity.available) / computeCapacity.maxCapacity) * 100}%`,
+                }}
+              ></div>
+            )}
           </div>
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-amber-400">Training Reserved</span>
-            <span>{gameState.training.computeReserved || 0} units</span>
-          </div>
-          <div className="flex justify-between text-xs mb-1">
-            <span className="text-green-400">Free for Research</span>
-            <span>{computeCapacity.freeCompute || 0} units</span>
+          
+          {/* Legend */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="flex items-center text-xs">
+              <div className="w-3 h-3 bg-purple-500 rounded-sm mr-1.5"></div>
+              <span className="text-purple-400">Customer: {computeCapacity.customerUsage || 0}</span>
+            </div>
+            <div className="flex items-center text-xs">
+              <div className="w-3 h-3 bg-amber-500 rounded-sm mr-1.5"></div>
+              <span className="text-amber-400">Training: {gameState.training.computeReserved || 0}</span>
+            </div>
+            <div className="flex items-center text-xs">
+              <div className="w-3 h-3 bg-green-500 rounded-sm mr-1.5"></div>
+              <span className="text-green-400">Research: {computeCapacity.freeCompute || 0}</span>
+            </div>
           </div>
         </div>
       </div>
