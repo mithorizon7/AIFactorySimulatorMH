@@ -454,43 +454,191 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                 </div>
               </div>
 
-              {/* Detailed Prerequisites Visualization */}
-              <div className="mt-4 bg-gray-800 p-3 rounded-md border border-gray-700 max-h-[180px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-                <h4 className="text-sm font-medium text-white mb-2">Training Prerequisites</h4>
-                <div className="space-y-2">
-                  {allPrerequisites.map((prereq, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className={`mr-2 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
-                          {prereq.isMet ? <CheckCircleIcon className="h-3 w-3" /> : <LockIcon className="h-3 w-3" />}
-                        </span>
-                        <ResourceTooltip 
-                          content={getPrerequisiteEducation(prereq.name)}
-                          resourceType={prereq.category as any}
-                          buttonPosition="inline"
-                          side="top"
-                        >
-                          <span className={`flex items-center text-xs ${prereq.colorClass}`}>
-                            {prereq.icon}
-                            <span className="ml-1">{prereq.name}</span>
-                          </span>
-                        </ResourceTooltip>
+              {/* Detailed Prerequisites Visualization - Organized by Category */}
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-white mb-3">Training Prerequisites</h4>
+                
+                {/* Categories Grid */}
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Compute Prerequisites */}
+                  <div className="bg-gradient-to-b from-blue-900/20 to-blue-900/10 border border-blue-900/40 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <CpuIcon className="h-3.5 w-3.5 text-blue-400" />
+                        <span className="text-xs font-medium text-blue-300">Compute</span>
                       </div>
-                      <div className="flex items-center">
-                        <span className={`text-xs ${prereq.isMet ? 'text-green-400' : 'text-gray-400'}`}>
-                          {prereq.current}{prereq.isPercentage ? '%' : ''}
-                        </span>
-                        <span className="text-xs text-gray-500 mx-1">/</span>
-                        <span className="text-xs text-gray-400">
-                          {prereq.required}{prereq.isPercentage ? '%' : ''}
-                        </span>
-                        <Progress 
-                          value={Math.min(100, (prereq.current / prereq.required) * 100)} 
-                          className={`ml-2 w-12 h-1.5 bg-gray-700 [&>div]:${prereq.isMet ? 'bg-green-500' : prereq.colorClass.replace('text', 'bg')}`} 
-                        />
-                      </div>
+                      <span className="text-[10px] bg-blue-900/30 rounded-full px-2 py-0.5 text-blue-300">
+                        {metPrereqsByCategory.compute}/{totalPrereqsByCategory.compute}
+                      </span>
                     </div>
-                  ))}
+                    
+                    <div className="space-y-2">
+                      {allPrerequisites
+                        .filter(prereq => prereq.category === 'compute')
+                        .map((prereq, index) => (
+                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center">
+                                <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
+                                  {prereq.isMet ? 
+                                    <CheckCircleIcon className="h-3 w-3" /> : 
+                                    <LockIcon className="h-3 w-3" />
+                                  }
+                                </span>
+                                <ResourceTooltip 
+                                  content={getPrerequisiteEducation(prereq.name)}
+                                  resourceType="compute"
+                                  buttonPosition="inline"
+                                  side="top"
+                                >
+                                  <span className="flex items-center text-xs text-blue-400">
+                                    {prereq.icon}
+                                    <span className="ml-1 font-medium">{prereq.name}</span>
+                                  </span>
+                                </ResourceTooltip>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center text-xs mt-1">
+                              <span className={prereq.isMet ? 'text-green-400' : 'text-gray-400'}>
+                                {prereq.current}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <span className="text-gray-500 mx-1">/</span>
+                              <span className="text-gray-400">
+                                {prereq.required}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <div className="flex-1 ml-2">
+                                <Progress 
+                                  value={Math.min(100, (prereq.current / prereq.required) * 100)} 
+                                  className={`h-1.5 bg-gray-700/80 [&>div]:${prereq.isMet ? 'bg-green-500' : 'bg-blue-500'}`} 
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                  
+                  {/* Data Prerequisites */}
+                  <div className="bg-gradient-to-b from-green-900/20 to-green-900/10 border border-green-900/40 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <ZapIcon className="h-3.5 w-3.5 text-green-400" />
+                        <span className="text-xs font-medium text-green-300">Data</span>
+                      </div>
+                      <span className="text-[10px] bg-green-900/30 rounded-full px-2 py-0.5 text-green-300">
+                        {metPrereqsByCategory.data}/{totalPrereqsByCategory.data}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {allPrerequisites
+                        .filter(prereq => prereq.category === 'data')
+                        .map((prereq, index) => (
+                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center">
+                                <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
+                                  {prereq.isMet ? 
+                                    <CheckCircleIcon className="h-3 w-3" /> : 
+                                    <LockIcon className="h-3 w-3" />
+                                  }
+                                </span>
+                                <ResourceTooltip 
+                                  content={getPrerequisiteEducation(prereq.name)}
+                                  resourceType="data"
+                                  buttonPosition="inline"
+                                  side="top"
+                                >
+                                  <span className="flex items-center text-xs text-green-400">
+                                    {prereq.icon}
+                                    <span className="ml-1 font-medium">{prereq.name}</span>
+                                  </span>
+                                </ResourceTooltip>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center text-xs mt-1">
+                              <span className={prereq.isMet ? 'text-green-400' : 'text-gray-400'}>
+                                {prereq.current}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <span className="text-gray-500 mx-1">/</span>
+                              <span className="text-gray-400">
+                                {prereq.required}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <div className="flex-1 ml-2">
+                                <Progress 
+                                  value={Math.min(100, (prereq.current / prereq.required) * 100)} 
+                                  className={`h-1.5 bg-gray-700/80 [&>div]:${prereq.isMet ? 'bg-green-500' : 'bg-green-500'}`} 
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                  
+                  {/* Algorithm Prerequisites */}
+                  <div className="bg-gradient-to-b from-purple-900/20 to-purple-900/10 border border-purple-900/40 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <BrainIcon className="h-3.5 w-3.5 text-purple-400" />
+                        <span className="text-xs font-medium text-purple-300">Algorithm</span>
+                      </div>
+                      <span className="text-[10px] bg-purple-900/30 rounded-full px-2 py-0.5 text-purple-300">
+                        {metPrereqsByCategory.algorithm}/{totalPrereqsByCategory.algorithm}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {allPrerequisites
+                        .filter(prereq => prereq.category === 'algorithm')
+                        .map((prereq, index) => (
+                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center">
+                                <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
+                                  {prereq.isMet ? 
+                                    <CheckCircleIcon className="h-3 w-3" /> : 
+                                    <LockIcon className="h-3 w-3" />
+                                  }
+                                </span>
+                                <ResourceTooltip 
+                                  content={getPrerequisiteEducation(prereq.name)}
+                                  resourceType="algorithm"
+                                  buttonPosition="inline"
+                                  side="top"
+                                >
+                                  <span className="flex items-center text-xs text-purple-400">
+                                    {prereq.icon}
+                                    <span className="ml-1 font-medium">{prereq.name}</span>
+                                  </span>
+                                </ResourceTooltip>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center text-xs mt-1">
+                              <span className={prereq.isMet ? 'text-green-400' : 'text-gray-400'}>
+                                {prereq.current}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <span className="text-gray-500 mx-1">/</span>
+                              <span className="text-gray-400">
+                                {prereq.required}{prereq.isPercentage ? '%' : ''}
+                              </span>
+                              <div className="flex-1 ml-2">
+                                <Progress 
+                                  value={Math.min(100, (prereq.current / prereq.required) * 100)} 
+                                  className={`h-1.5 bg-gray-700/80 [&>div]:${prereq.isMet ? 'bg-green-500' : 'bg-purple-500'}`} 
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
                 </div>
               </div>
               
