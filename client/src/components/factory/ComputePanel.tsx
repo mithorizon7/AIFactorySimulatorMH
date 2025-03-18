@@ -1,5 +1,5 @@
 import React from 'react';
-import { CpuIcon, ZapIcon, ServerIcon, CircuitBoardIcon, BrainIcon, TimerIcon, LockIcon, PlayCircleIcon, CheckCircleIcon } from 'lucide-react';
+import { CpuIcon, ZapIcon, ServerIcon, CircuitBoardIcon, BrainIcon, TimerIcon, LockIcon, PlayCircleIcon, CheckCircleIcon, AlertTriangleIcon, AlertCircleIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ResourceTooltip } from '@/components/ui/educational-tooltip';

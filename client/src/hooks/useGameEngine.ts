@@ -773,46 +773,94 @@ export function useGameEngine() {
       
       let serviceQualityRatio = 1.0; // Default: full quality
       
-      // Apply compute usage if needed
+      // Check if we're approaching compute capacity limit (90% usage threshold)
+      const usageRatio = (newState.computeCapacity.used + totalComputeUsage) / newState.computeCapacity.maxCapacity;
+      const isApproachingCapacity = usageRatio >= 0.9;
+      
+      // Apply compute usage and handle potential outages
       if (totalComputeUsage > 0) {
         // If we have enough compute, use it
         if (newState.computeCapacity.available >= totalComputeUsage) {
+          // Even if we have enough compute, there might be outages if we're near capacity
+          if (isApproachingCapacity) {
+            // Calculate service quality degradation based on how close to 100% we are
+            // Scale from 1.0 (at 90% usage) down to 0.7 (at 100% usage)
+            const capacityPressure = (usageRatio - 0.9) / 0.1; // 0 to 1 as we go from 90% to 100%
+            serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
+            
+            // Notify about outages due to high load
+            if (timeElapsed % 10 === 0) {
+              toast({
+                title: "Compute System Under Pressure!",
+                description: "Your system is experiencing outages due to high demand. Upgrade your compute capacity to avoid customer loss.",
+                variant: "destructive",
+                duration: 3000,
+              });
+            }
+          }
+          
+          // Apply the compute usage
           newState.computeCapacity.available -= totalComputeUsage;
           newState.computeCapacity.used += totalComputeUsage;
         } 
-        // If we don't have enough compute, reduce service quality
+        // If we don't have enough compute, severe service quality reduction
         else {
+          // Calculate how much compute we can actually provide compared to what's needed
           serviceQualityRatio = newState.computeCapacity.available / totalComputeUsage;
           const usedAmount = newState.computeCapacity.available; // Store before zeroing out
           newState.computeCapacity.available = 0; // Use all available compute
           newState.computeCapacity.used += usedAmount;
           
-          // Show a warning toast when service quality drops
+          // Show a warning toast when service quality drops severely
           if (timeElapsed % 10 === 0) {
             toast({
-              title: "Insufficient Compute Capacity!",
-              description: "Your services are degraded due to compute shortage. Revenue and customers affected.",
+              title: "Critical Compute Shortage!",
+              description: "Your services are severely degraded due to compute shortage. Significant customer loss is expected.",
               variant: "destructive",
               duration: 3000,
             });
           }
           
-          // Lose some subscribers due to poor service quality
-          if (timeElapsed % 10 === 0 && newState.revenue.subscribers > 0) {
-            const churnRate = 0.05 * (1 - serviceQualityRatio); // Max 5% churn based on quality
-            const previousSubscribers = newState.revenue.subscribers;
-            newState.revenue.subscribers = Math.floor(
-              newState.revenue.subscribers * (1 - churnRate)
-            );
+          // More severe customer loss due to outright service failures
+          if (timeElapsed % 10 === 0) {
+            // Calculate churn rate - more severe when we're completely out of compute
+            // Max 15% churn for severe outages (vs 5% for mild outages)
+            const churnRate = 0.15 * (1 - serviceQualityRatio);
             
-            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
-            if (lostSubscribers > 10) {
-              toast({
-                title: "Subscribers Leaving!",
-                description: `${lostSubscribers} subscribers have left due to service quality issues.`,
-                variant: "destructive",
-                duration: 3000,
-              });
+            // Apply to subscribers
+            if (newState.revenue.subscribers > 0) {
+              const previousSubscribers = newState.revenue.subscribers;
+              newState.revenue.subscribers = Math.floor(
+                newState.revenue.subscribers * (1 - churnRate)
+              );
+              
+              const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
+              if (lostSubscribers > 10) {
+                toast({
+                  title: "Critical: Subscribers Leaving!",
+                  description: `${lostSubscribers} subscribers have left due to major service outages.`,
+                  variant: "destructive",
+                  duration: 3000,
+                });
+              }
+            }
+            
+            // Also lose some developers (B2B customers)
+            if (newState.revenue.developers > 0) {
+              const previousDevelopers = newState.revenue.developers;
+              newState.revenue.developers = Math.floor(
+                newState.revenue.developers * (1 - churnRate * 0.8) // Developers are slightly more tolerant
+              );
+              
+              const lostDevelopers = previousDevelopers - newState.revenue.developers;
+              if (lostDevelopers > 5) {
+                toast({
+                  title: "Developers Abandoning Platform!",
+                  description: `${lostDevelopers} developers have stopped using your API due to reliability issues.`,
+                  variant: "destructive",
+                  duration: 3000,
+                });
+              }
             }
           }
         }

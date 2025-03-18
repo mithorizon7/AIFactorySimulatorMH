@@ -1,0 +1,85 @@
+After reviewing the proposed changes to the game mechanics, I'll outline a plan to implement these major upgrades to the AI Factory game. This is a significant overhaul that focuses on making training runs central to progression while completely rethinking how compute resources work.
+
+Implementation Plan for AI Factory Redesign
+1. Core Changes to Game State and Data Model
+A. Compute System Refactoring
+Split current compute resource into separate metrics:
+Compute Capacity (total available)
+Compute Usage (by customers and training)
+Free Compute (capacity - usage)
+Update GameStateType in gameState.ts to include these new metrics
+B. Training Run Mechanic
+Add TrainingRun type to gameState.ts
+Create states for:
+isTrainingRunActive: boolean
+trainingRunProgress: number (0-100%)
+trainingRunDaysRemaining: number
+nextTrainingRunRequirements: object (compute, data, algorithm levels)
+C. Algorithm Lab Progress Tracking
+Add to gameState.ts:
+algorithmResearchProgress: number (cumulative progress toward next training run)
+algorithmResearchRate: number (influenced by free compute and talent)
+2. Game Logic Implementation
+A. Compute Usage Logic
+Modify calculateRevenue to have customers consume compute
+Add compute outage logic when usage exceeds 90% of capacity
+Implement automatic research bonus from free compute
+Update the trainModel function to lock compute for 30 days
+B. Era Progression Refactoring
+Change era advancement to be triggered only by training runs
+Update advanceToNextEra to be called after training run completion
+Modify intelligence growth to have significant jumps after training
+C. Training Run Prerequisites
+Create checkTrainingRunPrerequisites function to validate:
+Sufficient free compute (10× previous era)
+Required levels of inputs (infrastructure, hardware, data, etc.)
+Algorithm research progress threshold reached
+3. UI Components and User Feedback
+A. Compute UI Updates
+Create dual progress bars for Compute Capacity vs. Usage
+Add visual indicators for compute outages
+Update tooltips to explain new compute mechanics
+B. Training Run Interface
+Add new Training Run button/panel
+Implement countdown timer during active training
+Create completion celebration with intelligence gain visualization
+C. Algorithm Lab Enhancement
+Add research progress bar (cumulative) alongside rate indicator
+Show clear prerequisite checklist for next training run
+4. Development Approach
+I recommend implementing this in phases:
+
+Phase 1: Core State Changes
+Update gameState.ts with new metrics
+Modify basic game loop in useGameEngine.ts
+Create display-only UI elements (no functional buttons yet)
+Phase 2: Compute Usage and Revenue Logic
+Implement customer compute consumption
+Add compute outage effects
+Connect free compute to algorithm research bonus
+Phase 3: Training Run Mechanics
+Implement training run button and prerequisites
+Add 30-day compute lock and countdown
+Connect training completion to era advancement
+Phase 4: UI Polish and Balancing
+Fine-tune resource requirements and scaling factors
+Add detailed tooltips and visual feedback
+Test progression through all eras
+Specific Files to Modify
+client/src/lib/gameState.ts
+Add new state variables for compute and training
+Update initialGameState
+client/src/hooks/useGameEngine.ts
+Modify resource allocation functions
+Update trainModel function
+Implement compute usage logic in tick function
+Add training run progress tracking
+client/src/hooks/useResourceProduction.ts
+Update how compute capacity increases from investments
+Modify production formulas to work with new metrics
+client/src/components/factory/ComputePanel.tsx
+Add dual metrics display
+Implement training run button and status
+client/src/components/factory/FactorySection.tsx
+Update resource tooltips
+Add prerequisite indicators for training runs
