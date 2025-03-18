@@ -89,37 +89,32 @@ export function useGameEngine() {
     }
   };
 
+  // Helper function to get the next era
+  const getNextEra = (currentEra: Era): Era => {
+    switch (currentEra) {
+      case Era.GNT2: return Era.GNT3;
+      case Era.GNT3: return Era.GNT4;
+      case Era.GNT4: return Era.GNT5;
+      case Era.GNT5: return Era.GNT6;
+      case Era.GNT6: return Era.GNT7;
+      case Era.GNT7: return Era.GNT7; // Already at max
+    }
+  };
+  
   // startEraTrainingRun - begins a training run for the next era
   const startEraTrainingRun = () => {
     // Determine the target era based on current era (always the next one)
     const currentEra = gameState.currentEra;
-    let nextEra: Era;
+    let nextEra = getNextEra(currentEra);
     
-    // Determine the next era
-    switch (currentEra) {
-      case Era.GNT2:
-        nextEra = Era.GNT3;
-        break;
-      case Era.GNT3:
-        nextEra = Era.GNT4;
-        break;
-      case Era.GNT4:
-        nextEra = Era.GNT5;
-        break;
-      case Era.GNT5:
-        nextEra = Era.GNT6;
-        break;
-      case Era.GNT6:
-        nextEra = Era.GNT7;
-        break;
-      case Era.GNT7:
-        // Already at max era
-        toast({
-          title: "Maximum Era Reached",
-          description: "You have reached the highest era possible. Focus on reaching AGI by continuing to improve your AI.",
-          variant: "destructive",
-        });
-        return;
+    // Check if already at max era
+    if (currentEra === Era.GNT7 && nextEra === Era.GNT7) {
+      toast({
+        title: "Maximum Era Reached",
+        description: "You have reached the highest era possible. Focus on reaching AGI by continuing to improve your AI.",
+        variant: "destructive",
+      });
+      return;
     }
     
     // Get the training run for the next era
@@ -1053,11 +1048,99 @@ export function useGameEngine() {
             newState.computeCapacity.available + rechargeAmount
           );
           
+          // Handle active training runs
+          if (newState.training.active && newState.training.daysRemaining > 0) {
+            // Decrement the days remaining
+            newState.training.daysRemaining -= 1;
+            
+            // Find the current active training run
+            const activeEra = getNextEra(newState.currentEra);
+            const activeTrainingRun = newState.training.runs[activeEra];
+            
+            if (activeTrainingRun && activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
+              // Also update the days remaining on the specific training run
+              activeTrainingRun.daysRemaining -= 1;
+              
+              // Check if the training run is complete
+              if (newState.training.daysRemaining <= 0) {
+                // Mark the run as complete
+                activeTrainingRun.status = TrainingStatus.COMPLETE;
+                activeTrainingRun.isTrainingReserveActive = false;
+                
+                // Release the reserved compute
+                newState.computeCapacity.used -= newState.training.computeReserved;
+                newState.training.computeReserved = 0;
+                
+                // Apply intelligence boost
+                newState.intelligence += activeTrainingRun.intelligenceGain;
+                
+                // Reset the active training flag
+                newState.training.active = false;
+                
+                // Advance to the next era
+                newState.currentEra = activeEra;
+                
+                // Show completion message
+                toast({
+                  title: `${activeTrainingRun.name} Complete!`,
+                  description: `Your AI has advanced to ${activeEra} era, gaining ${activeTrainingRun.intelligenceGain} intelligence!`,
+                  duration: 8000,
+                });
+              }
+            }
+          } else {
+            // If no active training, progress algorithm research
+            // Free compute adds to research progress
+            const freeCompute = newState.computeCapacity.available;
+            const researchRate = newState.training.algorithmResearchRate * 
+              (1 + (Math.log10(freeCompute + 1) * 0.1)) * // Free compute bonus (logarithmic)
+              (1 + (newState.algorithmInputs.architectures * 0.05)); // Algorithm architectures bonus
+              
+            // Advance research progress (capped at 100%)
+            newState.training.algorithmResearchProgress = Math.min(
+              100,
+              newState.training.algorithmResearchProgress + researchRate
+            );
+            
+            // If we've reached 100% research, check if we can unlock the next training run
+            if (newState.training.algorithmResearchProgress >= 100) {
+              const nextEra = getNextEra(newState.currentEra);
+              const nextTrainingRun = newState.training.runs[nextEra];
+              
+              if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
+                // Check if other prerequisites are met
+                let allPrereqsMet = true;
+                
+                if (newState.levels.compute < nextTrainingRun.prerequisites.compute) allPrereqsMet = false;
+                if (newState.dataInputs.quality < nextTrainingRun.prerequisites.data.quality) allPrereqsMet = false;
+                if (newState.dataInputs.quantity < nextTrainingRun.prerequisites.data.quantity) allPrereqsMet = false;
+                if (newState.dataInputs.formats < nextTrainingRun.prerequisites.data.formats) allPrereqsMet = false;
+                if (newState.algorithmInputs.architectures < nextTrainingRun.prerequisites.algorithm.architectures) allPrereqsMet = false;
+                if (newState.computeInputs.electricity < nextTrainingRun.prerequisites.computeInputs.electricity) allPrereqsMet = false;
+                if (newState.computeInputs.hardware < nextTrainingRun.prerequisites.computeInputs.hardware) allPrereqsMet = false;
+                if (newState.computeInputs.regulation < nextTrainingRun.prerequisites.computeInputs.regulation) allPrereqsMet = false;
+                
+                if (allPrereqsMet) {
+                  // Unlock the training run
+                  nextTrainingRun.status = TrainingStatus.AVAILABLE;
+                  
+                  // Notify the player
+                  toast({
+                    title: "Training Unlocked!",
+                    description: `Your AI is ready for the ${nextTrainingRun.name}. Start the training in the Compute panel!`,
+                    duration: 5000,
+                  });
+                }
+              }
+            }
+          }
+          
           // Gradually reduce used compute over time (simulates jobs completing)
-          if (newState.computeCapacity.used > 0) {
-            // Reduce used compute by 1% per tick
-            const computeRecovery = Math.ceil(newState.computeCapacity.used * 0.01);
-            newState.computeCapacity.used = Math.max(0, newState.computeCapacity.used - computeRecovery);
+          if (newState.computeCapacity.used > 0 && !newState.training.active) {
+            // Reduce used compute by 1% per tick, but only for non-training compute
+            const computeRecovery = Math.ceil((newState.computeCapacity.used - newState.training.computeReserved) * 0.01);
+            newState.computeCapacity.used = Math.max(newState.training.computeReserved, 
+              newState.computeCapacity.used - computeRecovery);
           }
           
           // As money is invested in compute and hardware improves, max capacity increases
