@@ -100,9 +100,11 @@ export interface GameStateType {
   
   // Compute Capacity and Usage Metrics
   computeCapacity: {
-    available: number;   // Total compute capacity available
-    used: number;        // Amount of compute currently being used
-    maxCapacity: number; // Maximum possible compute capacity
+    available: number;     // Total compute capacity available
+    used: number;          // Amount of compute currently being used
+    maxCapacity: number;   // Maximum possible compute capacity
+    freeCompute?: number;  // Compute available for research (not used by customers or training)
+    customerUsage?: number; // Compute used specifically by customers (B2B/B2C)
   };
   
   // Enabling Inputs for Compute
@@ -490,9 +492,11 @@ export const initialGameState: GameStateType = {
 
   // Compute capacity metrics
   computeCapacity: {
-    available: 1000,   // Initial compute capacity
-    used: 0,           // No compute used initially
-    maxCapacity: 2000  // Initial maximum capacity
+    available: 1000,     // Initial compute capacity
+    used: 0,             // No compute used initially
+    maxCapacity: 2000,   // Initial maximum capacity
+    freeCompute: 1000,   // Initially all compute is free for research
+    customerUsage: 0     // No customers using compute initially
   },
   
   // Enabling inputs for Compute

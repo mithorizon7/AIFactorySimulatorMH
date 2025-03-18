@@ -1236,13 +1236,28 @@ export function useGameEngine() {
             }
           } else {
             // If no active training, progress algorithm research
-            // Free compute directly contributes to research progress
-            const freeCompute = newState.computeCapacity.available;
+            // Free compute (not used by customers or training) directly contributes to research progress
+            
+            // Calculate three-way compute allocation:
+            // 1. Customer Usage - B2B/B2C services (already calculated earlier in the game loop)
+            const customerComputeUsage = newState.computeCapacity.customerUsage || 0;
+            
+            // 2. Training Usage - Reserved for active training runs
+            const trainingComputeUsage = newState.training.computeReserved;
+            
+            // 3. Free Compute - Available for research (total available minus what customers are using)
+            // Compute not being used by customers or training automatically contributes to research
+            const freeCompute = Math.max(0, 
+               newState.computeCapacity.available - customerComputeUsage - trainingComputeUsage
+            );
+            
+            // Store the free compute value for UI display
+            newState.computeCapacity.freeCompute = freeCompute;
             
             // Free compute provides a direct boost to research, with diminishing returns
             // Higher algorithm architectures investment increases efficiency
             const architectureMultiplier = 1 + (newState.algorithmInputs.architectures * 0.1); // 10% boost per architecture level
-            const computeEfficiency = Math.log10(freeCompute + 1) * 0.2; // Logarithmic scaling for free compute
+            const computeEfficiency = Math.log10(freeCompute + 1) * 0.5; // Logarithmic scaling for free compute (increased from 0.2 to 0.5)
             
             // Calculate new research rate:
             // Base rate + (compute efficiency * architecture multiplier)
