@@ -159,6 +159,7 @@ export default function FactorySection({
   allocateMoneyToDataQuantity,
   allocateMoneyToDataFormats,
   allocateMoneyToAlgorithmArchitectures,
+  hireResearchEngineer,
 }: FactorySectionProps) {
   const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
 
@@ -706,6 +707,32 @@ export default function FactorySection({
                   <span className="font-medium">${gameState.algorithmInputs.architectures > 0 ? 
                     Math.floor(125 * (1 + (gameState.algorithmInputs.architectures * 0.1))) : 
                     125}</span>
+                </button>
+              </div>
+              
+              {/* Research Specialists */}
+              <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium flex items-center gap-1">
+                    <Brain className="h-4 w-4 text-purple-400" />
+                    <span>Research Specialists</span>
+                  </h4>
+                  <div className="bg-purple-900/60 px-2 py-0.5 rounded-full text-xs">
+                    Level: {algorithmInputs.researchEngineers || 0}
+                  </div>
+                </div>
+                <p className="text-gray-400 text-xs mb-2">
+                  Hire specialized researchers to focus exclusively on algorithm development.
+                </p>
+                <button 
+                  className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
+                    money < 175 || !hireResearchEngineer ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                  onClick={hireResearchEngineer}
+                  disabled={money < 175 || !hireResearchEngineer}
+                >
+                  <span>Hire Specialists</span>
+                  <span className="font-medium">$175</span>
                 </button>
               </div>
             </div>
