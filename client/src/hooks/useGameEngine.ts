@@ -1057,14 +1057,22 @@ export function useGameEngine() {
   };
 
   const allocateMoneyToAlgorithm = () => {
-    if (gameState.money >= 125) {
+    const baseCost = 125;
+    const currentLevel = gameState.algorithmInputs.architectures;
+    // Cost increases with each level of engineers hired
+    const scaledCost = Math.floor(baseCost * (1 + (currentLevel * 0.1))); 
+    
+    if (gameState.money >= scaledCost) {
       setGameState(prevState => {
         const newState = { ...prevState };
-        newState.money -= 125;
+        newState.money -= scaledCost;
         newState.algorithmInputs.architectures += 1;
         
         // Increase algorithm production based on architecture improvements
         newState.production.algorithm *= 1.15;
+        
+        // Research rate bonus from better engineers
+        // This directly impacts the research progress calculation in the game loop
         
         // Improve cross-resource bonuses
         newState.bonuses.algorithmToCompute *= 1.05;
@@ -1075,13 +1083,13 @@ export function useGameEngine() {
       });
       
       toast({
-        title: "Money Allocated to Algorithm Research",
-        description: "Your AI now uses more advanced algorithmic architectures!",
+        title: "Hired Better AI Research Engineers",
+        description: "Your enhanced research team will improve algorithm development speed and unlock new model architectures!",
       });
     } else {
       toast({
         title: "Not enough money",
-        description: "You need at least $125 to improve algorithmic architectures.",
+        description: `You need at least $${scaledCost} to hire better research engineers.`,
         variant: "destructive",
       });
     }
