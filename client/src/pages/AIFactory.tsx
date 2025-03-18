@@ -177,7 +177,6 @@ export default function AIFactory() {
             <ComputePanel 
               gameState={gameState}
               trainModel={trainModel}
-              hireResearchEngineer={hireResearchEngineer}
             />
           </div>
           

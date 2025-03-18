@@ -9,10 +9,9 @@ import { GameStateType, Era, TrainingStatus } from '@/lib/gameState';
 interface ComputePanelProps {
   gameState: GameStateType;
   trainModel: () => void;
-  hireResearchEngineer?: () => void; // Optional for backwards compatibility
 }
 
-export default function ComputePanel({ gameState, trainModel, hireResearchEngineer }: ComputePanelProps) {
+export default function ComputePanel({ gameState, trainModel }: ComputePanelProps) {
   const { computeCapacity, money } = gameState;
   
   // Calculate percentage of compute capacity being used
@@ -286,55 +285,9 @@ export default function ComputePanel({ gameState, trainModel, hireResearchEngine
                   </div>
                 </div>
                 
-                {/* Research Engineers Section */}
-                <div className="mt-3 pt-3 border-t border-gray-700">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-purple-400">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                      </svg>
-                      <span className="text-sm font-medium text-white">Research Engineers</span>
-                    </div>
-                    <div className="px-2 py-0.5 bg-blue-900/30 rounded-full text-xs text-blue-300 font-medium">
-                      {gameState.algorithmInputs.researchEngineers || 0} Hired
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mb-2">
-                    <div className="bg-gray-700/50 p-2 rounded">
-                      <div className="text-xs text-gray-400">Research Rate</div>
-                      <div className="text-sm font-medium text-blue-400">+{(gameState.algorithmInputs.researchEngineers || 0) * 0.5}/day</div>
-                    </div>
-                    <div className="bg-gray-700/50 p-2 rounded">
-                      <div className="text-xs text-gray-400">Cost Per Engineer</div>
-                      <div className="text-sm font-medium text-green-400">${formatCurrency(250)}</div>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    className={`w-full py-1.5 px-3 rounded text-xs flex justify-between items-center ${
-                      money >= 250
-                        ? "bg-purple-700 hover:bg-purple-600 text-white"
-                        : "bg-gray-700 opacity-70 cursor-not-allowed text-gray-300"
-                    }`}
-                    onClick={() => hireResearchEngineer && hireResearchEngineer()} // Call the hire function if provided
-                    disabled={money < 250}
-                  >
-                    <span>Hire Research Engineer</span>
-                    <span className="bg-purple-900 px-2 py-0.5 rounded text-purple-300">$250</span>
-                  </button>
-                  
-                  <p className="text-xs text-gray-400 mt-2 italic">
-                    Research engineers work with free compute resources to improve algorithms. Each engineer increases research rate.
-                  </p>
-                </div>
-                
                 <p className="text-xs text-gray-400 mt-2 italic">
                   {algorithmResearchProgress < 100 ? 
-                    "Research advances faster with more engineers and free compute resources" : 
+                    "Research advances faster with more free compute resources and engineers from the Algorithm tab" : 
                     "Research complete! Check other prerequisites to unlock training."}
                 </p>
               </div>
