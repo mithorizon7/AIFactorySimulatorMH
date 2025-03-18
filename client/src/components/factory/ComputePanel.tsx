@@ -345,66 +345,45 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
       </CardHeader>
       
       <CardContent className="space-y-4 pt-4">
-        {/* Era Transition Visualization */}
-        <div className="relative flex items-center justify-center mb-6 py-2">
-          {/* Background Track with Dash Pattern */}
-          <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden border border-gray-700 shadow-inner">
-            <div className="absolute top-0 left-0 w-full h-full opacity-20">
-              <div className="h-full w-full bg-gradient-to-r from-transparent via-gray-500 to-transparent" style={{ backgroundSize: '10px 10px', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px)' }}></div>
-            </div>
-          </div>
-          
-          {/* Progress Gradient */}
-          <div className="absolute top-2 left-0 h-1.5 rounded-full overflow-hidden">
+        {/* Era Transition Visualization - Simplified but Elegant */}
+        <div className="relative flex items-center justify-center mb-4 mt-2">
+          {/* Background Track */}
+          <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+            {/* Progress Bar */}
             <div 
-              className="h-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400"
+              className="h-full bg-blue-500"
               style={{ 
                 width: `${overallCompletionPercent}%`, 
-                transition: 'width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)'
+                transition: 'width 0.5s ease-out'
               }}
-            >
-              {/* Animated Shimmer Effect */}
-              <div className="absolute top-0 left-0 w-full h-full">
-                <div className="animate-pulse-slow w-full h-full bg-gradient-to-r from-transparent via-blue-300/30 to-transparent"></div>
-              </div>
-            </div>
+            ></div>
           </div>
           
           {/* Era Labels */}
-          <div className="absolute flex justify-between w-full top-4">
-            <div className="bg-gradient-to-r from-blue-700 to-blue-600 text-white text-xs px-3 py-1 rounded-full flex items-center font-medium shadow-lg border border-blue-500/50 -translate-y-4 transform-gpu">
-              <span className="mr-1">{gameState.currentEra}</span>
+          <div className="absolute flex justify-between w-full">
+            <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm">
+              {gameState.currentEra}
             </div>
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full flex items-center font-medium shadow-lg border border-gray-600/50 -translate-y-4 transform-gpu">
+            <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm border border-gray-700">
               <ChevronRightIcon className="h-3 w-3 mr-1" />
-              <span>{nextEra}</span>
+              {nextEra}
             </div>
           </div>
           
-          {/* Milestone Dots */}
-          <div className="absolute top-2 left-0 w-full h-1.5 flex justify-between px-[2%]">
-            <div className={`h-3 w-3 rounded-full border-2 ${overallCompletionPercent >= 25 ? 'bg-blue-500 border-blue-300' : 'bg-gray-600 border-gray-500'} -translate-y-0.5 translate-x-[25%] shadow-sm transition-colors duration-300`}></div>
-            <div className={`h-3 w-3 rounded-full border-2 ${overallCompletionPercent >= 50 ? 'bg-blue-500 border-blue-300' : 'bg-gray-600 border-gray-500'} -translate-y-0.5 -translate-x-[25%] shadow-sm transition-colors duration-300`}></div>
-            <div className={`h-3 w-3 rounded-full border-2 ${overallCompletionPercent >= 75 ? 'bg-blue-500 border-blue-300' : 'bg-gray-600 border-gray-500'} -translate-y-0.5 -translate-x-[75%] shadow-sm transition-colors duration-300`}></div>
-          </div>
-          
-          {/* Animated Progress Indicator */}
-          <div 
-            className="absolute transform-gpu" 
-            style={{ 
-              left: `${Math.min(Math.max(overallCompletionPercent, 3), 97)}%`, 
-              top: '0.35rem',
-              transition: 'left 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              transform: 'translateX(-50%) translateY(-50%)',
-              display: overallCompletionPercent > 0 && overallCompletionPercent < 100 ? 'block' : 'none'
-            }}
-          >
-            <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-white text-[10px] px-2 py-0.5 rounded-md flex items-center font-bold shadow-lg border border-amber-400/50">
-              <span className="animate-pulse-slow">{overallCompletionPercent}%</span>
+          {/* Progress Indicator (only shows if in progress) */}
+          {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
+            <div 
+              className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm"
+              style={{ 
+                left: `${overallCompletionPercent}%`, 
+                top: '0.125rem',
+                transform: 'translateX(-50%)',
+                transition: 'left 0.5s ease-out'
+              }}
+            >
+              {overallCompletionPercent}%
             </div>
-            <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-l-transparent border-r-transparent border-t-amber-500 mx-auto"></div>
-          </div>
+          )}
         </div>
         
         {/* Current Training Run Status */}
