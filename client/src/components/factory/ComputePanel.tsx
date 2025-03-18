@@ -515,8 +515,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                 <ResourceTooltip 
                                   content={getPrerequisiteEducation(prereq.name)}
                                   resourceType="compute"
-                                  buttonPosition="inline"
+                                  buttonPosition="below"
                                   side="top"
+                                  align="start"
                                 >
                                   <span className="flex items-center text-xs text-blue-400">
                                     {prereq.icon}
@@ -541,11 +542,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                 />
                               </div>
                             </div>
-                            {prereq.note && !prereq.isMet && (
-                              <div className="mt-1 px-1 py-0.5 bg-yellow-900/30 border border-yellow-500/20 rounded text-yellow-400 text-[10px]">
-                                {prereq.note}
-                              </div>
-                            )}
+
                           </div>
                         ))
                       }
@@ -580,8 +577,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                 <ResourceTooltip 
                                   content={getPrerequisiteEducation(prereq.name)}
                                   resourceType="data"
-                                  buttonPosition="inline"
+                                  buttonPosition="below"
                                   side="top"
+                                  align="start"
                                 >
                                   <span className="flex items-center text-xs text-green-400">
                                     {prereq.icon}
@@ -640,8 +638,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                 <ResourceTooltip 
                                   content={getPrerequisiteEducation(prereq.name)}
                                   resourceType="algorithm"
-                                  buttonPosition="inline"
+                                  buttonPosition="below"
                                   side="top"
+                                  align="start"
                                 >
                                   <span className="flex items-center text-xs text-purple-400">
                                     {prereq.icon}
