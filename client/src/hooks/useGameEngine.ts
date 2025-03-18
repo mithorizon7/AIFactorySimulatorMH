@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { initialGameState, GameStateType, Era, GameEvent } from "@/lib/gameState";
+import { initialGameState, GameStateType, Era, GameEvent, TrainingStatus } from "@/lib/gameState";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 
@@ -89,85 +89,172 @@ export function useGameEngine() {
     }
   };
 
-  // Train Model function - uses compute capacity and money to boost intelligence
-  const trainModel = () => {
-    // Calculate costs and benefits based on game progression (era)
-    // Higher eras = more expensive but more impactful training
-    const eraMultiplier = {
-      [Era.GNT2]: 1.0,
-      [Era.GNT3]: 1.8,
-      [Era.GNT4]: 3.0,
-      [Era.GNT5]: 5.0,
-      [Era.GNT6]: 8.0,
-      [Era.GNT7]: 12.0
+  // startEraTrainingRun - begins a training run for the next era
+  const startEraTrainingRun = () => {
+    // Determine the target era based on current era (always the next one)
+    const currentEra = gameState.currentEra;
+    let nextEra: Era;
+    
+    // Determine the next era
+    switch (currentEra) {
+      case Era.GNT2:
+        nextEra = Era.GNT3;
+        break;
+      case Era.GNT3:
+        nextEra = Era.GNT4;
+        break;
+      case Era.GNT4:
+        nextEra = Era.GNT5;
+        break;
+      case Era.GNT5:
+        nextEra = Era.GNT6;
+        break;
+      case Era.GNT6:
+        nextEra = Era.GNT7;
+        break;
+      case Era.GNT7:
+        // Already at max era
+        toast({
+          title: "Maximum Era Reached",
+          description: "You have reached the highest era possible. Focus on reaching AGI by continuing to improve your AI.",
+          variant: "destructive",
+        });
+        return;
+    }
+    
+    // Get the training run for the next era
+    const trainingRun = gameState.training.runs[nextEra];
+    
+    // If we're already actively training, don't allow starting another run
+    if (gameState.training.active) {
+      toast({
+        title: "Training Already in Progress",
+        description: "Your AI is already undergoing training. Wait for the current training run to complete.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if this era's training is already complete
+    if (trainingRun.status === TrainingStatus.COMPLETE) {
+      toast({
+        title: "Training Already Complete",
+        description: `You have already completed the training for ${trainingRun.name}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Function to check prerequisites
+    const checkPrerequisites = () => {
+      const prereqs = trainingRun.prerequisites;
+      const messages: string[] = [];
+      
+      // Check compute level
+      if (gameState.levels.compute < prereqs.compute) {
+        messages.push(`Compute Level: ${gameState.levels.compute}/${prereqs.compute}`);
+      }
+      
+      // Check data prerequisites
+      if (gameState.dataInputs.quality < prereqs.data.quality) {
+        messages.push(`Data Quality: ${gameState.dataInputs.quality}/${prereqs.data.quality}`);
+      }
+      if (gameState.dataInputs.quantity < prereqs.data.quantity) {
+        messages.push(`Data Quantity: ${gameState.dataInputs.quantity}/${prereqs.data.quantity}`);
+      }
+      if (gameState.dataInputs.formats < prereqs.data.formats) {
+        messages.push(`Data Formats: ${gameState.dataInputs.formats}/${prereqs.data.formats}`);
+      }
+      
+      // Check algorithm prerequisites
+      if (gameState.algorithmInputs.architectures < prereqs.algorithm.architectures) {
+        messages.push(`Algorithm Architectures: ${gameState.algorithmInputs.architectures}/${prereqs.algorithm.architectures}`);
+      }
+      if (gameState.training.algorithmResearchProgress < prereqs.algorithm.researchProgress) {
+        messages.push(`Algorithm Research: ${Math.floor(gameState.training.algorithmResearchProgress)}/${prereqs.algorithm.researchProgress}%`);
+      }
+      
+      // Check compute inputs
+      if (gameState.computeInputs.electricity < prereqs.computeInputs.electricity) {
+        messages.push(`Electricity: ${gameState.computeInputs.electricity}/${prereqs.computeInputs.electricity}`);
+      }
+      if (gameState.computeInputs.hardware < prereqs.computeInputs.hardware) {
+        messages.push(`Hardware: ${gameState.computeInputs.hardware}/${prereqs.computeInputs.hardware}`);
+      }
+      if (gameState.computeInputs.regulation < prereqs.computeInputs.regulation) {
+        messages.push(`Regulatory Compliance: ${gameState.computeInputs.regulation}/${prereqs.computeInputs.regulation}`);
+      }
+      
+      return messages;
     };
     
-    const currentMultiplier = eraMultiplier[gameState.currentEra];
+    // If training run is locked, check prerequisites
+    if (trainingRun.status === TrainingStatus.LOCKED) {
+      const missingPrereqs = checkPrerequisites();
+      
+      if (missingPrereqs.length > 0) {
+        toast({
+          title: "Cannot Start Training - Missing Prerequisites",
+          description: `You need to meet these requirements: ${missingPrereqs.join(", ")}`,
+          variant: "destructive",
+        });
+        return;
+      } else {
+        // All prerequisites met, change status to AVAILABLE
+        setGameState(prevState => {
+          const newState = { ...prevState };
+          newState.training.runs[nextEra].status = TrainingStatus.AVAILABLE;
+          return newState;
+        });
+        
+        toast({
+          title: "Training Prerequisites Met!",
+          description: `You can now start the ${trainingRun.name} training run.`,
+        });
+        return;
+      }
+    }
     
-    // Base requirements that scale with era
-    const baseComputeRequired = 300;
-    const baseMoneyCost = 25000;
-    const baseIntelligenceGain = 150;
-    
-    // Scale costs and benefits with era
-    const computeRequired = Math.ceil(baseComputeRequired * currentMultiplier);
-    const moneyCost = Math.ceil(baseMoneyCost * Math.sqrt(currentMultiplier)); // Money scales more slowly
-    
-    // Calculate intelligence gain with bonuses from data and algorithm levels
-    const dataQualityBonus = 1 + (gameState.dataInputs.quality * 0.05); // 5% per level
-    const algorithmBonus = 1 + (gameState.levels.algorithm * 0.08); // 8% per level
-    const dataQuantityBonus = 1 + (gameState.dataInputs.quantity * 0.03); // 3% per level
-    
-    // Final intelligence gain with all bonuses applied
-    const intelligenceGain = Math.ceil(
-      baseIntelligenceGain * currentMultiplier * dataQualityBonus * algorithmBonus * dataQuantityBonus
-    );
-    
-    // Check if player has enough compute capacity available
-    if (gameState.computeCapacity.available < computeRequired) {
+    // Check if player has enough compute capacity available for the training run
+    if (gameState.computeCapacity.available < trainingRun.computeRequired) {
       toast({
         title: "Insufficient Compute Capacity",
-        description: `You need ${computeRequired.toLocaleString()} compute capacity available to run this training job. Upgrade your infrastructure.`,
+        description: `You need ${trainingRun.computeRequired.toLocaleString()} compute capacity available to run this training job. Upgrade your infrastructure.`,
         variant: "destructive",
       });
       return;
     }
     
-    // Check if player has enough money
-    if (gameState.money < moneyCost) {
-      toast({
-        title: "Insufficient Funds",
-        description: `You need $${moneyCost.toLocaleString()} to run this training job.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Run the training job - use compute capacity and money for immediate intelligence boost
+    // Start the training run
     setGameState(prevState => {
       const newState = { ...prevState };
       
-      // Consume the resources
-      newState.computeCapacity.available -= computeRequired;
-      newState.computeCapacity.used += computeRequired; // Track used compute
-      newState.money -= moneyCost;
+      // Reserve the compute for training
+      newState.computeCapacity.available -= trainingRun.computeRequired;
+      newState.computeCapacity.used += trainingRun.computeRequired;
       
-      // Apply intelligence gain
-      newState.intelligence += intelligenceGain;
+      // Update training status
+      newState.training.active = true;
+      newState.training.daysRemaining = trainingRun.daysRequired;
+      newState.training.computeReserved = trainingRun.computeRequired;
       
-      // Gradual compute recovery - the used compute will reduce over time
-      // This simulates the gradual freeing up of compute resources after a training job
-      
-      // Check for breakthroughs after training
-      newState.breakthroughs = checkBreakthroughs(newState);
+      // Update the specific training run
+      newState.training.runs[nextEra].status = TrainingStatus.IN_PROGRESS;
+      newState.training.runs[nextEra].daysRemaining = trainingRun.daysRequired;
+      newState.training.runs[nextEra].isTrainingReserveActive = true;
       
       toast({
-        title: "Training Complete!",
-        description: `Your AI model has been trained, gaining ${intelligenceGain} intelligence points!`,
+        title: "Training Started!",
+        description: `Your AI has begun the ${trainingRun.name} training run. It will take ${trainingRun.daysRequired} days to complete.`,
       });
       
       return newState;
     });
+  };
+  
+  // Legacy trainModel function - now just a wrapper for startEraTrainingRun
+  const trainModel = () => {
+    startEraTrainingRun();
   };
 
   // Investment functions

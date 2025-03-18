@@ -274,6 +274,199 @@ export const initialGameState: GameStateType = {
   currentEra: Era.GNT2, // Start in GNT-2 era
   daysElapsed: 0,       // No time elapsed yet
   
+  // Training Run System
+  training: {
+    // Current training run state
+    active: false,
+    daysRemaining: 0,
+    computeReserved: 0,
+    
+    // Research progress toward the next training run
+    algorithmResearchProgress: 0, // 0-100 scale
+    algorithmResearchRate: 0.5, // Base rate: 0.5 points per day when not training
+    
+    // Per-era training runs
+    runs: {
+      // GNT-3 Training Run (advance from GNT-2 to GNT-3)
+      [Era.GNT3]: {
+        targetEra: Era.GNT3,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 1000,
+        computePerCustomer: 5, // Each B2B or B2C customer uses this much compute
+        isTrainingReserveActive: false,
+        
+        // Intelligence gain on completion
+        intelligenceGain: 100,
+        
+        // Prerequisites
+        prerequisites: {
+          compute: 2, // Required compute capacity level
+          data: {
+            quality: 2,
+            quantity: 2,
+            formats: 1
+          },
+          algorithm: {
+            architectures: 2,
+            researchProgress: 100 // Need full research progress
+          },
+          computeInputs: {
+            electricity: 2,
+            hardware: 1,
+            regulation: 1
+          }
+        },
+        
+        // Educational content
+        name: "GNT-3 Training Run",
+        description: "Scale up your model to billions of parameters and implement few-shot learning capabilities.",
+        realWorldParallel: "The leap from early LLMs to models with 175 billion parameters represented a quantum leap in capabilities."
+      },
+      
+      // GNT-4 Training Run (advance from GNT-3 to GNT-4)
+      [Era.GNT4]: {
+        targetEra: Era.GNT4,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 2500,
+        computePerCustomer: 10,
+        isTrainingReserveActive: false,
+        
+        intelligenceGain: 200,
+        
+        prerequisites: {
+          compute: 4,
+          data: {
+            quality: 3,
+            quantity: 3,
+            formats: 2
+          },
+          algorithm: {
+            architectures: 3,
+            researchProgress: 100
+          },
+          computeInputs: {
+            electricity: 3,
+            hardware: 3,
+            regulation: 2
+          }
+        },
+        
+        name: "GNT-4 Training Run",
+        description: "Train a model that can follow instructions and handle multimodal inputs (text and images).",
+        realWorldParallel: "The transition to instruction-tuned models and multimodal systems dramatically improved AI's usefulness."
+      },
+      
+      // GNT-5 Training Run (advance from GNT-4 to GNT-5)
+      [Era.GNT5]: {
+        targetEra: Era.GNT5,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 6000,
+        computePerCustomer: 20,
+        isTrainingReserveActive: false,
+        
+        intelligenceGain: 300,
+        
+        prerequisites: {
+          compute: 6,
+          data: {
+            quality: 5,
+            quantity: 5,
+            formats: 3
+          },
+          algorithm: {
+            architectures: 5,
+            researchProgress: 100
+          },
+          computeInputs: {
+            electricity: 4,
+            hardware: 4,
+            regulation: 3
+          }
+        },
+        
+        name: "GNT-5 Training Run",
+        description: "Train a model with enhanced reasoning capabilities and self-improvement potential.",
+        realWorldParallel: "Advanced reasoning and self-improvement capabilities represent the frontier of current AI research."
+      },
+      
+      // GNT-6 Training Run (advance from GNT-5 to GNT-6)
+      [Era.GNT6]: {
+        targetEra: Era.GNT6,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 15000,
+        computePerCustomer: 40,
+        isTrainingReserveActive: false,
+        
+        intelligenceGain: 400,
+        
+        prerequisites: {
+          compute: 8,
+          data: {
+            quality: 7,
+            quantity: 7,
+            formats: 5
+          },
+          algorithm: {
+            architectures: 7,
+            researchProgress: 100
+          },
+          computeInputs: {
+            electricity: 6,
+            hardware: 6,
+            regulation: 4
+          }
+        },
+        
+        name: "GNT-6 Training Run",
+        description: "Train a model that can use external tools and APIs to solve complex problems.",
+        realWorldParallel: "Advanced tool use represents a crucial step toward systems that can interface effectively with the digital world."
+      },
+      
+      // GNT-7 Training Run (advance from GNT-6 to GNT-7)
+      [Era.GNT7]: {
+        targetEra: Era.GNT7,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 40000,
+        computePerCustomer: 80,
+        isTrainingReserveActive: false,
+        
+        intelligenceGain: 500,
+        
+        prerequisites: {
+          compute: 10,
+          data: {
+            quality: 10,
+            quantity: 10,
+            formats: 7
+          },
+          algorithm: {
+            architectures: 10,
+            researchProgress: 100
+          },
+          computeInputs: {
+            electricity: 8,
+            hardware: 8,
+            regulation: 6
+          }
+        },
+        
+        name: "GNT-7 Training Run",
+        description: "The final training run to achieve Artificial General Intelligence with human-level capabilities across domains.",
+        realWorldParallel: "AGI represents the theoretical culmination of AI research - a system with human-level capabilities across virtually all domains."
+      }
+    }
+  },
+  
   // Primary resources
   resources: {
     compute: 10,
