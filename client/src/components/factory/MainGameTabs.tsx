@@ -4,7 +4,6 @@ import { GameStateType } from "@/lib/gameState";
 
 // Import game components
 import FactorySection from "./FactorySection";
-import AIDashboard from "./AIDashboard";
 import EconomicSection from "./EconomicSection";
 import BreakthroughSection from "./BreakthroughSection";
 import ResourceFlowVisualization from "./ResourceFlowVisualization";
@@ -203,12 +202,7 @@ export default function MainGameTabs({
           {/* System Status Panel - Shows compute and service health */}
           <SystemStatusPanel gameState={gameState} />
           
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AIDashboard 
-              gameState={gameState}
-            />
-          </div>
+          {/* Removed AI Dashboard */}
 
           {/* Resource Flow Visualization - Moved to bottom */}
           <div className="mt-6">
