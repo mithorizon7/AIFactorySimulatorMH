@@ -1,0 +1,25 @@
+The game will thus function like a series or rounds that each culminate with a new training run and a new jump in intelligence, and new demands necessary to achieve to get to the next level of intelligence, as well as new breakthroughs and bottlenecks. 
+Let’s revamp the main mechanics of the three main factories (compute, data, algorithm).
+HOW RESOURCES WORK AT A HIGH LEVEL 
+COMPUTE:
+COMPUTE USE: There are three ways that compute is used. 
+1)	Customers – This is the amount of developers using the API and the amount of customers using the chatbot. Amount of compute per person goes down as algorithms improve, but also can simultaneously go up somewhat with the advent of reasoning models that are more compute intensive. 
+2)	Training Runs: A training run takes a discrete amount of time, and must have a certain amount of compute “free.” Free in this case means, not used by customers. When you start a training run it should take 30 days in the game, and it will keep all of the compute necessary for the training run captive until the 30 days are over. 
+3)	All extra compute not being used by training or customers automatically defaults to modest improvements in research, specifically, it acts as a bonus for the algorithm lab. 
+Compute capacity issues: As more customers begin to use compute, this should make it more of a strategic struggle to keep up on sufficient compute needs both for training runs and for algorithm lab and for the customers to use. Once the compute usage gets to 90% it should begin to cause “outages” for the customers that has a negative effect on the amount of customers signed up or drives customers away, this has a direct impact on the amount of money you are able to bring in.
+There are two main direct ways that compute can influence intelligence: 
+1) Training Runs: These are discrete events that can only occur once a few things have happened. 
+1)	There is a sufficient amount of available compute 
+2)	Algorithms have reached a certain level of advancements
+3)	Data has reached a certain level of improvement (quantity and quality). 
+2) Research: All unused compute is dedicated to research and gives small to modest, but real, gains. 
+Here is an overview of how the different resources ‘factories’ should should work now. 
+1)	Algorithm Lab: 
+a.	There should be two different measure we see for the algorithm lab. One is the research rate, as currently visualized, but there should also be a separate bar that is not a rate but a steadily increasing quantity (this one can slow down or even stop in it’s growth, but cant go backwards). This is a measure of how much progress and development they have made towards the breakthroughs necessary for the next level of training run (GNT-3 etc). They cannot do a training run until the research in the algo lab has reached a certain level. This needs to be visually shown on the screen next to the research rate. There are two factors that the user controls that influence this rate and level: 
+i.	How much ‘free compute’ is available (as described above) to be put towards research (this fluctuates up and down with how much free compute is available overall. So if all of the compute is being used by customers, for example, the research rate goes way down. If there is a lot of free compute available, not much money is being made, but the research can go forward faster.
+ii.	Spending money to hire more and better engineers. Or in other words the quantity and quality of talent. Or hiring the best talent and a lot of it. This is a place where they can spend money to improve the research rate (probably a simple adjustment from what is in ‘model architectures’ investment right now). 
+2)	Compute Prerequisites for a new training run
+a.	Have a sufficient amount of available compute: This should increase very significantly for each generation. Specifically, the amount of free compute available for each generational upgrade should be 10x what was necessary last generation. (the 
+b.	Have upgraded each of the ‘advanced’ inputs to a certain. (The levels of the advanced compute inputs should each be required to be at LEAST at the level of the next training run for the training run to work. For instance, to do a training run that would get you up to GNT-4, each individual input would need to also be at GNT-4. And we need to make sure it’s balanced for challenge, playability, and fun).
+3)	Data Factory: 
+a.	For now we will leave this close to what it is right now but include that each of the three inputs must be leveled up to the sufficient level for the next training run before the training run can be run. 
