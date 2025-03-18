@@ -38,8 +38,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const nextEra = getNextEra(gameState.currentEra);
   
   // Get the training run data for the next era if it exists
-  // Note: For GNT2 era, there won't be a run in the runs object since we start at GNT2 and train toward GNT3
-  const targetTrainingRun = nextEra in gameState.training.runs ? gameState.training.runs[nextEra] : null;
+  // Note: For GNT-2 era, there won't be a run in the runs object since we start at GNT-2 and train toward GNT-3
+  const targetTrainingRun = Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra) ? 
+    gameState.training.runs[nextEra as keyof typeof gameState.training.runs] : null;
   
   // Get active training run status if any
   const isTrainingActive = gameState.training.active;

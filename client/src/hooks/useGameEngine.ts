@@ -1120,7 +1120,8 @@ export function useGameEngine() {
               return newState;
             }
             
-            const activeTrainingRun = newState.training.runs[activeEra];
+            const activeTrainingRun = Object.prototype.hasOwnProperty.call(newState.training.runs, activeEra) ?
+              newState.training.runs[activeEra as keyof typeof newState.training.runs] : undefined;
             
             // Skip processing if no active training run exists for this era
             if (!activeTrainingRun) {
@@ -1193,11 +1194,11 @@ export function useGameEngine() {
               }
               
               // Skip if next era run doesn't exist
-              if (!(nextEra in newState.training.runs)) {
+              if (!Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
                 return newState;
               }
               
-              const nextTrainingRun = newState.training.runs[nextEra];
+              const nextTrainingRun = newState.training.runs[nextEra as keyof typeof newState.training.runs];
               
               if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
                 // Check if other prerequisites are met
