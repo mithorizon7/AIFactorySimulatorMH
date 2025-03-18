@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, Network as NetworkIcon } from "lucide-react";
+import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
 
 // Import game components
