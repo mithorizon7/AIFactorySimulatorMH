@@ -1,0 +1,191 @@
+Let’ s make some improvements and upgrades to how the game currently functions. 
+
+First, go over how things currently work and get a good sense of what we need to change to achieve these new changes below. We don’t want to unnecessarily break things or delete functionality or bonuses etc that are there. That is not what these instructions are. What you do need to do is find what interactions do need to be changed or deleted to achieve this new version and make those changes, while keeping intact the other functions. Make a plan first and show it to me before you make any changes. 
+
+The new game victory condition is not just achieving a certain “number” of intelligence, it’s achieving GNT-7. The intelligence counter will continue to work but they will have to get past certain thresholds of training to open up new levels of intelligence via new training runs which will act as intelligence bottlenecks to unlock new growth. Each Level (GNT-2, GNT-3, etc) can only be reached with a new training run. Each training run has a certain amount of prerequisites.
+
+The game will thus function like a series or rounds that each culminate with a new training run and a new jump in intelligence, and new demands necessary to achieve to get to the next level of intelligence, as well as new breakthroughs and bottlenecks. 
+Let’s revamp the main mechanics of the three main factories (compute, data, algorithm).
+HOW RESOURCES WORK AT A HIGH LEVEL 
+COMPUTE:
+COMPUTE USE: There are three ways that compute is used. 
+1)	Customers – This is the amount of developers using the API and the amount of customers using the chatbot. Amount of compute per person goes down as algorithms improve, but also can simultaneously go up somewhat with the advent of reasoning models that are more compute intensive. 
+2)	Training Runs: A training run takes a discrete amount of time, and must have a certain amount of compute “free.” Free in this case means, not used by customers. When you start a training run it should take 20 days in the game, and it will keep all of the compute necessary for the training run captive until the 20 days are over. 
+3)	All extra compute not being used by training or customers automatically defaults to modest improvements in research, specifically, it acts as a bonus for the algorithm lab. 
+Compute capacity issues: As more customers begin to use compute, this should make it more of a strategic struggle to keep up on sufficient compute needs both for training runs and for algorithm lab and for the customers to use. Once the compute usage gets to 90% it should begin to cause “outages” for the customers that has a negative effect on the amount of customers signed up or drives customers away, this has a direct impact on the amount of money you are able to bring in.
+There are two main direct ways that compute can influence intelligence: 
+1) Training Runs: These are discrete events that can only occur once a few things have happened. 
+1)	There is a sufficient amount of available compute 
+2)	Algorithms have reached a certain level of advancements
+3)	Data has reached a certain level of improvement (quantity and quality). 
+2) Research: All unused compute is dedicated to research and gives small to modest, but real, gains. 
+Here is an overview of how the different resources ‘factories’ should should work now. 
+1)	Algorithm Lab: 
+a.	There should be two different measure we see for the algorithm lab. One is the research rate, as currently visualized, but there should also be a separate bar that is not a rate but a steadily increasing quantity (this one can slow down or even stop in it’s growth, but cant go backwards). This is a measure of how much progress and development they have made towards the breakthroughs necessary for the next level of training run (GNT-3 etc). They cannot do a training run until the research in the algo lab has reached a certain level. This needs to be visually shown on the screen next to the research rate. There are two factors that the user controls that influence this rate and level: 
+i.	How much ‘free compute’ is available (as described above) to be put towards research (this fluctuates up and down with how much free compute is available overall. So if all of the compute is being used by customers, for example, the research rate goes way down. If there is a lot of free compute available, not much money is being made, but the research can go forward faster.
+ii.	Spending money to hire more and better engineers. Or in other words the quantity and quality of talent. Or hiring the best talent and a lot of it. This is a place where they can spend money to improve the research rate (probably a simple adjustment from what is in ‘model architectures’ investment right now). 
+2)	Compute Prerequisites for a new training run
+a.	Have a sufficient amount of available compute: This should increase very significantly for each generation. Specifically, the amount of free compute available for each generational upgrade should be 10x what was necessary last generation. (• You’ll need to carefully tune the 10× increase in compute requirements per generation to maintain a sense of progression without making each subsequent training run feel impossibly demanding)
+b.	Have upgraded each of the ‘advanced’ inputs to a certain. (The levels of the advanced compute inputs should each be required to be at LEAST at the level of the next training run for the training run to work. For instance, to do a training run that would get you up to GNT-4, each individual input would need to also be at GNT-4. And we need to make sure it’s balanced for challenge, playability, and fun).
+3)	Data Factory: 
+a.	For now we will leave this close to what it is right now but include that each of the three inputs must be leveled up to the sufficient level for the next training run before the training run can be run. 
+
+
+ME: For later, we need to make sure the player can see what “rate” or production level or contribution/bonus each element they can upgrade is currently having, and make sure can see clearly what it will be if they upgrade it. 
+
+
+Overview of the changes: 
+
+A. Overall New Victory & Progression Structure
+1. New Victory Condition:
+• Change Goal: Instead of simply reaching a set intelligence number (e.g., 1000), the victory condition becomes achieving the GNT-7 era.
+• Training Run as Gateway: Each era (GNT-2 through GNT-7) is unlocked by completing a discrete training run that provides a significant jump in intelligence and unlocks new content.
+• Prerequisites: Each training run requires that you meet specific resource thresholds (compute, data, algorithm advancements).
+ 
+B. Revamping the Compute System
+1. Separate Compute Metrics:
+• Compute Capacity: Total available compute that you have built up (via money investments in Infrastructure, Power, Hardware, Regulation).
+• Compute Usage: How much compute is being actively consumed by:
+• Customers: API and chatbot usage.
+• Training Runs: When a training run is initiated, a block of free compute is reserved for the duration (30 in-game days).
+• Research: Any unused compute automatically contributes a modest bonus to the algorithm lab research progress.
+2. New Mechanics for Compute Usage:
+• Customer Consumption:
+• Customers (B2B & B2C) use a certain amount of compute each tick.
+• As algorithms improve, per-customer compute usage decreases, but with reasoning models, the cost might increase.
+• Training Run Requirements:
+• A training run can only be started if a sufficient amount of free compute is available (i.e., compute not already consumed by customers).
+• The training run will reserve this compute for 30 days (in-game), preventing its use by customers or research.
+• Automatic Research Bonus:
+• Any compute not being used (i.e., available/free compute) will be added as a bonus to algorithm lab research.
+• Capacity Management:
+• If compute usage (customers + training) reaches 90% of total capacity, introduce “outages” that reduce customer satisfaction and revenue.
+• Scaling Requirement:
+• For each new training run (to reach a new era), the amount of free compute required increases by 10× compared to the previous era.
+ 
+C. Updating the Algorithm Lab
+1. Dual Metric for Algorithm Lab:
+• Research Rate: The current rate at which research is conducted.
+• Research Progress Bar: A cumulative progress indicator (which only increases and eventually saturates) that represents progress toward the next breakthrough/training run.
+2. Influencing Factors:
+• Free Compute: The more free compute available, the faster the research rate.
+• Talent Investment: Money spent on hiring/better talent (an adjustment of the current “model architectures” investment) further boosts research.
+3. Training Run Gate:
+• A training run (to jump from, say, GNT-3 to GNT-4) can only be initiated when:
+• The algorithm lab’s progress bar has reached a threshold.
+• Data and compute prerequisites for that era are met.
+ 
+D. Compute Prerequisites for Training Runs
+1. Free Compute Requirement:
+• For a training run to occur, there must be a large reserve of free compute (not currently being used by customers or research). This reserve should be 10× the requirement of the previous generation.
+2. Advanced Inputs Level Check:
+• Each “advanced” compute input (Infrastructure, Hardware Quality, Power Generation, Regulation Compliance) must be at least at the level corresponding to the upcoming training run (for example, to unlock GNT-4, each input must be at GNT-4 level).
+3. Training Run Action:
+• When activated:
+• Reserve the required free compute for 30 in-game days.
+• Deduct a significant monetary cost.
+• At the end of the 30-day period, award a large intelligence jump (and possibly new synergy multipliers) and unlock the new era.
+• Ensure that this action is only available once all prerequisites are met.
+ 
+E. Data Factory Adjustments
+1. Keep Current Mechanics, With a Prerequisite Check:
+• Maintain the current functioning of the Data Factory (with its inputs: quantity, quality, and formats).
+• Add a condition that each of these inputs must reach the necessary level for the next training run before the training run can be initiated.
+ 
+F. Integrating with Existing Economic and Investment Systems
+1. Money Allocation:
+• Existing Money-Based Upgrades (Infrastructure, Power, Hardware, Regulation):
+• Role: They continue to increase your Compute Capacity (i.e., they help you build more hardware and improve efficiency).
+• UI Adjustment: Update their descriptions/tooltips to reflect that they are building “compute capacity” rather than directly “spending compute.”
+2. Revenue Implications:
+• Customer Usage: With increased customer demand, more compute is consumed, stressing the compute capacity.
+• Balance Trade-Off: Players must manage the balance between accumulating sufficient compute capacity (via money investments) and preserving enough free compute to run training runs.
+• Investor Funding: Continue to factor in investor rounds (every 30 seconds) as long as intelligence thresholds are met. Note that outages due to high compute usage should negatively impact customer-based revenue, affecting overall funding.
+ 
+G. Summary of Interactions and New Game Flow
+1. Game Loop:
+• Tick-Based Accumulation: Resources (compute, data, algorithm) are generated each tick.
+• Revenue Generation: Money is generated based on customer usage, which consumes compute.
+• Compute Management: Players must monitor a new dual-display of “Compute Available” vs. “Compute Used.”
+• Research and Training:
+• Unused compute contributes modestly to algorithm research.
+• Once the algorithm lab’s progress bar reaches the required threshold and other prerequisites (data, advanced compute inputs) are met, the player can initiate a training run.
+• Training Run Outcome:
+• Locks a significant portion of compute for 30 days, consumes money, and results in a large jump in intelligence to unlock the next era (GNT-x).
+2. Strategic Implications:
+• Players must balance spending money on increasing compute capacity while keeping enough free compute available for training runs.
+• Customer usage becomes a double-edged sword: while it increases revenue, it also consumes compute, potentially leading to outages if not managed properly.
+
+
+
+
+Potential suggested Development order
+
+Step-by-Step Development Plan
+1. State Refactoring – Compute Splitting
+• Create New Variables:
+• Add new state variables for Compute Capacity (Available) and Compute Usage.
+• Migrate existing “compute” resource into these two components.
+• Update Resource Production:
+• Adjust functions in useResourceProduction.ts so that money-based investments now increase Compute Capacity rather than just a raw “compute” value.
+• UI Updates:
+• Plan for adding dual display elements (e.g., two progress bars or a dual-line indicator) to show Available vs. Used Compute.
+2. Implement Compute Consumption Mechanisms
+• Customer Usage:
+• Modify the revenue generation logic (in calculateRevenue) so that each API call or chatbot usage consumes a specified amount of compute from the available pool.
+• Introduce logic to check if Compute Usage approaches or exceeds 90% of Compute Capacity, and trigger “outage” effects (reduced customer satisfaction, lower revenue).
+• Automatic Research Bonus:
+• Ensure that any free (unused) compute automatically contributes as a bonus to the algorithm lab research progress.
+3. Develop the Training Run Mechanic
+• New “Train Model” Action:
+• Create a new button or action that can only be activated when prerequisites are met (sufficient free compute, money, and required levels of data and algorithms).
+• Prerequisites:
+• Free Compute must meet a threshold (increasing by 10× per era).
+• Advanced compute inputs and data levels must meet or exceed the upcoming era’s requirements.
+• Lock and Deduct Resources:
+• When activated, reserve the required compute for a 30-day (in-game) period and deduct the specified money.
+• Result and Era Progression:
+• Upon completion of the training run, grant a significant jump in intelligence and trigger era advancement (e.g., move from GNT-3 to GNT-4).
+4. Revamp the Algorithm Lab
+• Dual Metrics Implementation:
+• Add a secondary cumulative progress bar in the Algorithm Lab that shows the overall research progress toward the next training run. This is separate from the current research rate.
+• Influence Factors:
+• Update the research rate to be influenced by free compute availability and money spent on talent.
+• UI and Feedback:
+• Ensure that both the current research rate and the cumulative progress are visible to the player, with clear indications of how far they are from reaching the training run threshold.
+5. Integrate Advanced Input Prerequisites
+• Update Data Factory & Compute Inputs:
+• Adjust checks so that for a training run to be activated, all advanced inputs (Data: quality, quantity, formats; Compute: Infrastructure, Hardware, Power, Regulation) are at the required level for the next era.
+• Balance Adjustments:
+• Fine-tune the required levels so that they provide a reasonable challenge without being overly punishing.
+6. Refine Revenue Generation
+• Incorporate Compute Consumption:
+• Tie customer revenue (B2B and B2C) to available compute; if too much compute is being used, revenue generation is penalized.
+• Investor Funding Adjustments:
+• Confirm that investor funding remains tied to intelligence and breakthroughs, and consider any impact from compute outages.
+7. UI/UX Enhancements and Tooltips
+• New Displays:
+• Add visual elements showing “Compute Available” vs. “Compute Used” and clear indicators for when compute shortages occur.
+• Tooltips & Onboarding:
+• Update button descriptions and add tooltips to explain:
+• The difference between spending money to build compute capacity versus consuming compute in training/inference.
+• The prerequisites for training runs and how they affect era progression.
+• Feedback on Training Runs:
+• When a training run is initiated or completed, display detailed summaries of resource usage, costs, and intelligence jumps.
+8. Integrate with the Event System
+• Event Impacts:
+• Review and possibly update event logic to interact with the new compute mechanics (e.g., events that temporarily boost or reduce compute capacity).
+• Educational Tie-Ins:
+• Ensure that events provide context on why managing compute is critical, reinforcing the real-world analogies.
+9. Testing, Debugging, and Balancing
+• Iterative Testing:
+• Test each component (compute splitting, consumption, training runs, algorithm lab changes) in isolation and then in full integration.
+• Logging & Debugging Tools:
+• Add logging for key resource changes (e.g., when a training run is triggered, compute consumption spikes, outages occur) to aid in balancing.
+• Playtesting:
+• Monitor the pacing, the 10× scaling for training runs, and the impact on revenue to ensure that the game remains challenging and fun.
+ 
+Summary
+
+This ordered plan ensures that the core state changes (splitting compute) are implemented first, followed by adjustments to revenue and consumption mechanics, then the introduction of new gameplay actions (training runs), and finally UI/UX enhancements and integration with existing systems. This approach minimizes the risk of breaking existing functionality while progressively introducing the new strategic elements that emphasize balanced resource management and the critical nature of compute in AI development.
+ 
