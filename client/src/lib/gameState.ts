@@ -125,6 +125,7 @@ export interface GameStateType {
   // Enabling Inputs for Algorithms
   algorithmInputs: {
     architectures: number; // Breakthroughs in model architectures
+    researchEngineers: number; // Research engineers hired to accelerate algorithm research
   };
   
   // Revenue Streams
@@ -516,7 +517,8 @@ export const initialGameState: GameStateType = {
   
   // Enabling inputs for Algorithms
   algorithmInputs: {
-    architectures: 1 // Initial architecture sophistication
+    architectures: 1, // Initial architecture sophistication
+    researchEngineers: 0  // Start with no research engineers
   },
   
   // Revenue streams
