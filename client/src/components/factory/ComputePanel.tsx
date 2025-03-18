@@ -174,33 +174,36 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <h4 className="text-xs font-medium text-blue-400 mb-2">Compute Distribution</h4>
             <div className="grid grid-cols-3 gap-1">
               <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-gray-400 mb-1">Free</div>
-                <div className="font-semibold text-blue-400 flex justify-center items-center gap-1">
+                <div className="text-xs text-green-400 mb-1">Research</div>
+                <div className="font-semibold text-green-400 flex justify-center items-center gap-1">
                   <ZapIcon className="h-3 w-3" />
-                  {computeCapacity.available.toLocaleString()}
+                  {(computeCapacity.freeCompute || 0).toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Research</div>
+                <div className="text-xs text-gray-500 mt-1">{computeCapacity.freeCompute ? Math.round((computeCapacity.freeCompute / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
               </div>
               <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-gray-400 mb-1">Used</div>
-                <div className="font-semibold text-orange-400 flex justify-center items-center gap-1">
-                  <ServerIcon className="h-3 w-3" />
-                  {computeCapacity.used.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">Customers</div>
-              </div>
-              <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-gray-400 mb-1">Maximum</div>
+                <div className="text-xs text-purple-400 mb-1">Customer</div>
                 <div className="font-semibold text-purple-400 flex justify-center items-center gap-1">
-                  <CircuitBoardIcon className="h-3 w-3" />
-                  {computeCapacity.maxCapacity.toLocaleString()}
+                  <ServerIcon className="h-3 w-3" />
+                  {(computeCapacity.customerUsage || 0).toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">Capacity</div>
+                <div className="text-xs text-gray-500 mt-1">{computeCapacity.customerUsage ? Math.round((computeCapacity.customerUsage / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
+              </div>
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-xs text-amber-400 mb-1">Training</div>
+                <div className="font-semibold text-amber-400 flex justify-center items-center gap-1">
+                  <BrainIcon className="h-3 w-3" />
+                  {(gameState.training.computeReserved || 0).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{gameState.training.computeReserved ? Math.round((gameState.training.computeReserved / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
               </div>
             </div>
             <div className="mt-2 p-1.5 bg-gray-900 rounded-sm">
-              <div className="text-xs text-gray-400 flex justify-between">
-                <span>Free compute automatically contributes to research</span>
+              <div className="text-xs text-gray-400 flex items-center">
+                <CircuitBoardIcon className="h-3 w-3 mr-1 text-blue-400" />
+                <span>Maximum Capacity: {computeCapacity.maxCapacity.toLocaleString()} units</span>
+                <span className="mx-1 text-gray-500">•</span>
+                <span className="text-gray-400">Used: {Math.round((computeCapacity.used / computeCapacity.maxCapacity) * 100)}%</span>
               </div>
             </div>
           </div>
@@ -258,17 +261,33 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                 
                 <div className="mt-2 text-xs flex items-center">
                   <div className="flex-1 flex items-center text-gray-400">
-                    <ZapIcon className="h-3 w-3 mr-1 text-blue-400" />
-                    <span>Using free compute for research</span>
+                    <ZapIcon className="h-3 w-3 mr-1 text-green-400" />
+                    <span>Free Compute: {computeCapacity.freeCompute || 0} units</span>
                   </div>
                   <div className="flex-1 text-right text-gray-400">
                     Rate: +{gameState.training.algorithmResearchRate.toFixed(2)}/day
                   </div>
                 </div>
                 
+                {/* Resource allocation breakdown */}
+                <div className="mt-2 grid grid-cols-3 gap-1 bg-gray-700/40 rounded p-1">
+                  <div className="text-xs text-purple-400 flex items-center justify-center">
+                    <span className="inline-block h-2 w-2 rounded-full bg-purple-400 mr-1"></span>
+                    Customer: {computeCapacity.customerUsage || 0}
+                  </div>
+                  <div className="text-xs text-amber-400 flex items-center justify-center">
+                    <span className="inline-block h-2 w-2 rounded-full bg-amber-400 mr-1"></span>
+                    Training: {gameState.training.computeReserved || 0}
+                  </div>
+                  <div className="text-xs text-green-400 flex items-center justify-center">
+                    <span className="inline-block h-2 w-2 rounded-full bg-green-400 mr-1"></span>
+                    Research: {computeCapacity.freeCompute || 0}
+                  </div>
+                </div>
+                
                 <p className="text-xs text-gray-400 mt-2 italic">
                   {algorithmResearchProgress < 100 ? 
-                    "Research advances faster when more free compute is available" : 
+                    "Research advances faster when more free compute is allocated from customer services" : 
                     "Research complete! Check other prerequisites to unlock training."}
                 </p>
               </div>

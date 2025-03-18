@@ -140,12 +140,20 @@ export default function SystemStatusPanel({ gameState }: SystemStatusPanelProps)
         
         <div>
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-gray-400">Compute Used</span>
+            <span className="text-gray-400">Total Compute</span>
             <span>{computeCapacity.used} / {computeCapacity.maxCapacity}</span>
           </div>
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-gray-400">Free Compute</span>
-            <span>{computeCapacity.available} units</span>
+            <span className="text-purple-400">Customer Usage</span>
+            <span>{computeCapacity.customerUsage || 0} units</span>
+          </div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-amber-400">Training Reserved</span>
+            <span>{gameState.training.computeReserved || 0} units</span>
+          </div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-green-400">Free for Research</span>
+            <span>{computeCapacity.freeCompute || 0} units</span>
           </div>
         </div>
       </div>
