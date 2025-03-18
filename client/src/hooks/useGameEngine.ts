@@ -198,7 +198,9 @@ export function useGameEngine() {
         // All prerequisites met, change status to AVAILABLE
         setGameState(prevState => {
           const newState = { ...prevState };
-          newState.training.runs[nextEra].status = TrainingStatus.AVAILABLE;
+          if (newState.training.runs[nextEra]) {
+            newState.training.runs[nextEra].status = TrainingStatus.AVAILABLE;
+          }
           return newState;
         });
         
