@@ -774,6 +774,9 @@ export function useGameEngine() {
       
       const totalComputeUsage = b2bComputeUsage + b2cComputeUsage;
       
+      // Track customer usage separately for UI display
+      newState.computeCapacity.customerUsage = totalComputeUsage;
+      
       let serviceQualityRatio = 1.0; // Default: full quality
       
       // Check compute capacity thresholds
