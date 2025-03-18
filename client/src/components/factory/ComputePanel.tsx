@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { ResourceTooltip } from '@/components/ui/educational-tooltip';
 import { formatCurrency } from '@/lib/utils';
 import { GameStateType, Era, TrainingStatus } from '@/lib/gameState';
+import { resourceDefinitions, enablingInputs } from '@/lib/educationalContent';
 
 interface ComputePanelProps {
   gameState: GameStateType;
@@ -211,6 +212,114 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const canStartTraining = trainingStatus === TrainingStatus.AVAILABLE && 
                           !isTrainingActive && 
                           hasEnoughCompute;
+                          
+  // Function to provide educational content for each prerequisite
+  const getPrerequisiteEducation = (prereqName: string) => {
+    // Map names to their educational content
+    switch(prereqName) {
+      case "Compute Level":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{resourceDefinitions.compute.title}</h4>
+            <p>{resourceDefinitions.compute.description}</p>
+            <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+              <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{resourceDefinitions.compute.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Data Quality":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.quality.title}</h4>
+            <p>{enablingInputs.quality.description}</p>
+            <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.quality.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Data Quantity":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.quantity.title}</h4>
+            <p>{enablingInputs.quantity.description}</p>
+            <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.quantity.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Data Formats":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.formats.title}</h4>
+            <p>{enablingInputs.formats.description}</p>
+            <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.formats.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Algorithm Architectures":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.architectures.title}</h4>
+            <p>{enablingInputs.architectures.description}</p>
+            <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
+              <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.architectures.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Algorithm Research":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">Algorithm Research Progress</h4>
+            <p>Research progress represents the cumulative knowledge and experimentation required to develop a model architecture that can handle the next level of capabilities. This includes testing various approaches, running experiments, and iteratively improving designs.</p>
+            <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
+              <h5 className="text-purple-300 font-medium text-xs">Importance</h5>
+              <p className="text-xs mt-1">Progress can accelerate with more compute dedicated to research efforts and with a higher quality foundation of algorithms and architectures.</p>
+            </div>
+          </div>
+        );
+      case "Electricity":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.electricity.title}</h4>
+            <p>{enablingInputs.electricity.description}</p>
+            <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+              <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.electricity.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Hardware":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.hardware.title}</h4>
+            <p>{enablingInputs.hardware.description}</p>
+            <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+              <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.hardware.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      case "Regulatory Compliance":
+        return (
+          <div className="space-y-2">
+            <h4 className="font-semibold">{enablingInputs.regulation.title}</h4>
+            <p>{enablingInputs.regulation.description}</p>
+            <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+              <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+              <p className="text-xs mt-1">{enablingInputs.regulation.realWorldExample}</p>
+            </div>
+          </div>
+        );
+      default:
+        return <div>Information about {prereqName} will help you understand its importance in AI development.</div>;
+    }
+  };
   
   return (
     <Card className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 shadow-lg overflow-hidden">
@@ -355,10 +464,17 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                         <span className={`mr-2 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
                           {prereq.isMet ? <CheckCircleIcon className="h-3 w-3" /> : <LockIcon className="h-3 w-3" />}
                         </span>
-                        <span className={`flex items-center text-xs ${prereq.colorClass}`}>
-                          {prereq.icon}
-                          <span className="ml-1">{prereq.name}</span>
-                        </span>
+                        <ResourceTooltip 
+                          content={getPrerequisiteEducation(prereq.name)}
+                          resourceType={prereq.category as any}
+                          buttonPosition="inline"
+                          side="top"
+                        >
+                          <span className={`flex items-center text-xs ${prereq.colorClass}`}>
+                            {prereq.icon}
+                            <span className="ml-1">{prereq.name}</span>
+                          </span>
+                        </ResourceTooltip>
                       </div>
                       <div className="flex items-center">
                         <span className={`text-xs ${prereq.isMet ? 'text-green-400' : 'text-gray-400'}`}>
