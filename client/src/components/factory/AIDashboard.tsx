@@ -2,16 +2,10 @@ import { GameStateType } from "@/lib/gameState";
 
 interface AIDashboardProps {
   gameState: GameStateType;
-  investInCompute: () => void;
-  investInData: () => void;
-  investInAlgorithm: () => void;
 }
 
 export default function AIDashboard({
   gameState,
-  investInCompute,
-  investInData,
-  investInAlgorithm,
 }: AIDashboardProps) {
   const { intelligence, levels, resources, investCosts, agiThreshold } = gameState;
 
@@ -145,73 +139,70 @@ export default function AIDashboard({
         </div>
       </div>
       
-      {/* AI Investment Actions */}
+      {/* Compute Allocation Info Panel */}
       <div className="bg-gray-700 rounded-lg p-4">
-        <h3 className="text-lg font-medium mb-3">Improve AI Capabilities</h3>
+        <h3 className="text-lg font-medium mb-3">Compute Allocation</h3>
         
-        <div className="grid grid-cols-1 gap-2">
-          {/* Invest in Compute */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              resources.compute >= investCosts.compute
-                ? "bg-gray-600 hover:bg-[#3B82F6] text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={investInCompute}
-            disabled={resources.compute < investCosts.compute}
-          >
-            <span className="text-sm">Enhance Processing Power</span>
-            <span className="flex items-center text-xs">
-              <span className="flex text-[#3B82F6] mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span>{investCosts.compute}</span>
+        <div className="space-y-3">
+          {/* Visualize how compute is being used */}
+          <div className="bg-gray-800 rounded-lg p-3">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-blue-400">Used in API Services:</span>
+              <span className="font-medium">
+                {gameState.revenue.apiAvailable && gameState.revenue.apiEnabled ? 
+                  Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100) + "%" 
+                  : "0%"}
               </span>
-            </span>
-          </button>
-          
-          {/* Invest in Data */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              resources.data >= investCosts.data
-                ? "bg-gray-600 hover:bg-[#10B981] text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={investInData}
-            disabled={resources.data < investCosts.data}
-          >
-            <span className="text-sm">Improve Learning Examples</span>
-            <span className="flex items-center text-xs">
-              <span className="flex text-[#10B981] mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                </svg>
-                <span>{investCosts.data}</span>
+            </div>
+            
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-amber-400">Reserved for Training:</span>
+              <span className="font-medium">
+                {gameState.training.active ? 
+                  Math.round(gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) + "%" 
+                  : "0%"}
               </span>
-            </span>
-          </button>
-          
-          {/* Invest in Algorithms */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              resources.algorithm >= investCosts.algorithm
-                ? "bg-gray-600 hover:bg-[#8B5CF6] text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={investInAlgorithm}
-            disabled={resources.algorithm < investCosts.algorithm}
-          >
-            <span className="text-sm">Research Better Methods</span>
-            <span className="flex items-center text-xs">
-              <span className="flex text-[#8B5CF6] mr-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-                <span>{investCosts.algorithm}</span>
+            </div>
+            
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-green-400">Available for Research:</span>
+              <span className="font-medium">
+                {Math.round((gameState.computeCapacity.freeCompute || 0) / gameState.computeCapacity.maxCapacity * 100) + "%"}
               </span>
-            </span>
-          </button>
+            </div>
+            
+            {/* Progress bar showing allocation */}
+            <div className="h-4 w-full bg-gray-700 rounded-full overflow-hidden flex mt-3">
+              {/* Customer usage portion */}
+              <div 
+                className="bg-blue-500 h-full" 
+                style={{ 
+                  width: `${Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100)}%` 
+                }}
+              ></div>
+              
+              {/* Training portion */}
+              <div 
+                className="bg-amber-500 h-full" 
+                style={{ 
+                  width: `${Math.round(gameState.training.active ? 
+                    (gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) : 0)}%` 
+                }}
+              ></div>
+              
+              {/* Research portion (free compute) */}
+              <div 
+                className="bg-green-500 h-full" 
+                style={{ 
+                  width: `${Math.round((gameState.computeCapacity.freeCompute || 0) / gameState.computeCapacity.maxCapacity * 100)}%` 
+                }}
+              ></div>
+            </div>
+            
+            <div className="mt-3 text-xs text-gray-400">
+              Free compute automatically contributes to algorithm research progress
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -10,9 +10,6 @@ import InvestmentMilestones from "./InvestmentMilestones";
 
 interface EconomicSectionProps {
   gameState: GameStateType;
-  allocateMoneyToCompute: () => void;
-  allocateMoneyToData: () => void;
-  allocateMoneyToAlgorithm: () => void;
   toggleApiService: () => void;
   toggleChatbotService: () => void;
   setApiRate: (rate: number) => void;
@@ -24,9 +21,6 @@ interface EconomicSectionProps {
 
 export default function EconomicSection({
   gameState,
-  allocateMoneyToCompute,
-  allocateMoneyToData,
-  allocateMoneyToAlgorithm,
   toggleApiService,
   toggleChatbotService,
   setApiRate,
@@ -278,55 +272,68 @@ export default function EconomicSection({
         </div>
       </div>
       
-      {/* Money Allocation */}
+      {/* Compute Allocation Info Panel */}
       <div className="bg-gray-700 rounded-lg p-4 mb-5">
-        <h3 className="text-lg font-medium mb-3">Allocate Resources</h3>
+        <h3 className="text-lg font-medium mb-3">Compute Allocation Overview</h3>
         <p className="text-sm text-gray-400 mb-3">
-          Invest money to improve your AI capabilities
+          How your compute resources are being utilized across your operations
         </p>
         
-        <div className="grid grid-cols-1 gap-2">
-          {/* Allocate to Compute */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              money >= 100
-                ? "bg-gray-600 hover:bg-blue-600 text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={allocateMoneyToCompute}
-            disabled={money < 100}
-          >
-            <span className="text-sm">Upgrade Computing Infrastructure</span>
-            <span className="bg-gray-700 text-blue-400 px-2 py-1 rounded text-xs">$100</span>
-          </button>
-          
-          {/* Allocate to Data */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              money >= 75
-                ? "bg-gray-600 hover:bg-green-600 text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={allocateMoneyToData}
-            disabled={money < 75}
-          >
-            <span className="text-sm">Enhance Data Quality</span>
-            <span className="bg-gray-700 text-green-400 px-2 py-1 rounded text-xs">$75</span>
-          </button>
-          
-          {/* Allocate to Algorithm */}
-          <button 
-            className={`py-2 px-4 rounded flex justify-between items-center transition ${
-              money >= 125
-                ? "bg-gray-600 hover:bg-purple-600 text-white"
-                : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-            }`}
-            onClick={allocateMoneyToAlgorithm}
-            disabled={money < 125}
-          >
-            <span className="text-sm">Research Algorithm Breakthroughs</span>
-            <span className="bg-gray-700 text-purple-400 px-2 py-1 rounded text-xs">$125</span>
-          </button>
+        <div className="space-y-3">
+          <div className="bg-gray-800 rounded-lg p-3">
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="bg-gray-700/50 p-2 rounded text-center">
+                <div className="text-xs text-gray-400">Capacity</div>
+                <div className="text-lg font-medium text-white">{gameState.computeCapacity.maxCapacity}</div>
+              </div>
+              <div className="bg-gray-700/50 p-2 rounded text-center">
+                <div className="text-xs text-gray-400">Used</div>
+                <div className="text-lg font-medium text-blue-400">{gameState.computeCapacity.used}</div>
+              </div>
+              <div className="bg-gray-700/50 p-2 rounded text-center">
+                <div className="text-xs text-gray-400">Free</div>
+                <div className="text-lg font-medium text-green-400">{gameState.computeCapacity.freeCompute || 0}</div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <span>Usage Breakdown:</span>
+              <span>{Math.round((gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity) * 100)}% of capacity</span>
+            </div>
+            
+            {/* Progress bar showing allocation */}
+            <div className="h-3 w-full bg-gray-700 rounded-full overflow-hidden flex">
+              {/* Customer usage portion */}
+              <div 
+                className="bg-blue-500 h-full" 
+                style={{ 
+                  width: `${Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100)}%` 
+                }}
+              ></div>
+              
+              {/* Training portion */}
+              <div 
+                className="bg-amber-500 h-full" 
+                style={{ 
+                  width: `${Math.round(gameState.training.active ? 
+                    (gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) : 0)}%` 
+                }}
+              ></div>
+              
+              {/* Research portion (empty space) is implied */}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
+                <span className="text-gray-300">Customer Services: {Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100)}%</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-amber-500 rounded-full mr-1"></div>
+                <span className="text-gray-300">Training Reserved: {Math.round(gameState.training.active ? (gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) : 0)}%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       

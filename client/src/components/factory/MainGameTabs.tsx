@@ -190,9 +190,6 @@ export default function MainGameTabs({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AIDashboard 
               gameState={gameState}
-              investInCompute={investInCompute}
-              investInData={investInData}
-              investInAlgorithm={investInAlgorithm}
             />
             
             <SynergyDashboard gameState={gameState} />
@@ -234,9 +231,6 @@ export default function MainGameTabs({
         <div className="grid grid-cols-1 gap-6">
           <EconomicSection 
             gameState={gameState}
-            allocateMoneyToCompute={allocateMoneyToCompute}
-            allocateMoneyToData={allocateMoneyToData}
-            allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
             toggleApiService={function() { if (toggleApiService) toggleApiService(); }}
             toggleChatbotService={function() { if (toggleChatbotService) toggleChatbotService(); }}
             setApiRate={function(rate: number) { if (setApiRate) setApiRate(rate); }}
