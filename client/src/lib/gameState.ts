@@ -331,7 +331,7 @@ export const initialGameState: GameStateType = {
         status: TrainingStatus.LOCKED,
         daysRequired: 30,
         daysRemaining: 30,
-        computeRequired: 2500,
+        computeRequired: 10000, // 10x the GNT-3 requirement (1000 → 10,000)
         computePerCustomer: 10,
         isTrainingReserveActive: false,
         
@@ -366,7 +366,7 @@ export const initialGameState: GameStateType = {
         status: TrainingStatus.LOCKED,
         daysRequired: 30,
         daysRemaining: 30,
-        computeRequired: 6000,
+        computeRequired: 100000, // 10x the GNT-4 requirement (10,000 → 100,000)
         computePerCustomer: 20,
         isTrainingReserveActive: false,
         
@@ -401,7 +401,7 @@ export const initialGameState: GameStateType = {
         status: TrainingStatus.LOCKED,
         daysRequired: 30,
         daysRemaining: 30,
-        computeRequired: 15000,
+        computeRequired: 1000000, // 10x the GNT-5 requirement (100,000 → 1,000,000)
         computePerCustomer: 40,
         isTrainingReserveActive: false,
         
@@ -436,7 +436,7 @@ export const initialGameState: GameStateType = {
         status: TrainingStatus.LOCKED,
         daysRequired: 30,
         daysRemaining: 30,
-        computeRequired: 40000,
+        computeRequired: 10000000, // 10x the GNT-6 requirement (1,000,000 → 10,000,000)
         computePerCustomer: 80,
         isTrainingReserveActive: false,
         
