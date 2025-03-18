@@ -1,5 +1,5 @@
 import React from 'react';
-import { CpuIcon, ZapIcon, ServerIcon, CircuitBoardIcon, BrainIcon, TimerIcon, LockIcon, PlayCircleIcon, CheckCircleIcon, AlertTriangleIcon, AlertCircleIcon } from 'lucide-react';
+import { CpuIcon, ZapIcon, BrainIcon, TimerIcon, LockIcon, PlayCircleIcon, CheckCircleIcon, AlertTriangleIcon, ChevronRightIcon, RouteIcon, AwardIcon, RocketIcon, GraduationCapIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ResourceTooltip } from '@/components/ui/educational-tooltip';
@@ -12,15 +12,7 @@ interface ComputePanelProps {
 }
 
 export default function ComputePanel({ gameState, trainModel }: ComputePanelProps) {
-  const { computeCapacity, money } = gameState;
-  
-  // Calculate percentage of compute capacity being used
-  const computeUsagePercent = Math.min(100, Math.round((computeCapacity.used / computeCapacity.maxCapacity) * 100));
-  const computeAvailablePercent = Math.min(100, Math.round((computeCapacity.available / computeCapacity.maxCapacity) * 100));
-  
-  // Check for capacity pressure and potential outages
-  const isNearCapacity = computeUsagePercent >= 90;
-  const isCritical = computeUsagePercent >= 95;
+  const { computeCapacity } = gameState;
   
   // Helper function to get next era
   const getNextEra = (currentEra: Era): Era => {
@@ -38,7 +30,6 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const nextEra = getNextEra(gameState.currentEra);
   
   // Get the training run data for the next era if it exists
-  // Note: For GNT-2 era, there won't be a run in the runs object since we start at GNT-2 and train toward GNT-3
   const targetTrainingRun = Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra) ? 
     gameState.training.runs[nextEra as keyof typeof gameState.training.runs] : null;
   
@@ -89,76 +80,152 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   // Get badge for current training run
   const statusBadge = getStatusBadge(trainingStatus);
   
-  // Function to get prerequisites for the training run
-  const getMissingPrerequisites = () => {
-    if (!targetTrainingRun || trainingStatus !== TrainingStatus.LOCKED) return [];
+  // Get all prerequisites for the training run with current and required values
+  const getAllPrerequisites = () => {
+    if (!targetTrainingRun) return [];
     
     const prereqs = targetTrainingRun.prerequisites;
-    const missing: string[] = [];
+    const prerequisites = [
+      { 
+        name: "Compute Level", 
+        current: gameState.levels.compute, 
+        required: prereqs.compute,
+        isMet: gameState.levels.compute >= prereqs.compute,
+        icon: <CpuIcon className="h-3 w-3" />,
+        category: "compute",
+        colorClass: "text-blue-400"
+      },
+      { 
+        name: "Data Quality", 
+        current: gameState.dataInputs.quality, 
+        required: prereqs.data.quality,
+        isMet: gameState.dataInputs.quality >= prereqs.data.quality,
+        icon: <AwardIcon className="h-3 w-3" />,
+        category: "data",
+        colorClass: "text-green-400"
+      },
+      { 
+        name: "Data Quantity", 
+        current: gameState.dataInputs.quantity, 
+        required: prereqs.data.quantity,
+        isMet: gameState.dataInputs.quantity >= prereqs.data.quantity,
+        icon: <ZapIcon className="h-3 w-3" />,
+        category: "data",
+        colorClass: "text-green-400"
+      },
+      { 
+        name: "Data Formats", 
+        current: gameState.dataInputs.formats, 
+        required: prereqs.data.formats,
+        isMet: gameState.dataInputs.formats >= prereqs.data.formats,
+        icon: <RouteIcon className="h-3 w-3" />,
+        category: "data",
+        colorClass: "text-green-400"
+      },
+      { 
+        name: "Algorithm Architectures", 
+        current: gameState.algorithmInputs.architectures, 
+        required: prereqs.algorithm.architectures,
+        isMet: gameState.algorithmInputs.architectures >= prereqs.algorithm.architectures,
+        icon: <BrainIcon className="h-3 w-3" />,
+        category: "algorithm",
+        colorClass: "text-purple-400"
+      },
+      { 
+        name: "Algorithm Research", 
+        current: Math.floor(gameState.training.algorithmResearchProgress), 
+        required: prereqs.algorithm.researchProgress,
+        isMet: gameState.training.algorithmResearchProgress >= prereqs.algorithm.researchProgress,
+        icon: <GraduationCapIcon className="h-3 w-3" />,
+        category: "algorithm",
+        colorClass: "text-purple-400",
+        isPercentage: true
+      },
+      { 
+        name: "Electricity", 
+        current: gameState.computeInputs.electricity, 
+        required: prereqs.computeInputs.electricity,
+        isMet: gameState.computeInputs.electricity >= prereqs.computeInputs.electricity,
+        icon: <ZapIcon className="h-3 w-3" />,
+        category: "compute",
+        colorClass: "text-blue-400"
+      },
+      { 
+        name: "Hardware", 
+        current: gameState.computeInputs.hardware, 
+        required: prereqs.computeInputs.hardware,
+        isMet: gameState.computeInputs.hardware >= prereqs.computeInputs.hardware,
+        icon: <CpuIcon className="h-3 w-3" />,
+        category: "compute",
+        colorClass: "text-blue-400"
+      },
+      { 
+        name: "Regulatory Compliance", 
+        current: gameState.computeInputs.regulation, 
+        required: prereqs.computeInputs.regulation,
+        isMet: gameState.computeInputs.regulation >= prereqs.computeInputs.regulation,
+        icon: <CheckCircleIcon className="h-3 w-3" />,
+        category: "compute",
+        colorClass: "text-blue-400"
+      }
+    ];
     
-    // Check compute level
-    if (gameState.levels.compute < prereqs.compute) {
-      missing.push(`Compute Level: ${gameState.levels.compute}/${prereqs.compute}`);
-    }
-    
-    // Check data prerequisites
-    if (gameState.dataInputs.quality < prereqs.data.quality) {
-      missing.push(`Data Quality: ${gameState.dataInputs.quality}/${prereqs.data.quality}`);
-    }
-    if (gameState.dataInputs.quantity < prereqs.data.quantity) {
-      missing.push(`Data Quantity: ${gameState.dataInputs.quantity}/${prereqs.data.quantity}`);
-    }
-    if (gameState.dataInputs.formats < prereqs.data.formats) {
-      missing.push(`Data Formats: ${gameState.dataInputs.formats}/${prereqs.data.formats}`);
-    }
-    
-    // Check algorithm prerequisites
-    if (gameState.algorithmInputs.architectures < prereqs.algorithm.architectures) {
-      missing.push(`Algorithm Architectures: ${gameState.algorithmInputs.architectures}/${prereqs.algorithm.architectures}`);
-    }
-    if (gameState.training.algorithmResearchProgress < prereqs.algorithm.researchProgress) {
-      missing.push(`Algorithm Research: ${Math.floor(gameState.training.algorithmResearchProgress)}/${prereqs.algorithm.researchProgress}%`);
-    }
-    
-    // Check compute inputs
-    if (gameState.computeInputs.electricity < prereqs.computeInputs.electricity) {
-      missing.push(`Electricity: ${gameState.computeInputs.electricity}/${prereqs.computeInputs.electricity}`);
-    }
-    if (gameState.computeInputs.hardware < prereqs.computeInputs.hardware) {
-      missing.push(`Hardware: ${gameState.computeInputs.hardware}/${prereqs.computeInputs.hardware}`);
-    }
-    if (gameState.computeInputs.regulation < prereqs.computeInputs.regulation) {
-      missing.push(`Regulatory Compliance: ${gameState.computeInputs.regulation}/${prereqs.computeInputs.regulation}`);
-    }
-    
-    return missing;
+    return prerequisites;
   };
   
-  // Get the missing prerequisites
-  const missingPrerequisites = getMissingPrerequisites();
+  // Get all prerequisites
+  const allPrerequisites = getAllPrerequisites();
+  
+  // Get only missing prerequisites
+  const missingPrerequisites = allPrerequisites.filter(prereq => !prereq.isMet);
+  
+  // Count met prerequisites by category
+  const metPrereqsByCategory = {
+    compute: allPrerequisites.filter(p => p.category === "compute" && p.isMet).length,
+    data: allPrerequisites.filter(p => p.category === "data" && p.isMet).length,
+    algorithm: allPrerequisites.filter(p => p.category === "algorithm" && p.isMet).length
+  };
+  
+  // Count total prerequisites by category
+  const totalPrereqsByCategory = {
+    compute: allPrerequisites.filter(p => p.category === "compute").length,
+    data: allPrerequisites.filter(p => p.category === "data").length,
+    algorithm: allPrerequisites.filter(p => p.category === "algorithm").length
+  };
+  
+  // Calculate category completion percentages
+  const categoryCompletion = {
+    compute: Math.round((metPrereqsByCategory.compute / totalPrereqsByCategory.compute) * 100),
+    data: Math.round((metPrereqsByCategory.data / totalPrereqsByCategory.data) * 100),
+    algorithm: Math.round((metPrereqsByCategory.algorithm / totalPrereqsByCategory.algorithm) * 100)
+  };
+  
+  // Calculate overall completion percentage
+  const metPrereqs = allPrerequisites.filter(p => p.isMet).length;
+  const overallCompletionPercent = Math.round((metPrereqs / allPrerequisites.length) * 100);
   
   // Check if there's enough compute for the training run
   const hasEnoughCompute = computeCapacity.available >= (targetTrainingRun?.computeRequired || 0);
   
   // Determine if the button should be enabled
   const canStartTraining = trainingStatus === TrainingStatus.AVAILABLE && 
-                           !isTrainingActive && 
-                           hasEnoughCompute;
+                          !isTrainingActive && 
+                          hasEnoughCompute;
   
   return (
-    <Card className="bg-gray-800 border-gray-700">
-      <CardHeader className="pb-2">
+    <Card className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 shadow-lg overflow-hidden">
+      <CardHeader className="pb-2 bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border-b border-gray-700">
         <CardTitle className="text-xl flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <CpuIcon className="h-5 w-5 text-blue-400" />
+            <BrainIcon className="h-5 w-5 text-amber-400" />
             <span className="text-white">AI Training System</span>
           </div>
           <ResourceTooltip 
             content={
               <div className="space-y-2 max-w-xs">
                 <p>The Training System is the core mechanic for advancing your AI to new eras.</p>
-                <p>Each era requires more sophisticated training runs with higher resource requirements.</p>
-                <p>Training runs require dedicated compute capacity and advance your AI's intelligence significantly.</p>
+                <p>Each training run requires meeting specific infrastructure requirements.</p>
+                <p>Successful training advances your AI's capabilities to the next era level.</p>
               </div>
             }
             resourceType="compute"
@@ -167,53 +234,30 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           </ResourceTooltip>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Compute Capacity Metrics */}
-        <div className="grid grid-cols-1 gap-2 text-center">
-          <div className="bg-gray-800 p-2 rounded border border-gray-700">
-            <h4 className="text-xs font-medium text-blue-400 mb-2">Compute Distribution</h4>
-            <div className="grid grid-cols-3 gap-1">
-              <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-green-400 mb-1">Research</div>
-                <div className="font-semibold text-green-400 flex justify-center items-center gap-1">
-                  <ZapIcon className="h-3 w-3" />
-                  {(computeCapacity.freeCompute || 0).toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{computeCapacity.freeCompute ? Math.round((computeCapacity.freeCompute / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
-              </div>
-              <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-purple-400 mb-1">Customer</div>
-                <div className="font-semibold text-purple-400 flex justify-center items-center gap-1">
-                  <ServerIcon className="h-3 w-3" />
-                  {(computeCapacity.customerUsage || 0).toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{computeCapacity.customerUsage ? Math.round((computeCapacity.customerUsage / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
-              </div>
-              <div className="bg-gray-700 rounded p-2">
-                <div className="text-xs text-amber-400 mb-1">Training</div>
-                <div className="font-semibold text-amber-400 flex justify-center items-center gap-1">
-                  <BrainIcon className="h-3 w-3" />
-                  {(gameState.training.computeReserved || 0).toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{gameState.training.computeReserved ? Math.round((gameState.training.computeReserved / computeCapacity.maxCapacity) * 100) : 0}% of max</div>
-              </div>
+      
+      <CardContent className="space-y-4 pt-4">
+        {/* Era Transition Visualization */}
+        <div className="relative flex items-center justify-center mb-2">
+          <div className="w-full h-0.5 bg-gray-700"></div>
+          <div className="absolute flex justify-between w-full">
+            <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex items-center font-medium -translate-y-3">
+              {gameState.currentEra}
             </div>
-            <div className="mt-2 p-1.5 bg-gray-900 rounded-sm">
-              <div className="text-xs text-gray-400 flex items-center">
-                <CircuitBoardIcon className="h-3 w-3 mr-1 text-blue-400" />
-                <span>Maximum Capacity: {computeCapacity.maxCapacity.toLocaleString()} units</span>
-                <span className="mx-1 text-gray-500">•</span>
-                <span className="text-gray-400">Used: {Math.round((computeCapacity.used / computeCapacity.maxCapacity) * 100)}%</span>
-              </div>
+            <div className="bg-gray-800 border border-gray-600 text-gray-300 text-xs px-2 py-1 rounded-full flex items-center font-medium -translate-y-3">
+              <ChevronRightIcon className="h-3 w-3 mr-1" />
+              {nextEra}
             </div>
           </div>
         </div>
         
-        {/* Training Run Status Section */}
-        <div className="mt-4 bg-gray-900 rounded-lg border border-gray-700 p-3 space-y-3">
-          <div className="flex justify-between items-start">
+        {/* Current Training Run Status */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-900 rounded-lg border border-gray-700 p-4">
+          <div className="flex justify-between items-start mb-3">
             <div>
-              <h3 className="text-white font-medium">{targetTrainingRun?.name || `${nextEra} Training`}</h3>
+              <h3 className="text-lg text-white font-medium flex items-center gap-2">
+                <RocketIcon className="h-4 w-4 text-amber-400" />
+                {targetTrainingRun?.name || `${nextEra} Training`}
+              </h3>
               <p className="text-xs text-gray-400 mt-1">{targetTrainingRun?.description || "Advance to the next AI capability level"}</p>
             </div>
             <span className={`px-2 py-1 rounded text-xs flex items-center ${statusBadge.bg} ${statusBadge.text}`}>
@@ -221,216 +265,227 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               {statusBadge.label}
             </span>
           </div>
-          
-          {/* For in-progress training, show progress bar */}
+
+          {/* For in-progress training, show prominent progress bar */}
           {trainingStatus === TrainingStatus.IN_PROGRESS && (
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-blue-400">Training Progress</span>
-                <span>{trainingProgress}%</span>
+            <div className="mt-4 bg-gray-800 p-3 rounded-md border border-blue-800/30">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-blue-400">Training Progress</span>
+                <span className="text-blue-300 font-bold">{trainingProgress}%</span>
               </div>
               <Progress 
                 value={trainingProgress} 
-                className="h-2 bg-gray-700 [&>div]:bg-blue-500" 
+                className="h-3 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-600 [&>div]:to-blue-400"
               />
-              <p className="text-xs text-gray-400 mt-2 flex items-center">
-                <TimerIcon className="h-3 w-3 mr-1 text-blue-400" />
-                {gameState.training.daysRemaining} days remaining
-              </p>
+              <div className="mt-3 text-sm flex justify-between">
+                <div className="flex items-center">
+                  <TimerIcon className="h-4 w-4 mr-1 text-blue-400" />
+                  <span className="text-blue-300">{gameState.training.daysRemaining} days remaining</span>
+                </div>
+                <div className="flex items-center">
+                  <BrainIcon className="h-4 w-4 mr-1 text-amber-400" />
+                  <span className="text-amber-300">+{targetTrainingRun?.intelligenceGain.toLocaleString()} Intelligence</span>
+                </div>
+              </div>
             </div>
           )}
           
-          {/* For not-yet-started training, show algorithm research progress */}
+          {/* For not-yet-started training, show prerequisites status */}
           {(trainingStatus === TrainingStatus.LOCKED || trainingStatus === TrainingStatus.AVAILABLE) && !isTrainingActive && (
-            <div>
-              <div className="bg-gray-800 rounded-md p-2 mb-2 border border-purple-900/40">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <BrainIcon className="h-4 w-4 text-purple-400" />
-                    <span className="text-sm font-medium text-white">Algorithm Research Progress</span>
-                  </div>
-                  <div className="px-2 py-0.5 bg-purple-900/30 rounded-full text-xs text-purple-300 font-medium">
-                    {algorithmResearchProgress}%
-                  </div>
+            <div className="mt-3">
+              {/* Overall Completion */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium text-amber-400">Overall Readiness</span>
+                  <span className="text-xs font-medium text-amber-300">{metPrereqs}/{allPrerequisites.length} complete</span>
                 </div>
-                
-                <Progress 
-                  value={algorithmResearchProgress} 
-                  className="h-2.5 bg-gray-700 [&>div]:bg-purple-500" 
-                />
-                
-                <div className="mt-2 text-xs flex items-center">
-                  <div className="flex-1 flex items-center text-gray-400">
-                    <ZapIcon className="h-3 w-3 mr-1 text-green-400" />
-                    <span>Free Compute: {computeCapacity.freeCompute || 0} units</span>
-                  </div>
-                  <div className="flex-1 text-right text-gray-400">
-                    Rate: +{gameState.training.algorithmResearchRate.toFixed(2)}/day
-                  </div>
-                </div>
-                
-                {/* Resource allocation breakdown */}
-                <div className="mt-2 grid grid-cols-3 gap-1 bg-gray-700/40 rounded p-1">
-                  <div className="text-xs text-purple-400 flex items-center justify-center">
-                    <span className="inline-block h-2 w-2 rounded-full bg-purple-400 mr-1"></span>
-                    Customer: {computeCapacity.customerUsage || 0}
-                  </div>
-                  <div className="text-xs text-amber-400 flex items-center justify-center">
-                    <span className="inline-block h-2 w-2 rounded-full bg-amber-400 mr-1"></span>
-                    Training: {gameState.training.computeReserved || 0}
-                  </div>
-                  <div className="text-xs text-green-400 flex items-center justify-center">
-                    <span className="inline-block h-2 w-2 rounded-full bg-green-400 mr-1"></span>
-                    Research: {computeCapacity.freeCompute || 0}
-                  </div>
-                </div>
-                
-                <p className="text-xs text-gray-400 mt-2 italic">
-                  {algorithmResearchProgress < 100 ? 
-                    "Research advances faster with more free compute resources and engineers from the Algorithm tab" : 
-                    "Research complete! Check other prerequisites to unlock training."}
-                </p>
-              </div>
-            </div>
-          )}
-          
-          {/* If training is locked, show prerequisites */}
-          {trainingStatus === TrainingStatus.LOCKED && missingPrerequisites.length > 0 && (
-            <div className="mt-2">
-              <h4 className="text-xs font-medium text-amber-400 mb-1">Missing Prerequisites:</h4>
-              <ul className="space-y-1">
-                {missingPrerequisites.map((prereq, index) => (
-                  <li key={index} className="text-xs text-gray-300 flex items-center">
-                    <LockIcon className="h-3 w-3 mr-1 text-amber-400" />
-                    {prereq}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {/* Training Resources Required */}
-          {trainingStatus === TrainingStatus.AVAILABLE && !isTrainingActive && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-800 p-2 rounded">
-                <span className="text-xs text-gray-400">Compute Required</span>
-                <div className={`text-sm font-medium ${hasEnoughCompute ? 'text-green-400' : 'text-red-400'} flex items-center mt-1`}>
-                  <CpuIcon className="h-3 w-3 mr-1" />
-                  {targetTrainingRun?.computeRequired.toLocaleString()}
+                <div className="relative h-3 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`absolute left-0 top-0 h-full ${
+                      overallCompletionPercent === 100 
+                        ? "bg-gradient-to-r from-green-500 to-green-400" 
+                        : "bg-gradient-to-r from-amber-600 to-amber-400"
+                    }`}
+                    style={{ width: `${overallCompletionPercent}%` }}
+                  ></div>
                 </div>
               </div>
-              <div className="bg-gray-800 p-2 rounded">
-                <span className="text-xs text-gray-400">Intelligence Gain</span>
-                <div className="text-sm font-medium text-purple-400 flex items-center mt-1">
-                  <BrainIcon className="h-3 w-3 mr-1" />
-                  +{targetTrainingRun?.intelligenceGain.toLocaleString()}
+
+              {/* Resource Category Completion */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-gray-800 p-1 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-blue-400">Compute</span>
+                    <span className="text-[10px] text-blue-400">{metPrereqsByCategory.compute}/{totalPrereqsByCategory.compute}</span>
+                  </div>
+                  <Progress 
+                    value={categoryCompletion.compute} 
+                    className="h-1.5 bg-gray-700 [&>div]:bg-blue-500" 
+                  />
+                </div>
+                <div className="bg-gray-800 p-1 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-green-400">Data</span>
+                    <span className="text-[10px] text-green-400">{metPrereqsByCategory.data}/{totalPrereqsByCategory.data}</span>
+                  </div>
+                  <Progress 
+                    value={categoryCompletion.data} 
+                    className="h-1.5 bg-gray-700 [&>div]:bg-green-500" 
+                  />
+                </div>
+                <div className="bg-gray-800 p-1 rounded">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-purple-400">Algorithm</span>
+                    <span className="text-[10px] text-purple-400">{metPrereqsByCategory.algorithm}/{totalPrereqsByCategory.algorithm}</span>
+                  </div>
+                  <Progress 
+                    value={categoryCompletion.algorithm} 
+                    className="h-1.5 bg-gray-700 [&>div]:bg-purple-500" 
+                  />
                 </div>
               </div>
+
+              {/* Detailed Prerequisites Visualization */}
+              <div className="mt-4 bg-gray-800 p-3 rounded-md border border-gray-700 max-h-[180px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+                <h4 className="text-sm font-medium text-white mb-2">Training Prerequisites</h4>
+                <div className="space-y-2">
+                  {allPrerequisites.map((prereq, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span className={`mr-2 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
+                          {prereq.isMet ? <CheckCircleIcon className="h-3 w-3" /> : <LockIcon className="h-3 w-3" />}
+                        </span>
+                        <span className={`flex items-center text-xs ${prereq.colorClass}`}>
+                          {prereq.icon}
+                          <span className="ml-1">{prereq.name}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`text-xs ${prereq.isMet ? 'text-green-400' : 'text-gray-400'}`}>
+                          {prereq.current}{prereq.isPercentage ? '%' : ''}
+                        </span>
+                        <span className="text-xs text-gray-500 mx-1">/</span>
+                        <span className="text-xs text-gray-400">
+                          {prereq.required}{prereq.isPercentage ? '%' : ''}
+                        </span>
+                        <Progress 
+                          value={Math.min(100, (prereq.current / prereq.required) * 100)} 
+                          className={`ml-2 w-12 h-1.5 bg-gray-700 [&>div]:${prereq.isMet ? 'bg-green-500' : prereq.colorClass.replace('text', 'bg')}`} 
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Algorithm Research Progress Section */}
+              {(trainingStatus === TrainingStatus.LOCKED || trainingStatus === TrainingStatus.AVAILABLE) && !isTrainingActive && (
+                <div className="mt-3">
+                  <div className="bg-gray-800 rounded-md p-3 border border-purple-900/40">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <BrainIcon className="h-4 w-4 text-purple-400" />
+                        <span className="text-sm font-medium text-white">Algorithm Research</span>
+                      </div>
+                      <div className="px-2 py-0.5 bg-purple-900/30 rounded-full text-xs text-purple-300 font-medium">
+                        {algorithmResearchProgress}%
+                      </div>
+                    </div>
+                    
+                    <Progress 
+                      value={algorithmResearchProgress} 
+                      className="h-2.5 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-purple-600 [&>div]:to-purple-400" 
+                    />
+                    
+                    <div className="mt-2 text-xs flex items-center justify-between">
+                      <div className="flex items-center text-gray-400">
+                        <ZapIcon className="h-3 w-3 mr-1 text-green-400" />
+                        <span>Free Compute: {computeCapacity.freeCompute || 0} units</span>
+                      </div>
+                      <div className="text-gray-400">
+                        Rate: +{gameState.training.algorithmResearchRate.toFixed(2)}/day
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Training Resources Required */}
+              {trainingStatus === TrainingStatus.AVAILABLE && !isTrainingActive && (
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                    <span className="text-xs font-medium text-gray-300">Compute Required</span>
+                    <div className={`mt-1 text-lg font-bold flex items-center ${hasEnoughCompute ? 'text-green-400' : 'text-red-400'}`}>
+                      <CpuIcon className="h-4 w-4 mr-1" />
+                      {targetTrainingRun?.computeRequired.toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      {hasEnoughCompute 
+                        ? "✓ Sufficient compute available" 
+                        : `⚠ Need ${(targetTrainingRun?.computeRequired || 0) - computeCapacity.available} more compute`}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                    <span className="text-xs font-medium text-gray-300">Intelligence Gain</span>
+                    <div className="mt-1 text-lg font-bold text-amber-400 flex items-center">
+                      <BrainIcon className="h-4 w-4 mr-1" />
+                      +{targetTrainingRun?.intelligenceGain.toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      {Math.round((targetTrainingRun?.intelligenceGain || 0) / gameState.agiThreshold * 100)}% toward AGI threshold
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Start Training Button */}
+              {(trainingStatus === TrainingStatus.AVAILABLE || trainingStatus === TrainingStatus.LOCKED) && !isTrainingActive && (
+                <button 
+                  className={`w-full mt-4 py-3 px-4 rounded-md flex justify-center items-center gap-2 font-medium text-base ${
+                    canStartTraining
+                      ? "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-md"
+                      : "bg-gray-700 opacity-70 cursor-not-allowed text-gray-300"
+                  }`}
+                  onClick={trainModel}
+                  disabled={!canStartTraining}
+                >
+                  {canStartTraining ? <RocketIcon className="h-4 w-4" /> : <LockIcon className="h-4 w-4" />}
+                  {trainingStatus === TrainingStatus.AVAILABLE 
+                    ? "Begin Training Run" 
+                    : `Complete ${missingPrerequisites.length} Missing Prerequisites`}
+                </button>
+              )}
             </div>
-          )}
-          
-          {/* Start Training Button */}
-          {(trainingStatus === TrainingStatus.AVAILABLE || trainingStatus === TrainingStatus.LOCKED) && !isTrainingActive && (
-            <button 
-              className={`w-full py-2 px-4 rounded-md flex justify-center items-center gap-2 ${
-                canStartTraining
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-700 opacity-70 cursor-not-allowed text-gray-300"
-              }`}
-              onClick={trainModel}
-              disabled={!canStartTraining}
-            >
-              <PlayCircleIcon className="h-4 w-4" />
-              {trainingStatus === TrainingStatus.AVAILABLE ? "Start Training Run" : "Unlock Training"}
-            </button>
           )}
           
           {/* If training is complete, show completion status */}
           {trainingStatus === TrainingStatus.COMPLETE && (
-            <div className="bg-purple-900/30 border border-purple-700 rounded p-2 mt-2 text-center">
-              <span className="text-xs text-purple-300 flex items-center justify-center">
-                <CheckCircleIcon className="h-3 w-3 mr-1" />
-                Training complete! Your AI has advanced to {nextEra}.
-              </span>
+            <div className="mt-3 bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-700 rounded-lg p-3">
+              <div className="flex items-center justify-center">
+                <CheckCircleIcon className="h-5 w-5 mr-2 text-purple-400" />
+                <span className="text-purple-300 font-medium">Training Complete!</span>
+              </div>
+              <div className="text-center mt-2 text-sm text-gray-300">
+                You have successfully advanced to <span className="text-purple-300 font-medium">{nextEra}</span>
+              </div>
+              <div className="flex justify-center mt-3">
+                <div className="bg-purple-900/40 rounded-lg px-3 py-2 text-center">
+                  <div className="text-xs text-gray-400">Intelligence Gained</div>
+                  <div className="text-lg font-bold text-purple-300">+{targetTrainingRun?.intelligenceGain.toLocaleString()}</div>
+                </div>
+              </div>
             </div>
           )}
         </div>
         
-        {/* Usage Progress Bars */}
-        <div className="space-y-2">
-          <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-blue-400">Available Capacity</span>
-              <span>{computeAvailablePercent}%</span>
-            </div>
-            <Progress 
-              value={computeAvailablePercent} 
-              className="h-2 bg-gray-700 [&>div]:bg-blue-500" 
-            />
-          </div>
-          <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className={`${isCritical ? 'text-red-400' : isNearCapacity ? 'text-amber-400' : 'text-orange-400'} flex items-center`}>
-                {isCritical ? (
-                  <>
-                    <AlertCircleIcon className="h-3 w-3 mr-1" />
-                    Critical Usage
-                  </>
-                ) : isNearCapacity ? (
-                  <>
-                    <AlertTriangleIcon className="h-3 w-3 mr-1" />
-                    High Usage
-                  </>
-                ) : (
-                  'Used Capacity'
-                )}
-              </span>
-              <span className={isCritical ? 'text-red-400 font-bold' : isNearCapacity ? 'text-amber-400' : ''}>{computeUsagePercent}%</span>
-            </div>
-            <Progress 
-              value={computeUsagePercent} 
-              className={`h-2 bg-gray-700 ${
-                isCritical ? '[&>div]:bg-red-500 animate-pulse' : 
-                isNearCapacity ? '[&>div]:bg-amber-500' : 
-                '[&>div]:bg-orange-500'
-              }`} 
-            />
-          </div>
-        </div>
-        
-        {/* Usage Warning */}
-        {isCritical && (
-          <div className="mt-2 bg-red-900/30 border border-red-800 rounded-md p-2 text-xs text-red-300 flex items-start">
-            <AlertCircleIcon className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
-            <p>Critical compute saturation detected! Your service quality is severely degraded and customers are leaving. Upgrade compute capacity or reduce service load immediately.</p>
-          </div>
-        )}
-        {isNearCapacity && !isCritical && (
-          <div className="mt-2 bg-amber-900/30 border border-amber-800 rounded-md p-2 text-xs text-amber-300 flex items-start">
-            <AlertTriangleIcon className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
-            <p>High compute usage detected. Your services are experiencing intermittent outages. Customer growth and revenue are affected. Consider upgrading compute capacity.</p>
-          </div>
-        )}
-        
-        {/* Training Benefits Information */}
-        <div className="text-xs text-gray-400 mt-1 bg-gray-900 p-2 rounded border border-gray-800">
-          <p className="mb-2">Training runs are critical for advancing your AI to new eras, unlocking new capabilities and stronger revenue streams.</p>
-          
-          <div className="bg-gray-800 rounded p-2 mt-2 text-center">
-            <div className="font-semibold text-blue-400 mb-1">Training Run Requirements</div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-gray-700 p-1.5 rounded flex flex-col">
-                <span className="text-gray-300">Reserved Compute</span>
-                <span className="text-amber-400">For 30 days</span>
-              </div>
-              <div className="bg-gray-700 p-1.5 rounded flex flex-col">
-                <span className="text-gray-300">Scale Requirement</span>
-                <span className="text-amber-400">10× per era</span>
-              </div>
-            </div>
-          </div>
-          
-          <p className="mt-2">Each era's training requires 10× more compute than the previous era, along with advanced levels of all infrastructure components.</p>
+        {/* Educational Content */}
+        <div className="text-xs text-gray-400 p-3 rounded-lg bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700">
+          <p className="mb-2">
+            Training runs are the key mechanism for advancing your AI to new eras. Each successful training unlocks new capabilities, higher revenue potential, and brings you closer to AGI.
+          </p>
+          <p>
+            The scale of training grows exponentially: each era's training run requires 10× more compute and more advanced infrastructure across all resources.
+          </p>
         </div>
       </CardContent>
     </Card>
