@@ -1236,16 +1236,25 @@ export function useGameEngine() {
             }
           } else {
             // If no active training, progress algorithm research
-            // Free compute adds to research progress
+            // Free compute directly contributes to research progress
             const freeCompute = newState.computeCapacity.available;
-            const researchRate = newState.training.algorithmResearchRate * 
-              (1 + (Math.log10(freeCompute + 1) * 0.1)) * // Free compute bonus (logarithmic)
-              (1 + (newState.algorithmInputs.architectures * 0.05)); // Algorithm architectures bonus
-              
-            // Advance research progress (capped at 100%)
+            
+            // Free compute provides a direct boost to research, with diminishing returns
+            // Higher algorithm architectures investment increases efficiency
+            const architectureMultiplier = 1 + (newState.algorithmInputs.architectures * 0.1); // 10% boost per architecture level
+            const computeEfficiency = Math.log10(freeCompute + 1) * 0.2; // Logarithmic scaling for free compute
+            
+            // Calculate new research rate:
+            // Base rate + (compute efficiency * architecture multiplier)
+            newState.training.algorithmResearchRate = Math.max( 
+              0.1, // Minimum base rate even with no compute
+              0.5 + (computeEfficiency * architectureMultiplier)
+            );
+            
+            // Apply the research rate to progress
             newState.training.algorithmResearchProgress = Math.min(
-              100,
-              newState.training.algorithmResearchProgress + researchRate
+              100, // Cap at 100%
+              newState.training.algorithmResearchProgress + newState.training.algorithmResearchRate
             );
             
             // If we've reached 100% research, check if we can unlock the next training run

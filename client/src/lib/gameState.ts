@@ -291,9 +291,9 @@ export const initialGameState: GameStateType = {
       [Era.GNT3]: {
         targetEra: Era.GNT3,
         status: TrainingStatus.LOCKED,
-        daysRequired: 30,
+        daysRequired: 30, // 30-day training period
         daysRemaining: 30,
-        computeRequired: 1000,
+        computeRequired: 1000, // Base compute requirement for first era
         computePerCustomer: 5, // Each B2B or B2C customer uses this much compute
         isTrainingReserveActive: false,
         

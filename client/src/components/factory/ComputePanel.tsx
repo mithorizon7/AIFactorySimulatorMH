@@ -169,26 +169,39 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Compute Capacity Metrics */}
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-gray-700 rounded p-2">
-            <div className="text-xs text-gray-400 mb-1">Available</div>
-            <div className="font-semibold text-blue-400 flex justify-center items-center gap-1">
-              <ZapIcon className="h-3 w-3" />
-              {computeCapacity.available.toLocaleString()}
+        <div className="grid grid-cols-1 gap-2 text-center">
+          <div className="bg-gray-800 p-2 rounded border border-gray-700">
+            <h4 className="text-xs font-medium text-blue-400 mb-2">Compute Distribution</h4>
+            <div className="grid grid-cols-3 gap-1">
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-xs text-gray-400 mb-1">Free</div>
+                <div className="font-semibold text-blue-400 flex justify-center items-center gap-1">
+                  <ZapIcon className="h-3 w-3" />
+                  {computeCapacity.available.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Research</div>
+              </div>
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-xs text-gray-400 mb-1">Used</div>
+                <div className="font-semibold text-orange-400 flex justify-center items-center gap-1">
+                  <ServerIcon className="h-3 w-3" />
+                  {computeCapacity.used.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Customers</div>
+              </div>
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-xs text-gray-400 mb-1">Maximum</div>
+                <div className="font-semibold text-purple-400 flex justify-center items-center gap-1">
+                  <CircuitBoardIcon className="h-3 w-3" />
+                  {computeCapacity.maxCapacity.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Capacity</div>
+              </div>
             </div>
-          </div>
-          <div className="bg-gray-700 rounded p-2">
-            <div className="text-xs text-gray-400 mb-1">Used</div>
-            <div className="font-semibold text-orange-400 flex justify-center items-center gap-1">
-              <ServerIcon className="h-3 w-3" />
-              {computeCapacity.used.toLocaleString()}
-            </div>
-          </div>
-          <div className="bg-gray-700 rounded p-2">
-            <div className="text-xs text-gray-400 mb-1">Maximum</div>
-            <div className="font-semibold text-purple-400 flex justify-center items-center gap-1">
-              <CircuitBoardIcon className="h-3 w-3" />
-              {computeCapacity.maxCapacity.toLocaleString()}
+            <div className="mt-2 p-1.5 bg-gray-900 rounded-sm">
+              <div className="text-xs text-gray-400 flex justify-between">
+                <span>Free compute automatically contributes to research</span>
+              </div>
             </div>
           </div>
         </div>
