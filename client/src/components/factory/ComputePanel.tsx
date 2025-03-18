@@ -373,11 +373,11 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           {/* Progress Indicator (only shows if in progress) */}
           {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
             <div 
-              className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm"
+              className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm z-10"
               style={{ 
                 left: `${overallCompletionPercent}%`, 
-                top: '0.125rem',
-                transform: 'translateX(-50%)',
+                top: '0',
+                transform: 'translateX(-50%) translateY(-50%)',
                 transition: 'left 0.5s ease-out'
               }}
             >
