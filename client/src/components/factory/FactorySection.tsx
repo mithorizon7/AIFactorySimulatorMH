@@ -3,7 +3,7 @@ import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { resourceDefinitions } from "@/lib/educationalContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users } from "lucide-react";
+import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users, Brain } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
