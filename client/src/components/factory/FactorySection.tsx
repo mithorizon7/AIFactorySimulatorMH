@@ -3,7 +3,7 @@ import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { resourceDefinitions } from "@/lib/educationalContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info } from "lucide-react";
+import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -673,26 +673,26 @@ export default function FactorySection({
           </AccordionTrigger>
           <AccordionContent className="pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Model Architectures */}
+              {/* Research Engineers */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
                 <LearningDialog
-                  title="Neural Network Architectures"
+                  title="Research Engineers & Architectures"
                   category="algorithm"
-                  description="The architecture of an AI model determines how information flows through it and what kinds of patterns it can learn. Architectural innovations have been responsible for many of the most significant breakthroughs in AI capabilities over the past decade."
-                  realWorldExample="The Transformer architecture, introduced in 2017, revolutionized natural language processing and enabled models like GPT. Diffusion models enabled the breakthrough in image generation seen in DALL-E and Midjourney. MoE (Mixture of Experts) architectures have enabled even larger and more efficient models."
-                  importance="Architecture is often the bottleneck to AI progress—changing how models process information can unlock capabilities that were previously impossible regardless of scale. The right architecture can make a model more parameter-efficient, reduce training costs, and enable entirely new capabilities like long-context reasoning."
+                  description="A team of top-tier AI research engineers is crucial for developing novel model architectures. They determine how information flows through models and what kinds of patterns can be learned. The best engineers have been responsible for architectures that enabled many of the most significant breakthroughs in AI."
+                  realWorldExample="OpenAI, Anthropic, and other leading AI companies compete fiercely to hire the best research engineers. Engineers like those who created the Transformer architecture in 2017 revolutionized NLP and enabled models like GPT. Elite talent is often paid >$1M annually due to their outsized impact."
+                  importance="Top research talent is often the true bottleneck to AI progress. Their insights can unlock capabilities that were previously impossible regardless of scale or compute. Without elite research teams, companies struggle to innovate beyond simply scaling up existing architectures."
                 />
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
-                    <Workflow className="h-4 w-4 text-purple-400" />
-                    <span>Model Architectures</span>
+                    <Users className="h-4 w-4 text-purple-400" />
+                    <span>Research Engineers</span>
                   </h4>
                   <div className="bg-purple-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {algorithmInputs.architectures}
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Research into novel architectures that fundamentally change AI capabilities.
+                  Hire better engineers to accelerate research and develop novel architectures.
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
@@ -701,8 +701,10 @@ export default function FactorySection({
                   onClick={allocateMoneyToAlgorithmArchitectures}
                   disabled={money < 125}
                 >
-                  <span>Invest</span>
-                  <span className="font-medium">$125</span>
+                  <span>Hire Engineers</span>
+                  <span className="font-medium">${gameState.algorithmInputs.architectures > 0 ? 
+                    Math.floor(125 * (1 + (gameState.algorithmInputs.architectures * 0.1))) : 
+                    125}</span>
                 </button>
               </div>
             </div>
