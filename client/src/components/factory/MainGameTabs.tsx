@@ -194,6 +194,12 @@ export default function MainGameTabs({
             </div>
           </div>
           
+          {/* AI Training System - Moved right under AGI Progress */}
+          <ComputePanel 
+            gameState={gameState}
+            trainModel={trainModel}
+          />
+          
           {/* System Status Panel - Shows compute and service health */}
           <SystemStatusPanel gameState={gameState} />
           
@@ -205,12 +211,6 @@ export default function MainGameTabs({
             
             <SynergyDashboard gameState={gameState} />
           </div>
-          
-          {/* AI Training System */}
-          <ComputePanel 
-            gameState={gameState}
-            trainModel={trainModel}
-          />
 
           {/* Resource Flow Visualization - Moved to bottom */}
           <div className="mt-6">
