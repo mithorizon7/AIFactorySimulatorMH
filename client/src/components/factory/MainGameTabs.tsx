@@ -11,6 +11,7 @@ import ResourceFlowVisualization from "./ResourceFlowVisualization";
 import EraProgressionPanel from "./EraProgressionPanel";
 import SynergyDashboard from "./SynergyDashboard";
 import SystemStatusPanel from "./SystemStatusPanel";
+import ComputePanel from "./ComputePanel";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
@@ -205,6 +206,12 @@ export default function MainGameTabs({
             <SynergyDashboard gameState={gameState} />
           </div>
           
+          {/* AI Training System */}
+          <ComputePanel 
+            gameState={gameState}
+            trainModel={trainModel}
+          />
+
           {/* Resource Flow Visualization - Moved to bottom */}
           <div className="mt-6">
             <h3 className="text-lg font-medium mb-2 flex items-center">
