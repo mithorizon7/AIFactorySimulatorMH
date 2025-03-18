@@ -9,6 +9,14 @@ export enum Era {
   GNT7 = "GNT-7"     // Final Phase (AGI Threshold)
 }
 
+// Training run states
+export enum TrainingStatus {
+  AVAILABLE = "available", // Prerequisites met, can start training
+  IN_PROGRESS = "in-progress", // Training is actively running
+  COMPLETE = "complete", // Training has finished for this era
+  LOCKED = "locked" // Prerequisites not met for starting training
+}
+
 // Game events that can occur during gameplay 
 export interface GameEvent {
   id: number;
@@ -47,6 +55,27 @@ export interface GameStateType {
   // Game Era/Phase Tracking
   currentEra: Era;       // Current game era/phase (GPT-2, GPT-3, etc.)
   daysElapsed: number;   // Game time tracking for events
+  
+  // Training Run System - Central to game progression
+  training: {
+    // Currently active training run (if any)
+    active: boolean;          // Whether a training run is currently in progress
+    daysRemaining: number;    // Days remaining until training completion
+    computeReserved: number;  // Compute currently reserved for training
+    
+    // Current training progress toward next era
+    algorithmResearchProgress: number; // Progress toward research needed for next training run (0-100)
+    algorithmResearchRate: number;     // Current rate of algorithm research progress
+    
+    // Per-era training runs
+    runs: {
+      [Era.GNT3]: TrainingRun;  // Training run to advance from GNT-2 to GNT-3
+      [Era.GNT4]: TrainingRun;  // Training run to advance from GNT-3 to GNT-4
+      [Era.GNT5]: TrainingRun;  // Training run to advance from GNT-4 to GNT-5
+      [Era.GNT6]: TrainingRun;  // Training run to advance from GNT-5 to GNT-6
+      [Era.GNT7]: TrainingRun;  // Training run to advance from GNT-6 to GNT-7
+    };
+  };
   
   // Primary Resources
   resources: {
@@ -193,6 +222,44 @@ export interface Breakthrough {
   type: 'compute' | 'data' | 'algorithm' | 'combined';
   realWorldParallel: string;
   era?: Era; // Optional era association
+}
+
+// Training run model - a discrete training operation that advances the AI to the next era
+export interface TrainingRun {
+  targetEra: Era; // What era this training run is trying to reach
+  status: TrainingStatus; // Current status of the training run
+  daysRequired: number; // How many days the training takes to complete (30 by default)
+  daysRemaining: number; // How many days remain until completion
+  computeRequired: number; // How much compute is required/locked during training
+  computePerCustomer: number; // How much compute each customer uses
+  isTrainingReserveActive: boolean; // Whether compute is currently reserved for this training
+  
+  // Completion bonus
+  intelligenceGain: number; // Base intelligence gained on completion
+  
+  // Prerequisites for starting the training
+  prerequisites: {
+    compute: number; // Required compute capacity level
+    data: {
+      quality: number; // Required data quality level
+      quantity: number; // Required data quantity level
+      formats: number; // Required data formats level
+    };
+    algorithm: {
+      architectures: number; // Required algorithm architecture level
+      researchProgress: number; // Required research progress (0-100)
+    };
+    computeInputs: {
+      electricity: number; // Required electricity level
+      hardware: number; // Required hardware level
+      regulation: number; // Required regulation level
+    };
+  };
+  
+  // Educational content
+  name: string; // Name of this training run
+  description: string; // Description of what this training run accomplishes
+  realWorldParallel: string; // Educational context
 }
 
 export const initialGameState: GameStateType = {
