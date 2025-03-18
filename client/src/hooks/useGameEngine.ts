@@ -776,26 +776,43 @@ export function useGameEngine() {
       
       let serviceQualityRatio = 1.0; // Default: full quality
       
-      // Check if we're approaching compute capacity limit (90% usage threshold)
+      // Check compute capacity thresholds
       const usageRatio = (newState.computeCapacity.used + totalComputeUsage) / newState.computeCapacity.maxCapacity;
-      const isApproachingCapacity = usageRatio >= 0.9;
+      const isApproachingCapacity = usageRatio >= 0.9 && usageRatio < 0.95;
+      const isCriticalCapacity = usageRatio >= 0.95;
       
       // Apply compute usage and handle potential outages
       if (totalComputeUsage > 0) {
         // If we have enough compute, use it
         if (newState.computeCapacity.available >= totalComputeUsage) {
-          // Even if we have enough compute, there might be outages if we're near capacity
-          if (isApproachingCapacity) {
-            // Calculate service quality degradation based on how close to 100% we are
-            // Scale from 1.0 (at 90% usage) down to 0.7 (at 100% usage)
-            const capacityPressure = (usageRatio - 0.9) / 0.1; // 0 to 1 as we go from 90% to 100%
-            serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
+          // Service degradation depends on how close to capacity we are
+          if (isCriticalCapacity) {
+            // Critical situation: 95%+ usage causes severe degradation
+            // Scale from 0.7 (at 95% usage) down to 0.5 (at 100% usage)
+            const criticalPressure = (usageRatio - 0.95) / 0.05; // 0 to 1 as we go from 95% to 100%
+            serviceQualityRatio = Math.max(0.5, 0.7 - (0.2 * criticalPressure));
             
-            // Notify about outages due to high load
+            // Notify about critical outages
             if (timeElapsed % 10 === 0) {
               toast({
-                title: "Compute System Under Pressure!",
-                description: "Your system is experiencing outages due to high demand. Upgrade your compute capacity to avoid customer loss.",
+                title: "CRITICAL SYSTEM OVERLOAD!",
+                description: "Your services are experiencing major outages. Expect significant customer loss and revenue impact.",
+                variant: "destructive",
+                duration: 4000,
+              });
+            }
+          }
+          else if (isApproachingCapacity) {
+            // High but not critical: 90-95% usage causes moderate degradation
+            // Scale from 1.0 (at 90% usage) down to 0.7 (at 95% usage)
+            const capacityPressure = (usageRatio - 0.9) / 0.05; // 0 to 1 as we go from 90% to 95%
+            serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
+            
+            // Notify about service degradation
+            if (timeElapsed % 10 === 0) {
+              toast({
+                title: "Compute System Under Pressure",
+                description: "Your system is experiencing intermittent outages. Upgrade your compute capacity to avoid customer loss.",
                 variant: "destructive",
                 duration: 3000,
               });
@@ -824,26 +841,25 @@ export function useGameEngine() {
             });
           }
           
-          // More severe customer loss due to outright service failures
+          // Handle customer loss for severe outages (completely out of compute)
           if (timeElapsed % 10 === 0) {
-            // Calculate churn rate - more severe when we're completely out of compute
-            // Max 15% churn for severe outages (vs 5% for mild outages)
-            const churnRate = 0.15 * (1 - serviceQualityRatio);
+            // Max 25% churn for zero compute outages
+            const severeChurnRate = 0.25 * (1 - serviceQualityRatio);
             
             // Apply to subscribers
             if (newState.revenue.subscribers > 0) {
               const previousSubscribers = newState.revenue.subscribers;
               newState.revenue.subscribers = Math.floor(
-                newState.revenue.subscribers * (1 - churnRate)
+                newState.revenue.subscribers * (1 - severeChurnRate)
               );
               
               const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
               if (lostSubscribers > 10) {
                 toast({
-                  title: "Critical: Subscribers Leaving!",
-                  description: `${lostSubscribers} subscribers have left due to major service outages.`,
+                  title: "SEVERE: Mass User Exodus!",
+                  description: `${lostSubscribers} subscribers have abandoned your platform due to complete service failure.`,
                   variant: "destructive",
-                  duration: 3000,
+                  duration: 4000,
                 });
               }
             }
@@ -852,18 +868,67 @@ export function useGameEngine() {
             if (newState.revenue.developers > 0) {
               const previousDevelopers = newState.revenue.developers;
               newState.revenue.developers = Math.floor(
-                newState.revenue.developers * (1 - churnRate * 0.8) // Developers are slightly more tolerant
+                newState.revenue.developers * (1 - severeChurnRate * 0.8) // Developers are slightly more tolerant
               );
               
               const lostDevelopers = previousDevelopers - newState.revenue.developers;
               if (lostDevelopers > 5) {
                 toast({
                   title: "Developers Abandoning Platform!",
-                  description: `${lostDevelopers} developers have stopped using your API due to reliability issues.`,
+                  description: `${lostDevelopers} developers have stopped using your API due to complete system failure.`,
                   variant: "destructive",
                   duration: 3000,
                 });
               }
+            }
+          }
+        }
+      }
+      
+      // Additional churn mechanics for high load and critical load scenarios
+      if (timeElapsed % 10 === 0) {
+        // Apply customer churn for warning (90-95%) and critical (95%+) load 
+        if (isApproachingCapacity || isCriticalCapacity) {
+          // Calculate churn rates based on severity
+          const warningChurnRate = isApproachingCapacity ? 0.05 : 0; // 5% monthly churn at warning level
+          const criticalChurnRate = isCriticalCapacity ? 0.15 : 0;   // 15% monthly churn at critical level
+          const totalChurnRate = warningChurnRate + criticalChurnRate;
+          
+          // Apply to subscribers (B2C)
+          if (newState.revenue.subscribers > 0 && totalChurnRate > 0) {
+            const previousSubscribers = newState.revenue.subscribers;
+            newState.revenue.subscribers = Math.floor(
+              newState.revenue.subscribers * (1 - totalChurnRate)
+            );
+            
+            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
+            if (lostSubscribers > 10) {
+              toast({
+                title: isCriticalCapacity ? "Critical: Subscribers Leaving!" : "Warning: Some Subscribers Leaving",
+                description: `${lostSubscribers} subscribers have left due to ${isCriticalCapacity ? "major" : "intermittent"} service outages.`,
+                variant: "destructive",
+                duration: 3000,
+              });
+            }
+          }
+          
+          // Apply to developers (B2B) - they're slightly more tolerant
+          if (newState.revenue.developers > 0 && totalChurnRate > 0) {
+            const previousDevelopers = newState.revenue.developers;
+            const b2bChurnRate = totalChurnRate * 0.8; // Developers are slightly more tolerant
+            
+            newState.revenue.developers = Math.floor(
+              newState.revenue.developers * (1 - b2bChurnRate)
+            );
+            
+            const lostDevelopers = previousDevelopers - newState.revenue.developers;
+            if (lostDevelopers > 5) {
+              toast({
+                title: isCriticalCapacity ? "Developers Abandoning Platform!" : "Some Developers Leaving",
+                description: `${lostDevelopers} developers have reduced usage due to ${isCriticalCapacity ? "significant" : "minor"} reliability issues.`,
+                variant: "destructive",
+                duration: 3000,
+              });
             }
           }
         }

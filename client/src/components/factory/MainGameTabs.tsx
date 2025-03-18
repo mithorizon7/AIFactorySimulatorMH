@@ -10,6 +10,7 @@ import BreakthroughSection from "./BreakthroughSection";
 import ResourceFlowVisualization from "./ResourceFlowVisualization";
 import EraProgressionPanel from "./EraProgressionPanel";
 import SynergyDashboard from "./SynergyDashboard";
+import SystemStatusPanel from "./SystemStatusPanel";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
@@ -181,6 +182,9 @@ export default function MainGameTabs({
               </div>
             </div>
           </div>
+          
+          {/* System Status Panel - Shows compute and service health */}
+          <SystemStatusPanel gameState={gameState} />
           
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
