@@ -1061,7 +1061,15 @@ export function useGameEngine() {
             
             // Find the current active training run
             const activeEra = getNextEra(newState.currentEra);
-            const activeTrainingRun = activeEra in newState.training.runs ? newState.training.runs[activeEra] : null;
+            
+            // Skip if we're in final era or if the next era doesn't have a training run
+            if (newState.currentEra === Era.GNT7 || !(activeEra in newState.training.runs)) {
+              newState.training.active = false;
+              newState.training.daysRemaining = 0;
+              return newState;
+            }
+            
+            const activeTrainingRun = newState.training.runs[activeEra];
             
             // Skip processing if no active training run exists for this era
             if (!activeTrainingRun) {
@@ -1070,7 +1078,9 @@ export function useGameEngine() {
               return newState;
             }
             
-            if (activeTrainingRun && activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
+            // Check if the training run is in progress
+            // The activeTrainingRun should always exist at this point due to our previous checks
+            if (activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
               // Also update the days remaining on the specific training run
               activeTrainingRun.daysRemaining -= 1;
               
@@ -1079,9 +1089,10 @@ export function useGameEngine() {
                 // Mark the run as complete
                 activeTrainingRun.status = TrainingStatus.COMPLETE;
                 activeTrainingRun.isTrainingReserveActive = false;
+                activeTrainingRun.daysRemaining = 0; // Ensure days remaining is exactly 0
                 
                 // Release the reserved compute
-                newState.computeCapacity.used -= newState.training.computeReserved;
+                newState.computeCapacity.used = Math.max(0, newState.computeCapacity.used - newState.training.computeReserved);
                 newState.training.computeReserved = 0;
                 
                 // Apply intelligence boost
@@ -1089,9 +1100,14 @@ export function useGameEngine() {
                 
                 // Reset the active training flag
                 newState.training.active = false;
+                newState.training.daysRemaining = 0; // Ensure global training days is also 0
                 
                 // Advance to the next era
                 newState.currentEra = activeEra;
+                
+                // Apply era-specific bonuses
+                // This calls the same function we use when manually advancing eras
+                advanceToNextEra(newState, activeEra);
                 
                 // Show completion message
                 toast({
@@ -1118,7 +1134,19 @@ export function useGameEngine() {
             // If we've reached 100% research, check if we can unlock the next training run
             if (newState.training.algorithmResearchProgress >= 100) {
               const nextEra = getNextEra(newState.currentEra);
-              const nextTrainingRun = nextEra in newState.training.runs ? newState.training.runs[nextEra] : null;
+              
+              // Handle special case for GNT-7 (final era) - no further training runs
+              if (newState.currentEra === Era.GNT7) {
+                // Already at final era, no next training run
+                return newState;
+              }
+              
+              // Skip if next era run doesn't exist
+              if (!(nextEra in newState.training.runs)) {
+                return newState;
+              }
+              
+              const nextTrainingRun = newState.training.runs[nextEra];
               
               if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
                 // Check if other prerequisites are met
