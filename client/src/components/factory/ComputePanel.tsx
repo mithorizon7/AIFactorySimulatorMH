@@ -348,6 +348,15 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
         {/* Era Transition Visualization */}
         <div className="relative flex items-center justify-center mb-2">
           <div className="w-full h-0.5 bg-gray-700"></div>
+          <div className="absolute w-full h-0.5">
+            <div 
+              className="h-0.5 bg-blue-500"
+              style={{ 
+                width: `${overallCompletionPercent}%`, 
+                transition: 'width 0.5s ease-in-out'
+              }}
+            ></div>
+          </div>
           <div className="absolute flex justify-between w-full">
             <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full flex items-center font-medium -translate-y-3">
               {gameState.currentEra}
@@ -355,6 +364,20 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <div className="bg-gray-800 border border-gray-600 text-gray-300 text-xs px-2 py-1 rounded-full flex items-center font-medium -translate-y-3">
               <ChevronRightIcon className="h-3 w-3 mr-1" />
               {nextEra}
+            </div>
+          </div>
+          
+          {/* Animated Progress Indicator */}
+          <div 
+            className="absolute -translate-y-3" 
+            style={{ 
+              left: `calc(${overallCompletionPercent}% - ${overallCompletionPercent > 50 ? '1.5rem' : '0rem'})`,
+              transition: 'left 0.5s ease-in-out',
+              display: overallCompletionPercent > 0 && overallCompletionPercent < 100 ? 'block' : 'none'
+            }}
+          >
+            <div className="bg-amber-500 text-black text-xs px-1.5 py-0.5 rounded-full flex items-center font-medium shadow-md">
+              {overallCompletionPercent}%
             </div>
           </div>
         </div>
