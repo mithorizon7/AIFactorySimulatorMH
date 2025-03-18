@@ -201,14 +201,6 @@ export default function AIFactory() {
             hireResearchEngineer={hireResearchEngineer}
           />
 
-          {/* Compute Capacity Section */}
-          <div className="mt-6">
-            <ComputePanel 
-              gameState={gameState}
-              trainModel={trainModel}
-            />
-          </div>
-
           {/* Help Panel (floating button) */}
           <HelpPanel currentEra={gameState.currentEra} />
 

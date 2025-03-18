@@ -41,6 +41,8 @@ interface MainGameTabsProps {
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
   runAdvertisingCampaign?: () => void;
+  // Training model function
+  trainModel: () => void;
 }
 
 export default function MainGameTabs({
@@ -71,7 +73,8 @@ export default function MainGameTabs({
   // Revenue enhancement functions
   improveDeveloperTools,
   improveChatbot,
-  runAdvertisingCampaign
+  runAdvertisingCampaign,
+  trainModel
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
