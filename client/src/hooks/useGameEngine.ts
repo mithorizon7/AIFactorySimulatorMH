@@ -117,8 +117,9 @@ export function useGameEngine() {
       return;
     }
     
-    // Get the training run for the next era
-    const trainingRun = gameState.training.runs[nextEra] || null;
+    // Get the training run for the next era if it exists
+    // Note: For GNT2 era, there won't be a run in the runs object since we start at GNT2 and train toward GNT3
+    const trainingRun = nextEra in gameState.training.runs ? gameState.training.runs[nextEra] : null;
     
     // If we're already actively training, don't allow starting another run
     if (gameState.training.active) {
@@ -131,7 +132,7 @@ export function useGameEngine() {
     }
     
     // Check if this era's training is already complete
-    if (trainingRun.status === TrainingStatus.COMPLETE) {
+    if (trainingRun && trainingRun.status === TrainingStatus.COMPLETE) {
       toast({
         title: "Training Already Complete",
         description: `You have already completed the training for ${trainingRun.name}.`,
@@ -142,6 +143,7 @@ export function useGameEngine() {
     
     // Function to check prerequisites
     const checkPrerequisites = () => {
+      if (!trainingRun) return [];
       const prereqs = trainingRun.prerequisites;
       const messages: string[] = [];
       
@@ -184,7 +186,7 @@ export function useGameEngine() {
     };
     
     // If training run is locked, check prerequisites
-    if (trainingRun.status === TrainingStatus.LOCKED) {
+    if (trainingRun && trainingRun.status === TrainingStatus.LOCKED) {
       const missingPrereqs = checkPrerequisites();
       
       if (missingPrereqs.length > 0) {
@@ -1059,7 +1061,7 @@ export function useGameEngine() {
             
             // Find the current active training run
             const activeEra = getNextEra(newState.currentEra);
-            const activeTrainingRun = newState.training.runs[activeEra] || null;
+            const activeTrainingRun = activeEra in newState.training.runs ? newState.training.runs[activeEra] : null;
             
             // Skip processing if no active training run exists for this era
             if (!activeTrainingRun) {
@@ -1116,7 +1118,7 @@ export function useGameEngine() {
             // If we've reached 100% research, check if we can unlock the next training run
             if (newState.training.algorithmResearchProgress >= 100) {
               const nextEra = getNextEra(newState.currentEra);
-              const nextTrainingRun = newState.training.runs[nextEra] || null;
+              const nextTrainingRun = nextEra in newState.training.runs ? newState.training.runs[nextEra] : null;
               
               if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
                 // Check if other prerequisites are met
