@@ -227,19 +227,38 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           {/* For not-yet-started training, show algorithm research progress */}
           {(trainingStatus === TrainingStatus.LOCKED || trainingStatus === TrainingStatus.AVAILABLE) && !isTrainingActive && (
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-purple-400">Algorithm Research</span>
-                <span>{algorithmResearchProgress}%</span>
+              <div className="bg-gray-800 rounded-md p-2 mb-2 border border-purple-900/40">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <BrainIcon className="h-4 w-4 text-purple-400" />
+                    <span className="text-sm font-medium text-white">Algorithm Research Progress</span>
+                  </div>
+                  <div className="px-2 py-0.5 bg-purple-900/30 rounded-full text-xs text-purple-300 font-medium">
+                    {algorithmResearchProgress}%
+                  </div>
+                </div>
+                
+                <Progress 
+                  value={algorithmResearchProgress} 
+                  className="h-2.5 bg-gray-700 [&>div]:bg-purple-500" 
+                />
+                
+                <div className="mt-2 text-xs flex items-center">
+                  <div className="flex-1 flex items-center text-gray-400">
+                    <ZapIcon className="h-3 w-3 mr-1 text-blue-400" />
+                    <span>Using free compute for research</span>
+                  </div>
+                  <div className="flex-1 text-right text-gray-400">
+                    Rate: +{gameState.training.algorithmResearchRate.toFixed(2)}/day
+                  </div>
+                </div>
+                
+                <p className="text-xs text-gray-400 mt-2 italic">
+                  {algorithmResearchProgress < 100 ? 
+                    "Research advances faster when more free compute is available" : 
+                    "Research complete! Check other prerequisites to unlock training."}
+                </p>
               </div>
-              <Progress 
-                value={algorithmResearchProgress} 
-                className="h-2 bg-gray-700 [&>div]:bg-purple-500" 
-              />
-              <p className="text-xs text-gray-400 mt-2">
-                {algorithmResearchProgress < 100 ? 
-                  "Research progresses automatically when compute is available" : 
-                  "Research complete! Check other prerequisites to unlock training."}
-              </p>
             </div>
           )}
           
@@ -363,7 +382,23 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
         
         {/* Training Benefits Information */}
         <div className="text-xs text-gray-400 mt-1 bg-gray-900 p-2 rounded border border-gray-800">
-          <p>Training runs are critical for advancing your AI to new eras, unlocking new capabilities and stronger revenue streams. Each era's training requires increasingly sophisticated resources and infrastructure.</p>
+          <p className="mb-2">Training runs are critical for advancing your AI to new eras, unlocking new capabilities and stronger revenue streams.</p>
+          
+          <div className="bg-gray-800 rounded p-2 mt-2 text-center">
+            <div className="font-semibold text-blue-400 mb-1">Training Run Requirements</div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-gray-700 p-1.5 rounded flex flex-col">
+                <span className="text-gray-300">Reserved Compute</span>
+                <span className="text-amber-400">For 30 days</span>
+              </div>
+              <div className="bg-gray-700 p-1.5 rounded flex flex-col">
+                <span className="text-gray-300">Scale Requirement</span>
+                <span className="text-amber-400">10× per era</span>
+              </div>
+            </div>
+          </div>
+          
+          <p className="mt-2">Each era's training requires 10× more compute than the previous era, along with advanced levels of all infrastructure components.</p>
         </div>
       </CardContent>
     </Card>
