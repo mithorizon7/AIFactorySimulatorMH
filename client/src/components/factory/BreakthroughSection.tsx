@@ -56,7 +56,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
       
       return (
         <span key={resource} className={`${color} text-white px-2 py-1 rounded-full`}>
-          {resource.charAt(0).toUpperCase() + resource.slice(1)} Level {level}
+          {`${resource.charAt(0).toUpperCase()}${resource.slice(1)} Level ${level}`}
         </span>
       );
     });

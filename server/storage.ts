@@ -96,6 +96,9 @@ export class MemStorage implements IStorage {
       ...gameState,
       money: gameState.money || 1000, 
       userId: gameState.userId === undefined ? null : gameState.userId,
+      revenueB2B: gameState.revenueB2B || 0,
+      revenueB2C: gameState.revenueB2C || 0,
+      revenueInvestors: gameState.revenueInvestors || 0,
       id,
       createdAt: new Date().toISOString()
     };
