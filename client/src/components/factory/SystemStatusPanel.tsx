@@ -53,11 +53,13 @@ export default function SystemStatusPanel({ gameState }: SystemStatusPanelProps)
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-medium flex items-center">
           <ServerIcon className="h-5 w-5 mr-2 text-blue-400" />
-          System Status
-          <ResourceTooltip 
-            content="Monitors the health of your AI infrastructure and shows impact on services."
-            resourceColor="blue-400"
-          >Learn</ResourceTooltip>
+          Compute Capacity
+          <span className="ml-2">
+            <ResourceTooltip 
+              content="Shows your compute allocation and infrastructure health, including impact on services."
+              resourceColor="blue-400"
+            >Info</ResourceTooltip>
+          </span>
         </h3>
         <div className="flex items-center gap-2">
           {isCritical && (
