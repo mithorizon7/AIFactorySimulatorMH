@@ -206,6 +206,7 @@ export default function AIFactory() {
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
+            hireResearchEngineer={hireResearchEngineer}
           />
 
           {/* Help Panel (floating button) */}

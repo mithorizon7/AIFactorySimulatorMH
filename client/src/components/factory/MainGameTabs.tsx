@@ -31,6 +31,7 @@ interface MainGameTabsProps {
   allocateMoneyToDataQuantity: () => void;
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
+  hireResearchEngineer: () => void;
   // Revenue service functions
   toggleApiService: () => void;
   toggleChatbotService: () => void;
@@ -61,6 +62,7 @@ export default function MainGameTabs({
   allocateMoneyToDataQuantity,
   allocateMoneyToDataFormats,
   allocateMoneyToAlgorithmArchitectures,
+  hireResearchEngineer,
   // Revenue service functions
   toggleApiService,
   toggleChatbotService,

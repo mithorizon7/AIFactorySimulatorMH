@@ -30,6 +30,7 @@ interface FactorySectionProps {
   allocateMoneyToDataQuantity: () => void;
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
+  hireResearchEngineer?: () => void;
 }
 
 import { useGamePause } from "@/contexts/GamePauseContext";
