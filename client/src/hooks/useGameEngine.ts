@@ -40,9 +40,21 @@ export function useGameEngine() {
       setGameState(prevState => {
         const newState = { ...prevState };
         newState.resources.compute -= prevState.upgradeCosts.compute;
+        // Increase compute level - this is what affects the training prerequisite
+        newState.levels.compute += 1;
+        // Also improve production rate
         newState.production.compute *= 1.5;
+        // Increase computing capacity
+        newState.computeCapacity.maxCapacity += 5;
+        newState.computeCapacity.available += 5;
+        // Increase the cost for next upgrade
         newState.upgradeCosts.compute = Math.round(prevState.upgradeCosts.compute * 2);
         return newState;
+      });
+      
+      toast({
+        title: "Compute Level Upgraded",
+        description: "Your compute infrastructure level has been increased, improving your ability to meet training requirements.",
       });
     } else {
       toast({
@@ -1001,6 +1013,9 @@ export function useGameEngine() {
         newState.money -= 100;
         newState.computeInputs.money += 1;
         
+        // Also increase compute level for training prerequisites
+        newState.levels.compute += 1;
+        
         // Increase compute production based on money input
         newState.production.compute *= 1.1;
         
@@ -1013,13 +1028,13 @@ export function useGameEngine() {
       });
       
       toast({
-        title: "Money Allocated to Compute",
-        description: "Your AI now has better computational resources!",
+        title: "Infrastructure Upgraded",
+        description: "Your AI's compute level has increased, helping meet training prerequisites!",
       });
     } else {
       toast({
         title: "Not enough money",
-        description: "You need at least $100 to improve compute resources.",
+        description: "You need at least $100 to improve compute infrastructure.",
         variant: "destructive",
       });
     }

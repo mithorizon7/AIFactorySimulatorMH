@@ -285,13 +285,16 @@ export default function FactorySection({
               <button 
                 className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
                   resources.compute >= upgradeCosts.compute
-                    ? "bg-gray-600 hover:bg-[#3B82F6] text-white"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
                     : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
                 }`}
                 onClick={upgradeCompute}
                 disabled={resources.compute < upgradeCosts.compute}
               >
-                <span className="text-sm">Upgrade GPUs</span>
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium">Upgrade GPUs</span>
+                  <span className="text-xs text-blue-300">(Increases Compute Level)</span>
+                </div>
                 <span className="text-xs bg-gray-800 py-1 px-2 rounded flex items-center">
                   <Server className="h-4 w-4 mr-1 text-[#3B82F6]" />
                   <span>{upgradeCosts.compute}</span>
@@ -320,14 +323,14 @@ export default function FactorySection({
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium flex items-center gap-1">
                     <Server className="h-4 w-4 text-blue-400" />
-                    <span>Infrastructure</span>
+                    <span>Compute Level</span>
                   </h4>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.money}
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Direct investment in compute infrastructure leads to more powerful hardware.
+                  Increases Compute Level for training requirements and improves overall computing capacity.
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
@@ -336,7 +339,7 @@ export default function FactorySection({
                   onClick={allocateMoneyToCompute}
                   disabled={money < 100}
                 >
-                  <span>Invest</span>
+                  <span>Upgrade Compute Level</span>
                   <span className="font-medium">$100</span>
                 </button>
               </div>
