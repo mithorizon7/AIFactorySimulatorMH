@@ -75,50 +75,55 @@ export default function MainGameTabs({
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
-      <div className="flex justify-center mb-8">
-        <div className="bg-gray-700 rounded-lg p-3 shadow-lg w-full border border-amber-600/30 max-w-4xl mx-auto">
-          <TabsList className="grid grid-cols-5 w-full bg-gray-800 rounded-md">
+      <div className="flex justify-center mb-4">
+        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
+          <TabsList className="grid grid-cols-5 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg">
             <TabsTrigger 
               value="dashboard" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-amber-800/40 data-[state=active]:text-amber-300 data-[state=active]:font-semibold
-                transition-all"
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
             >
               <BarChart3 className="h-5 w-5" />
               <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
             <TabsTrigger 
               value="resources" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-blue-800/40 data-[state=active]:text-blue-300 data-[state=active]:font-semibold
-                transition-all"
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
             >
               <Zap className="h-5 w-5" />
               <span className="hidden sm:inline">Resources</span>
             </TabsTrigger>
             <TabsTrigger 
               value="economy" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-green-800/40 data-[state=active]:text-green-300 data-[state=active]:font-semibold
-                transition-all"
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
             >
               <GanttChart className="h-5 w-5" />
               <span className="hidden sm:inline">Economy</span>
             </TabsTrigger>
             <TabsTrigger 
               value="breakthroughs" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-purple-800/40 data-[state=active]:text-purple-300 data-[state=active]:font-semibold
-                transition-all"
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
             >
               <Lightbulb className="h-5 w-5" />
               <span className="hidden sm:inline">Breakthroughs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="progression" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md
-                data-[state=active]:bg-amber-800/40 data-[state=active]:text-amber-300 data-[state=active]:font-semibold
-                transition-all"
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
             >
               <BrainCog className="h-5 w-5" />
               <span className="hidden sm:inline">Progression</span>

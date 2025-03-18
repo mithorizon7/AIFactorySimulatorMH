@@ -171,16 +171,8 @@ export default function AIFactory() {
             pauseGame={pauseGame}
             resetGame={resetGame}
           />
-
-          {/* Compute Capacity Section */}
-          <div className="mb-6">
-            <ComputePanel 
-              gameState={gameState}
-              trainModel={trainModel}
-            />
-          </div>
           
-          {/* Main Game Content */}
+          {/* Main Game Navigation Tabs - Moved directly under the header */}
           <MainGameTabs 
             gameState={gameState}
             upgradeCompute={upgradeCompute}
@@ -208,6 +200,14 @@ export default function AIFactory() {
             runAdvertisingCampaign={runAdvertisingCampaign}
             hireResearchEngineer={hireResearchEngineer}
           />
+
+          {/* Compute Capacity Section */}
+          <div className="mt-6">
+            <ComputePanel 
+              gameState={gameState}
+              trainModel={trainModel}
+            />
+          </div>
 
           {/* Help Panel (floating button) */}
           <HelpPanel currentEra={gameState.currentEra} />
