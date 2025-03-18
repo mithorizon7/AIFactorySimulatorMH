@@ -118,7 +118,7 @@ export function useGameEngine() {
     }
     
     // Get the training run for the next era
-    const trainingRun = gameState.training.runs[nextEra];
+    const trainingRun = gameState.training.runs[nextEra] || null;
     
     // If we're already actively training, don't allow starting another run
     if (gameState.training.active) {
@@ -1055,7 +1055,7 @@ export function useGameEngine() {
             
             // Find the current active training run
             const activeEra = getNextEra(newState.currentEra);
-            const activeTrainingRun = newState.training.runs[activeEra];
+            const activeTrainingRun = newState.training.runs[activeEra] || null;
             
             if (activeTrainingRun && activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
               // Also update the days remaining on the specific training run
@@ -1105,7 +1105,7 @@ export function useGameEngine() {
             // If we've reached 100% research, check if we can unlock the next training run
             if (newState.training.algorithmResearchProgress >= 100) {
               const nextEra = getNextEra(newState.currentEra);
-              const nextTrainingRun = newState.training.runs[nextEra];
+              const nextTrainingRun = newState.training.runs[nextEra] || null;
               
               if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
                 // Check if other prerequisites are met

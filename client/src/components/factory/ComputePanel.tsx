@@ -34,12 +34,12 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const nextEra = getNextEra(gameState.currentEra);
   
   // Get the training run data for the next era
-  const targetTrainingRun = gameState.training.runs[nextEra];
+  const targetTrainingRun = gameState.training.runs[nextEra] || null;
   
   // Get active training run status if any
   const isTrainingActive = gameState.training.active;
   const trainingStatus = targetTrainingRun?.status || TrainingStatus.LOCKED;
-  const trainingProgress = isTrainingActive ? 
+  const trainingProgress = isTrainingActive && targetTrainingRun ? 
     Math.round(((targetTrainingRun.daysRequired - gameState.training.daysRemaining) / targetTrainingRun.daysRequired) * 100) : 
     0;
   
