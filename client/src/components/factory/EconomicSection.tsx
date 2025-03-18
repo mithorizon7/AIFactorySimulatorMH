@@ -92,6 +92,52 @@ export default function EconomicSection({
           >Learn</ResourceTooltip>
         </h3>
         
+        {/* Compute Capacity Warning */}
+        {gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 ? (
+          <div className="mb-4 bg-red-900/30 border border-red-800 rounded-md p-2 text-xs text-red-300 flex items-center">
+            <div className="relative flex h-2 w-2 mr-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </div>
+            <p>Critical system overload! Services severely degraded. Revenue reduced by up to 50% and customers are leaving.</p>
+          </div>
+        ) : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9 ? (
+          <div className="mb-4 bg-amber-900/30 border border-amber-800 rounded-md p-2 text-xs text-amber-300 flex items-center">
+            <div className="relative flex h-2 w-2 mr-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </div>
+            <p>High system load! Intermittent outages affecting service quality. Revenue and customer growth are reduced.</p>
+          </div>
+        ) : null}
+        
+        {/* Compute Usage Summary */}
+        <div className="mb-4 bg-gray-800 rounded-md p-2 border border-gray-700">
+          <div className="flex justify-between items-center text-xs mb-2">
+            <span className="text-gray-400">Compute Usage:</span>
+            <span className={`font-medium ${
+              gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95
+                ? 'text-red-400'
+                : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9
+                  ? 'text-amber-400'
+                  : 'text-blue-400'
+            }`}>
+              {gameState.computeCapacity.used} / {gameState.computeCapacity.maxCapacity} units
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-gray-700/50 p-1.5 rounded">
+              <span className="text-gray-400">API Service Usage:</span>
+              <div className="text-blue-300 font-medium">{Math.ceil((revenue.b2b / 1000) * 5)} units</div>
+            </div>
+            <div className="bg-gray-700/50 p-1.5 rounded">
+              <span className="text-gray-400">Subscriber Usage:</span>
+              <div className="text-purple-300 font-medium">{Math.ceil(revenue.subscribers * 0.01)} units</div>
+            </div>
+          </div>
+        </div>
+        
         <div className="space-y-4">
           {/* API Service Stats */}
           <div className="bg-gray-800 p-3 rounded-lg">
