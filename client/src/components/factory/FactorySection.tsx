@@ -694,7 +694,7 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Hire better engineers to accelerate research and develop novel architectures.
+                  Hire more of the best engineers to accelerate research and develop novel architectures.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <button 
