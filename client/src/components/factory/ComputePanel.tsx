@@ -18,6 +18,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   const computeUsagePercent = Math.min(100, Math.round((computeCapacity.used / computeCapacity.maxCapacity) * 100));
   const computeAvailablePercent = Math.min(100, Math.round((computeCapacity.available / computeCapacity.maxCapacity) * 100));
   
+  // Check for capacity pressure and potential outages
+  const isNearCapacity = computeUsagePercent >= 90;
+  const isCritical = computeUsagePercent >= 95;
+  
   // Helper function to get next era
   const getNextEra = (currentEra: Era): Era => {
     switch (currentEra) {
@@ -314,15 +318,47 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
           </div>
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-orange-400">Used Capacity</span>
-              <span>{computeUsagePercent}%</span>
+              <span className={`${isCritical ? 'text-red-400' : isNearCapacity ? 'text-amber-400' : 'text-orange-400'} flex items-center`}>
+                {isCritical ? (
+                  <>
+                    <AlertCircleIcon className="h-3 w-3 mr-1" />
+                    Critical Usage
+                  </>
+                ) : isNearCapacity ? (
+                  <>
+                    <AlertTriangleIcon className="h-3 w-3 mr-1" />
+                    High Usage
+                  </>
+                ) : (
+                  'Used Capacity'
+                )}
+              </span>
+              <span className={isCritical ? 'text-red-400 font-bold' : isNearCapacity ? 'text-amber-400' : ''}>{computeUsagePercent}%</span>
             </div>
             <Progress 
               value={computeUsagePercent} 
-              className="h-2 bg-gray-700 [&>div]:bg-orange-500" 
+              className={`h-2 bg-gray-700 ${
+                isCritical ? '[&>div]:bg-red-500 animate-pulse' : 
+                isNearCapacity ? '[&>div]:bg-amber-500' : 
+                '[&>div]:bg-orange-500'
+              }`} 
             />
           </div>
         </div>
+        
+        {/* Usage Warning */}
+        {isCritical && (
+          <div className="mt-2 bg-red-900/30 border border-red-800 rounded-md p-2 text-xs text-red-300 flex items-start">
+            <AlertCircleIcon className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
+            <p>Critical compute saturation detected! Your service quality is severely degraded and customers are leaving. Upgrade compute capacity or reduce service load immediately.</p>
+          </div>
+        )}
+        {isNearCapacity && !isCritical && (
+          <div className="mt-2 bg-amber-900/30 border border-amber-800 rounded-md p-2 text-xs text-amber-300 flex items-start">
+            <AlertTriangleIcon className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
+            <p>High compute usage detected. Your services are experiencing intermittent outages. Customer growth and revenue are affected. Consider upgrading compute capacity.</p>
+          </div>
+        )}
         
         {/* Training Benefits Information */}
         <div className="text-xs text-gray-400 mt-1 bg-gray-900 p-2 rounded border border-gray-800">

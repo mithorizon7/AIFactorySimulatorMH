@@ -217,6 +217,68 @@ export default function FactorySection({
               </div>
             </div>
             
+            {/* System Status Section */}
+            <div className="my-3 bg-gray-700 rounded-md p-2 border border-gray-600">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-400">System Status</span>
+                <div className="flex items-center">
+                  {gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 ? (
+                    <span className="text-xs text-red-400 flex items-center">
+                      <span className="relative flex h-2 w-2 mr-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                      </span>
+                      Critical
+                    </span>
+                  ) : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9 ? (
+                    <span className="text-xs text-amber-400 flex items-center">
+                      <span className="relative flex h-2 w-2 mr-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                      </span>
+                      Warning
+                    </span>
+                  ) : (
+                    <span className="text-xs text-green-400 flex items-center">
+                      <span className="relative flex h-2 w-2 mr-1">
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      Nominal
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-1 text-center mb-1">
+                <div className="bg-gray-800 rounded p-1">
+                  <div className="text-[0.65rem] text-gray-400">Available</div>
+                  <div className="text-xs font-medium text-blue-400">{gameState.computeCapacity.available}</div>
+                </div>
+                <div className="bg-gray-800 rounded p-1">
+                  <div className="text-[0.65rem] text-gray-400">Used</div>
+                  <div className="text-xs font-medium text-orange-400">{gameState.computeCapacity.used}</div>
+                </div>
+                <div className="bg-gray-800 rounded p-1">
+                  <div className="text-[0.65rem] text-gray-400">Total</div>
+                  <div className="text-xs font-medium text-purple-400">{gameState.computeCapacity.maxCapacity}</div>
+                </div>
+              </div>
+              
+              {/* Usage bar */}
+              <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${
+                    gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 
+                      ? 'bg-red-500 animate-pulse' 
+                      : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9
+                        ? 'bg-amber-500'
+                        : 'bg-blue-500'
+                  }`} 
+                  style={{ width: `${Math.min(100, (gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity) * 100)}%` }}
+                ></div>
+              </div>
+            </div>
+            
             <div className="mt-3">
               <button 
                 className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
