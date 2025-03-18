@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart } from "lucide-react";
+import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, Network as NetworkIcon } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
 
 // Import game components
@@ -204,12 +204,10 @@ export default function MainGameTabs({
           <SystemStatusPanel gameState={gameState} />
           
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AIDashboard 
               gameState={gameState}
             />
-            
-            <SynergyDashboard gameState={gameState} />
           </div>
 
           {/* Resource Flow Visualization - Moved to bottom */}
@@ -240,6 +238,15 @@ export default function MainGameTabs({
             allocateMoneyToDataFormats={allocateMoneyToDataFormats}
             allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
           />
+          
+          {/* Resource Synergies - Moved from Dashboard tab */}
+          <div className="mt-4">
+            <h3 className="text-lg font-medium mb-4 flex items-center">
+              <NetworkIcon className="h-4 w-4 mr-2 text-indigo-400" />
+              Resource Synergies
+            </h3>
+            <SynergyDashboard gameState={gameState} />
+          </div>
         </div>
       </TabsContent>
       
