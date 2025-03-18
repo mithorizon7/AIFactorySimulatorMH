@@ -320,7 +320,7 @@ export default function ComputePanel({ gameState, trainModel, hireResearchEngine
                         ? "bg-purple-700 hover:bg-purple-600 text-white"
                         : "bg-gray-700 opacity-70 cursor-not-allowed text-gray-300"
                     }`}
-                    onClick={() => {}} // TODO: Connect to hireResearchEngineer function
+                    onClick={() => hireResearchEngineer && hireResearchEngineer()} // Call the hire function if provided
                     disabled={money < 250}
                   >
                     <span>Hire Research Engineer</span>

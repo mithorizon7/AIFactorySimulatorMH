@@ -45,6 +45,7 @@ export default function AIFactory() {
     allocateMoneyToDataFormats,
     // Detailed algorithm inputs
     allocateMoneyToAlgorithmArchitectures,
+    hireResearchEngineer,
     // Revenue service controls
     toggleApiService,
     toggleChatbotService,
@@ -176,6 +177,7 @@ export default function AIFactory() {
             <ComputePanel 
               gameState={gameState}
               trainModel={trainModel}
+              hireResearchEngineer={hireResearchEngineer}
             />
           </div>
           
