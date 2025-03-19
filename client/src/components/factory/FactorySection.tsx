@@ -696,18 +696,20 @@ export default function FactorySection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Research Engineers */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Research Engineers & Architectures"
-                  category="algorithm"
-                  description="A team of top-tier AI research engineers is crucial for developing novel model architectures. They determine how information flows through models and what kinds of patterns can be learned. The best engineers have been responsible for architectures that enabled many of the most significant breakthroughs in AI."
-                  realWorldExample="OpenAI, Anthropic, and other leading AI companies compete fiercely to hire the best research engineers. Engineers like those who created the Transformer architecture in 2017 revolutionized NLP and enabled models like GPT. Elite talent is often paid >$1M annually due to their outsized impact."
-                  importance="Top research talent is often the true bottleneck to AI progress. Their insights can unlock capabilities that were previously impossible regardless of scale or compute. Without elite research teams, companies struggle to innovate beyond simply scaling up existing architectures."
-                />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <Users className="h-4 w-4 text-purple-400" />
-                    <span>Research Engineers</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <Users className="h-4 w-4 text-purple-400" />
+                      <span>Research Engineers</span>
+                    </h4>
+                    <LearningDialog
+                      title="Research Engineers & Architectures"
+                      category="algorithm"
+                      description="A team of top-tier AI research engineers is crucial for developing novel model architectures. They determine how information flows through models and what kinds of patterns can be learned. The best engineers have been responsible for architectures that enabled many of the most significant breakthroughs in AI."
+                      realWorldExample="OpenAI, Anthropic, and other leading AI companies compete fiercely to hire the best research engineers. Engineers like those who created the Transformer architecture in 2017 revolutionized NLP and enabled models like GPT. Elite talent is often paid >$1M annually due to their outsized impact."
+                      importance="Top research talent is often the true bottleneck to AI progress. Their insights can unlock capabilities that were previously impossible regardless of scale or compute. Without elite research teams, companies struggle to innovate beyond simply scaling up existing architectures."
+                    />
+                  </div>
                   <div className="bg-purple-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {algorithmInputs.researchEngineers || 0}
                   </div>
