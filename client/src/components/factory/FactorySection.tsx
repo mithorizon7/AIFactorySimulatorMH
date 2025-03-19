@@ -95,10 +95,10 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
         <Button 
           variant="outline" 
           size="sm"
-          className={`text-xs px-2 py-1 h-auto ml-3 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md absolute right-10 top-2`}
+          className={`text-xs px-2 py-1 h-auto ml-2 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md`}
         >
           <Info className={`h-3.5 w-3.5 mr-1 ${categoryColors[category]}`} />
-          What is this?
+          Learn More
         </Button>
       </DialogTrigger>
       <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50`}>
@@ -321,10 +321,19 @@ export default function FactorySection({
                   importance="More computing power allows for larger models with more parameters to be trained faster. The improvements in recent large language models (LLMs) directly correlate with exponential increases in computing power—GPT-4 used approximately 10x the computing resources of GPT-3."
                 />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <Server className="h-4 w-4 text-blue-400" />
-                    <span>Compute Level</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <Server className="h-4 w-4 text-blue-400" />
+                      <span>Compute Level</span>
+                    </h4>
+                    <LearningDialog
+                      title="Computing Infrastructure"
+                      category="compute"
+                      description="Computing infrastructure refers to the servers, clusters, and datacenters that provide raw computational power for AI training and inference. Increasing this resource directly improves the amount and speed of neural network operations."
+                      realWorldExample="Companies like OpenAI spent an estimated $100M+ on computing infrastructure for training GPT-4, utilizing thousands of high-end GPUs/TPUs in specialized datacenters. Google's TPU v4 pods represent some of the largest AI computing clusters, with some containing over 4,000 chips."
+                      importance="More computing power allows for larger models with more parameters to be trained faster. The improvements in recent large language models (LLMs) directly correlate with exponential increases in computing power—GPT-4 used approximately 10x the computing resources of GPT-3."
+                    />
+                  </div>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.money}
                   </div>
@@ -354,10 +363,19 @@ export default function FactorySection({
                   importance="Power efficiency determines not only operating costs but also the practical limits of model size. Google's TPUs, for instance, were designed to be 15-30x more energy efficient than contemporary GPUs for machine learning workloads. Sustainable AI requires continued innovation in power technology."
                 />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <PlugZap className="h-4 w-4 text-blue-400" />
-                    <span>Power Generation</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <PlugZap className="h-4 w-4 text-blue-400" />
+                      <span>Power Generation</span>
+                    </h4>
+                    <LearningDialog
+                      title="Power Generation & Efficiency"
+                      category="compute"
+                      description="Energy consumption is a critical factor in AI development. As models grow larger, their electricity requirements increase dramatically. Innovations in power infrastructure and efficiency directly impact AI costs and environmental footprint."
+                      realWorldExample="A single training run for a large language model can consume as much electricity as 100+ U.S. homes use in a year. Companies like Microsoft and Google have invested in renewable energy plants specifically to power their AI datacenters, while others use specialized cooling systems to reduce power needs."
+                      importance="Power efficiency determines not only operating costs but also the practical limits of model size. Google's TPUs, for instance, were designed to be 15-30x more energy efficient than contemporary GPUs for machine learning workloads. Sustainable AI requires continued innovation in power technology."
+                    />
+                  </div>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.electricity}
                   </div>
