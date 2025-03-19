@@ -3,7 +3,7 @@ import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { resourceDefinitions } from "@/lib/educationalContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users, Brain } from "lucide-react";
+import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users, Brain, FileText, Globe, Lightbulb, PauseCircle } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useGamePause } from "@/contexts/GamePauseContext";
+import { useEffect, useState } from "react";
 
 interface FactorySectionProps {
   gameState: GameStateType;
@@ -32,10 +34,6 @@ interface FactorySectionProps {
   allocateMoneyToAlgorithmArchitectures: () => void;
   hireResearchEngineer?: () => void;
 }
-
-import { useGamePause } from "@/contexts/GamePauseContext";
-import { useEffect, useState } from "react";
-import { PauseIcon } from "lucide-react";
 
 // Learning Dialog Component for Advanced Options
 interface LearningDialogProps {
@@ -103,33 +101,44 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
       </DialogTrigger>
       <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50`}>
         <DialogHeader>
-          <DialogTitle className={`${categoryColors[category]} flex items-center gap-2`}>
+          <DialogTitle className={`${categoryColors[category]} flex items-center gap-2 text-xl`}>
             <Info className="h-5 w-5" />
             {title}
           </DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogDescription className="text-gray-300 text-sm mt-1 italic font-light">
             Learn how this works in real AI development
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <h4 className="text-white font-medium">Description</h4>
-            <p className="text-gray-300 text-sm">{description}</p>
+        <div className="space-y-6 py-4">
+          <div className="space-y-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+              <FileText className="h-4 w-4" />
+              <span>Description</span>
+            </h4>
+            <p className="text-gray-300 text-sm leading-relaxed">{description}</p>
           </div>
-          <div className="space-y-2">
-            <h4 className="text-white font-medium">Real World Example</h4>
-            <p className="text-gray-300 text-sm">{realWorldExample}</p>
+          
+          <div className="space-y-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+              <Globe className="h-4 w-4" />
+              <span>Real World Example</span>
+            </h4>
+            <p className="text-gray-300 text-sm leading-relaxed">{realWorldExample}</p>
           </div>
-          <div className="space-y-2">
-            <h4 className="text-white font-medium">Why It Matters</h4>
-            <p className="text-gray-300 text-sm">{importance}</p>
+          
+          <div className="space-y-2 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+              <Lightbulb className="h-4 w-4" />
+              <span>Why It Matters</span>
+            </h4>
+            <p className="text-gray-300 text-sm leading-relaxed">{importance}</p>
           </div>
           
           {/* Pause indicator */}
           {gamePause.isPausedForLearning && (
             <div className="mt-4 px-3 py-1 bg-yellow-900/30 border border-yellow-500/30 rounded text-yellow-400 text-xs flex items-center">
-              <PauseIcon className="w-3 h-3 mr-1" />
+              <PauseCircle className="w-3 h-3 mr-1" />
               Game timer paused while learning
             </div>
           )}
