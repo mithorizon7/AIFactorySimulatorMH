@@ -95,7 +95,7 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
         <Button 
           variant="outline" 
           size="sm"
-          className={`text-xs px-2 py-1 h-auto ml-2 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md`}
+          className={`text-xs px-2 py-1 h-auto ml-3 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md absolute right-3 top-3`}
         >
           <Info className={`h-3.5 w-3.5 mr-1 ${categoryColors[category]}`} />
           What is this?
