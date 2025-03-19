@@ -1,6 +1,4 @@
 import { GameStateType } from "@/lib/gameState";
-import { ResourceTooltip } from "@/components/ui/educational-tooltip";
-import { resourceDefinitions } from "@/lib/educationalContent";
 
 interface AIDashboardProps {
   gameState: GameStateType;
@@ -77,26 +75,10 @@ export default function AIDashboard({
         {/* Compute Level */}
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-1">
-            <ResourceTooltip 
-              resourceType="compute"
-              content={
-                <div className="space-y-2">
-                  <p className="font-bold">{resourceDefinitions.compute.title}</p>
-                  <p>{resourceDefinitions.compute.description}</p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.compute.realWorldExample}
-                  </p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Industry impact:</span> {resourceDefinitions.compute.industryImpact}
-                  </p>
-                </div>
-              }
-            >
-              <span className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-[#3B82F6] mr-2"></div>
-                Compute Power
-              </span>
-            </ResourceTooltip>
+            <span className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-[#3B82F6] mr-2"></div>
+              Compute Power
+            </span>
             <span>Level <span>{levels.compute}</span></span>
           </div>
           <div className="tooltip relative group">
@@ -115,26 +97,10 @@ export default function AIDashboard({
         {/* Data Level */}
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-1">
-            <ResourceTooltip 
-              resourceType="data"
-              content={
-                <div className="space-y-2">
-                  <p className="font-bold">{resourceDefinitions.data.title}</p>
-                  <p>{resourceDefinitions.data.description}</p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.data.realWorldExample}
-                  </p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Industry impact:</span> {resourceDefinitions.data.industryImpact}
-                  </p>
-                </div>
-              }
-            >
-              <span className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
-                Data Quality
-              </span>
-            </ResourceTooltip>
+            <span className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
+              Data Quality
+            </span>
             <span>Level <span>{levels.data}</span></span>
           </div>
           <div className="tooltip relative group">
@@ -153,26 +119,10 @@ export default function AIDashboard({
         {/* Algorithm Level */}
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <ResourceTooltip 
-              resourceType="algorithm"
-              content={
-                <div className="space-y-2">
-                  <p className="font-bold">{resourceDefinitions.algorithm.title}</p>
-                  <p>{resourceDefinitions.algorithm.description}</p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Real-world example:</span> {resourceDefinitions.algorithm.realWorldExample}
-                  </p>
-                  <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                    <span className="font-semibold">Industry impact:</span> {resourceDefinitions.algorithm.industryImpact}
-                  </p>
-                </div>
-              }
-            >
-              <span className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-[#8B5CF6] mr-2"></div>
-                Algorithm Sophistication
-              </span>
-            </ResourceTooltip>
+            <span className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-[#8B5CF6] mr-2"></div>
+              Algorithm Sophistication
+            </span>
             <span>Level <span>{levels.algorithm}</span></span>
           </div>
           <div className="tooltip relative group">
