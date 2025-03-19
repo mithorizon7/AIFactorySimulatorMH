@@ -95,10 +95,9 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
         <Button 
           variant="outline" 
           size="sm"
-          className={`text-xs px-2 py-1 h-auto ml-3 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md absolute right-10 top-2`}
+          className={`text-xs px-1.5 py-0.5 h-6 ml-1.5 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded`}
         >
-          <Info className={`h-3.5 w-3.5 mr-1 ${categoryColors[category]}`} />
-          What is this?
+          <Info className={`h-3 w-3 ${categoryColors[category]}`} />
         </Button>
       </DialogTrigger>
       <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50`}>
@@ -357,6 +356,13 @@ export default function FactorySection({
                   <h4 className="font-medium flex items-center gap-1">
                     <PlugZap className="h-4 w-4 text-blue-400" />
                     <span>Power Generation</span>
+                    <LearningDialog
+                      title="Power Generation & Efficiency"
+                      category="compute"
+                      description="Energy consumption is a critical factor in AI development. As models grow larger, their electricity requirements increase dramatically. Innovations in power infrastructure and efficiency directly impact AI costs and environmental footprint."
+                      realWorldExample="A single training run for a large language model can consume as much electricity as 100+ U.S. homes use in a year. Companies like Microsoft and Google have invested in renewable energy plants specifically to power their AI datacenters, while others use specialized cooling systems to reduce power needs."
+                      importance="Power efficiency determines not only operating costs but also the practical limits of model size. Google's TPUs, for instance, were designed to be 15-30x more energy efficient than contemporary GPUs for machine learning workloads. Sustainable AI requires continued innovation in power technology."
+                    />
                   </h4>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.electricity}
@@ -390,6 +396,13 @@ export default function FactorySection({
                   <h4 className="font-medium flex items-center gap-1">
                     <HardDrive className="h-4 w-4 text-blue-400" />
                     <span>Hardware Quality</span>
+                    <LearningDialog
+                      title="Specialized AI Hardware"
+                      category="compute"
+                      description="Modern AI relies on specialized hardware accelerators designed specifically for neural network operations. These include GPUs, TPUs, and custom ASICs that dramatically outperform general-purpose CPUs for machine learning tasks."
+                      realWorldExample="NVIDIA's H100 GPUs represent the current state-of-the-art in commercial AI hardware, with 80 billion transistors and specialized Tensor Cores. Google's TPU v4 chips and Meta's Research SuperCluster use custom interconnects to allow thousands of processors to work together on a single AI model."
+                      importance="Hardware innovations enable entirely new classes of AI models. The shift from CPUs to GPUs enabled deep learning; the shift to specialized AI chips enabled trillion-parameter models. Hardware design decisions directly influence what architectures are practical and how efficiently they can train and operate."
+                    />
                   </h4>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.hardware}
