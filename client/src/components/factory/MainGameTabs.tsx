@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
+import { ResourceTooltip } from "@/components/ui/educational-tooltip";
+import { resourceDefinitions } from "@/lib/educationalContent";
 
 // Import game components
 import FactorySection from "./FactorySection";
@@ -141,10 +143,31 @@ export default function MainGameTabs({
           {/* Big Intelligence Goal Progress */}
           <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <BrainCog className="text-amber-400 h-6 w-6" /> 
-                AGI Progress
-              </h2>
+              <ResourceTooltip 
+                resourceType="intelligence"
+                content={
+                  <div className="space-y-2">
+                    <p className="font-bold">Artificial General Intelligence (AGI)</p>
+                    <p>
+                      AGI represents AI systems that match or exceed human capabilities across virtually all cognitive tasks. 
+                      Unlike narrow AI designed for specific tasks, AGI would demonstrate human-like understanding, learning, 
+                      reasoning, and problem-solving across diverse domains.
+                    </p>
+                    <div className="mt-2 p-2 bg-amber-900/30 border border-amber-800/40 rounded-md">
+                      <h5 className="text-amber-300 font-medium text-xs">Capabilities & Challenges</h5>
+                      <p className="text-xs mt-1">
+                        True AGI would require robust common sense, causal reasoning, transfer learning, and potentially 
+                        self-improvement capabilities. Its development represents one of humanity's greatest scientific challenges.
+                      </p>
+                    </div>
+                  </div>
+                }
+              >
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <BrainCog className="text-amber-400 h-6 w-6" /> 
+                  AGI Progress
+                </h2>
+              </ResourceTooltip>
               <div className="text-amber-400 font-bold text-xl">
                 {gameState.intelligence.toFixed(0)} / {gameState.agiThreshold}
               </div>
@@ -160,9 +183,27 @@ export default function MainGameTabs({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="bg-gray-800 p-4 rounded-lg border border-blue-900/50">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-blue-400 font-medium flex items-center gap-2">
-                    <Cpu className="h-4 w-4" /> Compute
-                  </h3>
+                  <ResourceTooltip 
+                    resourceType="compute"
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-bold">{resourceDefinitions.compute.title}</p>
+                        <p>{resourceDefinitions.compute.description}</p>
+                        <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+                          <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.compute.realWorldExample}</p>
+                        </div>
+                        <div className="mt-2 p-2 bg-blue-900/20 border border-blue-800/30 rounded-md">
+                          <h5 className="text-blue-300 font-medium text-xs">Industry Impact</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.compute.industryImpact}</p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <h3 className="text-blue-400 font-medium flex items-center gap-2">
+                      <Cpu className="h-4 w-4" /> Compute
+                    </h3>
+                  </ResourceTooltip>
                   <span className="text-blue-400 font-bold">Lvl {gameState.levels.compute}</span>
                 </div>
                 <div className="mt-2 text-xl font-semibold">{gameState.resources.compute.toFixed(0)}</div>
@@ -171,9 +212,27 @@ export default function MainGameTabs({
               
               <div className="bg-gray-800 p-4 rounded-lg border border-green-900/50">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-green-400 font-medium flex items-center gap-2">
-                    <Database className="h-4 w-4" /> Data
-                  </h3>
+                  <ResourceTooltip 
+                    resourceType="data"
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-bold">{resourceDefinitions.data.title}</p>
+                        <p>{resourceDefinitions.data.description}</p>
+                        <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
+                          <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.data.realWorldExample}</p>
+                        </div>
+                        <div className="mt-2 p-2 bg-green-900/20 border border-green-800/30 rounded-md">
+                          <h5 className="text-green-300 font-medium text-xs">Industry Impact</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.data.industryImpact}</p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <h3 className="text-green-400 font-medium flex items-center gap-2">
+                      <Database className="h-4 w-4" /> Data
+                    </h3>
+                  </ResourceTooltip>
                   <span className="text-green-400 font-bold">Lvl {gameState.levels.data}</span>
                 </div>
                 <div className="mt-2 text-xl font-semibold">{gameState.resources.data.toFixed(0)}</div>
@@ -182,9 +241,27 @@ export default function MainGameTabs({
               
               <div className="bg-gray-800 p-4 rounded-lg border border-purple-900/50">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-purple-400 font-medium flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4" /> Algorithm
-                  </h3>
+                  <ResourceTooltip 
+                    resourceType="algorithm"
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-bold">{resourceDefinitions.algorithm.title}</p>
+                        <p>{resourceDefinitions.algorithm.description}</p>
+                        <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
+                          <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.algorithm.realWorldExample}</p>
+                        </div>
+                        <div className="mt-2 p-2 bg-purple-900/20 border border-purple-800/30 rounded-md">
+                          <h5 className="text-purple-300 font-medium text-xs">Industry Impact</h5>
+                          <p className="text-xs mt-1">{resourceDefinitions.algorithm.industryImpact}</p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <h3 className="text-purple-400 font-medium flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4" /> Algorithm
+                    </h3>
+                  </ResourceTooltip>
                   <span className="text-purple-400 font-bold">Lvl {gameState.levels.algorithm}</span>
                 </div>
                 <div className="mt-2 text-xl font-semibold">{gameState.resources.algorithm.toFixed(0)}</div>
