@@ -384,13 +384,7 @@ export default function FactorySection({
               
               {/* Hardware */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Specialized AI Hardware"
-                  category="compute"
-                  description="Modern AI relies on specialized hardware accelerators designed specifically for neural network operations. These include GPUs, TPUs, and custom ASICs that dramatically outperform general-purpose CPUs for machine learning tasks."
-                  realWorldExample="NVIDIA's H100 GPUs represent the current state-of-the-art in commercial AI hardware, with 80 billion transistors and specialized Tensor Cores. Google's TPU v4 chips and Meta's Research SuperCluster use custom interconnects to allow thousands of processors to work together on a single AI model."
-                  importance="Hardware innovations enable entirely new classes of AI models. The shift from CPUs to GPUs enabled deep learning; the shift to specialized AI chips enabled trillion-parameter models. Hardware design decisions directly influence what architectures are practical and how efficiently they can train and operate."
-                />
+
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium flex items-center gap-1">
@@ -426,18 +420,20 @@ export default function FactorySection({
               
               {/* Regulatory Environment */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Regulatory Compliance & Ethics"
-                  category="compute"
-                  description="AI development operates within a complex regulatory landscape that controls how computing resources can be deployed, especially for high-risk applications. Different countries impose varying restrictions on AI development and export."
-                  realWorldExample="Export controls limit which countries can access the most advanced AI chips, with regulations like ITAR in the US restricting high-end GPU exports. In the EU, the AI Act classifies systems by risk level and imposes restrictions on how computing can be used for systems deemed 'high risk'."
-                  importance="Regulatory compliance affects not just where AI can be developed but how. Requirements for transparency, fairness testing, and impact assessments may add computational overhead. Companies must balance rapid development with ensuring their systems meet evolving regulatory standards."
-                />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <Scale className="h-4 w-4 text-blue-400" />
-                    <span>Regulation Compliance</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <Scale className="h-4 w-4 text-blue-400" />
+                      <span>Regulation Compliance</span>
+                    </h4>
+                    <LearningDialog
+                      title="Regulatory Compliance & Ethics"
+                      category="compute"
+                      description="AI development operates within a complex regulatory landscape that controls how computing resources can be deployed, especially for high-risk applications. Different countries impose varying restrictions on AI development and export."
+                      realWorldExample="Export controls limit which countries can access the most advanced AI chips, with regulations like ITAR in the US restricting high-end GPU exports. In the EU, the AI Act classifies systems by risk level and imposes restrictions on how computing can be used for systems deemed 'high risk'."
+                      importance="Regulatory compliance affects not just where AI can be developed but how. Requirements for transparency, fairness testing, and impact assessments may add computational overhead. Companies must balance rapid development with ensuring their systems meet evolving regulatory standards."
+                    />
+                  </div>
                   <div className="bg-blue-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {computeInputs.regulation}
                   </div>
@@ -527,18 +523,20 @@ export default function FactorySection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Data Quality */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Data Quality & Curation"
-                  category="data"
-                  description="Data quality refers to how accurate, relevant, and reliable the information used to train AI models is. This includes how well-labeled, diverse, and free from biases the data is. High-quality data directly translates to more accurate and reliable AI behaviors."
-                  realWorldExample="When GPT-4 was trained, OpenAI invested heavily in data curation, including having humans review and rate outputs for harmfulness and accuracy. Similarly, Google's Palm 2 required extensive curation of 'high-quality' internet data to avoid learning harmful content."
-                  importance="The GIGO principle ('Garbage In, Garbage Out') applies strongly to AI. Better data quality means fewer hallucinations, more accurate responses, and better understanding of complex concepts. A model trained on higher quality data will consistently outperform an identical model trained on poor quality data."
-                />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <Layers className="h-4 w-4 text-green-400" />
-                    <span>Data Quality</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <Layers className="h-4 w-4 text-green-400" />
+                      <span>Data Quality</span>
+                    </h4>
+                    <LearningDialog
+                      title="Data Quality & Curation"
+                      category="data"
+                      description="Data quality refers to how accurate, relevant, and reliable the information used to train AI models is. This includes how well-labeled, diverse, and free from biases the data is. High-quality data directly translates to more accurate and reliable AI behaviors."
+                      realWorldExample="When GPT-4 was trained, OpenAI invested heavily in data curation, including having humans review and rate outputs for harmfulness and accuracy. Similarly, Google's Palm 2 required extensive curation of 'high-quality' internet data to avoid learning harmful content."
+                      importance="The GIGO principle ('Garbage In, Garbage Out') applies strongly to AI. Better data quality means fewer hallucinations, more accurate responses, and better understanding of complex concepts. A model trained on higher quality data will consistently outperform an identical model trained on poor quality data."
+                    />
+                  </div>
                   <div className="bg-green-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {dataInputs.quality}
                   </div>
@@ -560,18 +558,20 @@ export default function FactorySection({
               
               {/* Data Quantity */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Data Scale & Quantity"
-                  category="data"
-                  description="The sheer volume of training data is critical for AI development. Modern language models require trillions of tokens (words or word-pieces) to learn language patterns effectively. The scale of data directly influences what an AI can learn."
-                  realWorldExample="OpenAI's GPT models have been trained on progressively larger datasets; GPT-3 used hundreds of billions of tokens, while GPT-4 likely used trillions. Google's PaLM model was trained on 780 billion tokens across 339 billion words from diverse sources including web documents, books, code, and conversations."
-                  importance="More data allows AI to encounter more diverse examples, learn rare patterns, and develop more nuanced understandings. The 'scaling law' phenomenon observed in AI research suggests that performance continues to improve predictably as data quantity increases, though with diminishing returns."
-                />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <Boxes className="h-4 w-4 text-green-400" />
-                    <span>Data Quantity</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <Boxes className="h-4 w-4 text-green-400" />
+                      <span>Data Quantity</span>
+                    </h4>
+                    <LearningDialog
+                      title="Data Scale & Quantity"
+                      category="data"
+                      description="The sheer volume of training data is critical for AI development. Modern language models require trillions of tokens (words or word-pieces) to learn language patterns effectively. The scale of data directly influences what an AI can learn."
+                      realWorldExample="OpenAI's GPT models have been trained on progressively larger datasets; GPT-3 used hundreds of billions of tokens, while GPT-4 likely used trillions. Google's PaLM model was trained on 780 billion tokens across 339 billion words from diverse sources including web documents, books, code, and conversations."
+                      importance="More data allows AI to encounter more diverse examples, learn rare patterns, and develop more nuanced understandings. The 'scaling law' phenomenon observed in AI research suggests that performance continues to improve predictably as data quantity increases, though with diminishing returns."
+                    />
+                  </div>
                   <div className="bg-green-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {dataInputs.quantity}
                   </div>
@@ -593,18 +593,20 @@ export default function FactorySection({
               
               {/* Data Formats */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-                <LearningDialog
-                  title="Multimodal Data Formats"
-                  category="data"
-                  description="Multimodal AI development requires training on diverse data types beyond text: images, audio, video, code, structured data, and more. Each new data format enables new capabilities and applications for AI systems."
-                  realWorldExample="OpenAI's DALL-E and Midjourney were trained on billions of image-text pairs. GPT-4V's visual capabilities came from incorporating image data alongside text. Google's Gemini was trained from the start on multiple modalities including text, images, audio, and video."
-                  importance="Expanding to new data formats allows AI to understand and generate new types of content. Text-only models can't truly 'see' or 'hear' - each new modality provides a different way of understanding the world. Models trained on diverse formats can make connections between concepts across different modalities."
-                />
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium flex items-center gap-1">
-                    <LayoutGrid className="h-4 w-4 text-green-400" />
-                    <span>Data Formats</span>
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium flex items-center gap-1">
+                      <LayoutGrid className="h-4 w-4 text-green-400" />
+                      <span>Data Formats</span>
+                    </h4>
+                    <LearningDialog
+                      title="Multimodal Data Formats"
+                      category="data"
+                      description="Multimodal AI development requires training on diverse data types beyond text: images, audio, video, code, structured data, and more. Each new data format enables new capabilities and applications for AI systems."
+                      realWorldExample="OpenAI's DALL-E and Midjourney were trained on billions of image-text pairs. GPT-4V's visual capabilities came from incorporating image data alongside text. Google's Gemini was trained from the start on multiple modalities including text, images, audio, and video."
+                      importance="Expanding to new data formats allows AI to understand and generate new types of content. Text-only models can't truly 'see' or 'hear' - each new modality provides a different way of understanding the world. Models trained on diverse formats can make connections between concepts across different modalities."
+                    />
+                  </div>
                   <div className="bg-green-900/60 px-2 py-0.5 rounded-full text-xs">
                     Level: {dataInputs.formats}
                   </div>
