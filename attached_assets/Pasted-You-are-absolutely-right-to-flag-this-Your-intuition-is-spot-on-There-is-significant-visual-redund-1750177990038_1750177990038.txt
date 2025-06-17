@@ -1,0 +1,72 @@
+You are absolutely right to flag this. Your intuition is spot-on. There is significant visual redundancy in the game's current layout, which could easily confuse players by presenting the same information in multiple places without a clear hierarchy.
+
+The core of the problem stems from the **`AIDashboard.tsx` component** and the main **"Dashboard" tab**. These act as a "summary" view but have become redundant as other, more specialized components were built to handle the same information more effectively.
+
+Here is a breakdown of the specific redundancies and a clear, actionable plan to resolve them.
+
+### Analysis of Redundant UI Components
+
+**1. AI Intelligence Score & AGI Progress**
+* **Where it's shown now:**
+    1.  In the main `GameHeader.tsx` at the top of the screen.
+    2.  Again in the `AIDashboard.tsx` component.
+* **Problem:** The `GameHeader` is the perfect place for this. It's persistent and serves as the player's primary goal tracker. Repeating it in the dashboard adds no new information and clutters the view.
+
+**2. Core Resource Levels (Compute, Data, Algorithm)**
+* **Where it's shown now:**
+    1.  In the `FactorySection.tsx` component, showing resource amounts and production rates.
+    2.  In the `AIDashboard.tsx` component, showing capability levels and progress bars.
+    3.  In a summary view within the "Dashboard" tab itself.
+* **Problem:** This is the most confusing redundancy. The player has to look in three different places to get a complete picture of their resources. The most detailed and actionable information is already within the `FactorySection.tsx` and the `SynergyDashboard.tsx`.
+
+**3. Compute Allocation & System Status**
+* **Where it's shown now:**
+    1.  A detailed breakdown in `SystemStatusPanel.tsx`, showing usage, capacity, service impact, and recommendations.
+    2.  A simplified version in `AIDashboard.tsx`.
+    3.  An even more simplified version within the "Compute" accordion in `FactorySection.tsx`.
+* **Problem:** The `SystemStatusPanel.tsx` is an excellent, comprehensive view. The other two are less detailed, incomplete summaries that are entirely superfluous.
+
+### The Solution: Consolidate and Remove the `AIDashboard`
+
+The most effective way to streamline the UI and eliminate this confusion is to **completely remove the `AIDashboard.tsx` component.**
+
+By doing this, you create a much cleaner and more intuitive information architecture:
+* **Overall Goal:** Tracked in the persistent `GameHeader`.
+* **Resource Management:** Handled entirely within the "Resources" tab (`FactorySection.tsx` and `SynergyDashboard.tsx`).
+* **Financials:** Handled entirely within the "Economy" tab (`EconomicSection.tsx`).
+* **System Health:** The `SystemStatusPanel.tsx` becomes the single source of truth for compute status, making it more prominent and important.
+
+#### **Implementation Steps:**
+
+Here is what your developer needs to do to implement this change.
+
+1.  **Delete the `AIDashboard.tsx` file:** The component is no longer needed.
+    * File to Delete: `AIFactorySimulatorMH/client/src/components/factory/AIDashboard.tsx`
+
+2.  **Remove the `AIDashboard` from the UI:** Edit the main tabs component to remove the dashboard from the layout.
+
+    * **File to Edit:** `AIFactorySimulatorMH/client/src/components/factory/MainGameTabs.tsx`
+    * **Action:** Find and delete the line that renders the `AIDashboard`.
+
+    ```typescript
+    // Inside MainGameTabs.tsx, in the "dashboard" TabsContent section:
+
+          {/* ... AGI Progress and Resource Summary ... */}
+          
+          {/* AI Training System - Moved right under AGI Progress */}
+          <ComputePanel 
+            gameState={gameState}
+            trainModel={trainModel}
+          />
+          
+          {/* System Status Panel - Shows compute and service health */}
+          <SystemStatusPanel gameState={gameState} />
+          
+          {/* DELETE THIS ENTIRE COMPONENT - IT IS REDUNDANT */}
+          {/* <AIDashboard gameState={gameState} /> */}
+
+          {/* Resource Flow Visualization - Moved to bottom */}
+          {/* ... */}
+    ```
+
+This single change will dramatically improve the clarity and focus of your game. Players will have clear, dedicated sections for each aspect of gameplay, removing the cognitive load of processing redundant information and allowing them to focus on making meaningful strategic decisions.
