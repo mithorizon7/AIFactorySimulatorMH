@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
 
 // Import game components
@@ -194,7 +195,7 @@ export default function MainGameTabs({
                 </h2>
               </ResourceTooltip>
               <div className="text-amber-400 font-bold text-xl">
-                {gameState.intelligence.toFixed(0)} / {gameState.agiThreshold}
+                <AnimatedNumber value={gameState.intelligence.toFixed(0)} /> / <AnimatedNumber value={gameState.agiThreshold} />
               </div>
             </div>
             
@@ -231,8 +232,12 @@ export default function MainGameTabs({
                   </ResourceTooltip>
                   <span className="text-blue-400 font-bold">Lvl {gameState.levels.compute}</span>
                 </div>
-                <div className="mt-2 text-xl font-semibold">{gameState.resources.compute.toFixed(0)}</div>
-                <div className="text-gray-400 text-sm">+{gameState.production.compute.toFixed(1)}/sec</div>
+                <div className="mt-2 text-xl font-semibold">
+                  <AnimatedNumber value={gameState.resources.compute.toFixed(0)} />
+                </div>
+                <div className="text-gray-400 text-sm">
+                  +<AnimatedNumber value={gameState.production.compute.toFixed(1)} />/sec
+                </div>
               </div>
               
               <div className="bg-gray-800 p-4 rounded-lg border border-green-900/50">
@@ -260,8 +265,12 @@ export default function MainGameTabs({
                   </ResourceTooltip>
                   <span className="text-green-400 font-bold">Lvl {gameState.levels.data}</span>
                 </div>
-                <div className="mt-2 text-xl font-semibold">{gameState.resources.data.toFixed(0)}</div>
-                <div className="text-gray-400 text-sm">+{gameState.production.data.toFixed(1)}/sec</div>
+                <div className="mt-2 text-xl font-semibold">
+                  <AnimatedNumber value={gameState.resources.data.toFixed(0)} />
+                </div>
+                <div className="text-gray-400 text-sm">
+                  +<AnimatedNumber value={gameState.production.data.toFixed(1)} />/sec
+                </div>
               </div>
               
               <div className="bg-gray-800 p-4 rounded-lg border border-purple-900/50">
@@ -289,8 +298,12 @@ export default function MainGameTabs({
                   </ResourceTooltip>
                   <span className="text-purple-400 font-bold">Lvl {gameState.levels.algorithm}</span>
                 </div>
-                <div className="mt-2 text-xl font-semibold">{gameState.resources.algorithm.toFixed(0)}</div>
-                <div className="text-gray-400 text-sm">+{gameState.production.algorithm.toFixed(1)}/sec</div>
+                <div className="mt-2 text-xl font-semibold">
+                  <AnimatedNumber value={gameState.resources.algorithm.toFixed(0)} />
+                </div>
+                <div className="text-gray-400 text-sm">
+                  +<AnimatedNumber value={gameState.production.algorithm.toFixed(1)} />/sec
+                </div>
               </div>
             </div>
           </div>

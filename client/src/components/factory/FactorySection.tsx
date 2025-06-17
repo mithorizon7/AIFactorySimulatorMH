@@ -209,7 +209,7 @@ export default function FactorySection({
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Resource Factories</h2>
-        <div className="font-medium text-green-400">Available: ${formatCurrency(money)}</div>
+        <div className="font-medium text-green-400">Available: $<AnimatedNumber value={formatCurrency(money)} /></div>
       </div>
       
       {/* Compute Factory */}
@@ -674,7 +674,9 @@ export default function FactorySection({
                   Algorithm Lab
                 </h3>
               </ResourceTooltip>
-              <span className="text-[#8B5CF6] font-bold">{Math.floor(resources.algorithm)}</span>
+              <span className="text-[#8B5CF6] font-bold">
+                <AnimatedNumber value={Math.floor(resources.algorithm)} />
+              </span>
             </div>
             
             <div className="mb-2">
