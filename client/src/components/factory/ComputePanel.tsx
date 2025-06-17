@@ -208,10 +208,14 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
   // Check if there's enough compute for the training run
   const hasEnoughCompute = computeCapacity.available >= (targetTrainingRun?.computeRequired || 0);
   
+  // Check if there's enough money for the training run
+  const hasEnoughMoney = gameState.money >= (targetTrainingRun?.moneyCost || 0);
+  
   // Determine if the button should be enabled
   const canStartTraining = trainingStatus === TrainingStatus.AVAILABLE && 
                           !isTrainingActive && 
-                          hasEnoughCompute;
+                          hasEnoughCompute &&
+                          hasEnoughMoney;
                           
   // Function to provide educational content for each prerequisite
   const getPrerequisiteEducation = (prereqName: string) => {
@@ -708,7 +712,7 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               
               {/* Training Resources Required */}
               {trainingStatus === TrainingStatus.AVAILABLE && !isTrainingActive && (
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-3 gap-3 mt-3">
                   <div className="bg-gray-800 p-3 rounded border border-gray-700">
                     <span className="text-xs font-medium text-gray-300">Compute Required</span>
                     <div className={`mt-1 text-lg font-bold flex items-center ${hasEnoughCompute ? 'text-green-400' : 'text-red-400'}`}>
@@ -719,6 +723,18 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                       {hasEnoughCompute 
                         ? "✓ Sufficient compute available" 
                         : `⚠ Need ${(targetTrainingRun?.computeRequired || 0) - computeCapacity.available} more compute`}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                    <span className="text-xs font-medium text-gray-300">Training Cost</span>
+                    <div className={`mt-1 text-lg font-bold flex items-center ${gameState.money >= (targetTrainingRun?.moneyCost || 0) ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className="text-green-400 mr-1">$</span>
+                      {targetTrainingRun?.moneyCost.toLocaleString()}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      {gameState.money >= (targetTrainingRun?.moneyCost || 0) 
+                        ? "✓ Sufficient funds available" 
+                        : `⚠ Need $${((targetTrainingRun?.moneyCost || 0) - gameState.money).toLocaleString()} more`}
                     </div>
                   </div>
                   <div className="bg-gray-800 p-3 rounded border border-gray-700">
