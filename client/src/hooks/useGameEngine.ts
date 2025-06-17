@@ -777,124 +777,109 @@ export function useGameEngine() {
                               (newState.revenue.chatbotEnabled && newState.revenue.subscribers > 0);
     
     if (hasActiveCustomers) {
-      // Calculate compute consumption based on potential customer usage
-      const b2bComputeUsage = newState.revenue.apiEnabled ? 
+      // Calculate initial compute demand based on potential customer usage
+      const potentialB2bComputeUsage = newState.revenue.apiEnabled ? 
         Math.ceil((potentialB2bRevenue / 1000) * 5) : 0; // 5 compute per $1000 of B2B revenue
       
-      const b2cComputeUsage = newState.revenue.subscribers > 0 ? 
+      const potentialB2cComputeUsage = newState.revenue.subscribers > 0 ? 
         Math.ceil(newState.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
       
-      const totalComputeUsage = b2bComputeUsage + b2cComputeUsage;
-      
-      // Track customer usage separately for UI display
-      newState.computeCapacity.customerUsage = totalComputeUsage;
+      const potentialTotalComputeUsage = potentialB2bComputeUsage + potentialB2cComputeUsage;
       
       let serviceQualityRatio = 1.0; // Default: full quality
       
-      // Check compute capacity thresholds
-      const usageRatio = (newState.computeCapacity.used + totalComputeUsage) / newState.computeCapacity.maxCapacity;
+      // Check compute capacity thresholds based on potential usage
+      const usageRatio = (newState.computeCapacity.used + potentialTotalComputeUsage) / newState.computeCapacity.maxCapacity;
       const isApproachingCapacity = usageRatio >= 0.9 && usageRatio < 0.95;
       const isCriticalCapacity = usageRatio >= 0.95;
       
-      // Apply compute usage and handle potential outages
-      if (totalComputeUsage > 0) {
-        // If we have enough compute, use it
-        if (newState.computeCapacity.available >= totalComputeUsage) {
-          // Service degradation depends on how close to capacity we are
-          if (isCriticalCapacity) {
-            // Critical situation: 95%+ usage causes severe degradation
-            // Scale from 0.7 (at 95% usage) down to 0.5 (at 100% usage)
-            const criticalPressure = (usageRatio - 0.95) / 0.05; // 0 to 1 as we go from 95% to 100%
-            serviceQualityRatio = Math.max(0.5, 0.7 - (0.2 * criticalPressure));
+      // Determine service quality degradation based on compute pressure
+      if (isCriticalCapacity) {
+        // Critical situation: 95%+ usage causes severe degradation
+        // Scale from 0.7 (at 95% usage) down to 0.5 (at 100% usage)
+        const criticalPressure = (usageRatio - 0.95) / 0.05; // 0 to 1 as we go from 95% to 100%
+        serviceQualityRatio = Math.max(0.5, 0.7 - (0.2 * criticalPressure));
+        
+        // Notify about critical outages
+        if (timeElapsed % 10 === 0) {
+          toast({
+            title: "CRITICAL SYSTEM OVERLOAD!",
+            description: "Your services are experiencing major outages. Expect significant customer loss and revenue impact.",
+            variant: "destructive",
+            duration: 4000,
+          });
+        }
+      }
+      else if (isApproachingCapacity) {
+        // High but not critical: 90-95% usage causes moderate degradation
+        // Scale from 1.0 (at 90% usage) down to 0.7 (at 95% usage)
+        const capacityPressure = (usageRatio - 0.9) / 0.05; // 0 to 1 as we go from 90% to 95%
+        serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
+        
+        // Notify about service degradation
+        if (timeElapsed % 10 === 0) {
+          toast({
+            title: "Compute System Under Pressure",
+            description: "Your system is experiencing intermittent outages. Upgrade your compute capacity to avoid customer loss.",
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+      }
+      
+      // If we don't have enough compute for the potential demand, reduce service quality
+      if (newState.computeCapacity.available < potentialTotalComputeUsage) {
+        // Calculate how much compute we can actually provide compared to what's needed
+        serviceQualityRatio = Math.min(serviceQualityRatio, newState.computeCapacity.available / potentialTotalComputeUsage);
+        
+        // Show a warning toast when service quality drops severely
+        if (timeElapsed % 10 === 0) {
+          toast({
+            title: "Critical Compute Shortage!",
+            description: "Your services are severely degraded due to compute shortage. Significant customer loss is expected.",
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+        
+        // Handle customer loss for severe outages (completely out of compute)
+        if (timeElapsed % 10 === 0) {
+          // Max 25% churn for zero compute outages
+          const severeChurnRate = 0.25 * (1 - serviceQualityRatio);
+          
+          // Apply to subscribers
+          if (newState.revenue.subscribers > 0) {
+            const previousSubscribers = newState.revenue.subscribers;
+            newState.revenue.subscribers = Math.floor(
+              newState.revenue.subscribers * (1 - severeChurnRate)
+            );
             
-            // Notify about critical outages
-            if (timeElapsed % 10 === 0) {
+            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
+            if (lostSubscribers > 10) {
               toast({
-                title: "CRITICAL SYSTEM OVERLOAD!",
-                description: "Your services are experiencing major outages. Expect significant customer loss and revenue impact.",
+                title: "SEVERE: Mass User Exodus!",
+                description: `${lostSubscribers} subscribers have abandoned your platform due to complete service failure.`,
                 variant: "destructive",
                 duration: 4000,
               });
             }
           }
-          else if (isApproachingCapacity) {
-            // High but not critical: 90-95% usage causes moderate degradation
-            // Scale from 1.0 (at 90% usage) down to 0.7 (at 95% usage)
-            const capacityPressure = (usageRatio - 0.9) / 0.05; // 0 to 1 as we go from 90% to 95%
-            serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
+          
+          // Also lose some developers (B2B customers)
+          if (newState.revenue.developers > 0) {
+            const previousDevelopers = newState.revenue.developers;
+            newState.revenue.developers = Math.floor(
+              newState.revenue.developers * (1 - severeChurnRate * 0.8) // Developers are slightly more tolerant
+            );
             
-            // Notify about service degradation
-            if (timeElapsed % 10 === 0) {
+            const lostDevelopers = previousDevelopers - newState.revenue.developers;
+            if (lostDevelopers > 5) {
               toast({
-                title: "Compute System Under Pressure",
-                description: "Your system is experiencing intermittent outages. Upgrade your compute capacity to avoid customer loss.",
+                title: "Developers Abandoning Platform!",
+                description: `${lostDevelopers} developers have stopped using your API due to complete system failure.`,
                 variant: "destructive",
                 duration: 3000,
               });
-            }
-          }
-          
-          // Apply the compute usage
-          newState.computeCapacity.available -= totalComputeUsage;
-          newState.computeCapacity.used += totalComputeUsage;
-        } 
-        // If we don't have enough compute, severe service quality reduction
-        else {
-          // Calculate how much compute we can actually provide compared to what's needed
-          serviceQualityRatio = newState.computeCapacity.available / totalComputeUsage;
-          const usedAmount = newState.computeCapacity.available; // Store before zeroing out
-          newState.computeCapacity.available = 0; // Use all available compute
-          newState.computeCapacity.used += usedAmount;
-          
-          // Show a warning toast when service quality drops severely
-          if (timeElapsed % 10 === 0) {
-            toast({
-              title: "Critical Compute Shortage!",
-              description: "Your services are severely degraded due to compute shortage. Significant customer loss is expected.",
-              variant: "destructive",
-              duration: 3000,
-            });
-          }
-          
-          // Handle customer loss for severe outages (completely out of compute)
-          if (timeElapsed % 10 === 0) {
-            // Max 25% churn for zero compute outages
-            const severeChurnRate = 0.25 * (1 - serviceQualityRatio);
-            
-            // Apply to subscribers
-            if (newState.revenue.subscribers > 0) {
-              const previousSubscribers = newState.revenue.subscribers;
-              newState.revenue.subscribers = Math.floor(
-                newState.revenue.subscribers * (1 - severeChurnRate)
-              );
-              
-              const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
-              if (lostSubscribers > 10) {
-                toast({
-                  title: "SEVERE: Mass User Exodus!",
-                  description: `${lostSubscribers} subscribers have abandoned your platform due to complete service failure.`,
-                  variant: "destructive",
-                  duration: 4000,
-                });
-              }
-            }
-            
-            // Also lose some developers (B2B customers)
-            if (newState.revenue.developers > 0) {
-              const previousDevelopers = newState.revenue.developers;
-              newState.revenue.developers = Math.floor(
-                newState.revenue.developers * (1 - severeChurnRate * 0.8) // Developers are slightly more tolerant
-              );
-              
-              const lostDevelopers = previousDevelopers - newState.revenue.developers;
-              if (lostDevelopers > 5) {
-                toast({
-                  title: "Developers Abandoning Platform!",
-                  description: `${lostDevelopers} developers have stopped using your API due to complete system failure.`,
-                  variant: "destructive",
-                  duration: 3000,
-                });
-              }
             }
           }
         }
@@ -955,10 +940,36 @@ export function useGameEngine() {
       // Set final revenue amounts based on potential and service quality
       newState.revenue.b2b = Math.floor(potentialB2bRevenue * qualityImpact);
       newState.revenue.b2c = Math.floor(potentialB2cRevenue * qualityImpact);
+      
+      // ***** FIX: Calculate actual compute usage based on final revenue *****
+      const actualB2bComputeUsage = newState.revenue.apiEnabled ? 
+        Math.ceil((newState.revenue.b2b / 1000) * 5) : 0; // 5 compute per $1000 of actual B2B revenue
+      
+      const actualB2cComputeUsage = newState.revenue.subscribers > 0 ? 
+        Math.ceil(newState.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
+      
+      const actualTotalComputeUsage = actualB2bComputeUsage + actualB2cComputeUsage;
+      
+      // Track customer usage separately for UI display
+      newState.computeCapacity.customerUsage = actualTotalComputeUsage;
+      
+      // Apply actual compute usage
+      if (actualTotalComputeUsage > 0) {
+        if (newState.computeCapacity.available >= actualTotalComputeUsage) {
+          newState.computeCapacity.available -= actualTotalComputeUsage;
+          newState.computeCapacity.used += actualTotalComputeUsage;
+        } else {
+          // Use all available compute
+          const usedAmount = newState.computeCapacity.available;
+          newState.computeCapacity.available = 0;
+          newState.computeCapacity.used += usedAmount;
+        }
+      }
     } else {
-      // No active customers, so zero revenue
+      // No active customers, so zero revenue and usage
       newState.revenue.b2b = 0;
       newState.revenue.b2c = 0;
+      newState.computeCapacity.customerUsage = 0;
     }
     
     // ===== Investor Funding: Simplified as special events =====
