@@ -103,7 +103,10 @@ export default function GameHeader({
             <Button 
               variant="outline"
               className="flex items-center gap-2 text-gray-200 border-gray-600 hover:text-white"
-              onClick={resetGame}
+              onClick={() => {
+                localStorage.removeItem('hasPlayedAIFactory');
+                resetGame();
+              }}
             >
               <RefreshCw className="h-5 w-5" />
               Reset
