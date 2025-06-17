@@ -15,6 +15,7 @@ import MainGameTabs from "@/components/factory/MainGameTabs";
 import ComputePanel from "@/components/factory/ComputePanel";
 import HelpPanel from "@/components/factory/HelpPanel";
 import TutorialOverlay from "@/components/factory/TutorialOverlay";
+import AdvisorToast from "@/components/factory/AdvisorToast";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -24,6 +25,9 @@ export default function AIFactory() {
     startGame,
     pauseGame,
     resetGame,
+    // Spark AI Advisor
+    advisorMessage,
+    setAdvisorMessage,
     // Train model function
     trainModel,
     // Basic money allocation
@@ -79,11 +83,17 @@ export default function AIFactory() {
     if (!hasPlayedBefore) {
       setShowIntroduction(false); // Hide the old modal
       setTutorialStep(1);         // Start the tutorial
+      // Trigger Spark's welcome message
+      setAdvisorMessage({
+        title: "Welcome to the Factory!",
+        content: "I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
+        context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips."
+      });
       localStorage.setItem('hasPlayedAIFactory', 'true');
     } else if (timeElapsed === 0 && !isRunning) {
       setShowIntroduction(true);
     }
-  }, [timeElapsed, isRunning]);
+  }, [timeElapsed, isRunning, setAdvisorMessage]);
 
   // Save game state periodically
   useEffect(() => {
@@ -166,6 +176,12 @@ export default function AIFactory() {
     if (tutorialStep === 5) {
       setTutorialStep(6);
     }
+  };
+
+  // Handler for Spark AI Advisor
+  const handleAdvisorClose = () => {
+    setAdvisorMessage(null);
+    // The game will be resumed by the AdvisorToast's unmount effect via the GamePauseContext
   };
 
   async function saveGameState() {
@@ -343,6 +359,11 @@ export default function AIFactory() {
           )}
         </div>
       </div>
+
+      {/* Spark AI Advisor is rendered on top of everything */}
+      {advisorMessage && (
+        <AdvisorToast message={advisorMessage} onClose={handleAdvisorClose} />
+      )}
     </GamePauseProvider>
   );
 }

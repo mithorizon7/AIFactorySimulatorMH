@@ -42,7 +42,7 @@ export default function AdvisorToast({ message, onClose }: AdvisorToastProps) {
               <img 
                 src="/Spark1.svg" 
                 alt="Spark AI Advisor" 
-                className="w-10 h-10 rounded-full"
+                className="w-8 h-8"
                 onError={(e) => {
                   // Fallback to initials if SVG fails to load
                   e.currentTarget.style.display = 'none';
