@@ -981,6 +981,9 @@ export function useGameEngine() {
         newState.money -= 100;
         newState.computeInputs.money += 1;
         
+        // Track total investment spending
+        newState.narrativeFlags.totalInvestmentAmount += 100;
+        
         // Also increase compute level for training prerequisites
         newState.levels.compute += 1;
         
@@ -1017,6 +1020,9 @@ export function useGameEngine() {
         const newState = { ...prevState };
         newState.money -= 75;
         newState.dataInputs.quality += 1;
+        
+        // Track total investment spending
+        newState.narrativeFlags.totalInvestmentAmount += 75;
         
         // *** ADD THIS LINE ***
         // This brings the Data resource in line with Compute and Algorithm,
@@ -1061,6 +1067,9 @@ export function useGameEngine() {
         const newState = { ...prevState };
         newState.money -= scaledCost;
         newState.algorithmInputs.architectures += 1;
+        
+        // Track total investment spending
+        newState.narrativeFlags.totalInvestmentAmount += scaledCost;
         
         // Increase algorithm production based on architecture improvements
         newState.production.algorithm *= 1.15;
@@ -1197,6 +1206,9 @@ export function useGameEngine() {
           
           // Check and process investment milestones
           checkInvestmentMilestones(newState);
+          
+          // Check for strategic warnings and contextual hints
+          checkStrategicWarnings(newState);
           
           // Update compute capacity availability
           // Compute capacity recharges slowly over time (3% of max per tick)
