@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
@@ -82,8 +83,28 @@ export default function MainGameTabs({
   setTutorialStep,
   tutorialRefs
 }: MainGameTabsProps) {
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  // Function to handle navigation to resource tabs
+  const handleNavigateToResource = (resourceType: 'compute' | 'data' | 'algorithm') => {
+    setActiveTab("resources");
+    // Small delay to ensure tab change completes before scrolling
+    setTimeout(() => {
+      const targetId = `${resourceType}-section`;
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Add temporary highlight effect
+        element.classList.add('ring-2', 'ring-amber-400', 'ring-opacity-50');
+        setTimeout(() => {
+          element.classList.remove('ring-2', 'ring-amber-400', 'ring-opacity-50');
+        }, 2000);
+      }
+    }, 100);
+  };
+
   return (
-    <Tabs defaultValue="dashboard" className="w-full">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="flex justify-center mb-4">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
           <TabsList className="grid grid-cols-5 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg">
@@ -278,6 +299,7 @@ export default function MainGameTabs({
           <ComputePanel 
             gameState={gameState}
             trainModel={trainModel}
+            onNavigateToResource={handleNavigateToResource}
           />
           
           {/* System Status Panel - Shows compute and service health */}

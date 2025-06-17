@@ -705,7 +705,14 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                       {allPrerequisites
                         .filter(prereq => prereq.category === 'algorithm')
                         .map((prereq, index) => (
-                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                          <div 
+                            key={index} 
+                            className={`bg-gray-800/60 rounded-md p-2 border border-gray-700/70 transition-all duration-200 ${
+                              !prereq.isMet && onNavigateToResource ? 'cursor-pointer hover:bg-gray-700/80 hover:border-purple-500/50 hover:shadow-md' : ''
+                            }`}
+                            onClick={() => handlePrerequisiteClick(prereq)}
+                            title={getNavigationInstructions(prereq) || undefined}
+                          >
                             <div className="flex items-center justify-between mb-1.5">
                               <div className="flex items-center">
                                 <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
@@ -725,6 +732,9 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                                     <span className="ml-1 font-medium">{prereq.name}</span>
                                   </span>
                                 </ResourceTooltip>
+                                {!prereq.isMet && onNavigateToResource && (
+                                  <ChevronRightIcon className="h-3 w-3 ml-1 text-amber-400 opacity-60" />
+                                )}
                               </div>
                             </div>
                             
