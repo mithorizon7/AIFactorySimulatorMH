@@ -230,6 +230,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{resourceDefinitions.compute.realWorldExample}</p>
             </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Use "Electricity", "Hardware", or "Regulation" buttons in the Compute Factory.</p>
+            </div>
           </div>
         );
       case "Data Quality":
@@ -240,6 +244,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
               <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.quality.realWorldExample}</p>
+            </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Data Quality" in the Data Factory.</p>
             </div>
           </div>
         );
@@ -252,6 +260,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.quantity.realWorldExample}</p>
             </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Data Quantity" in the Data Factory.</p>
+            </div>
           </div>
         );
       case "Data Formats":
@@ -262,6 +274,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
               <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.formats.realWorldExample}</p>
+            </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Data Formats" in the Data Factory.</p>
             </div>
           </div>
         );
@@ -274,6 +290,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.architectures.realWorldExample}</p>
             </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Algorithm Architectures" in the Algorithm Factory.</p>
+            </div>
           </div>
         );
       case "Algorithm Research":
@@ -284,6 +304,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
               <h5 className="text-purple-300 font-medium text-xs">Importance</h5>
               <p className="text-xs mt-1">Progress can accelerate with more compute dedicated to research efforts and with a higher quality foundation of algorithms and architectures.</p>
+            </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Hire "Research Engineers" in the Algorithm Factory to boost research progress.</p>
             </div>
           </div>
         );
@@ -296,6 +320,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.electricity.realWorldExample}</p>
             </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Electricity" in the Compute Factory.</p>
+            </div>
           </div>
         );
       case "Hardware":
@@ -307,6 +335,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
               <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.hardware.realWorldExample}</p>
             </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Hardware" in the Compute Factory.</p>
+            </div>
           </div>
         );
       case "Regulatory Compliance":
@@ -317,6 +349,10 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
             <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
               <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
               <p className="text-xs mt-1">{enablingInputs.regulation.realWorldExample}</p>
+            </div>
+            <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+              <h5 className="text-green-300 font-medium text-xs">How to Improve:</h5>
+              <p className="text-xs mt-1">Invest in "Regulation" in the Compute Factory.</p>
             </div>
           </div>
         );
