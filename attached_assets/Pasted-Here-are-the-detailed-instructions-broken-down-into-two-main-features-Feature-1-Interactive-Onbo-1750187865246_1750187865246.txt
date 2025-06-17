@@ -1,0 +1,70 @@
+Here are the detailed instructions, broken down into two main features.
+
+Feature 1: Interactive Onboarding Tutorial
+
+Objective: Replace the static WelcomeIntroduction.tsx modal with a short, guided tutorial for first-time players. This will teach the core gameplay loop through action, not just text, making the initial experience more engaging and the educational concepts more memorable.
+
+Developer Instructions:
+
+1. Create a Tutorial State Manager:
+
+In AIFactory.tsx, introduce a state to manage the tutorial's progress. This will control which step is currently active.
+TypeScript
+const [tutorialStep, setTutorialStep] = useState<number>(0); // 0: inactive, 1: step 1, etc.
+We need to detect a first-time player. Use localStorage for simplicity.
+TypeScript
+useEffect(() => {
+  const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
+  if (!hasPlayedBefore) {
+    setShowIntroduction(false); // Hide the old modal
+    setTutorialStep(1);       // Start the tutorial
+    localStorage.setItem('hasPlayedAIFactory', 'true');
+  }
+}, []);
+The "Reset" button in GameHeader.tsx should also clear this flag: localStorage.removeItem('hasPlayedAIFactory');
+2. Build the Tutorial Overlay Component:
+
+Create a new component: client/src/components/factory/TutorialOverlay.tsx.
+This component will render a full-screen, semi-transparent overlay (e.g., bg-black/70).
+It will accept props for the position and size of a "hole" to highlight a specific UI element (highlightedArea: { top, left, width, height }). This can be achieved with CSS box-shadow on a cutout div or an SVG mask.
+It will also accept the instructional text and the position for the text box as props.
+3. Implement the Tutorial Flow in AIFactory.tsx:
+
+Conditionally render <TutorialOverlay /> based on the tutorialStep.
+Use useRef on the target elements (e.g., the factory upgrade buttons) to get their dimensions and positions for the overlay.
+Step-by-Step Logic:
+
+Tutorial Step 1: Upgrading Compute
+
+Condition: if (tutorialStep === 1)
+Overlay Target: The "Compute Factory" AccordionTrigger in FactorySection.tsx.
+Instructional Text: "Welcome! Your goal is to build AGI. Let's start by investing in Compute, the raw power for your AI. Click to expand."
+Action: Modify the AccordionTrigger's onClick to advance the tutorial: onClick={() => setTutorialStep(2)}.
+Tutorial Step 2: Highlighting the Investment
+
+Condition: if (tutorialStep === 2)
+Overlay Target: The "Upgrade Compute Level" button inside the Compute accordion.
+Instructional Text: "Great! Now, spend your starting funds to increase your Compute Level. This is like buying more powerful servers."
+Action: Wrap the allocateMoneyToCompute function call. After the original function runs, it should call setTutorialStep(3).
+Tutorial Step 3: Showing the Result
+
+Condition: if (tutorialStep === 3)
+Overlay Target: The "Production Rate" display (+1.1/s) for Compute.
+Instructional Text: "Excellent! Your investment increased your Compute production. You're now generating the resources needed to improve your AI."
+Action: Use a setTimeout(() => setTutorialStep(4), 4000); to automatically proceed after the player has had a moment to see the result.
+Tutorial Step 4 & 5: Repeat for Data and Algorithms
+
+Repeat the process above for the "Data" and "Algorithm" factories.
+Educational Text Snippets:
+For Data: "Next, invest in Data. AI learns from examples, so more data makes it smarter."
+For Algorithms: "Finally, upgrade your Algorithms. These are the 'recipes' that tell your AI how to learn efficiently."
+Tutorial Step 6: Completion
+
+Condition: if (tutorialStep === 6)
+Action: Set setTutorialStep(0) to hide the overlay.
+Feedback: Display a toast notification:
+JavaScript
+toast({
+  title: "Tutorial Complete!",
+  description: "You've mastered the basics. Balance these three resources to raise your AI's Intelligence to 1000!",
+});

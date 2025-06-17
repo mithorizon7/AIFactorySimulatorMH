@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
 import ComputePanel from "@/components/factory/ComputePanel";
 import HelpPanel from "@/components/factory/HelpPanel";
+import TutorialOverlay from "@/components/factory/TutorialOverlay";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -58,10 +59,28 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
+  
+  // Tutorial state management
+  const [tutorialStep, setTutorialStep] = useState<number>(0); // 0: inactive, 1: step 1, etc.
+  const [highlightedArea, setHighlightedArea] = useState<{top: number, left: number, width: number, height: number} | null>(null);
+  
+  // Refs for tutorial targeting
+  const computeAccordionRef = useRef<HTMLButtonElement>(null);
+  const computeUpgradeRef = useRef<HTMLButtonElement>(null);
+  const computeProductionRef = useRef<HTMLDivElement>(null);
+  const dataAccordionRef = useRef<HTMLButtonElement>(null);
+  const dataUpgradeRef = useRef<HTMLButtonElement>(null);
+  const algorithmAccordionRef = useRef<HTMLButtonElement>(null);
+  const algorithmUpgradeRef = useRef<HTMLButtonElement>(null);
 
-  // Show introduction when game first starts or is reset
+  // Detect first-time player and start tutorial
   useEffect(() => {
-    if (timeElapsed === 0 && !isRunning) {
+    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
+    if (!hasPlayedBefore) {
+      setShowIntroduction(false); // Hide the old modal
+      setTutorialStep(1);         // Start the tutorial
+      localStorage.setItem('hasPlayedAIFactory', 'true');
+    } else if (timeElapsed === 0 && !isRunning) {
       setShowIntroduction(true);
     }
   }, [timeElapsed, isRunning]);
@@ -98,6 +117,56 @@ export default function AIFactory() {
       setShowSummaryModal(true);
     }
   }, [gameState.intelligence, isRunning, gameState.agiThreshold]);
+
+  // Tutorial step management
+  const updateHighlightedArea = (ref: React.RefObject<HTMLElement>) => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setHighlightedArea({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height,
+      });
+    }
+  };
+
+  // Effect to update highlighted areas when tutorial step changes
+  useEffect(() => {
+    if (tutorialStep === 1 && computeAccordionRef.current) {
+      updateHighlightedArea(computeAccordionRef);
+    } else if (tutorialStep === 2 && computeUpgradeRef.current) {
+      updateHighlightedArea(computeUpgradeRef);
+    } else if (tutorialStep === 3 && computeProductionRef.current) {
+      updateHighlightedArea(computeProductionRef);
+    } else if (tutorialStep === 4 && dataAccordionRef.current) {
+      updateHighlightedArea(dataAccordionRef);
+    } else if (tutorialStep === 5 && algorithmAccordionRef.current) {
+      updateHighlightedArea(algorithmAccordionRef);
+    }
+  }, [tutorialStep]);
+
+  // Tutorial-enhanced allocation functions
+  const tutorialAllocateMoneyToCompute = () => {
+    allocateMoneyToCompute();
+    if (tutorialStep === 2) {
+      setTutorialStep(3);
+    }
+  };
+
+  const tutorialAllocateMoneyToData = () => {
+    allocateMoneyToData();
+    if (tutorialStep === 4) {
+      setTutorialStep(5);
+    }
+  };
+
+  const tutorialAllocateMoneyToAlgorithm = () => {
+    allocateMoneyToAlgorithm();
+    if (tutorialStep === 5) {
+      setTutorialStep(6);
+    }
+  };
 
   async function saveGameState() {
     try {
