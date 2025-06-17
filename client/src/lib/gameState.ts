@@ -618,12 +618,7 @@ export const initialGameState: GameStateType = {
     algorithm: 60
   },
   
-  // Investment costs for primary resources
-  investCosts: {
-    compute: 100,
-    data: 80,
-    algorithm: 120
-  },
+
   
   // Breakthroughs - Organized by AI eras
   breakthroughs: [
