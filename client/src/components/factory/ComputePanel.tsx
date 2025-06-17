@@ -10,9 +10,10 @@ import { resourceDefinitions, enablingInputs } from '@/lib/educationalContent';
 interface ComputePanelProps {
   gameState: GameStateType;
   trainModel: () => void;
+  onNavigateToResource?: (resourceType: 'compute' | 'data' | 'algorithm') => void;
 }
 
-export default function ComputePanel({ gameState, trainModel }: ComputePanelProps) {
+export default function ComputePanel({ gameState, trainModel, onNavigateToResource }: ComputePanelProps) {
   const { computeCapacity } = gameState;
   
   // Helper function to get next era
@@ -216,6 +217,22 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                           !isTrainingActive && 
                           hasEnoughCompute &&
                           hasEnoughMoney;
+
+  // Function to handle prerequisite navigation
+  const handlePrerequisiteClick = (prereq: any) => {
+    if (prereq.isMet || !onNavigateToResource) return;
+    
+    // Navigate to the appropriate resource tab
+    onNavigateToResource(prereq.category);
+  };
+
+  // Function to get navigation instructions for prerequisites
+  const getNavigationInstructions = (prereq: any) => {
+    if (prereq.isMet) return null;
+    
+    const categoryName = prereq.category.charAt(0).toUpperCase() + prereq.category.slice(1);
+    return `Click to go to ${categoryName} section and improve ${prereq.name}`;
+  };
                           
   // Function to provide educational content for each prerequisite
   const getPrerequisiteEducation = (prereqName: string) => {
@@ -543,7 +560,14 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                       {allPrerequisites
                         .filter(prereq => prereq.category === 'compute')
                         .map((prereq, index) => (
-                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                          <div 
+                            key={index} 
+                            className={`bg-gray-800/60 rounded-md p-2 border border-gray-700/70 transition-all duration-200 ${
+                              !prereq.isMet && onNavigateToResource ? 'cursor-pointer hover:bg-gray-700/80 hover:border-blue-500/50 hover:shadow-md' : ''
+                            }`}
+                            onClick={() => handlePrerequisiteClick(prereq)}
+                            title={getNavigationInstructions(prereq) || undefined}
+                          >
                             <div className="flex items-center justify-between mb-1.5">
                               <div className="flex items-center">
                                 <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
@@ -563,6 +587,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                     <span className="ml-1 font-medium">{prereq.name}</span>
                                   </span>
                                 </ResourceTooltip>
+                                {!prereq.isMet && onNavigateToResource && (
+                                  <ChevronRightIcon className="h-3 w-3 ml-1 text-amber-400 opacity-60" />
+                                )}
                               </div>
                             </div>
                             
@@ -608,7 +635,14 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                       {allPrerequisites
                         .filter(prereq => prereq.category === 'data')
                         .map((prereq, index) => (
-                          <div key={index} className="bg-gray-800/60 rounded-md p-2 border border-gray-700/70">
+                          <div 
+                            key={index} 
+                            className={`bg-gray-800/60 rounded-md p-2 border border-gray-700/70 transition-all duration-200 ${
+                              !prereq.isMet && onNavigateToResource ? 'cursor-pointer hover:bg-gray-700/80 hover:border-green-500/50 hover:shadow-md' : ''
+                            }`}
+                            onClick={() => handlePrerequisiteClick(prereq)}
+                            title={getNavigationInstructions(prereq) || undefined}
+                          >
                             <div className="flex items-center justify-between mb-1.5">
                               <div className="flex items-center">
                                 <span className={`mr-1.5 ${prereq.isMet ? 'text-green-400' : 'text-amber-400'}`}>
@@ -628,6 +662,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                     <span className="ml-1 font-medium">{prereq.name}</span>
                                   </span>
                                 </ResourceTooltip>
+                                {!prereq.isMet && onNavigateToResource && (
+                                  <ChevronRightIcon className="h-3 w-3 ml-1 text-amber-400 opacity-60" />
+                                )}
                               </div>
                             </div>
                             
