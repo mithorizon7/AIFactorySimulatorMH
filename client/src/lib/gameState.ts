@@ -203,6 +203,18 @@ export interface GameStateType {
     progress: number;
   };
   
+  // Narrative warning flags to prevent message spam
+  narrativeFlags: {
+    hasSeenComputeWarning: boolean;
+    hasSeenLowFundsWarning: boolean;
+    hasSeenFirstTraining: boolean;
+    hasSeenFirstRevenue: boolean;
+    hasSeenBalanceAdvice: boolean;
+    hasSeenInvestmentMilestone1M: boolean;
+    hasSeenInvestmentMilestone10M: boolean;
+    totalInvestmentAmount: number; // Track total money spent
+  };
+  
   // AGI Victory Threshold
   agiThreshold: number; // Intelligence score needed to win
 }
@@ -624,7 +636,17 @@ export const initialGameState: GameStateType = {
     algorithm: 60
   },
   
-
+  // Narrative warning flags to prevent message spam
+  narrativeFlags: {
+    hasSeenComputeWarning: false,
+    hasSeenLowFundsWarning: false,
+    hasSeenFirstTraining: false,
+    hasSeenFirstRevenue: false,
+    hasSeenBalanceAdvice: false,
+    hasSeenInvestmentMilestone1M: false,
+    hasSeenInvestmentMilestone10M: false,
+    totalInvestmentAmount: 0
+  },
   
   // Breakthroughs - Organized by AI eras
   breakthroughs: [

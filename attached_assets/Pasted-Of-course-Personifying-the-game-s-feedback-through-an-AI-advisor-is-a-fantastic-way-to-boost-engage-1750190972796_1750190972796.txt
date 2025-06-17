@@ -1,0 +1,155 @@
+Of course. Personifying the game's feedback through an AI advisor is a fantastic way to boost engagement and make the educational content feel more integrated and personal.
+
+Here is a fully fleshed-out set of instructions for your developer to design and implement the "AI Advisor" character, whom we'll call **Spark**.
+
+---
+
+### **Feature: The "Spark" AI Advisor**
+
+**Objective:** Introduce a fictional character, Spark, who acts as the player's guide and advisor. Spark will deliver tutorial instructions, celebrate achievements, explain complex topics, and provide strategic hints, thereby transforming the educational content from static text into a dynamic, narrative experience.
+
+### **Phase 1: Designing the Advisor's UI & Persona**
+
+**1. Create the `AdvisorToast.tsx` Component:**
+
+* **File Location:** `client/src/components/factory/AdvisorToast.tsx`
+* **Purpose:** This is a non-intrusive, corner pop-up component that will be the primary way Spark communicates with the player. It should be less disruptive than a full-screen modal.
+* **Component Specification:**
+    * It should have a fixed position (e.g., `bottom-right` of the screen).
+    * It must pause the game while visible. Use the `useGamePause()` context: call `pauseForLearning()` on mount and `resumeFromLearning()` when the component is unmounted or closed.
+    * It will accept `message: { title: string, content: string, context: string }` and `onClose: () => void` as props.
+    * **Visual Design:**
+        * **Avatar:** A simple, friendly SVG icon for Spark. It could be a stylized brain with circuits or a friendly robotic face.
+        * **Container:** A styled card with a subtle glow or accent color.
+        * **Title Area:** Displays `message.title`, styled prominently.
+        * **Content Area:** Displays `message.content`, the main dialogue from Spark.
+        * **Educational Context Area:** A distinct section, perhaps with a slight background color change, that displays `message.context`. This section should be prefixed with "Real-World Context:" or a similar label to frame the educational takeaway.
+        * **Action Button:** A single "Continue" or "Got it!" button that calls the `onClose` prop.
+
+**2. Create the `narrativeContent.ts` Library:**
+
+* **File Location:** `client/src/lib/narrativeContent.ts`
+* **Purpose:** To centralize all of Spark's dialogue. This decouples the narrative content from the game logic, making it easy for non-developers to edit and expand the story.
+* **Data Structure:** An exported object where keys map to specific game triggers.
+
+    **Example `narrativeContent.ts`:**
+    ```typescript
+    export const narrative = {
+      // Tutorial Sequence
+      TUTORIAL_STEP_1: {
+        title: "Welcome to the Factory!",
+        content: "I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
+        context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs."
+      },
+      // Breakthroughs (keyed by breakthrough ID)
+      BREAKTHROUGH_1: {
+        title: "Breakthrough: Transformer Architecture!",
+        content: "Great work, boss! Our algorithm research has paid off. We've developed the Transformer Architecture, which will revolutionize how our AI understands language.",
+        context: "This is a huge milestone, similar to the 2017 'Attention Is All You Need' paper that led to modern models like GPT!"
+      },
+      // Era Advancements (keyed by the new Era)
+      ERA_ADVANCE_GNT3: {
+        title: "We're in a New Era: GNT-3!",
+        content: "Our AI is now in the GNT-3 era! Its capabilities have scaled dramatically, and it's starting to show emergent abilities it wasn't explicitly trained for.",
+        context: "This mirrors the jump to models with 175 billion parameters, which established the 'scaling laws'—predictable improvements from larger models and datasets."
+      },
+      // Warnings
+      COMPUTE_WARNING_HIGH: {
+        title: "System Strain Detected!",
+        content: "Our compute capacity is over 90%. We risk service slowdowns, which will affect our revenue and customer growth.",
+        context: "This is a real challenge for AI companies; balancing the cost of infrastructure with the computational demands of their users."
+      }
+    };
+    ```
+
+### **Phase 2: Integrating Spark into the Game Engine**
+
+**File to Modify:** `client/src/hooks/useGameEngine.ts`
+
+**1. Add State for Advisor Messages:**
+   - Introduce a state variable to hold the current message for Spark. When this state is populated, the UI will show the `AdvisorToast`.
+   ```typescript
+   import { narrative } from '@/lib/narrativeContent'; // Import the new content library
+
+   // Inside useGameEngine hook
+   const [advisorMessage, setAdvisorMessage] = useState<object | null>(null);
+   ```
+   - Expose `advisorMessage` and `setAdvisorMessage` in the hook's return object.
+
+**2. Replace Toasts and Modals with Advisor Triggers:**
+
+* **Breakthroughs:** Modify the `checkBreakthroughs` function. When a breakthrough is unlocked, instead of showing a generic toast, set the advisor message.
+    ```typescript
+    // Inside checkBreakthroughs, when a breakthrough is found
+    if (allRequirementsMet) {
+      breakthrough.unlocked = true;
+      state.intelligence += 100;
+      
+      // NEW: Trigger Spark's message
+      const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}`;
+      if (narrative[breakthroughKey]) {
+        setAdvisorMessage(narrative[breakthroughKey]);
+      } else {
+        // Fallback for unthemed breakthroughs
+        toast({ title: `Breakthrough: ${breakthrough.name}`, description: breakthrough.description });
+      }
+      // ...
+    }
+    ```
+
+* **Era Advancements:** Modify `advanceToNextEra`. Replace the `toast` with a call to `setAdvisorMessage`.
+    ```typescript
+    // Inside advanceToNextEra
+    const eraKey = `ERA_ADVANCE_${newEra.replace('-', '')}`;
+    if (narrative[eraKey]) {
+        setAdvisorMessage(narrative[eraKey]);
+    } else {
+        // Fallback toast
+    }
+    ```
+
+* **Contextual Hints:** Integrate advisor hints for key game moments. For example, in the `calculateRevenue` function:
+    ```typescript
+    // Inside calculateRevenue, when usage is high and not already showing a message
+    if (isWarning && !advisorMessage) {
+        // Use a flag to prevent spamming this message
+        if (!state.hasSeenComputeWarning) { 
+            setAdvisorMessage(narrative.COMPUTE_WARNING_HIGH);
+            newState.hasSeenComputeWarning = true; // Add this flag to GameStateType
+        }
+    }
+    ```
+
+### **Phase 3: Connecting the UI**
+
+**File to Modify:** `client/src/pages/AIFactory.tsx`
+
+**1. Render the Advisor Component:**
+   - Get the advisor state from the `useGameEngine` hook.
+   - Conditionally render the `AdvisorToast` component.
+   - Create a handler function to clear the message and resume the game.
+
+   ```tsx
+   // In AIFactory.tsx, get these from the hook
+   const { ..., advisorMessage, setAdvisorMessage } = useGameEngine();
+
+   const handleAdvisorClose = () => {
+     setAdvisorMessage(null);
+     // The game will be resumed by the AdvisorToast's unmount effect via the GamePauseContext
+   };
+
+   return (
+     <GamePauseProvider ...>
+       <div className="bg-gradient-to-b ...">
+         {/* ... All existing game UI ... */}
+       </div>
+       
+       {/* Advisor Toast is rendered on top of everything */}
+       {advisorMessage && (
+         <AdvisorToast message={advisorMessage} onClose={handleAdvisorClose} />
+       )}
+     </GamePauseProvider>
+   );
+   ```
+
+By implementing Spark, you transform the game from a numbers-driven simulation into a guided journey. The player isn't just learning facts; they're receiving timely, contextual wisdom from their trusted advisor, making the educational content feel earned, relevant, and far more engaging.
