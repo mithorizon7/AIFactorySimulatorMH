@@ -473,6 +473,65 @@ export function useGameEngine() {
     }
   };
 
+  // Check for contextual strategic warnings and hints
+  const checkStrategicWarnings = (state: GameStateType) => {
+    // Skip if already showing an advisor message
+    if (advisorMessage) return;
+    
+    const computeUsageRatio = state.computeCapacity.used / state.computeCapacity.maxCapacity;
+    
+    // Critical compute warning
+    if (computeUsageRatio >= 0.95 && !state.narrativeFlags.hasSeenComputeWarning) {
+      setAdvisorMessage(narrative.COMPUTE_WARNING_CRITICAL);
+      state.narrativeFlags.hasSeenComputeWarning = true;
+      return;
+    }
+    
+    // High compute warning
+    if (computeUsageRatio >= 0.9 && !state.narrativeFlags.hasSeenComputeWarning) {
+      setAdvisorMessage(narrative.COMPUTE_WARNING_HIGH);
+      state.narrativeFlags.hasSeenComputeWarning = true;
+      return;
+    }
+    
+    // Low funds warning
+    if (state.money < 100 && !state.narrativeFlags.hasSeenLowFundsWarning) {
+      setAdvisorMessage(narrative.LOW_FUNDS_WARNING);
+      state.narrativeFlags.hasSeenLowFundsWarning = true;
+      return;
+    }
+    
+    // First revenue milestone
+    if ((state.revenue.b2b > 0 || state.revenue.b2c > 0) && !state.narrativeFlags.hasSeenFirstRevenue) {
+      setAdvisorMessage(narrative.FIRST_REVENUE_MILESTONE);
+      state.narrativeFlags.hasSeenFirstRevenue = true;
+      return;
+    }
+    
+    // Investment milestone tracking
+    const totalSpent = state.narrativeFlags.totalInvestmentAmount;
+    if (totalSpent >= 1000000 && !state.narrativeFlags.hasSeenInvestmentMilestone1M) {
+      setAdvisorMessage(narrative.INVESTMENT_MILESTONE_1M);
+      state.narrativeFlags.hasSeenInvestmentMilestone1M = true;
+      return;
+    }
+    
+    if (totalSpent >= 10000000 && !state.narrativeFlags.hasSeenInvestmentMilestone10M) {
+      setAdvisorMessage(narrative.INVESTMENT_MILESTONE_10M);
+      state.narrativeFlags.hasSeenInvestmentMilestone10M = true;
+      return;
+    }
+    
+    // Strategic balance advice (triggered when heavily imbalanced)
+    const maxLevel = Math.max(state.levels.compute, state.levels.data, state.levels.algorithm);
+    const minLevel = Math.min(state.levels.compute, state.levels.data, state.levels.algorithm);
+    if (maxLevel - minLevel >= 3 && !state.narrativeFlags.hasSeenBalanceAdvice) {
+      setAdvisorMessage(narrative.BALANCE_STRATEGY_ADVICE);
+      state.narrativeFlags.hasSeenBalanceAdvice = true;
+      return;
+    }
+  };
+
   // Check for and trigger events specific to the current era
   const checkAndTriggerEvents = (state: GameStateType) => {
     // Process events that match the current era and haven't been triggered yet

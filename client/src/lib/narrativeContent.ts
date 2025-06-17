@@ -118,5 +118,60 @@ export const narrative = {
     title: "Strategic Advice: Revenue Opportunities",
     content: "Our AI capabilities are strong enough to generate revenue! Consider activating API services or subscription offerings.",
     context: "The best AI companies balance research with revenue generation, using profits to fund even more ambitious projects."
+  },
+  
+  // Enhanced Strategic Warnings
+  COMPUTE_WARNING_CRITICAL: {
+    title: "Critical System Overload!",
+    content: "We're completely maxed out on compute! Services are severely degraded and customers are leaving. This is an emergency - we need immediate compute expansion.",
+    context: "When AI services go down, users quickly switch to competitors. Reliability is crucial for maintaining market position."
+  },
+  
+  LOW_FUNDS_WARNING: {
+    title: "Cash Flow Concern",
+    content: "Our bank account is running low. Without funding, we can't afford upgrades or training runs. Consider focusing on revenue streams or seeking investment.",
+    context: "AI companies burn through cash quickly due to expensive compute costs. Managing finances is as important as technical progress."
+  },
+  
+  FIRST_TRAINING_COMPLETED: {
+    title: "Your First Training Success!",
+    content: "Excellent! You've completed your first major training run. Notice how your intelligence score jumped significantly. This is the core loop of AI development.",
+    context: "Training runs are expensive but provide the biggest leaps in capability. Each era represents a major milestone in AI development."
+  },
+  
+  FIRST_REVENUE_MILESTONE: {
+    title: "Revenue is Flowing!",
+    content: "Great work! You're now generating revenue from your AI services. This creates a positive feedback loop - revenue funds better infrastructure, which enables better AI.",
+    context: "The transition from research to profitable product is crucial for AI companies. Revenue enables sustainable growth and innovation."
+  },
+  
+  BALANCE_STRATEGY_ADVICE: {
+    title: "Strategic Balance Tip",
+    content: "Remember: all three resources work together. Compute without data is just expensive heating. Data without algorithms is just storage. Focus on balanced growth.",
+    context: "Successful AI companies excel at resource allocation - knowing when to invest in compute, data collection, or research talent."
+  },
+  
+  FUNDING_MILESTONE_ADVICE: {
+    title: "Strategic Funding Advice",
+    content: "Remember: funding accelerates progress but increases expectations. Use capital wisely on balanced infrastructure growth rather than just one area.",
+    context: "Successful AI companies strategically allocate funding across compute, data, and research talent rather than over-investing in single areas."
+  },
+  
+  INVESTMENT_MILESTONE_100M: {
+    title: "Major Investment Round!",
+    content: "Incredible! You've secured major funding. You're now playing in the big leagues. This level of capital enables ambitious projects and faster scaling.",
+    context: "Series A and beyond funding allows AI companies to compete with tech giants, but also brings increased scrutiny and pressure to deliver."
+  },
+  
+  TRAINING_STRATEGY_HINT: {
+    title: "Training Strategy Insight",
+    content: "Pro tip: Reserve compute for training during low-revenue periods. Training during peak usage hours means lost revenue. Time your training runs strategically.",
+    context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
+  },
+  
+  RESEARCH_PROGRESS_SLOW: {
+    title: "Algorithm Research Stalling",
+    content: "Your research progress has slowed significantly. Consider hiring more research engineers or upgrading your algorithm infrastructure to accelerate breakthroughs.",
+    context: "AI research requires dedicated talent and resources. Companies that fall behind in algorithmic innovation struggle to compete."
   }
 };
