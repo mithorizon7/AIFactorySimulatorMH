@@ -189,12 +189,7 @@ export interface GameStateType {
     algorithm: number;
   };
   
-  // Costs of investing in primary resource capabilities
-  investCosts: {
-    compute: number;
-    data: number;
-    algorithm: number;
-  };
+
   
   // AI Breakthroughs
   breakthroughs: Breakthrough[];

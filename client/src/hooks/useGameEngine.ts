@@ -274,74 +274,7 @@ export function useGameEngine() {
   };
 
   // Investment functions
-  const investInCompute = () => {
-    if (gameState.resources.compute >= gameState.investCosts.compute) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.compute -= prevState.investCosts.compute;
-        newState.levels.compute += 1;
-        newState.intelligence += 50;
-        newState.investCosts.compute = Math.round(prevState.investCosts.compute * 1.8);
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-    } else {
-      toast({
-        title: "Not enough compute resources",
-        description: `You need ${gameState.investCosts.compute} compute resources to invest.`,
-        variant: "destructive",
-      });
-    }
-  };
 
-  const investInData = () => {
-    if (gameState.resources.data >= gameState.investCosts.data) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.data -= prevState.investCosts.data;
-        newState.levels.data += 1;
-        newState.intelligence += 50;
-        newState.investCosts.data = Math.round(prevState.investCosts.data * 1.8);
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-    } else {
-      toast({
-        title: "Not enough data resources",
-        description: `You need ${gameState.investCosts.data} data resources to invest.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const investInAlgorithm = () => {
-    if (gameState.resources.algorithm >= gameState.investCosts.algorithm) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.algorithm -= prevState.investCosts.algorithm;
-        newState.levels.algorithm += 1;
-        newState.intelligence += 50;
-        newState.investCosts.algorithm = Math.round(prevState.investCosts.algorithm * 1.8);
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-    } else {
-      toast({
-        title: "Not enough algorithm resources",
-        description: `You need ${gameState.investCosts.algorithm} algorithm resources to invest.`,
-        variant: "destructive",
-      });
-    }
-  };
 
   // Check for breakthroughs and trigger era progression when appropriate
   const checkBreakthroughs = (state: GameStateType) => {
@@ -1035,6 +968,9 @@ export function useGameEngine() {
         newState.bonuses.computeToAlgorithm *= 1.05;
         newState.bonuses.computeToIntelligence *= 1.05;
         
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
         return newState;
       });
       
@@ -1065,6 +1001,9 @@ export function useGameEngine() {
         newState.bonuses.dataToCompute *= 1.05;
         newState.bonuses.dataToAlgorithm *= 1.05;
         newState.bonuses.dataToIntelligence *= 1.05;
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });
@@ -1100,10 +1039,16 @@ export function useGameEngine() {
         // Research rate bonus from better engineers
         // This directly impacts the research progress calculation in the game loop
         
+        // Also increase algorithm level for training prerequisites
+        newState.levels.algorithm += 1;
+        
         // Improve cross-resource bonuses
         newState.bonuses.algorithmToCompute *= 1.05;
         newState.bonuses.algorithmToData *= 1.05;
         newState.bonuses.algorithmToIntelligence *= 1.07; // Algorithms have slightly more impact on intelligence
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });
@@ -1817,9 +1762,7 @@ export function useGameEngine() {
     upgradeCompute,
     upgradeData,
     upgradeAlgorithm,
-    investInCompute,
-    investInData,
-    investInAlgorithm,
+
     // Train model function
     trainModel,
     // Basic money allocation
