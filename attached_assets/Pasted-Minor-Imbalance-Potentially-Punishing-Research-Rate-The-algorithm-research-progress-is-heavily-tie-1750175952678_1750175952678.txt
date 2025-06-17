@@ -1,0 +1,31 @@
+Minor Imbalance: Potentially Punishing Research Rate
+
+The algorithm research progress is heavily tied to freeCompute. A player who successfully builds a revenue stream by attracting customers will see their research rate plummet, potentially halting their game progression. While this tension is intentional, it may be too severe.
+
+The Problem: The algorithmResearchRate is calculated with 0.5 + (computeEfficiency * architectureMultiplier). The computeEfficiency uses Math.log10(freeCompute + 1). The logarithmic scaling means that as freeCompute drops (due to paying customers), the bonus to research speed disappears very quickly, leaving the player with only the base rate.
+Impact: Players might feel punished for succeeding at the economic part of the game. They may get stuck for long periods waiting for research to complete, making the game feel grindy.
+Recommendation: Add a factor to the research rate that is not dependent on freeCompute, such as a bonus from the number of researchEngineers hired.
+Solution:
+
+Adjust the algorithmResearchRate formula to give more weight to direct investment (hiring engineers), making it a viable alternative to relying solely on freeCompute.
+
+File: AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts
+
+TypeScript
+// In the useEffect game loop, inside the handleGameTick function
+
+            // ... (inside the 'else' block for when not training)
+            const architectureMultiplier = 1 + (newState.algorithmInputs.architectures * 0.1);
+            const computeEfficiency = Math.log10(freeCompute + 1) * 0.5;
+            
+            // *** ADD a bonus for hired engineers ***
+            const engineerBonus = (newState.algorithmInputs.researchEngineers || 0) * 0.25; // Each engineer adds a flat 0.25 to the rate
+
+            // Calculate new research rate:
+            newState.training.algorithmResearchRate = Math.max( 
+              0.1,
+              0.5 + engineerBonus + (computeEfficiency * architectureMultiplier) // Add the engineer bonus here
+            );
+            
+            // ... (rest of the logic)
+By implementing these balance changes, you will create a more fair, engaging, and robust gameplay experience that guides the player through the intended strategic challenges without hitting impossible walls.

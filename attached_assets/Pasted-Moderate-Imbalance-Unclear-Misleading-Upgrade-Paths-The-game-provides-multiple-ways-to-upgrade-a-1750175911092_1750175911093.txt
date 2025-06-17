@@ -1,0 +1,48 @@
+Moderate Imbalance: Unclear & Misleading Upgrade Paths
+
+The game provides multiple ways to upgrade a resource, which can confuse the player. The most glaring example is the "Data" resource, where the primary, most visible upgrade button works against the player's progression goals.
+
+The Problem: In the FactorySection, the main button for the Data Factory is labeled "Improve Data Quality", but it calls the upgradeData function. This function consumes data resources to increase the data production rate. It does not increase dataInputs.quality or levels.data, which are the actual prerequisites for training runs.
+Impact: A player will waste resources on the main button, see their production rate go up, but make no progress towards the next training run. They will likely get stuck without realizing why.
+Recommendation: Streamline the upgrade path. The "Advanced Options" that correctly modify the prerequisite levels (quality, quantity, etc.) should be the primary and only way to spend money on upgrades. The old resource-spending upgrade... functions should be removed to eliminate confusion.
+Solution:
+
+Remove the confusing, resource-spending upgrade... functions.
+Make the allocateMoneyTo... functions the single, clear path for upgrades. This aligns with the core mechanic of spending money to make progress.
+File: AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts
+
+TypeScript
+// DELETE the following entire functions from useGameEngine.ts:
+// const upgradeCompute = () => { ... };
+// const upgradeData = () => { ... };
+// const upgradeAlgorithm = () => { ... };
+File: AIFactorySimulatorMH/client/src/components/factory/FactorySection.tsx
+
+TypeScript
+// In FactorySection.tsx, remove the main "Upgrade" button for each resource.
+// For example, for Compute:
+
+            // DELETE THIS ENTIRE BLOCK
+            /*
+            <div className="mt-3">
+              <button 
+                className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
+                  resources.compute >= upgradeCosts.compute
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+                }`}
+                onClick={upgradeCompute}
+                disabled={resources.compute < upgradeCosts.compute}
+              >
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium">Upgrade GPUs</span>
+                  <span className="text-xs text-blue-300">(Increases Compute Level)</span>
+                </div>
+                <span className="text-xs bg-gray-800 py-1 px-2 rounded flex items-center">
+                  <Server className="h-4 w-4 mr-1 text-[#3B82F6]" />
+                  <span>{upgradeCosts.compute}</span>
+                </span>
+              </button>
+            </div>
+            */
+By removing these buttons, the player is guided to use the "Advanced... Options" accordion, which contains the correct, prerequisite-boosting investments.

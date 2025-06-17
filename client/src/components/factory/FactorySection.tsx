@@ -20,9 +20,6 @@ import { useEffect, useState } from "react";
 
 interface FactorySectionProps {
   gameState: GameStateType;
-  upgradeCompute: () => void;
-  upgradeData: () => void;
-  upgradeAlgorithm: () => void;
   // Advanced allocation functions
   allocateMoneyToCompute: () => void;
   allocateMoneyToElectricity: () => void;
@@ -168,9 +165,6 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
 
 export default function FactorySection({
   gameState,
-  upgradeCompute,
-  upgradeData,
-  upgradeAlgorithm,
   allocateMoneyToCompute,
   allocateMoneyToElectricity,
   allocateMoneyToHardware,
@@ -301,26 +295,7 @@ export default function FactorySection({
               </div>
             </div>
             
-            <div className="mt-3">
-              <button 
-                className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
-                  resources.compute >= upgradeCosts.compute
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-                }`}
-                onClick={upgradeCompute}
-                disabled={resources.compute < upgradeCosts.compute}
-              >
-                <div className="flex flex-col items-start">
-                  <span className="text-sm font-medium">Upgrade GPUs</span>
-                  <span className="text-xs text-blue-300">(Increases Compute Level)</span>
-                </div>
-                <span className="text-xs bg-gray-800 py-1 px-2 rounded flex items-center">
-                  <Server className="h-4 w-4 mr-1 text-[#3B82F6]" />
-                  <span>{upgradeCosts.compute}</span>
-                </span>
-              </button>
-            </div>
+
           </div>
           
           <AccordionTrigger className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-blue-400 font-medium">

@@ -16,12 +16,6 @@ import ComputePanel from "./ComputePanel";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
-  upgradeCompute: () => void;
-  upgradeData: () => void;
-  upgradeAlgorithm: () => void;
-  investInCompute: () => void;
-  investInData: () => void;
-  investInAlgorithm: () => void;
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
   allocateMoneyToAlgorithm: () => void;
@@ -49,12 +43,6 @@ interface MainGameTabsProps {
 
 export default function MainGameTabs({
   gameState,
-  upgradeCompute,
-  upgradeData,
-  upgradeAlgorithm,
-  investInCompute,
-  investInData,
-  investInAlgorithm,
   allocateMoneyToCompute,
   allocateMoneyToData,
   allocateMoneyToAlgorithm,
@@ -297,9 +285,6 @@ export default function MainGameTabs({
         <div className="grid grid-cols-1 gap-6">
           <FactorySection 
             gameState={gameState}
-            upgradeCompute={upgradeCompute}
-            upgradeData={upgradeData}
-            upgradeAlgorithm={upgradeAlgorithm}
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToElectricity={allocateMoneyToElectricity}
             allocateMoneyToHardware={allocateMoneyToHardware}

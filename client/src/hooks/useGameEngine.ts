@@ -34,72 +34,7 @@ export function useGameEngine() {
     });
   };
 
-  // Upgrade functions
-  const upgradeCompute = () => {
-    if (gameState.resources.compute >= gameState.upgradeCosts.compute) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.compute -= prevState.upgradeCosts.compute;
-        // Increase compute level - this is what affects the training prerequisite
-        newState.levels.compute += 1;
-        // Also improve production rate
-        newState.production.compute *= 1.5;
-        // Increase computing capacity
-        newState.computeCapacity.maxCapacity += 5;
-        newState.computeCapacity.available += 5;
-        // Increase the cost for next upgrade
-        newState.upgradeCosts.compute = Math.round(prevState.upgradeCosts.compute * 2);
-        return newState;
-      });
-      
-      toast({
-        title: "Compute Level Upgraded",
-        description: "Your compute infrastructure level has been increased, improving your ability to meet training requirements.",
-      });
-    } else {
-      toast({
-        title: "Not enough compute resources",
-        description: `You need ${gameState.upgradeCosts.compute} compute resources to upgrade.`,
-        variant: "destructive",
-      });
-    }
-  };
 
-  const upgradeData = () => {
-    if (gameState.resources.data >= gameState.upgradeCosts.data) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.data -= prevState.upgradeCosts.data;
-        newState.production.data *= 1.5;
-        newState.upgradeCosts.data = Math.round(prevState.upgradeCosts.data * 2);
-        return newState;
-      });
-    } else {
-      toast({
-        title: "Not enough data resources",
-        description: `You need ${gameState.upgradeCosts.data} data resources to upgrade.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const upgradeAlgorithm = () => {
-    if (gameState.resources.algorithm >= gameState.upgradeCosts.algorithm) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.resources.algorithm -= prevState.upgradeCosts.algorithm;
-        newState.production.algorithm *= 1.5;
-        newState.upgradeCosts.algorithm = Math.round(prevState.upgradeCosts.algorithm * 2);
-        return newState;
-      });
-    } else {
-      toast({
-        title: "Not enough algorithm resources",
-        description: `You need ${gameState.upgradeCosts.algorithm} algorithm resources to upgrade.`,
-        variant: "destructive",
-      });
-    }
-  };
 
   // Helper function to get the next era
   const getNextEra = (currentEra: Era): Era => {
@@ -1765,9 +1700,7 @@ export function useGameEngine() {
     startGame,
     pauseGame,
     resetGame,
-    upgradeCompute,
-    upgradeData,
-    upgradeAlgorithm,
+
 
     // Train model function
     trainModel,
