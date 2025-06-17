@@ -1207,11 +1207,14 @@ export function useGameEngine() {
             const architectureMultiplier = 1 + (newState.algorithmInputs.architectures * 0.1); // 10% boost per architecture level
             const computeEfficiency = Math.log10(freeCompute + 1) * 0.5; // Logarithmic scaling for free compute (increased from 0.2 to 0.5)
             
+            // *** ADD a bonus for hired engineers ***
+            const engineerBonus = (newState.algorithmInputs.researchEngineers || 0) * 0.25; // Each engineer adds a flat 0.25 to the rate
+            
             // Calculate new research rate:
-            // Base rate + (compute efficiency * architecture multiplier)
+            // Base rate + engineer bonus + (compute efficiency * architecture multiplier)
             newState.training.algorithmResearchRate = Math.max( 
               0.1, // Minimum base rate even with no compute
-              0.5 + (computeEfficiency * architectureMultiplier)
+              0.5 + engineerBonus + (computeEfficiency * architectureMultiplier) // Add the engineer bonus here
             );
             
             // Apply the research rate to progress
