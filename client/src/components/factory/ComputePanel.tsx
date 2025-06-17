@@ -3,6 +3,7 @@ import { CpuIcon, ZapIcon, BrainIcon, TimerIcon, LockIcon, PlayCircleIcon, Check
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ResourceTooltip } from '@/components/ui/educational-tooltip';
+import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
 import { GameStateType, Era, TrainingStatus } from '@/lib/gameState';
 import { resourceDefinitions, enablingInputs } from '@/lib/educationalContent';
@@ -15,6 +16,7 @@ interface ComputePanelProps {
 
 export default function ComputePanel({ gameState, trainModel, onNavigateToResource }: ComputePanelProps) {
   const { computeCapacity } = gameState;
+  const { toast } = useToast();
   
   // Helper function to get next era
   const getNextEra = (currentEra: Era): Era => {
@@ -224,6 +226,14 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
     
     // Navigate to the appropriate resource tab
     onNavigateToResource(prereq.category);
+    
+    // Show helpful toast notification
+    const categoryName = prereq.category.charAt(0).toUpperCase() + prereq.category.slice(1);
+    toast({
+      title: `Navigating to ${categoryName} Section`,
+      description: `Look for ${prereq.name} to improve this requirement`,
+      duration: 3000,
+    });
   };
 
   // Function to get navigation instructions for prerequisites

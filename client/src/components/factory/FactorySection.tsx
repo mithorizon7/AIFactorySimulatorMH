@@ -214,7 +214,7 @@ export default function FactorySection({
       {/* Compute Factory */}
       <Accordion type="single" collapsible className="mb-6">
         <AccordionItem value="compute" className="border-none">
-          <div className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]">
+          <div id="compute-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="compute"
@@ -479,7 +479,7 @@ export default function FactorySection({
       {/* Data Factory */}
       <Accordion type="single" collapsible className="mb-6">
         <AccordionItem value="data" className="border-none">
-          <div className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]">
+          <div id="data-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="data"
@@ -644,7 +644,7 @@ export default function FactorySection({
       {/* Algorithm Lab */}
       <Accordion type="single" collapsible>
         <AccordionItem value="algorithm" className="border-none">
-          <div className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]">
+          <div id="algorithm-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="algorithm"
