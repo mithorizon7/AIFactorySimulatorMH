@@ -1,0 +1,35 @@
+To the AI Developer: A Design Brief for Educational Revenue Tooltips
+
+Objective:
+Our goal is to enhance the "Economy" tab with a set of highly effective, educational tooltips for each revenue stream. The current game mechanics are well-balanced; this task is about polishing the user experience to ensure our educational goals are met. The tooltips should be concise, intuitive, and seamlessly connect the in-game mechanics to their real-world parallels in the AI industry.
+
+Creative Mandate & Desired Style:
+Please use the tooltip style from the "Regulatory Environment" example as your design template. We're aiming for that clean, multi-part format which is highly scannable and visually organized. The key is to deliver insights without overwhelming the player with text.
+
+Core Principles for Tooltip Content:
+
+For each revenue stream, please craft a tooltip that accomplishes the following:
+
+Defines the Concept: Succinctly explain what the revenue stream represents within the game's context.
+Provides a Real-World Anchor: Connect the abstract game mechanic to a tangible, well-known company, product, or industry practice. This is the most critical educational component.
+Guides Player Action: Clearly and concisely state which in-game levers or stats the player should focus on to improve that income stream.
+Content Strategy by Revenue Stream
+
+Here are the key concepts and analogies to build upon for each tooltip. Please use your judgment to craft the final, polished text.
+
+1. B2B API Services
+
+Concept to Convey: This stream is about monetizing the raw, foundational power of your AI model. It's not a consumer product, but a utility for other businesses.
+Real-World Analogies to Use: The business models of OpenAI's API, Anthropic's Claude API, or even Amazon Web Services (AWS) are perfect parallels. It's about selling access to powerful infrastructure.
+Link to Gameplay: The tooltip should guide the player to understand that this revenue path is heavily dependent on the raw AI Intelligence score and can be boosted by investing in Developer Tools. It should also hint at the strategic cost: high compute usage.
+2. B2C Chatbot Subscriptions
+
+Concept to Convey: This stream is about creating a polished, consumer-facing product that people will pay a recurring fee for. It's less about raw power and more about user experience and reliability.
+Real-World Analogies to Use: ChatGPT Plus is the quintessential example. You can also reference other subscription-based AI tools like Midjourney.
+Link to Gameplay: This tooltip should highlight that growth is tied to both AI Intelligence and Data Quality (a more reliable product attracts more users). It should direct the player toward the two levers they can pull: long-term growth via Chatbot Improvements or short-term boosts via Ad Campaigns.
+3. Investor Funding
+
+Concept to Convey: This isn't revenue from a product. It's capital raised based on the promise and demonstrated progress of your underlying technology.
+Real-World Analogies to Use: Frame this around real-world Venture Capital (VC) funding stages (Seed Round, Series A, etc.). The key insight is that AI companies often raise huge sums of money long before they have a profitable product, based purely on the power of their research.
+Link to Gameplay: The tooltip should make it clear that this funding is not automatic but is earned. It's a direct reward for achieving Intelligence Milestones and unlocking Breakthroughs, reinforcing the idea that R&D progress is what attracts investment.
+By following these principles, you will create a set of tooltips that are not only informative but also empower the player to make smarter strategic decisions, fully achieving our educational objectives.

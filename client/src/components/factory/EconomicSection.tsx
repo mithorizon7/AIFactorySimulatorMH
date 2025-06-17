@@ -139,7 +139,22 @@ export default function EconomicSection({
               <div className="flex items-center">
                 <span className="text-blue-300 font-medium">API Service</span>
                 <ResourceTooltip 
-                  content="Companies pay to use your AI model via API. Generates B2B revenue but consumes compute resources." 
+                  content={
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-blue-300">B2B API Services</h4>
+                      <p className="text-sm">Monetize the raw, foundational power of your AI model as a utility for other businesses. This isn't a consumer product—it's infrastructure.</p>
+                      
+                      <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
+                        <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
+                        <p className="text-xs mt-1">OpenAI's API, Anthropic's Claude API, and Amazon Web Services (AWS) all follow this model—selling access to powerful infrastructure that other companies build upon.</p>
+                      </div>
+                      
+                      <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+                        <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
+                        <p className="text-xs mt-1">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
+                      </div>
+                    </div>
+                  }
                   resourceColor="blue-400"
                 >
                   <span className="ml-1 text-xs text-blue-300 underline cursor-help">ⓘ</span>
@@ -179,7 +194,22 @@ export default function EconomicSection({
               <div className="flex items-center">
                 <span className="text-purple-300 font-medium">Chatbot Service</span>
                 <ResourceTooltip 
-                  content="End users subscribe to your AI chatbot. Generates B2C revenue but consumes compute resources." 
+                  content={
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-purple-300">B2C Chatbot Subscriptions</h4>
+                      <p className="text-sm">Create a polished, consumer-facing product that people pay a recurring fee for. Less about raw power, more about user experience and reliability.</p>
+                      
+                      <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
+                        <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
+                        <p className="text-xs mt-1">ChatGPT Plus is the quintessential example, along with subscription-based AI tools like Midjourney that focus on delivering consistent, reliable consumer experiences.</p>
+                      </div>
+                      
+                      <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+                        <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
+                        <p className="text-xs mt-1">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
+                      </div>
+                    </div>
+                  }
                   resourceColor="purple-400"
                 >
                   <span className="ml-1 text-xs text-purple-300 underline cursor-help">ⓘ</span>
@@ -266,6 +296,27 @@ export default function EconomicSection({
             <div className="flex items-center">
               <div className="w-2 h-2 rounded-full bg-amber-400 mr-2"></div>
               <span>Investor Funding</span>
+              <ResourceTooltip 
+                content={
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-amber-300">Investor Funding</h4>
+                    <p className="text-sm">Capital raised based on the promise and demonstrated progress of your underlying technology. This isn't revenue from a product—it's investment in your potential.</p>
+                    
+                    <div className="mt-2 p-2 bg-amber-900/30 border border-amber-800/40 rounded-md">
+                      <h5 className="text-amber-300 font-medium text-xs">Real World Example</h5>
+                      <p className="text-xs mt-1">Venture Capital funding stages (Seed Round, Series A, B, C). AI companies often raise huge sums based purely on research progress—like Anthropic's $4B funding or OpenAI's massive rounds.</p>
+                    </div>
+                    
+                    <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
+                      <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
+                      <p className="text-xs mt-1">Funding earned by achieving Intelligence Milestones and unlocking Breakthroughs. R&D progress directly attracts investment—not automatic revenue.</p>
+                    </div>
+                  </div>
+                }
+                resourceColor="amber-400"
+              >
+                <span className="ml-1 text-xs text-amber-300 underline cursor-help">ⓘ</span>
+              </ResourceTooltip>
             </div>
             <span className="text-amber-400">${formatCurrency(revenue.investors)} total</span>
           </div>
