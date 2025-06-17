@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GameStateType } from "@/lib/gameState";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { 
   ArrowUpRightIcon, 
   NetworkIcon, 
@@ -84,15 +85,15 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         <div className="grid grid-cols-3 gap-2 mt-4">
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-400">B2B Revenue</div>
-            <div className="text-sm font-medium">${formatCurrency(revenue.b2b)}</div>
+            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2b)} /></div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-400">B2C Revenue</div>
-            <div className="text-sm font-medium">${formatCurrency(revenue.b2c)}</div>
+            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2c)} /></div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-400">Investor Interest</div>
-            <div className="text-sm font-medium">${formatCurrency(revenue.investors)}</div>
+            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.investors)} /></div>
           </div>
         </div>
       </div>
