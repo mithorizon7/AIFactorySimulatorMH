@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { initialGameState, GameStateType, Era, GameEvent, TrainingStatus } from "@/lib/gameState";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
+import { narrative } from "@/lib/narrativeContent";
 
 export function useGameEngine() {
   const [gameState, setGameState] = useState<GameStateType>({ ...initialGameState });
   const [isRunning, setIsRunning] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(initialGameState.timeElapsed);
+  const [advisorMessage, setAdvisorMessage] = useState<any | null>(null);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
@@ -248,10 +250,17 @@ export function useGameEngine() {
           breakthrough.unlocked = true;
           state.intelligence += 100; // Increase intelligence on breakthrough
           
-          toast({
-            title: `Breakthrough: ${breakthrough.name}`,
-            description: breakthrough.description,
-          });
+          // NEW: Trigger Spark's message for breakthroughs
+          const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}`;
+          if (narrative[breakthroughKey as keyof typeof narrative]) {
+            setAdvisorMessage(narrative[breakthroughKey as keyof typeof narrative]);
+          } else {
+            // Fallback for unthemed breakthroughs
+            toast({
+              title: `Breakthrough: ${breakthrough.name}`,
+              description: breakthrough.description,
+            });
+          }
           
           // Find next unlocked breakthrough for goal
           const nextBreakthrough = updatedBreakthroughs.find(b => !b.unlocked);
@@ -364,14 +373,20 @@ export function useGameEngine() {
       }
     };
     
-    // Display era advancement toast with educational information
-    toast({
-      title: `Era Advanced: ${newEra}`,
-      description: (newEra === Era.GNT2 || newEra === Era.GNT3 || newEra === Era.GNT4) ? 
-        `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
-        `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
-      duration: 5000,
-    });
+    // NEW: Trigger Spark's message for era advancement
+    const eraKey = `ERA_ADVANCE_${newEra.replace('-', '')}`;
+    if (narrative[eraKey as keyof typeof narrative]) {
+      setAdvisorMessage(narrative[eraKey as keyof typeof narrative]);
+    } else {
+      // Fallback toast for unthemed eras
+      toast({
+        title: `Era Advanced: ${newEra}`,
+        description: (newEra === Era.GNT2 || newEra === Era.GNT3 || newEra === Era.GNT4) ? 
+          `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
+          `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
+        duration: 5000,
+      });
+    }
     
     // Each era has unique bonus effects to represent the technological leap
     switch (newEra) {
@@ -1723,7 +1738,9 @@ export function useGameEngine() {
     startGame,
     pauseGame,
     resetGame,
-
+    // Spark AI Advisor
+    advisorMessage,
+    setAdvisorMessage,
 
     // Train model function
     trainModel,
