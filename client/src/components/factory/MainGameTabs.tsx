@@ -308,6 +308,7 @@ export default function MainGameTabs({
             allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
             allocateMoneyToDataFormats={allocateMoneyToDataFormats}
             allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+            hireResearchEngineer={hireResearchEngineer}
           />
           
           {/* Resource Synergies - Moved from Dashboard tab */}

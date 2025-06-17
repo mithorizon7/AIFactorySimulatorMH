@@ -1,0 +1,49 @@
+Functionally Incomplete or Inconsistent Systems
+
+1. Compute Cost Calculation is Flawed
+
+The system incorrectly calculates compute costs based on potential revenue rather than actual revenue. When high compute usage leads to service degradation and lower revenue, the compute cost is not reduced accordingly. This means the game is penalizing the player by charging them compute for customers they failed to serve.
+
+File: AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts
+Issue: Inside the calculateRevenue function, b2bComputeUsage and b2cComputeUsage are calculated based on potentialB2bRevenue and potentialB2cRevenue. However, the final revenue is later adjusted downwards by a serviceQualityRatio if there are compute "outages." The compute usage should be based on the final, adjusted revenue.
+Impact: This creates an unfair penalty loop. High usage reduces revenue, but the player is still charged the high compute cost of the revenue they would have had, depleting their available compute even faster and making it harder to recover.
+How to Fix:
+
+The calculation for compute usage should happen after the service quality penalty is applied to the revenue.
+
+In AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts, adjust the calculateRevenue function:
+
+TypeScript
+// ... inside calculateRevenue function in useGameEngine.ts
+
+      // ... after serviceQualityRatio is calculated
+
+      // Apply service quality ratio to revenue
+      const qualityImpact = 0.5 + (serviceQualityRatio * 0.5);
+      newState.revenue.b2b = Math.floor(potentialB2bRevenue * qualityImpact);
+      newState.revenue.b2c = Math.floor(potentialB2cRevenue * qualityImpact);
+
+      // ***** FIX: Recalculate compute usage based on ACTUAL revenue *****
+      const actualB2bComputeUsage = newState.revenue.apiEnabled ? Math.ceil((newState.revenue.b2b / 1000) * 5) : 0;
+      const actualB2cComputeUsage = newState.revenue.chatbotEnabled ? Math.ceil(newState.revenue.subscribers * 0.01) : 0;
+      const actualTotalComputeUsage = actualB2bComputeUsage + actualB2cComputeUsage;
+
+      newState.computeCapacity.customerUsage = actualTotalComputeUsage;
+
+      if (newState.computeCapacity.available >= actualTotalComputeUsage) {
+        newState.computeCapacity.available -= actualTotalComputeUsage;
+        newState.computeCapacity.used += actualTotalComputeUsage;
+      } else {
+        // ... (handle insufficient compute)
+        const usedAmount = newState.computeCapacity.available;
+        newState.computeCapacity.available = 0;
+        newState.computeCapacity.used += usedAmount;
+      }
+    } else {
+      // No active customers, so zero revenue and usage
+      newState.revenue.b2b = 0;
+      newState.revenue.b2c = 0;
+      newState.computeCapacity.customerUsage = 0;
+    }
+    
+    // ... rest of the function
