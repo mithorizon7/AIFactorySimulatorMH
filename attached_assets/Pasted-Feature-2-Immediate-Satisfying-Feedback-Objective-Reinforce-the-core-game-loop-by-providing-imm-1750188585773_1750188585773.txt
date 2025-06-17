@@ -1,0 +1,68 @@
+Feature 2: Immediate & Satisfying Feedback
+
+Objective: Reinforce the core game loop by providing immediate, visually satisfying feedback when a player's action results in a numerical change. This makes the connection between cause (spending money) and effect (increased production) feel more tangible and rewarding.
+
+Developer Instructions:
+
+1. Create an AnimatedNumber Component:
+
+Create a new component: client/src/components/ui/AnimatedNumber.tsx.
+This component will wrap any number that needs to be animated upon changing. It should accept the value as a prop.
+2. Implement the "Pop" Animation:
+
+In client/src/index.css, define a new keyframes animation.
+CSS
+@keyframes pop-effect {
+  0% { transform: scale(1); color: inherit; }
+  50% { transform: scale(1.25); color: hsl(var(--primary)); } /* Use a bright, attention-grabbing color */
+  100% { transform: scale(1); color: inherit; }
+}
+
+.animate-pop {
+  animation: pop-effect 0.5s ease-in-out;
+}
+ 3. Add Logic to the AnimatedNumber Component:
+
+Use useEffect to detect when the value prop changes.
+On change, apply the animate-pop CSS class for the duration of the animation.
+Example (AnimatedNumber.tsx):
+
+TypeScript
+import React, { useState, useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
+
+interface AnimatedNumberProps {
+  value: string | number;
+  className?: string;
+}
+
+export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, className }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    if (prevValueRef.current !== value && prevValueRef.current !== undefined) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => setIsAnimating(false), 500); // Animation duration
+      return () => clearTimeout(timer);
+    }
+    prevValueRef.current = value;
+  }, [value]);
+
+  return (
+    <span className={cn(className, isAnimating && 'animate-pop')}>
+      {value}
+    </span>
+  );
+};
+4. Integrate AnimatedNumber into the UI:
+
+Go to client/src/components/factory/FactorySection.tsx.
+Find where the production rates are displayed (e.g., <span>{production.compute.toFixed(1)}/s</span>).
+Wrap these numbers with the new component:
+TypeScript
+<AnimatedNumber value={production.compute.toFixed(1)} />
+<span>/s</span>
+Apply this to all three resource production rates.
+Educational Justification to Include in PR/Comments:
+This feature isn't just cosmetic "game juice." It serves a critical educational purpose by creating a tight, visceral feedback loop. When a player invests in "Hardware Quality," they don't just see a number change in a list of stats; they see the "Compute Production" number—the direct output of their factory—physically react. This powerfully reinforces the core lesson: investment in foundational inputs directly and immediately enhances productive capability.

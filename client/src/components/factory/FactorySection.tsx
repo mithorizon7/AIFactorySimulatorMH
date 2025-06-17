@@ -1,5 +1,6 @@
 import { GameStateType } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -233,13 +234,18 @@ export default function FactorySection({
                   Compute Factory
                 </h3>
               </ResourceTooltip>
-              <span className="text-[#3B82F6] font-bold">{Math.floor(resources.compute)}</span>
+              <span className="text-[#3B82F6] font-bold">
+                <AnimatedNumber value={Math.floor(resources.compute)} />
+              </span>
             </div>
             
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Production Rate:</span>
-                <span ref={tutorialRefs?.computeProduction} className="text-[#3B82F6]">{production.compute.toFixed(1)}/s</span>
+                <span ref={tutorialRefs?.computeProduction} className="text-[#3B82F6]">
+                  <AnimatedNumber value={production.compute.toFixed(1)} />
+                  /s
+                </span>
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
@@ -498,13 +504,18 @@ export default function FactorySection({
                   Data Factory
                 </h3>
               </ResourceTooltip>
-              <span className="text-[#10B981] font-bold">{Math.floor(resources.data)}</span>
+              <span className="text-[#10B981] font-bold">
+                <AnimatedNumber value={Math.floor(resources.data)} />
+              </span>
             </div>
             
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Collection Rate:</span>
-                <span className="text-[#10B981]">{production.data.toFixed(1)}/s</span>
+                <span className="text-[#10B981]">
+                  <AnimatedNumber value={production.data.toFixed(1)} />
+                  /s
+                </span>
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
@@ -669,7 +680,10 @@ export default function FactorySection({
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Research Rate:</span>
-                <span className="text-[#8B5CF6]">{production.algorithm.toFixed(1)}/s</span>
+                <span className="text-[#8B5CF6]">
+                  <AnimatedNumber value={production.algorithm.toFixed(1)} />
+                  /s
+                </span>
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
