@@ -541,9 +541,9 @@ export default function ComputePanel({ gameState, trainModel }: ComputePanelProp
                                 />
                               </div>
                             </div>
-                            {'note' in prereq && prereq.note && !prereq.isMet && (
-                              <div className="mt-1 px-1 py-0.5 bg-yellow-900/30 border border-yellow-500/20 rounded text-yellow-400 text-[10px]">
-                                {prereq.note}
+                            {'note' in prereq && (prereq as any).note && !prereq.isMet && (
+                              <div key={`note-${index}`} className="mt-1 px-1 py-0.5 bg-yellow-900/30 border border-yellow-500/20 rounded text-yellow-400 text-[10px]">
+                                {String((prereq as any).note)}
                               </div>
                             )}
                           </div>
