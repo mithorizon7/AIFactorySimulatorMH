@@ -1339,11 +1339,17 @@ export function useGameEngine() {
           }
           
           // As money is invested in compute and hardware improves, max capacity increases
-          // We calculate this based on compute level and hardware level multipliers
+          // NEW, MORE BALANCED FORMULA: provides stronger, compounding growth that can keep pace
+          // with the 10x training requirement.
           if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
-            const computeMultiplier = Math.pow(1.2, newState.levels.compute);
-            const hardwareMultiplier = Math.pow(1.1, newState.computeInputs.hardware);
-            newState.computeCapacity.maxCapacity = Math.floor(2000 * computeMultiplier * hardwareMultiplier);
+            const baseCapacity = 2000;
+            const computeLevelBonus = newState.levels.compute * 1000;
+            const hardwareLevelBonus = newState.computeInputs.hardware * 500;
+            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.1); // 10% bonus per level
+            
+            newState.computeCapacity.maxCapacity = Math.floor(
+              (baseCapacity + computeLevelBonus + hardwareLevelBonus) * electricityBonus
+            );
           }
           
           // Update intelligence based on resource levels and bonuses

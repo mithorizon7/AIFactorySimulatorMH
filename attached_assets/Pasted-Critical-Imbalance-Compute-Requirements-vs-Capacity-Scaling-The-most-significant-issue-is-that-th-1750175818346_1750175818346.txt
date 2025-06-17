@@ -1,0 +1,40 @@
+Critical Imbalance: Compute Requirements vs. Capacity Scaling
+
+The most significant issue is that the player will hit a hard wall and be unable to progress past the GNT-3 era. The game's design requires a 10x increase in available compute for each new training run, but the player's ability to increase their maximum compute capacity scales far too slowly.
+
+The Problem: The computeRequired for the GNT-4 training run is 10,000. However, the formula to increase max capacity (2000 * 1.2^computeLevel * 1.1^hardwareLevel) means that even with the required levels for that run (Compute Level 4, Hardware Level 3), the player's maximum capacity would only be around ~5,500. It is mathematically impossible for the player to meet the prerequisite.
+Impact: The game is currently unbeatable past a certain point. This breaks the core progression loop.
+Recommendation: The formula for increasing maxCapacity needs to be much more aggressive.
+Solution:
+
+Modify the computeCapacity.maxCapacity calculation in the game loop to scale more dramatically. This ensures that the 10x requirement, while challenging, is achievable.
+
+File: AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts
+
+TypeScript
+// In the useEffect game loop, inside the handleGameTick function
+
+          // ... (previous logic)
+          
+          // As money is invested in compute and hardware improves, max capacity increases
+          if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
+            
+            // OLD, INSUFFICIENT FORMULA:
+            // const computeMultiplier = Math.pow(1.2, newState.levels.compute);
+            // const hardwareMultiplier = Math.pow(1.1, newState.computeInputs.hardware);
+            // newState.computeCapacity.maxCapacity = Math.floor(2000 * computeMultiplier * hardwareMultiplier);
+
+            // NEW, MORE BALANCED FORMULA:
+            // This new formula provides a much stronger, compounding growth that can keep pace
+            // with the 10x training requirement.
+            const baseCapacity = 2000;
+            const computeLevelBonus = newState.levels.compute * 1000;
+            const hardwareLevelBonus = newState.computeInputs.hardware * 500;
+            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.1); // 10% bonus per level
+            
+            newState.computeCapacity.maxCapacity = Math.floor(
+              (baseCapacity + computeLevelBonus + hardwareLevelBonus) * electricityBonus
+            );
+          }
+          
+          // ... (rest of the game loop)
