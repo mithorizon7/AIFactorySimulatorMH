@@ -140,18 +140,20 @@ export default function EconomicSection({
                 <span className="text-blue-300 font-medium">API Service</span>
                 <ResourceTooltip 
                   content={
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-blue-300">B2B API Services</h4>
-                      <p className="text-sm">Monetize the raw, foundational power of your AI model as a utility for other businesses. This isn't a consumer product—it's infrastructure.</p>
-                      
-                      <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
-                        <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
-                        <p className="text-xs mt-1">OpenAI's API, Anthropic's Claude API, and Amazon Web Services (AWS) all follow this model—selling access to powerful infrastructure that other companies build upon.</p>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-blue-300 text-lg mb-2">B2B API Services</h4>
+                        <p className="text-sm text-gray-200 leading-relaxed">Monetize the raw, foundational power of your AI model as a utility for other businesses. This isn't a consumer product—it's infrastructure.</p>
                       </div>
                       
-                      <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
-                        <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
-                        <p className="text-xs mt-1">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
+                      <div className="p-3 bg-blue-900/40 border border-blue-700/60 rounded-lg">
+                        <h5 className="text-blue-300 font-semibold text-sm mb-2">Real World Example</h5>
+                        <p className="text-sm text-blue-100 leading-relaxed">OpenAI's API, Anthropic's Claude API, and Amazon Web Services (AWS) all follow this model—selling access to powerful infrastructure that other companies build upon.</p>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                        <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                        <p className="text-sm text-gray-200 leading-relaxed">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
                       </div>
                     </div>
                   }
@@ -195,18 +197,20 @@ export default function EconomicSection({
                 <span className="text-purple-300 font-medium">Chatbot Service</span>
                 <ResourceTooltip 
                   content={
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-purple-300">B2C Chatbot Subscriptions</h4>
-                      <p className="text-sm">Create a polished, consumer-facing product that people pay a recurring fee for. Less about raw power, more about user experience and reliability.</p>
-                      
-                      <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
-                        <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
-                        <p className="text-xs mt-1">ChatGPT Plus is the quintessential example, along with subscription-based AI tools like Midjourney that focus on delivering consistent, reliable consumer experiences.</p>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-purple-300 text-lg mb-2">B2C Chatbot Subscriptions</h4>
+                        <p className="text-sm text-gray-200 leading-relaxed">Create a polished, consumer-facing product that people pay a recurring fee for. Less about raw power, more about user experience and reliability.</p>
                       </div>
                       
-                      <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
-                        <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
-                        <p className="text-xs mt-1">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
+                      <div className="p-3 bg-purple-900/40 border border-purple-700/60 rounded-lg">
+                        <h5 className="text-purple-300 font-semibold text-sm mb-2">Real World Example</h5>
+                        <p className="text-sm text-purple-100 leading-relaxed">ChatGPT Plus is the quintessential example, along with subscription-based AI tools like Midjourney that focus on delivering consistent, reliable consumer experiences.</p>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                        <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                        <p className="text-sm text-gray-200 leading-relaxed">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
                       </div>
                     </div>
                   }
@@ -298,18 +302,20 @@ export default function EconomicSection({
               <span>Investor Funding</span>
               <ResourceTooltip 
                 content={
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-amber-300">Investor Funding</h4>
-                    <p className="text-sm">Capital raised based on the promise and demonstrated progress of your underlying technology. This isn't revenue from a product—it's investment in your potential.</p>
-                    
-                    <div className="mt-2 p-2 bg-amber-900/30 border border-amber-800/40 rounded-md">
-                      <h5 className="text-amber-300 font-medium text-xs">Real World Example</h5>
-                      <p className="text-xs mt-1">Venture Capital funding stages (Seed Round, Series A, B, C). AI companies often raise huge sums based purely on research progress—like Anthropic's $4B funding or OpenAI's massive rounds.</p>
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-semibold text-amber-300 text-lg mb-2">Investor Funding</h4>
+                      <p className="text-sm text-gray-200 leading-relaxed">Capital raised based on the promise and demonstrated progress of your underlying technology. This isn't revenue from a product—it's investment in your potential.</p>
                     </div>
                     
-                    <div className="mt-2 p-2 bg-gray-900 border border-gray-700 rounded-md">
-                      <h5 className="text-green-300 font-medium text-xs">Strategic Focus:</h5>
-                      <p className="text-xs mt-1">Funding earned by achieving Intelligence Milestones and unlocking Breakthroughs. R&D progress directly attracts investment—not automatic revenue.</p>
+                    <div className="p-3 bg-amber-900/40 border border-amber-700/60 rounded-lg">
+                      <h5 className="text-amber-300 font-semibold text-sm mb-2">Real World Example</h5>
+                      <p className="text-sm text-amber-100 leading-relaxed">Venture Capital funding stages (Seed Round, Series A, B, C). AI companies often raise huge sums based purely on research progress—like Anthropic's $4B funding or OpenAI's massive rounds.</p>
+                    </div>
+                    
+                    <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                      <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                      <p className="text-sm text-gray-200 leading-relaxed">Funding earned by achieving Intelligence Milestones and unlocking Breakthroughs. R&D progress directly attracts investment—not automatic revenue.</p>
                     </div>
                   </div>
                 }
