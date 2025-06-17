@@ -929,6 +929,11 @@ export function useGameEngine() {
         newState.money -= 75;
         newState.dataInputs.quality += 1;
         
+        // *** ADD THIS LINE ***
+        // This brings the Data resource in line with Compute and Algorithm,
+        // ensuring that investing in data quality also increases the overall data level.
+        newState.levels.data += 1;
+        
         // Increase data production based on quality improvements
         newState.production.data *= 1.1;
         

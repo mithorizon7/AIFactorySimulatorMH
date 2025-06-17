@@ -1,0 +1,56 @@
+Next Area for Improvement: Clarifying the "Data" Upgrade Path
+
+While the core mechanics are much stronger, there is a remaining subtle imbalance in how the Data resource is upgraded compared to Compute and Algorithm. This creates a hidden progression blocker.
+
+The Issue: The checkEraMilestones function requires levels.data to increase in order to advance eras (e.g., levels.data >= 3 is needed for GNT-4). However, none of the player's investment actions actually increase levels.data.
+allocateMoneyToData increases dataInputs.quality.
+allocateMoneyToDataQuantity increases dataInputs.quantity.
+This is inconsistent with allocateMoneyToCompute and allocateMoneyToAlgorithm, which correctly increase their respective levels.
+Impact: A player could meet all the prerequisites for a training run but find themselves unable to advance to the next era because their dataLevel is stuck at 1. They will have no clear way to fix this.
+Recommended Solution:
+
+To resolve this, the allocateMoneyToData function should be the primary way to level up the Data resource, just as its counterparts do for Compute and Algorithm. It should increase both dataInputs.quality and levels.data simultaneously.
+
+File to Edit: AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts
+
+TypeScript
+// In useGameEngine.ts
+
+  const allocateMoneyToData = () => {
+    if (gameState.money >= 75) {
+      setGameState(prevState => {
+        const newState = { ...prevState };
+        newState.money -= 75;
+        newState.dataInputs.quality += 1;
+        
+        // *** ADD THIS LINE ***
+        // This brings the Data resource in line with Compute and Algorithm,
+        // ensuring that investing in data quality also increases the overall data level.
+        newState.levels.data += 1;
+        
+        // Increase data production based on quality improvements
+        newState.production.data *= 1.1;
+        
+        // Improve cross-resource bonuses
+        newState.bonuses.dataToCompute *= 1.05;
+        newState.bonuses.dataToAlgorithm *= 1.05;
+        newState.bonuses.dataToIntelligence *= 1.05;
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
+        return newState;
+      });
+      
+      toast({
+        title: "Money Allocated to Data",
+        description: "Your AI now has access to higher quality data!",
+      });
+    } else {
+      toast({
+        title: "Not enough money",
+        description: "You need at least $75 to improve data quality.",
+        variant: "destructive",
+      });
+    }
+  };
