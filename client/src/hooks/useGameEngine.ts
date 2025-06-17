@@ -173,9 +173,24 @@ export function useGameEngine() {
       return;
     }
     
+    // *** ADD THIS BLOCK ***
+    // Check for money cost
+    if (!trainingRun || gameState.money < trainingRun.moneyCost) {
+      toast({
+        title: "Insufficient Funds for Training",
+        description: `You need ${formatCurrency(trainingRun?.moneyCost || 0)} to start this training run.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Start the training run
     setGameState(prevState => {
       const newState = { ...prevState };
+
+      // *** ADD THIS LINE ***
+      // Deduct the monetary cost
+      newState.money -= trainingRun.moneyCost;
       
       // Reserve the compute for training
       newState.computeCapacity.available -= trainingRun.computeRequired;

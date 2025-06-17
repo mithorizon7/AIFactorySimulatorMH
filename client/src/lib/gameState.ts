@@ -229,6 +229,7 @@ export interface TrainingRun {
   daysRequired: number; // How many days the training takes to complete (30 by default)
   daysRemaining: number; // How many days remain until completion
   computeRequired: number; // How much compute is required/locked during training
+  moneyCost: number; // Monetary cost required to start this training run
   computePerCustomer: number; // How much compute each customer uses
   isTrainingReserveActive: boolean; // Whether compute is currently reserved for this training
   
@@ -292,6 +293,7 @@ export const initialGameState: GameStateType = {
         daysRequired: 30, // 30-day training period
         daysRemaining: 30,
         computeRequired: 1000, // Base compute requirement for first era
+        moneyCost: 25000, // Substantial investment required for first major training run
         computePerCustomer: 5, // Each B2B or B2C customer uses this much compute
         isTrainingReserveActive: false,
         
@@ -330,6 +332,7 @@ export const initialGameState: GameStateType = {
         daysRequired: 30,
         daysRemaining: 30,
         computeRequired: 10000, // 10x the GNT-3 requirement (1000 → 10,000)
+        moneyCost: 100000, // 4x the GNT-3 cost - significant strategic investment
         computePerCustomer: 10,
         isTrainingReserveActive: false,
         
@@ -365,6 +368,7 @@ export const initialGameState: GameStateType = {
         daysRequired: 30,
         daysRemaining: 30,
         computeRequired: 100000, // 10x the GNT-4 requirement (10,000 → 100,000)
+        moneyCost: 500000, // 5x the GNT-4 cost - major research investment
         computePerCustomer: 20,
         isTrainingReserveActive: false,
         
@@ -400,6 +404,7 @@ export const initialGameState: GameStateType = {
         daysRequired: 30,
         daysRemaining: 30,
         computeRequired: 1000000, // 10x the GNT-5 requirement (100,000 → 1,000,000)
+        moneyCost: 2000000, // 4x the GNT-5 cost - massive enterprise investment
         computePerCustomer: 40,
         isTrainingReserveActive: false,
         
@@ -435,6 +440,7 @@ export const initialGameState: GameStateType = {
         daysRequired: 30,
         daysRemaining: 30,
         computeRequired: 10000000, // 10x the GNT-6 requirement (1,000,000 → 10,000,000)
+        moneyCost: 10000000, // 5x the GNT-6 cost - ultimate AGI investment
         computePerCustomer: 80,
         isTrainingReserveActive: false,
         

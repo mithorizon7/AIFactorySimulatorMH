@@ -1,0 +1,58 @@
+Here are the top enhancements I recommend to refine and polish the gameplay experience.
+
+1. Add a Monetary Cost to Training Runs
+
+This is the single most impactful change you can make to improve strategic depth. Real-world AI model training is incredibly expensive, not just in terms of computation but also in direct R&D costs. Adding a monetary cost to your training runs introduces a fantastic strategic tension.
+
+Why It Matters: Currently, a player only needs to save up enough compute. By adding a money cost, you force a difficult choice: "Do I spend my cash on upgrading my infrastructure to generate compute faster, or do I save it to afford the next big training run?" This makes managing the economy a crucial part of the late-game strategy.
+How to Implement It:
+First, add a moneyCost to each training run's definition in your game state.
+Then, check for and deduct this cost in the startEraTrainingRun function.
+File to Edit: AIFactorySimulatorMH/client/src/lib/gameState.ts
+
+TypeScript
+// Add a "moneyCost" to each training run. The cost should scale significantly.
+// Example for the GNT-3 run:
+      [Era.GNT3]: {
+        targetEra: Era.GNT3,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 1000,
+        moneyCost: 50000, // Add this line
+        computePerCustomer: 5,
+        isTrainingReserveActive: false,
+        intelligenceGain: 100,
+        prerequisites: { /* ... */ },
+        // ...
+      },
+// Do the same for GNT-4, GNT-5, etc., with increasing costs (e.g., 250000, 1000000).
+File to Edit: useGameEngine-2.ts
+
+TypeScript
+// In startEraTrainingRun function
+
+    // ... after checking for compute capacity
+    
+    // *** ADD THIS BLOCK ***
+    // Check for money cost
+    if (!trainingRun || gameState.money < trainingRun.moneyCost) {
+      toast({
+        title: "Insufficient Funds for Training",
+        description: `You need ${formatCurrency(trainingRun?.moneyCost || 0)} to start this training run.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Start the training run
+    setGameState(prevState => {
+      const newState = { ...prevState };
+
+      // *** ADD THIS LINE ***
+      // Deduct the monetary cost
+      newState.money -= trainingRun.moneyCost;
+      
+      // Reserve the compute for training
+      newState.computeCapacity.available -= trainingRun.computeRequired;
+      // ... rest of the function
