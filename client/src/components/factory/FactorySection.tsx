@@ -30,6 +30,18 @@ interface FactorySectionProps {
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
   hireResearchEngineer?: () => void;
+  // Tutorial props
+  tutorialStep?: number;
+  setTutorialStep?: (step: number) => void;
+  tutorialRefs?: {
+    computeAccordion: React.RefObject<HTMLButtonElement>;
+    computeUpgrade: React.RefObject<HTMLButtonElement>;
+    computeProduction: React.RefObject<HTMLDivElement>;
+    dataAccordion: React.RefObject<HTMLButtonElement>;
+    dataUpgrade: React.RefObject<HTMLButtonElement>;
+    algorithmAccordion: React.RefObject<HTMLButtonElement>;
+    algorithmUpgrade: React.RefObject<HTMLButtonElement>;
+  };
 }
 
 // Learning Dialog Component for Advanced Options

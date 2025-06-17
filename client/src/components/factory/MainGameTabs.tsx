@@ -39,6 +39,18 @@ interface MainGameTabsProps {
   runAdvertisingCampaign?: () => void;
   // Training model function
   trainModel: () => void;
+  // Tutorial props
+  tutorialStep?: number;
+  setTutorialStep?: (step: number) => void;
+  tutorialRefs?: {
+    computeAccordion: React.RefObject<HTMLButtonElement>;
+    computeUpgrade: React.RefObject<HTMLButtonElement>;
+    computeProduction: React.RefObject<HTMLDivElement>;
+    dataAccordion: React.RefObject<HTMLButtonElement>;
+    dataUpgrade: React.RefObject<HTMLButtonElement>;
+    algorithmAccordion: React.RefObject<HTMLButtonElement>;
+    algorithmUpgrade: React.RefObject<HTMLButtonElement>;
+  };
 }
 
 export default function MainGameTabs({
@@ -64,7 +76,11 @@ export default function MainGameTabs({
   improveDeveloperTools,
   improveChatbot,
   runAdvertisingCampaign,
-  trainModel
+  trainModel,
+  // Tutorial props
+  tutorialStep,
+  setTutorialStep,
+  tutorialRefs
 }: MainGameTabsProps) {
   return (
     <Tabs defaultValue="dashboard" className="w-full">
@@ -294,6 +310,9 @@ export default function MainGameTabs({
             allocateMoneyToDataFormats={allocateMoneyToDataFormats}
             allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
             hireResearchEngineer={hireResearchEngineer}
+            tutorialStep={tutorialStep}
+            setTutorialStep={setTutorialStep}
+            tutorialRefs={tutorialRefs}
           />
           
           {/* Resource Synergies - Moved from Dashboard tab */}

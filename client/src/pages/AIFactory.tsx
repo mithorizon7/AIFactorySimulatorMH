@@ -216,6 +216,37 @@ export default function AIFactory() {
     resetGame();
   }
 
+  // Tutorial handler functions
+  function handleTutorialNext() {
+    if (tutorialStep === 1) {
+      // User should click on compute accordion to proceed
+      return;
+    } else if (tutorialStep === 3) {
+      // Auto-advance after showing compute production result
+      setTimeout(() => setTutorialStep(4), 4000);
+    } else if (tutorialStep === 6) {
+      // Tutorial complete
+      setTutorialStep(0);
+      setHighlightedArea(null);
+      toast({
+        title: "Tutorial Complete!",
+        description: "You've mastered the basics. Balance these three resources to raise your AI's Intelligence to 1000!",
+      });
+    }
+  }
+
+  function handleSkipTutorial() {
+    setTutorialStep(0);
+    setHighlightedArea(null);
+  }
+
+  function handleTutorialReset() {
+    localStorage.removeItem('hasPlayedAIFactory');
+    resetGame();
+    setTutorialStep(0);
+    setHighlightedArea(null);
+  }
+
   return (
     <GamePauseProvider 
       pauseGame={pauseGame} 
@@ -238,9 +269,9 @@ export default function AIFactory() {
           {/* Main Game Navigation Tabs - Moved directly under the header */}
           <MainGameTabs 
             gameState={gameState}
-            allocateMoneyToCompute={allocateMoneyToCompute}
-            allocateMoneyToData={allocateMoneyToData}
-            allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            allocateMoneyToCompute={tutorialStep > 0 ? tutorialAllocateMoneyToCompute : allocateMoneyToCompute}
+            allocateMoneyToData={tutorialStep > 0 ? tutorialAllocateMoneyToData : allocateMoneyToData}
+            allocateMoneyToAlgorithm={tutorialStep > 0 ? tutorialAllocateMoneyToAlgorithm : allocateMoneyToAlgorithm}
             allocateMoneyToElectricity={allocateMoneyToElectricity}
             allocateMoneyToHardware={allocateMoneyToHardware}
             allocateMoneyToRegulations={allocateMoneyToRegulations}
@@ -257,6 +288,17 @@ export default function AIFactory() {
             runAdvertisingCampaign={runAdvertisingCampaign}
             hireResearchEngineer={hireResearchEngineer}
             trainModel={trainModel}
+            tutorialStep={tutorialStep}
+            setTutorialStep={setTutorialStep}
+            tutorialRefs={{
+              computeAccordion: computeAccordionRef,
+              computeUpgrade: computeUpgradeRef,
+              computeProduction: computeProductionRef,
+              dataAccordion: dataAccordionRef,
+              dataUpgrade: dataUpgradeRef,
+              algorithmAccordion: algorithmAccordionRef,
+              algorithmUpgrade: algorithmUpgradeRef,
+            }}
           />
 
           {/* Help Panel (floating button) */}
@@ -284,8 +326,60 @@ export default function AIFactory() {
               onReset={handleResetAndCloseSummary}
             />
           )}
+
+          {/* Tutorial Overlay */}
+          {tutorialStep > 0 && (
+            <TutorialOverlay
+              highlightedArea={highlightedArea || undefined}
+              title={getTutorialTitle(tutorialStep)}
+              description={getTutorialDescription(tutorialStep)}
+              textPosition={getTutorialTextPosition(tutorialStep)}
+              onNext={handleTutorialNext}
+              onSkip={handleSkipTutorial}
+              showNextButton={tutorialStep === 3 || tutorialStep === 6}
+              showSkipButton={true}
+              nextButtonText={tutorialStep === 6 ? "Complete" : "Continue"}
+            />
+          )}
         </div>
       </div>
     </GamePauseProvider>
   );
+}
+
+// Tutorial content helper functions
+function getTutorialTitle(step: number): string {
+  switch (step) {
+    case 1: return "Welcome to AI Factory!";
+    case 2: return "Invest in Compute";
+    case 3: return "Great Progress!";
+    case 4: return "Next: Data Investment";
+    case 5: return "Finally: Algorithm Investment";
+    case 6: return "Tutorial Complete!";
+    default: return "";
+  }
+}
+
+function getTutorialDescription(step: number): string {
+  switch (step) {
+    case 1: return "Your goal is to build AGI. Let's start by investing in Compute, the raw power for your AI. Click to expand the Compute section.";
+    case 2: return "Great! Now, spend your starting funds to increase your Compute Level. This is like buying more powerful servers.";
+    case 3: return "Excellent! Your investment increased your Compute production. You're now generating the resources needed to improve your AI.";
+    case 4: return "Next, invest in Data. AI learns from examples, so more data makes it smarter. Click to expand the Data section.";
+    case 5: return "Finally, upgrade your Algorithms. These are the 'recipes' that tell your AI how to learn efficiently. Click to expand the Algorithm section.";
+    case 6: return "You've mastered the basics! Balance these three resources to raise your AI's Intelligence to 1000. Good luck building AGI!";
+    default: return "";
+  }
+}
+
+function getTutorialTextPosition(step: number): "top" | "bottom" | "left" | "right" {
+  switch (step) {
+    case 1: return "right";
+    case 2: return "bottom";
+    case 3: return "left";
+    case 4: return "right";
+    case 5: return "right";
+    case 6: return "bottom";
+    default: return "bottom";
+  }
 }
