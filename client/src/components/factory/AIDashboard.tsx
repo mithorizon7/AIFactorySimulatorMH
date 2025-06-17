@@ -7,7 +7,7 @@ interface AIDashboardProps {
 export default function AIDashboard({
   gameState,
 }: AIDashboardProps) {
-  const { intelligence, levels, resources, investCosts, agiThreshold } = gameState;
+  const { intelligence, levels, resources, agiThreshold } = gameState;
 
   const getAIStatus = () => {
     // Calculate status based on percentage progress to AGI
@@ -21,24 +21,18 @@ export default function AIDashboard({
   };
 
   const getComputeProgress = () => {
-    if (levels.compute >= 5) return 100;
-    const levelProgress = ((levels.compute - 1) * 20);
-    const currentProgress = (resources.compute / investCosts.compute * 20);
-    return levelProgress + currentProgress;
+    // Progress based on levels (each level is 20% progress)
+    return Math.min(levels.compute * 20, 100);
   };
 
   const getDataProgress = () => {
-    if (levels.data >= 5) return 100;
-    const levelProgress = ((levels.data - 1) * 20);
-    const currentProgress = (resources.data / investCosts.data * 20);
-    return levelProgress + currentProgress;
+    // Progress based on levels (each level is 20% progress)
+    return Math.min(levels.data * 20, 100);
   };
 
   const getAlgorithmProgress = () => {
-    if (levels.algorithm >= 5) return 100;
-    const levelProgress = ((levels.algorithm - 1) * 20);
-    const currentProgress = (resources.algorithm / investCosts.algorithm * 20);
-    return levelProgress + currentProgress;
+    // Progress based on levels (each level is 20% progress)
+    return Math.min(levels.algorithm * 20, 100);
   };
 
   return (

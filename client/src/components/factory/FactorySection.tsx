@@ -489,23 +489,7 @@ export default function FactorySection({
               </div>
             </div>
             
-            <div className="mt-3">
-              <button 
-                className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
-                  resources.data >= upgradeCosts.data
-                    ? "bg-gray-600 hover:bg-[#10B981] text-white"
-                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-                }`}
-                onClick={upgradeData}
-                disabled={resources.data < upgradeCosts.data}
-              >
-                <span className="text-sm">Improve Data Quality</span>
-                <span className="text-xs bg-gray-800 py-1 px-2 rounded flex items-center">
-                  <Database className="h-4 w-4 mr-1 text-[#10B981]" />
-                  <span>{upgradeCosts.data}</span>
-                </span>
-              </button>
-            </div>
+
           </div>
           
           <AccordionTrigger className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-green-400 font-medium">
@@ -662,23 +646,7 @@ export default function FactorySection({
               </div>
             </div>
             
-            <div className="mt-3">
-              <button 
-                className={`w-full py-2 px-4 rounded flex justify-between items-center transition ${
-                  resources.algorithm >= upgradeCosts.algorithm
-                    ? "bg-gray-600 hover:bg-[#8B5CF6] text-white"
-                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-                }`}
-                onClick={upgradeAlgorithm}
-                disabled={resources.algorithm < upgradeCosts.algorithm}
-              >
-                <span className="text-sm">Enhance Training Methods</span>
-                <span className="text-xs bg-gray-800 py-1 px-2 rounded flex items-center">
-                  <LightbulbIcon className="h-4 w-4 mr-1 text-[#8B5CF6]" />
-                  <span>{upgradeCosts.algorithm}</span>
-                </span>
-              </button>
-            </div>
+
           </div>
           
           <AccordionTrigger className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-purple-400 font-medium">

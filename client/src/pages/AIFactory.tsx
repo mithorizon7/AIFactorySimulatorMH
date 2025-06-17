@@ -23,12 +23,6 @@ export default function AIFactory() {
     startGame,
     pauseGame,
     resetGame,
-    upgradeCompute,
-    upgradeData,
-    upgradeAlgorithm,
-    investInCompute,
-    investInData,
-    investInAlgorithm,
     // Train model function
     trainModel,
     // Basic money allocation
@@ -175,12 +169,6 @@ export default function AIFactory() {
           {/* Main Game Navigation Tabs - Moved directly under the header */}
           <MainGameTabs 
             gameState={gameState}
-            upgradeCompute={upgradeCompute}
-            upgradeData={upgradeData}
-            upgradeAlgorithm={upgradeAlgorithm}
-            investInCompute={investInCompute}
-            investInData={investInData}
-            investInAlgorithm={investInAlgorithm}
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToData={allocateMoneyToData}
             allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
