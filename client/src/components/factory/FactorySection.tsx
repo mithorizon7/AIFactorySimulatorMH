@@ -215,7 +215,7 @@ export default function FactorySection({
       {/* Compute Factory */}
       <Accordion type="single" collapsible className="mb-6">
         <AccordionItem value="compute" className="border-none">
-          <div id="compute-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]">
+          <div id="compute-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]" data-tutorial-id="compute-factory-card">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="compute"
@@ -365,6 +365,7 @@ export default function FactorySection({
                   }`}
                   onClick={allocateMoneyToCompute}
                   disabled={money < 100}
+                  data-tutorial-id="compute-level-upgrade"
                 >
                   <span>Upgrade Compute Level</span>
                   <span className="font-medium">$100</span>
@@ -485,7 +486,7 @@ export default function FactorySection({
       {/* Data Factory */}
       <Accordion type="single" collapsible className="mb-6">
         <AccordionItem value="data" className="border-none">
-          <div id="data-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]">
+          <div id="data-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]" data-tutorial-id="data-factory-card">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="data"
@@ -572,6 +573,7 @@ export default function FactorySection({
                   }`}
                   onClick={allocateMoneyToDataQuality}
                   disabled={money < 75}
+                  data-tutorial-id="data-quality-upgrade"
                 >
                   <span>Invest</span>
                   <span className="font-medium">$75</span>
@@ -655,7 +657,7 @@ export default function FactorySection({
       {/* Algorithm Lab */}
       <Accordion type="single" collapsible>
         <AccordionItem value="algorithm" className="border-none">
-          <div id="algorithm-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]">
+          <div id="algorithm-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]" data-tutorial-id="algorithm-factory-card">
             <div className="flex justify-between items-center mb-2">
               <ResourceTooltip 
                 resourceType="algorithm"
