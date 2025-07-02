@@ -75,9 +75,10 @@ export function useGameEngine() {
     setGameState(prevState => ({
       ...prevState,
       tutorial: {
-        ...prevState.tutorial,
         isActive: false,
-        isCompleted: true
+        step: 0,
+        isCompleted: true,
+        hasShownWelcome: true
       }
     }));
     
@@ -88,35 +89,25 @@ export function useGameEngine() {
     });
   };
 
-  // Check tutorial progression based on game state
+  const completeTutorial = () => {
+    setGameState(prevState => ({
+      ...prevState,
+      tutorial: { 
+        isActive: false, 
+        step: 0,
+        isCompleted: true,
+        hasShownWelcome: true
+      }
+    }));
+  };
+
+  // Auto-advance tutorial based on user actions (for the interactive tutorial system)
   const checkTutorialProgression = (state: GameStateType) => {
     if (!state.tutorial.isActive || state.tutorial.isCompleted) return;
     
-    // Auto-advance tutorial based on certain conditions
-    const currentPhase = state.tutorial.phase;
-    const currentStep = state.tutorial.step;
-    
-    // Phase 2: Auto-advance when player upgrades each resource type
-    if (currentPhase === 2) {
-      if (currentStep === 1 && state.levels.compute > 1) {
-        // Player upgraded compute, advance to data step
-        advanceTutorial();
-      } else if (currentStep === 2 && state.levels.data > 1) {
-        // Player upgraded data, advance to algorithm step
-        advanceTutorial();
-      } else if (currentStep === 3 && state.levels.algorithm > 1) {
-        // Player upgraded algorithm, advance to next phase
-        advanceTutorial();
-      }
-    }
-    
-    // Phase 3: Auto-advance when player achieves first breakthrough
-    if (currentPhase === 3 && currentStep === 1) {
-      const hasBreakthrough = state.breakthroughs.some(b => b.unlocked);
-      if (hasBreakthrough) {
-        advanceTutorial();
-      }
-    }
+    // The new interactive tutorial system advances manually through user interactions
+    // This function can be used to trigger automatic advancement in special cases
+    // For now, we rely on manual progression through the TutorialGuide component
   };
 
 
