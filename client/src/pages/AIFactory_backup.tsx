@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import GameSummaryModal from "@/components/factory/GameSummaryModal";
 import { useToast } from "@/hooks/use-toast";
@@ -58,11 +58,11 @@ export default function AIFactory() {
     improveChatbot,
     runAdvertisingCampaign,
     timeElapsed,
-    formattedTime
+    formattedTime,
   } = useGameEngine();
 
-  // UI state
-  const [showIntroduction, setShowIntroduction] = useState<boolean>(false);
+  // State for modals and UI
+  const [showIntroduction, setShowIntroduction] = useState<boolean>(true);
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
@@ -98,16 +98,18 @@ export default function AIFactory() {
     if (newBreakthrough && isRunning) {
       setCurrentBreakthrough(newBreakthrough);
       setShowBreakthroughModal(true);
+      // Pause the game when showing a breakthrough
+      pauseGame();
     }
-  }, [gameState.breakthroughs, gameState.currentGoal.id, isRunning]);
+  }, [gameState.breakthroughs]);
 
-  // Check for victory condition
+  // End game when AGI threshold is reached
   useEffect(() => {
     if (gameState.intelligence >= gameState.agiThreshold && isRunning) {
       pauseGame();
       setShowSummaryModal(true);
     }
-  }, [gameState.intelligence, isRunning, gameState.agiThreshold, pauseGame]);
+  }, [gameState.intelligence, isRunning, gameState.agiThreshold]);
 
   // Handler for Spark AI Advisor
   const handleAdvisorClose = () => {
@@ -140,23 +142,58 @@ export default function AIFactory() {
     }
   }
 
-  const handleCloseIntroduction = () => {
+  // Handler functions
+  function handleCloseIntroduction() {
     setShowIntroduction(false);
-  };
+  }
 
-  const handleCloseBreakthroughModal = () => {
+  function handleCloseBreakthroughModal() {
     setShowBreakthroughModal(false);
-    setCurrentBreakthrough(null);
-  };
+    // Resume the game after closing the breakthrough modal (if it's not already running)
+    if (!isRunning) {
+      startGame();
+    }
+  }
 
-  const handleCloseSummaryModal = () => {
+  function handleCloseSummaryModal() {
     setShowSummaryModal(false);
-  };
+  }
 
-  const handleResetAndCloseSummary = () => {
+  function handleResetAndCloseSummary() {
+    setShowSummaryModal(false);
     resetGame();
-    setShowSummaryModal(false);
-  };
+  }
+
+  // Tutorial handler functions
+  function handleTutorialNext() {
+    if (tutorialStep === 1) {
+      // User should click on compute accordion to proceed
+      return;
+    } else if (tutorialStep === 3) {
+      // Auto-advance after showing compute production result
+      setTimeout(() => setTutorialStep(4), 4000);
+    } else if (tutorialStep === 6) {
+      // Tutorial complete
+      setTutorialStep(0);
+      setHighlightedArea(null);
+      toast({
+        title: "Tutorial Complete!",
+        description: "You've mastered the basics. Balance these three resources to raise your AI's Intelligence to 1000!",
+      });
+    }
+  }
+
+  function handleSkipTutorial() {
+    setTutorialStep(0);
+    setHighlightedArea(null);
+  }
+
+  function handleTutorialReset() {
+    localStorage.removeItem('hasPlayedAIFactory');
+    resetGame();
+    setTutorialStep(0);
+    setHighlightedArea(null);
+  }
 
   return (
     <GamePauseProvider 
@@ -180,9 +217,9 @@ export default function AIFactory() {
           {/* Main Game Navigation Tabs - Moved directly under the header */}
           <MainGameTabs 
             gameState={gameState}
-            allocateMoneyToCompute={allocateMoneyToCompute}
-            allocateMoneyToData={allocateMoneyToData}
-            allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
+            allocateMoneyToCompute={tutorialStep > 0 ? tutorialAllocateMoneyToCompute : allocateMoneyToCompute}
+            allocateMoneyToData={tutorialStep > 0 ? tutorialAllocateMoneyToData : allocateMoneyToData}
+            allocateMoneyToAlgorithm={tutorialStep > 0 ? tutorialAllocateMoneyToAlgorithm : allocateMoneyToAlgorithm}
             allocateMoneyToElectricity={allocateMoneyToElectricity}
             allocateMoneyToHardware={allocateMoneyToHardware}
             allocateMoneyToRegulations={allocateMoneyToRegulations}
@@ -190,7 +227,6 @@ export default function AIFactory() {
             allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
             allocateMoneyToDataFormats={allocateMoneyToDataFormats}
             allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
-            hireResearchEngineer={hireResearchEngineer}
             toggleApiService={toggleApiService}
             toggleChatbotService={toggleChatbotService}
             setApiRate={setApiRate}
@@ -198,17 +234,35 @@ export default function AIFactory() {
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
+            hireResearchEngineer={hireResearchEngineer}
+            trainModel={trainModel}
+            tutorialStep={tutorialStep}
+            setTutorialStep={setTutorialStep}
+            tutorialRefs={{
+              computeAccordion: computeAccordionRef,
+              computeUpgrade: computeUpgradeRef,
+              computeProduction: computeProductionRef,
+              dataAccordion: dataAccordionRef,
+              dataUpgrade: dataUpgradeRef,
+              algorithmAccordion: algorithmAccordionRef,
+              algorithmUpgrade: algorithmUpgradeRef,
+            }}
           />
 
-          {/* Welcome Introduction Modal */}
+          {/* Help Panel (floating button) */}
+          <HelpPanel currentEra={gameState.currentEra} />
+
+          {/* Modals */}
           {showIntroduction && (
-            <WelcomeIntroduction onClose={handleCloseIntroduction} />
+            <WelcomeIntroduction 
+              onClose={handleCloseIntroduction}
+              currentEra={gameState.currentEra}
+            />
           )}
 
-          {/* Breakthrough Modal */}
           {showBreakthroughModal && currentBreakthrough && (
             <BreakthroughModal 
-              breakthrough={currentBreakthrough}
+              breakthrough={currentBreakthrough} 
               onClose={handleCloseBreakthroughModal}
             />
           )}
@@ -236,4 +290,41 @@ export default function AIFactory() {
       )}
     </GamePauseProvider>
   );
+}
+
+// Tutorial content helper functions
+function getTutorialTitle(step: number): string {
+  switch (step) {
+    case 1: return "Welcome to AI Factory!";
+    case 2: return "Invest in Compute";
+    case 3: return "Great Progress!";
+    case 4: return "Next: Data Investment";
+    case 5: return "Finally: Algorithm Investment";
+    case 6: return "Tutorial Complete!";
+    default: return "";
+  }
+}
+
+function getTutorialDescription(step: number): string {
+  switch (step) {
+    case 1: return "Your goal is to build AGI. Let's start by investing in Compute, the raw power for your AI. Click to expand the Compute section.";
+    case 2: return "Great! Now, spend your starting funds to increase your Compute Level. This is like buying more powerful servers.";
+    case 3: return "Excellent! Your investment increased your Compute production. You're now generating the resources needed to improve your AI.";
+    case 4: return "Next, invest in Data. AI learns from examples, so more data makes it smarter. Click to expand the Data section.";
+    case 5: return "Finally, upgrade your Algorithms. These are the 'recipes' that tell your AI how to learn efficiently. Click to expand the Algorithm section.";
+    case 6: return "You've mastered the basics! Balance these three resources to raise your AI's Intelligence to 1000. Good luck building AGI!";
+    default: return "";
+  }
+}
+
+function getTutorialTextPosition(step: number): "top" | "bottom" | "left" | "right" {
+  switch (step) {
+    case 1: return "right";
+    case 2: return "bottom";
+    case 3: return "left";
+    case 4: return "right";
+    case 5: return "right";
+    case 6: return "bottom";
+    default: return "bottom";
+  }
 }
