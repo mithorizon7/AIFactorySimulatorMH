@@ -215,6 +215,15 @@ export interface GameStateType {
     totalInvestmentAmount: number; // Track total money spent
   };
   
+  // Interactive Tutorial System
+  tutorial: {
+    isActive: boolean;        // Whether tutorial is currently running
+    phase: number;           // Current tutorial phase (1-4)
+    step: number;            // Current step within the phase
+    isCompleted: boolean;    // Whether tutorial has been completed
+    hasShownWelcome: boolean; // Whether welcome modal has been shown
+  };
+  
   // AGI Victory Threshold
   agiThreshold: number; // Intelligence score needed to win
 }
@@ -875,6 +884,15 @@ export const initialGameState: GameStateType = {
   currentGoal: {
     id: 1,
     progress: 0
+  },
+  
+  // Interactive Tutorial System
+  tutorial: {
+    isActive: true,         // Start with tutorial active for new players
+    phase: 1,              // Start with Phase 1: First Spark of Intelligence
+    step: 1,               // Start with first step
+    isCompleted: false,    // Tutorial not completed yet
+    hasShownWelcome: false // Welcome modal not shown yet
   },
   
   // AGI victory threshold
