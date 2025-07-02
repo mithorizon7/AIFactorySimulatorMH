@@ -99,6 +99,7 @@ export default function MainGameTabs({
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200"
+              data-tutorial-id="dashboard-tab"
             >
               <BarChart3 className="h-5 w-5" />
               <span className="hidden sm:inline">Dashboard</span>

@@ -745,6 +745,7 @@ export default function FactorySection({
                     }`}
                     onClick={allocateMoneyToAlgorithmArchitectures}
                     disabled={money < 125}
+                    data-tutorial-id="algorithm-architecture-upgrade"
                   >
                     <span>Improve Architectures</span>
                     <span className="font-medium">${gameState.algorithmInputs.architectures > 0 ? 
