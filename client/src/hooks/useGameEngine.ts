@@ -36,43 +36,38 @@ export function useGameEngine() {
     });
   };
 
-  // Tutorial progression functions
+  // Interactive tutorial functions
   const advanceTutorial = () => {
     setGameState(prevState => {
-      const newState = { ...prevState };
-      
-      // Check if we need to advance to next phase
-      const currentPhase = newState.tutorial.phase;
-      const currentStep = newState.tutorial.step;
-      
-      // Define max steps per phase
-      const maxStepsPerPhase: Record<number, number> = {
-        1: 2, // Phase 1 has 2 steps
-        2: 3, // Phase 2 has 3 steps
-        3: 2, // Phase 3 has 2 steps
-        4: 3  // Phase 4 has 3 steps
-      };
-      
-      if (currentStep < maxStepsPerPhase[currentPhase]) {
-        // Advance to next step within current phase
-        newState.tutorial.step = currentStep + 1;
-      } else if (currentPhase < 4) {
-        // Advance to next phase
-        newState.tutorial.phase = currentPhase + 1;
-        newState.tutorial.step = 1;
-      } else {
-        // Tutorial complete
-        newState.tutorial.isCompleted = true;
-        newState.tutorial.isActive = false;
-        
+      if (!prevState.tutorial.isActive) return prevState;
+
+      const nextStep = prevState.tutorial.step + 1;
+      // Check if the tutorial is complete (7 steps total)
+      if (nextStep > 7) {
         toast({
           title: "Tutorial Complete!",
           description: "You're now ready to build the world's first AGI. Good luck!",
           duration: 5000,
         });
+        
+        return { 
+          ...prevState, 
+          tutorial: { 
+            isActive: false, 
+            step: 0,
+            isCompleted: true,
+            hasShownWelcome: true
+          } 
+        };
       }
       
-      return newState;
+      return { 
+        ...prevState, 
+        tutorial: { 
+          ...prevState.tutorial, 
+          step: nextStep 
+        } 
+      };
     });
   };
 

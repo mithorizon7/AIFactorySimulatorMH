@@ -218,8 +218,7 @@ export interface GameStateType {
   // Interactive Tutorial System
   tutorial: {
     isActive: boolean;        // Whether tutorial is currently running
-    phase: number;           // Current tutorial phase (1-4)
-    step: number;            // Current step within the phase
+    step: number;            // Current tutorial step (0 for inactive, 1-7 for active steps)
     isCompleted: boolean;    // Whether tutorial has been completed
     hasShownWelcome: boolean; // Whether welcome modal has been shown
   };
@@ -889,7 +888,6 @@ export const initialGameState: GameStateType = {
   // Interactive Tutorial System
   tutorial: {
     isActive: true,         // Start with tutorial active for new players
-    phase: 1,              // Start with Phase 1: First Spark of Intelligence
     step: 1,               // Start with first step
     isCompleted: false,    // Tutorial not completed yet
     hasShownWelcome: false // Welcome modal not shown yet

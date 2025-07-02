@@ -1,0 +1,281 @@
+Of course. Your intuition is spot on. Shifting from a passive, card-based tutorial to an interactive, guided experience is one of the most effective ways to improve user onboarding. The goal is to make players feel like they are learning by *doing*, not just reading instructions.
+
+Based on the video and the project's file structure, here is a comprehensive guide for your developer on how to implement this dynamic tutorial system.
+
+### High-Level Strategy
+
+The core idea is to create a "tutorial overlay" that sits on top of the main game UI. This overlay will be controlled by a new state manager within your `useGameEngine`. It will read the current tutorial step and then perform two key actions:
+
+1.  **Create a "Spotlight":** It will dim the entire screen except for the specific UI element you want the user to interact with (e.g., the "Compute" upgrade button).
+2.  **Display a Tooltip:** It will show a "Spark" tooltip or popover next to the highlighted element with a brief instruction.
+
+The tutorial will only advance when the user performs the correct action, making it truly interactive.
+
+### Step-by-Step Implementation Guide
+
+Here are the detailed steps your developer can follow to build this system.
+
+#### Step 1: Add a Tutorial State to the Game Engine
+
+First, we need to track the user's progress through the tutorial. We'll modify `gameState.ts` to include a new tutorial state.
+
+**In `AIFactorySimulatorMH/client/src/lib/gameState.ts`:**
+
+Add a `tutorial` object to the `GameStateType` interface:
+
+```typescript
+// At the end of the GameStateType interface
+export interface GameStateType {
+  // ... all existing properties
+  tutorial: {
+    isActive: boolean;
+    step: number; // e.g., 0 for inactive, 1 for welcome, 2 for compute, etc.
+  };
+}
+```
+
+Then, update the `initialGameState` to start the tutorial by default:
+
+```typescript
+// In the initialGameState object
+export const initialGameState: GameStateType = {
+  // ... all existing properties
+  tutorial: {
+    isActive: true, // The tutorial starts active
+    step: 1,        // Start at the first step
+  },
+  // ... rest of the properties
+};
+```
+
+#### Step 2: Create the Interactive `TutorialGuide` Component
+
+This new component will be the heart of your interactive tutorial.
+
+**Create a new file: `AIFactorySimulatorMH/client/src/components/factory/TutorialGuide.tsx`:**
+
+```tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Lightbulb } from 'lucide-react';
+
+// Define the steps of the tutorial
+const tutorialSteps = [
+  { step: 1, targetId: 'compute-factory-card', text: "Welcome to your AI Factory! Let's start with Compute. This is the raw brainpower for your AI. Click the 'Advanced Options' button to see how we can improve it." },
+  { step: 2, targetId: 'compute-level-upgrade', text: 'Great! Now, click here to invest your starting funds and upgrade your Compute Level. This is essential for unlocking more advanced training.' },
+  { step: 3, targetId: 'data-factory-card', text: 'Excellent! Next is Data. AI learns from examples. Click the Data Factory\'s advanced options to see how we can improve its learning material.' },
+  { step: 4, targetId: 'data-quality-upgrade', text: 'Perfect. High-quality data makes your AI more reliable. Click here to invest in better data curation.' },
+  { step: 5, targetId: 'algorithm-factory-card', text: "Finally, let's look at Algorithms. These are the teaching methods for our AI. Let's see the advanced options." },
+  { step: 6, targetId: 'algorithm-architecture-upgrade', text: 'Better architectures lead to major breakthroughs. Invest now to improve your model design.' },
+  { step: 7, targetId: 'dashboard-tab', text: 'Awesome! You\'ve upgraded the three pillars of AI. You\'re ready to begin. Go back to the Dashboard to see your progress.' },
+];
+
+interface TutorialGuideProps {
+  step: number;
+  onComplete: () => void;
+}
+
+export default function TutorialGuide({ step, onComplete }: TutorialGuideProps) {
+  const [highlightStyle, setHighlightStyle] = useState({});
+  const [tooltipStyle, setTooltipStyle] = useState({});
+
+  const currentStep = useMemo(() => tutorialSteps.find(s => s.step === step), [step]);
+
+  useEffect(() => {
+    if (!currentStep) {
+      setHighlightStyle({ display: 'none' });
+      setTooltipStyle({ display: 'none' });
+      return;
+    }
+
+    const targetElement = document.querySelector(`[data-tutorial-id='${currentStep.targetId}']`);
+
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      
+      // Style for the spotlight effect
+      setHighlightStyle({
+        position: 'absolute',
+        left: `${rect.left}px`,
+        top: `${rect.top}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.7)',
+        borderRadius: '6px',
+        pointerEvents: 'none',
+        transition: 'all 0.3s ease-in-out',
+      });
+
+      // Style for the tooltip
+      setTooltipStyle({
+        position: 'absolute',
+        left: `${rect.left}px`,
+        top: `${rect.bottom + 10}px`, // Position below the element
+        transition: 'all 0.3s ease-in-out',
+      });
+    }
+  }, [currentStep]);
+
+  if (!currentStep) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100]">
+      {/* Spotlight element */}
+      <div style={highlightStyle}></div>
+
+      {/* Tooltip element */}
+      <div style={tooltipStyle} className="max-w-xs p-4 bg-gray-800 border border-amber-500 rounded-lg shadow-2xl">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="h-5 w-5 text-amber-400 mt-1 shrink-0" />
+          <div>
+            <h4 className="font-bold text-amber-400">Spark's Guide</h4>
+            <p className="text-sm text-gray-200 mt-1">{currentStep.text}</p>
+          </div>
+        </div>
+        <Button onClick={onComplete} variant="ghost" size="sm" className="mt-3 text-xs">Skip Tutorial</Button>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Step 3: Add `data-tutorial-id` to UI Elements
+
+To make elements "targetable" by the tutorial, you need to add a `data-tutorial-id` attribute to them.
+
+**In `AIFactorySimulatorMH/client/src/components/factory/FactorySection.tsx`:**
+
+```typescript
+// ... inside the return statement
+
+// Add to the compute card's parent div
+<div className="resource-card ..." data-tutorial-id="compute-factory-card">
+    // ...
+</div>
+// Add to the compute accordion trigger
+<AccordionTrigger ... data-tutorial-id="compute-options-trigger">...</AccordionTrigger>
+
+// Inside the accordion content, add to the "Compute Level" button
+<button 
+  ...
+  data-tutorial-id="compute-level-upgrade"
+>
+  // ...
+</button>
+
+// Apply similar IDs to the Data and Algorithm sections and their buttons
+// e.g., "data-factory-card", "data-quality-upgrade", etc.
+```
+
+**In `AIFactorySimulatorMH/client/src/components/factory/MainGameTabs.tsx`:**
+
+```typescript
+// ... inside the return statement
+
+// Add to the Dashboard TabsTrigger
+<TabsTrigger 
+  value="dashboard" 
+  ...
+  data-tutorial-id="dashboard-tab"
+>
+  // ...
+</TabsTrigger>
+```
+
+#### Step 4: Update Game Logic to Drive the Tutorial
+
+The tutorial should advance when the user performs the correct action. We'll modify the `useGameEngine` hook to handle this.
+
+**In `AIFactorySimulatorMH/client/src/hooks/useGameEngine.ts`:**
+
+1.  **Create a function to advance the tutorial:**
+
+    ```typescript
+    const advanceTutorial = () => {
+      setGameState(prevState => {
+        if (!prevState.tutorial.isActive) return prevState;
+
+        const nextStep = prevState.tutorial.step + 1;
+        // Check if the tutorial is complete
+        if (nextStep > tutorialSteps.length) { // Use the length from your tutorial config
+          return { ...prevState, tutorial: { isActive: false, step: 0 } };
+        }
+        
+        return { ...prevState, tutorial: { ...prevState.tutorial, step: nextStep } };
+      });
+    };
+    ```
+
+2.  **Modify action handlers to call `advanceTutorial`:**
+
+    ```typescript
+    // Example for allocateMoneyToCompute
+    const allocateMoneyToCompute = () => {
+      if (gameState.money >= 100) {
+
+        // Check if this action should advance the tutorial
+        if (gameState.tutorial.isActive && gameState.tutorial.step === 2) {
+            advanceTutorial();
+        }
+
+        setGameState(prevState => {
+          // ... existing logic for this function
+          // ...
+        });
+        
+        // ... toast logic
+      } else {
+        // ... toast logic
+      }
+    };
+
+    // Do the same for other functions like opening accordions, 
+    // switching tabs, etc. You may need to create new functions for these UI-only actions.
+    ```
+
+#### Step 5: Render the Tutorial in the Main View
+
+Finally, render the `TutorialGuide` component in your main game page.
+
+**In `AIFactorySimulatorMH/client/src/pages/AIFactory.tsx`:**
+
+```typescript
+import TutorialGuide from '@/components/factory/TutorialGuide'; // Import the new component
+
+export default function AIFactory() {
+  const {
+    gameState,
+    // ... all other hooks
+    // Add a function to complete/skip the tutorial
+    completeTutorial, // You'll need to add this to useGameEngine
+  } = useGameEngine();
+
+  // Add this function to useGameEngine.ts
+  /*
+  const completeTutorial = () => {
+    setGameState(prevState => ({
+      ...prevState,
+      tutorial: { isActive: false, step: 0 }
+    }));
+  };
+  */
+
+  return (
+    <GamePauseProvider ...>
+      {/* Conditionally render the tutorial */}
+      {gameState.tutorial.isActive && (
+        <TutorialGuide 
+          step={gameState.tutorial.step} 
+          onComplete={completeTutorial} 
+        />
+      )}
+
+      <div className="bg-gradient-to-b from-gray-950 to-gray-900 ...">
+        {/* ... rest of your JSX */}
+      </div>
+    </GamePauseProvider>
+  );
+}
+```
+
+This approach creates a robust, scalable, and highly interactive tutorial that directly addresses your goal. It guides the user through the actual UI, teaches them by having them perform the core actions, and connects those actions to the game's educational goals, all while being managed cleanly within your existing state structure.
