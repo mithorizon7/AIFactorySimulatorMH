@@ -202,7 +202,10 @@ export default function AIFactory() {
 
           {/* Welcome Introduction Modal */}
           {showIntroduction && (
-            <WelcomeIntroduction onClose={handleCloseIntroduction} />
+            <WelcomeIntroduction 
+              onClose={handleCloseIntroduction} 
+              currentEra={gameState.currentEra} 
+            />
           )}
 
           {/* Breakthrough Modal */}

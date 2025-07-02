@@ -295,7 +295,7 @@ export default function MainGameTabs({
           {/* AI Training System - Moved right under AGI Progress */}
           <ComputePanel 
             gameState={gameState}
-            trainModel={trainModel}
+            trainModel={trainModel || (() => {})}
             onNavigateToResource={handleNavigateToResource}
           />
           
