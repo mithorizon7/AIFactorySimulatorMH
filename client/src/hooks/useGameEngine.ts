@@ -36,6 +36,94 @@ export function useGameEngine() {
     });
   };
 
+  // Tutorial progression functions
+  const advanceTutorial = () => {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      
+      // Check if we need to advance to next phase
+      const currentPhase = newState.tutorial.phase;
+      const currentStep = newState.tutorial.step;
+      
+      // Define max steps per phase
+      const maxStepsPerPhase: Record<number, number> = {
+        1: 2, // Phase 1 has 2 steps
+        2: 3, // Phase 2 has 3 steps
+        3: 2, // Phase 3 has 2 steps
+        4: 3  // Phase 4 has 3 steps
+      };
+      
+      if (currentStep < maxStepsPerPhase[currentPhase]) {
+        // Advance to next step within current phase
+        newState.tutorial.step = currentStep + 1;
+      } else if (currentPhase < 4) {
+        // Advance to next phase
+        newState.tutorial.phase = currentPhase + 1;
+        newState.tutorial.step = 1;
+      } else {
+        // Tutorial complete
+        newState.tutorial.isCompleted = true;
+        newState.tutorial.isActive = false;
+        
+        toast({
+          title: "Tutorial Complete!",
+          description: "You're now ready to build the world's first AGI. Good luck!",
+          duration: 5000,
+        });
+      }
+      
+      return newState;
+    });
+  };
+
+  const skipTutorial = () => {
+    setGameState(prevState => ({
+      ...prevState,
+      tutorial: {
+        ...prevState.tutorial,
+        isActive: false,
+        isCompleted: true
+      }
+    }));
+    
+    toast({
+      title: "Tutorial Skipped",
+      description: "You can always restart the game to replay the tutorial.",
+      duration: 3000,
+    });
+  };
+
+  // Check tutorial progression based on game state
+  const checkTutorialProgression = (state: GameStateType) => {
+    if (!state.tutorial.isActive || state.tutorial.isCompleted) return;
+    
+    // Auto-advance tutorial based on certain conditions
+    const currentPhase = state.tutorial.phase;
+    const currentStep = state.tutorial.step;
+    
+    // Phase 2: Auto-advance when player upgrades each resource type
+    if (currentPhase === 2) {
+      if (currentStep === 1 && state.levels.compute > 1) {
+        // Player upgraded compute, advance to data step
+        advanceTutorial();
+      } else if (currentStep === 2 && state.levels.data > 1) {
+        // Player upgraded data, advance to algorithm step
+        advanceTutorial();
+      } else if (currentStep === 3 && state.levels.algorithm > 1) {
+        // Player upgraded algorithm, advance to next phase
+        advanceTutorial();
+      }
+    }
+    
+    // Phase 3: Auto-advance when player achieves first breakthrough
+    if (currentPhase === 3 && currentStep === 1) {
+      const hasBreakthrough = state.breakthroughs.some(b => b.unlocked);
+      if (hasBreakthrough) {
+        advanceTutorial();
+      }
+    }
+  };
+
 
 
   // Helper function to get the next era
@@ -1210,6 +1298,9 @@ export function useGameEngine() {
           // Check for strategic warnings and contextual hints
           checkStrategicWarnings(newState);
           
+          // Check tutorial progression
+          checkTutorialProgression(newState);
+          
           // Update compute capacity availability
           // Compute capacity recharges slowly over time (3% of max per tick)
           // Base recharge rate that's affected by the power efficiency level
@@ -1812,6 +1903,10 @@ export function useGameEngine() {
     // Spark AI Advisor
     advisorMessage,
     setAdvisorMessage,
+
+    // Interactive Tutorial System
+    advanceTutorial,
+    skipTutorial,
 
     // Train model function
     trainModel,

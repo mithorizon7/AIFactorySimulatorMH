@@ -14,7 +14,7 @@ import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
 import ComputePanel from "@/components/factory/ComputePanel";
 import HelpPanel from "@/components/factory/HelpPanel";
-import TutorialOverlay from "@/components/factory/TutorialOverlay";
+import { TutorialOverlay } from "@/components/tutorial/TutorialOverlay";
 import AdvisorToast from "@/components/factory/AdvisorToast";
 
 export default function AIFactory() {
@@ -28,6 +28,9 @@ export default function AIFactory() {
     // Spark AI Advisor
     advisorMessage,
     setAdvisorMessage,
+    // Interactive Tutorial System
+    advanceTutorial,
+    skipTutorial,
     // Train model function
     trainModel,
     // Basic money allocation
