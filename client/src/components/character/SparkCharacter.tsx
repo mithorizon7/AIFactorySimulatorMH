@@ -75,7 +75,7 @@ export function SparkCharacter({
     return (
       <div className={`absolute top-2 right-2 z-50 ${className}`}>
         <div className={`${sizeClasses[size]} relative`}>
-          {false && sparkAnimation && Object.keys(sparkAnimation).length > 5 ? (
+          {sparkAnimation && Object.keys(sparkAnimation).length > 5 ? (
             <Lottie
               lottieRef={lottieRef}
               animationData={sparkAnimation}
@@ -106,7 +106,7 @@ export function SparkCharacter({
     <div className={`flex items-start gap-3 ${className}`}>
       {/* Spark Character Animation */}
       <div className={`${sizeClasses[size]} flex-shrink-0 relative`}>
-        {false && sparkAnimation && Object.keys(sparkAnimation).length > 5 ? (
+        {sparkAnimation && Object.keys(sparkAnimation).length > 5 ? (
           <Lottie
             lottieRef={lottieRef}
             animationData={sparkAnimation}

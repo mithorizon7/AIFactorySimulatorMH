@@ -1924,6 +1924,7 @@ export function useGameEngine() {
 
   return {
     gameState,
+    setGameState,
     isRunning,
     startGame,
     pauseGame,

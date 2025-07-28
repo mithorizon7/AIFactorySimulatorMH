@@ -68,9 +68,6 @@ export default function AIFactory() {
     formattedTime
   } = useGameEngine();
 
-  // Debug: Log tutorial state
-  console.log('AIFactory loading...', 'Tutorial active:', gameState.tutorial.isActive);
-
   // UI state
   const [showIntroduction, setShowIntroduction] = useState<boolean>(false);
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
@@ -218,54 +215,6 @@ export default function AIFactory() {
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
           />
-
-          {/* DEBUG: Visible Spark Test & Tutorial Controls */}
-          <div className="fixed top-4 left-4 z-[200] bg-gray-800 border border-blue-500 rounded-lg p-4 max-w-xs">
-            <p className="text-white text-sm mb-2">Debug Panel</p>
-            
-            {/* Spark Visual Test */}
-            <div className="mb-3">
-              <p className="text-gray-300 text-xs mb-1">Spark Character:</p>
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-600 to-blue-700 rounded-full flex items-center justify-center shadow-xl border-2 border-white/20 relative">
-                <div className="w-12 h-12 bg-gradient-to-tr from-white/40 to-blue-300/20 rounded-full flex items-center justify-center">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg"></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg"></div>
-                  </div>
-                </div>
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">Spark</div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Tutorial Status */}
-            <div className="mb-2">
-              <p className="text-gray-300 text-xs">Tutorial Status:</p>
-              <p className="text-white text-xs">Active: {gameState.tutorial.isActive ? 'Yes' : 'No'}</p>
-              <p className="text-white text-xs">Phase: {gameState.tutorial.phase}/{gameState.tutorial.step}</p>
-            </div>
-            
-            {/* Tutorial Controls */}
-            <button 
-              onClick={() => {
-                setGameState(prev => ({
-                  ...prev,
-                  tutorial: {
-                    ...prev.tutorial,
-                    isActive: true,
-                    phase: 1,
-                    step: 1,
-                    isCompleted: false
-                  }
-                }));
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded mr-2"
-            >
-              Start Tutorial
-            </button>
-          </div>
 
           {/* Welcome Introduction Modal */}
           {showIntroduction && (
