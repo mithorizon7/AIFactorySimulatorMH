@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tutorial CSS animations */
+@keyframes tutorialPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+}
+
+.tutorial-highlight {
+  animation: tutorialPulse 2s infinite;
+}
+
+.tutorial-highlight-tab {
+  background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+  border: 2px solid #3B82F6;
+  animation: tutorialPulse 2s infinite;
+}
+
 @keyframes pop-effect {
   0% { transform: scale(1); color: inherit; }
   50% { transform: scale(1.25); color: hsl(var(--primary)); }
