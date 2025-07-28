@@ -297,5 +297,24 @@ export const narrative = {
     title: "Training Strategy Insight",
     content: "Pro tip: Reserve compute for training during low-revenue periods. Training during peak usage hours means lost revenue. Time your training runs strategically.",
     context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
+  },
+
+  // Original Tutorial Steps (preserved for reference and integration)
+  TUTORIAL_STEP_1: {
+    title: "Welcome to the Factory!",
+    content: "I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
+    context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips."
+  },
+  
+  TUTORIAL_STEP_2: {
+    title: "Expanding Your Operations",
+    content: "Excellent! Now let's diversify. Click on the Data Factory to start collecting the information our AI needs to learn from.",
+    context: "Data is the fuel of AI. Companies like OpenAI trained GPT models on hundreds of billions of tokens from books, websites, and articles."
+  },
+  
+  TUTORIAL_STEP_3: {
+    title: "The Algorithm Lab",
+    content: "Perfect! Now we need smart algorithms to process all that compute and data. Open the Algorithm Lab to start researching.",
+    context: "Algorithms are the 'recipes' that tell our AI how to think. Breakthroughs like Transformers revolutionized the entire field."
   }
 };
