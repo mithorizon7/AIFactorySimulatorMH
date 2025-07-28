@@ -31,18 +31,7 @@ interface FactorySectionProps {
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
   hireResearchEngineer?: () => void;
-  // Tutorial props
-  tutorialStep?: number;
-  setTutorialStep?: (step: number) => void;
-  tutorialRefs?: {
-    computeAccordion: React.RefObject<HTMLButtonElement>;
-    computeUpgrade: React.RefObject<HTMLButtonElement>;
-    computeProduction: React.RefObject<HTMLDivElement>;
-    dataAccordion: React.RefObject<HTMLButtonElement>;
-    dataUpgrade: React.RefObject<HTMLButtonElement>;
-    algorithmAccordion: React.RefObject<HTMLButtonElement>;
-    algorithmUpgrade: React.RefObject<HTMLButtonElement>;
-  };
+
 }
 
 // Learning Dialog Component for Advanced Options
@@ -187,9 +176,6 @@ export default function FactorySection({
   allocateMoneyToDataFormats,
   allocateMoneyToAlgorithmArchitectures,
   hireResearchEngineer,
-  tutorialStep,
-  setTutorialStep,
-  tutorialRefs,
 }: FactorySectionProps) {
   const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
 
@@ -242,7 +228,7 @@ export default function FactorySection({
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Production Rate:</span>
-                <span ref={tutorialRefs?.computeProduction} className="text-[#3B82F6]">
+                <span className="text-[#3B82F6]">
                   <AnimatedNumber value={production.compute.toFixed(1)} />
                   /s
                 </span>
@@ -320,13 +306,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            ref={tutorialRefs?.computeAccordion}
             className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-blue-400 font-medium"
-            onClick={() => {
-              if (tutorialStep === 1 && setTutorialStep) {
-                setTutorialStep(2);
-              }
-            }}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
@@ -359,7 +339,6 @@ export default function FactorySection({
                   Invests money to increase Compute Level for training requirements and computing capacity.
                 </p>
                 <button 
-                  ref={tutorialRefs?.computeUpgrade}
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
                     money < 100 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
@@ -529,13 +508,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            ref={tutorialRefs?.dataAccordion}
             className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-green-400 font-medium"
-            onClick={() => {
-              if (tutorialStep === 4 && setTutorialStep) {
-                setTutorialStep(5);
-              }
-            }}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
@@ -700,13 +673,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            ref={tutorialRefs?.algorithmAccordion}
             className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-purple-400 font-medium"
-            onClick={() => {
-              if (tutorialStep === 5 && setTutorialStep) {
-                setTutorialStep(6);
-              }
-            }}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
