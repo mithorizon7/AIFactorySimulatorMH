@@ -1460,16 +1460,25 @@ export function useGameEngine() {
           }
           
           // As money is invested in compute and hardware improves, max capacity increases
-          // NEW, MORE BALANCED FORMULA: provides stronger, compounding growth that can keep pace
-          // with the 10x training requirement.
+          // FIXED FORMULA: Exponential scaling to match 10x training requirements
           if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
             const baseCapacity = 2000;
-            const computeLevelBonus = newState.levels.compute * 1000;
-            const hardwareLevelBonus = newState.computeInputs.hardware * 500;
-            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.1); // 10% bonus per level
+            
+            // Exponential scaling based on compute level (matches 10x progression requirement)
+            // Level 1 = ~3,000, Level 2 = ~5,000, Level 3 = ~8,000, Level 4 = ~12,000+
+            const computeLevelMultiplier = Math.pow(1.8, newState.levels.compute); // Exponential growth
+            
+            // Hardware provides significant flat bonuses (scales with money invested)
+            const hardwareLevelBonus = newState.computeInputs.hardware * 2000; // Increased from 500 to 2000
+            
+            // Electricity provides percentage boost (compounding effect)
+            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.15); // Increased from 0.1 to 0.15
+            
+            // Money investment provides additional scaling
+            const moneyInvestmentBonus = newState.computeInputs.money * 800; // Additional scaling factor
             
             newState.computeCapacity.maxCapacity = Math.floor(
-              (baseCapacity + computeLevelBonus + hardwareLevelBonus) * electricityBonus
+              (baseCapacity * computeLevelMultiplier + hardwareLevelBonus + moneyInvestmentBonus) * electricityBonus
             );
           }
           
