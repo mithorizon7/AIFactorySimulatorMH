@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GameStateType } from "@/lib/gameState";
 import { tutorialContent } from "@/lib/narrativeContent";
 import { ArrowRight, Lightbulb, Cpu, Database, Cog, Target, TrendingUp, DollarSign, Zap, Trophy, Sparkles, X } from "lucide-react";
-import SparkCharacter from "@/components/character/SparkCharacter";
+import { SparkCharacter } from "@/components/character/SparkCharacter";
 
 interface UnifiedTutorialProps {
   gameState: GameStateType;
@@ -150,12 +150,19 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
         <DialogContent className="sm:max-w-[700px] bg-gray-900 border-gray-700">
           <DialogHeader>
             {showSpark ? (
-              <div className="mb-4">
+              <div className="mb-4 relative">
                 <SparkCharacter 
-                  message={currentStep.content}
-                  size="medium"
-                  className="mb-4"
+                  position="corner"
+                  size="small"
                 />
+                <div className="pr-16">
+                  <DialogTitle className="text-xl font-bold text-white mb-2">
+                    {currentStep.title}
+                  </DialogTitle>
+                  <DialogDescription className="text-gray-300 text-base leading-relaxed">
+                    {currentStep.content}
+                  </DialogDescription>
+                </div>
               </div>
             ) : (
               <>

@@ -82,7 +82,9 @@ class SparkIntegrationTester {
       
       if (!notificationContent.includes('SparkCharacter')) throw new Error('SparkCharacter not imported in notifications');
       if (!notificationContent.includes('message.speaker === \'spark\'')) throw new Error('Spark condition missing in notifications');
-      if (!notificationContent.includes('speaker?: \'spark\'')) throw new Error('Speaker type definition missing');
+      
+      const triggersContent = fs.readFileSync('client/src/hooks/useNarrativeTriggers.ts', 'utf8');
+      if (!triggersContent.includes('speaker?: \'spark\'')) throw new Error('Speaker type definition missing');
     });
 
     // Test 6: Narrative Triggers Integration

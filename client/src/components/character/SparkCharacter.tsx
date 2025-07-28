@@ -7,13 +7,15 @@ interface SparkCharacterProps {
   onAnimationComplete?: () => void;
   size?: 'small' | 'medium' | 'large';
   className?: string;
+  position?: 'corner' | 'inline';
 }
 
 export function SparkCharacter({ 
   message, 
   onAnimationComplete, 
   size = 'medium',
-  className = ''
+  className = '',
+  position = 'inline'
 }: SparkCharacterProps) {
   const [animationComplete, setAnimationComplete] = useState(false);
   const lottieRef = useRef<any>(null);
@@ -38,6 +40,34 @@ export function SparkCharacter({
       lottieRef.current.play();
     }
   };
+
+  // Corner positioning for dialogs and notifications
+  if (position === 'corner') {
+    return (
+      <div className={`absolute top-2 right-2 z-50 ${className}`}>
+        <div className={`${sizeClasses[size]} relative`}>
+          <Lottie
+            lottieRef={lottieRef}
+            animationData={sparkAnimation}
+            loop={false}
+            autoplay={false}
+            onComplete={handleAnimationComplete}
+            onDOMLoaded={handleAnimationLoaded}
+            className="w-full h-full"
+            style={{ background: 'transparent' }}
+          />
+          
+          {/* Spark's "AI Glow" Effect */}
+          <div className="absolute inset-0 rounded-full bg-blue-400/20 blur-md animate-pulse" />
+          
+          {/* Character Name Badge */}
+          <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+            Spark
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex items-start gap-3 ${className}`}>
