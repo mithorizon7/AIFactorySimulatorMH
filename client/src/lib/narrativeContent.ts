@@ -291,5 +291,11 @@ export const narrative = {
     title: "Algorithm Research Stalling",
     content: "Your research progress has slowed significantly. Consider hiring more research engineers or upgrading your algorithm infrastructure to accelerate breakthroughs.",
     context: "AI research requires dedicated talent and resources. Companies that fall behind in algorithmic innovation struggle to compete."
+  },
+  
+  TRAINING_STRATEGY_HINT: {
+    title: "Training Strategy Insight",
+    content: "Pro tip: Reserve compute for training during low-revenue periods. Training during peak usage hours means lost revenue. Time your training runs strategically.",
+    context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
   }
 };

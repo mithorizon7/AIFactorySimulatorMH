@@ -100,9 +100,12 @@ export function useGameEngine() {
       ...prevState,
       tutorial: { 
         isActive: false, 
-        step: 0,
+        phase: 4,
+        step: 2,
         isCompleted: true,
-        hasShownWelcome: true
+        hasShownWelcome: true,
+        completedActions: [],
+        currentTarget: null
       }
     }));
   };

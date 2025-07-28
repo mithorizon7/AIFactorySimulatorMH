@@ -91,6 +91,12 @@ Three main resource factories:
 
 ## Changelog
 
+- January 28, 2025. **UNIFIED TUTORIAL SYSTEM COMPLETE**: Implemented comprehensive tutorial system that preserves all educational content while creating seamless player experience:
+  1. **UnifiedTutorialSystem.tsx**: Combines modal explanations with interactive UI element spotlighting, supporting 4 phases and 13 total steps with dynamic content from narrativeContent.ts
+  2. **Enhanced narrativeContent.ts**: Unified all tutorial content into single source with phase-based organization, rich educational context, and strategic advice triggers
+  3. **Dynamic Narrative Triggers**: Created useNarrativeTriggers.ts for contextual warnings, achievements, and strategic advice based on game state
+  4. **Tutorial CSS Animations**: Added highlight animations, spotlight effects, and smooth transitions for enhanced visual feedback
+  5. **Complete Integration**: Tutorial system fully integrated with game engine, supporting progression tracking, skip functionality, and seamless transition to gameplay
 - January 28, 2025. **CRITICAL FIXES**: Fixed two game-breaking progression blockers that made the game unwinnable:
   1. **Compute Scaling Fix**: Upgraded maxCapacity formula from Math.pow(1.8, level) to Math.pow(3.0, level) with significantly increased hardware bonuses (2000→5000) and money investment bonuses (800→2000). This enables reaching the required compute thresholds for all training runs (GNT-4: 10,000, GNT-5: 100,000, GNT-6: 1,000,000).
   2. **Breakthrough System Fix**: Added missing checkBreakthroughs() calls to all 9 infrastructure upgrade functions (allocateMoneyToElectricity, allocateMoneyToHardware, allocateMoneyToRegulations, allocateMoneyToDataQuantity, allocateMoneyToDataFormats, hireResearchEngineer, improveDeveloperTools, improveChatbot). The breakthrough system now properly unlocks as players invest in upgrades.
