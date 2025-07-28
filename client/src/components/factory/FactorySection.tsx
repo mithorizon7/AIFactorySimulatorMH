@@ -356,7 +356,7 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Increases Compute Level for training requirements and improves overall computing capacity.
+                  Invests money to increase Compute Level for training requirements and computing capacity.
                 </p>
                 <button 
                   ref={tutorialRefs?.computeUpgrade}
@@ -367,7 +367,7 @@ export default function FactorySection({
                   disabled={money < 100}
                   data-tutorial-id="compute-level-upgrade"
                 >
-                  <span>Upgrade Compute Level</span>
+                  <span>Invest in Compute Infrastructure</span>
                   <span className="font-medium">$100</span>
                 </button>
               </div>
