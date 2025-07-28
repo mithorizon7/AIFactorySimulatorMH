@@ -91,6 +91,7 @@ Three main resource factories:
 
 ## Changelog
 
+- January 28, 2025. Major attached assets cleanup: Moved 40 outdated files to archive folder, retained 7 essential reference documents. Added README.md guide for future developers.
 - July 02, 2025. Initial setup
 
 ## User Preferences
