@@ -4,11 +4,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import AIFactory from "@/pages/AIFactory";
+import { SparkTest } from "@/pages/SparkTest";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={AIFactory} />
+      <Route path="/spark-test" component={SparkTest} />
       <Route component={NotFound} />
     </Switch>
   );
