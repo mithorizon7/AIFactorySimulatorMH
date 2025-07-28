@@ -36,38 +36,41 @@ export function useGameEngine() {
     });
   };
 
-  // Interactive tutorial functions
+  // Unified Tutorial System Functions
   const advanceTutorial = () => {
     setGameState(prevState => {
       if (!prevState.tutorial.isActive) return prevState;
-
-      const nextStep = prevState.tutorial.step + 1;
-      // Check if the tutorial is complete (7 steps total)
-      if (nextStep > 7) {
+      
+      const newState = { ...prevState };
+      
+      // Get current phase and step
+      const currentPhase = newState.tutorial.phase;
+      const currentStep = newState.tutorial.step;
+      
+      // Define phase limits (steps per phase)
+      const phaseLimits = { 1: 2, 2: 6, 3: 3, 4: 2 };
+      const maxStepForPhase = phaseLimits[currentPhase as keyof typeof phaseLimits] || 1;
+      
+      if (currentStep < maxStepForPhase) {
+        // Advance within current phase
+        newState.tutorial.step += 1;
+      } else if (currentPhase < 4) {
+        // Move to next phase
+        newState.tutorial.phase += 1;
+        newState.tutorial.step = 1;
+      } else {
+        // Tutorial is complete
+        newState.tutorial.isCompleted = true;
+        newState.tutorial.isActive = false;
+        
         toast({
           title: "Tutorial Complete!",
           description: "You're now ready to build the world's first AGI. Good luck!",
           duration: 5000,
         });
-        
-        return { 
-          ...prevState, 
-          tutorial: { 
-            isActive: false, 
-            step: 0,
-            isCompleted: true,
-            hasShownWelcome: true
-          } 
-        };
       }
       
-      return { 
-        ...prevState, 
-        tutorial: { 
-          ...prevState.tutorial, 
-          step: nextStep 
-        } 
-      };
+      return newState;
     });
   };
 
@@ -76,9 +79,12 @@ export function useGameEngine() {
       ...prevState,
       tutorial: {
         isActive: false,
-        step: 0,
+        phase: 4,
+        step: 2,
         isCompleted: true,
-        hasShownWelcome: true
+        hasShownWelcome: true,
+        completedActions: [],
+        currentTarget: null
       }
     }));
     

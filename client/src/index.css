@@ -21,3 +21,37 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Tutorial System Styles */
+.tutorial-highlight-tab {
+  animation: highlight-pulse 2s infinite;
+  border: 2px solid #3B82F6 !important;
+  border-radius: 8px !important;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { 
+    border-color: #3B82F6; 
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
+  50% { 
+    border-color: #60A5FA; 
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
+/* Narrative notification entrance animations */
+.slide-in-from-right-4 {
+  animation: slideInFromRight 0.4s ease-out;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

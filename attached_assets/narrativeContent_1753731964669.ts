@@ -1,146 +1,22 @@
-// UNIFIED TUTORIAL SYSTEM - Single source of truth for all tutorial and narrative content
-export const tutorialContent = {
-  // Phase 1: Welcome & First Steps
-  PHASE_1: {
-    1: {
-      title: "Welcome to AI Factory!",
-      content: "Hello! I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by creating your first neural network.",
-      context: "You're about to create your first neural network! In the real world, this is like the 'Hello, World!' of AI.",
-      action: "Click 'Start Game' to begin your AI journey",
-      targetElement: null,
-      modalStyle: true,
-      icon: "spark"
-    },
-    2: {
-      title: "The Three Pillars of AI",
-      content: "Excellent! We have a basic AI, but to make it truly intelligent, we need three key ingredients working together: Compute, Data, and Algorithms.",
-      context: "Just like a human needs a brain (compute), knowledge (data), and thinking methods (algorithms), AI requires all three elements.",
-      action: "Let's explore each pillar",
-      targetElement: null,
-      modalStyle: true,
-      icon: "lightbulb"
-    }
-  },
-
-  // Phase 2: Learning the Three Pillars
-  PHASE_2: {
-    1: {
-      title: "Pillar 1: Compute Power",
-      content: "This is **Compute** - the raw brainpower of our AI. Think of it as the data centers filled with powerful GPUs that train and run AI models.",
-      context: "Companies like Google and NVIDIA build massive data centers! More compute means faster AI training and better performance. GPT-4 required enormous computational resources.",
-      action: "Click on the Compute Factory section to explore",
-      targetElement: "compute-factory-card",
-      modalStyle: false,
-      icon: "cpu",
-      nextTarget: "compute-level-upgrade"
-    },
-    2: {
-      title: "Invest in Compute Infrastructure", 
-      content: "Perfect! Now invest your starting funds to upgrade your Compute Level. This is essential for meeting training prerequisites.",
-      context: "Real AI companies spend millions on compute infrastructure. OpenAI spent over $100M on computing resources for GPT-4.",
-      action: "Click the 'Invest $100' button to upgrade compute",
-      targetElement: "compute-level-upgrade", 
-      modalStyle: false,
-      icon: "cpu"
-    },
-    3: {
-      title: "Pillar 2: High-Quality Data",
-      content: "Excellent! Next is **Data** - the knowledge our AI learns from. AI learns patterns from massive datasets of text, images, and other information.",
-      context: "GPT models were trained on hundreds of billions of words from books, websites, and articles. Quality data is crucial for intelligent AI.",
-      action: "Click on the Data Factory section",
-      targetElement: "data-factory-card",
-      modalStyle: false,
-      icon: "database",
-      nextTarget: "data-quality-upgrade"
-    },
-    4: {
-      title: "Improve Data Quality",
-      content: "Great! Now invest in better data curation. High-quality, diverse data makes your AI more reliable and capable.",
-      context: "Companies spend enormous effort on data cleaning and curation. The quality of training data directly impacts AI capabilities.",
-      action: "Click to invest in data quality improvements",
-      targetElement: "data-quality-upgrade",
-      modalStyle: false,
-      icon: "database"
-    },
-    5: {
-      title: "Pillar 3: Smart Algorithms",
-      content: "Finally, **Algorithms** - the 'teaching methods' that help AI learn efficiently. These are the breakthrough techniques that make AI possible.",
-      context: "Breakthroughs like the Transformer architecture (from 'Attention Is All You Need') revolutionized AI and enabled models like GPT and BERT.",
-      action: "Click on the Algorithm Lab section",
-      targetElement: "algorithm-factory-card", 
-      modalStyle: false,
-      icon: "cog",
-      nextTarget: "algorithm-architecture-upgrade"
-    },
-    6: {
-      title: "Research Better Algorithms",
-      content: "Perfect! Invest in algorithm research to unlock powerful new AI architectures and training techniques.",
-      context: "Algorithm improvements often have the biggest impact. The Transformer architecture enabled the entire modern AI revolution.",
-      action: "Click to invest in algorithm improvements",
-      targetElement: "algorithm-architecture-upgrade",
-      modalStyle: false,
-      icon: "cog"
-    }
-  },
-
-  // Phase 3: Understanding Progression
-  PHASE_3: {
-    1: {
-      title: "Your AI Development Dashboard",
-      content: "Excellent progress! Now let's see how these investments translate into AI capability. Check your Dashboard to see your intelligence growing.",
-      context: "Intelligence represents your AI's overall capability - like an IQ score for artificial minds. Higher intelligence unlocks new possibilities.",
-      action: "Click on the Dashboard tab to see your progress",
-      targetElement: "dashboard-tab",
-      modalStyle: false,
-      icon: "trending-up",
-      highlightTab: "dashboard"
-    },
-    2: {
-      title: "The Path to AGI", 
-      content: "This shows your progression toward Artificial General Intelligence. Each era represents a major milestone, like GPT-2 → GPT-3 → GPT-4.",
-      context: "The journey mirrors real AI development - from basic language models to systems approaching human-level reasoning across domains.",
-      action: "Explore the Progression tab to see your AGI roadmap",
-      targetElement: "progression-tab",
-      modalStyle: false,
-      icon: "target",
-      highlightTab: "progression"
-    },
-    3: {
-      title: "Building Economic Value",
-      content: "Your AI is becoming capable! Soon you can generate revenue through API services and consumer applications to fund further research.",
-      context: "Real AI companies balance research with revenue. OpenAI's API business and ChatGPT subscriptions fund continued AGI research.",
-      action: "Check the Economy tab to see revenue opportunities",
-      targetElement: "economy-tab", 
-      modalStyle: false,
-      icon: "dollar-sign",
-      highlightTab: "economy"
-    }
-  },
-
-  // Phase 4: Advanced Concepts
-  PHASE_4: {
-    1: {
-      title: "Training Runs: The Path to AGI",
-      content: "Here's where the magic happens! Training Runs are major computational efforts that advance your AI to the next era. Each requires meeting specific prerequisites.",
-      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost tens of millions of dollars.",
-      action: "Explore the training requirements",
-      targetElement: "training-panel",
-      modalStyle: false,
-      icon: "zap"
-    },
-    2: {
-      title: "Tutorial Complete!",
-      content: "Outstanding! You now understand the fundamentals of AI development. Continue investing, researching, and training to achieve AGI!",
-      context: "You're now ready to explore advanced strategies: balancing resources, managing compute capacity, timing training runs, and scaling revenue.",
-      action: "Begin your journey to AGI!",
-      targetElement: null,
-      modalStyle: true,
-      icon: "trophy"
-    }
-  }
-};
-
 export const narrative = {
+  // Tutorial Sequence
+  TUTORIAL_STEP_1: {
+    title: "Welcome to the Factory!",
+    content: "I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
+    context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips."
+  },
+  
+  TUTORIAL_STEP_2: {
+    title: "Expanding Your Operations",
+    content: "Excellent! Now let's diversify. Click on the Data Factory to start collecting the information our AI needs to learn from.",
+    context: "Data is the fuel of AI. Companies like OpenAI trained GPT models on hundreds of billions of tokens from books, websites, and articles."
+  },
+  
+  TUTORIAL_STEP_3: {
+    title: "The Algorithm Lab",
+    content: "Perfect! Now we need smart algorithms to process all that compute and data. Open the Algorithm Lab to start researching.",
+    context: "Algorithms are the 'recipes' that tell our AI how to think. Breakthroughs like Transformers revolutionized the entire field."
+  },
   
   // Breakthroughs (keyed by breakthrough ID)
   BREAKTHROUGH_1: {
@@ -285,6 +161,12 @@ export const narrative = {
     title: "Major Investment Round!",
     content: "Incredible! You've secured major funding. You're now playing in the big leagues. This level of capital enables ambitious projects and faster scaling.",
     context: "Series A and beyond funding allows AI companies to compete with tech giants, but also brings increased scrutiny and pressure to deliver."
+  },
+  
+  TRAINING_STRATEGY_HINT: {
+    title: "Training Strategy Insight",
+    content: "Pro tip: Reserve compute for training during low-revenue periods. Training during peak usage hours means lost revenue. Time your training runs strategically.",
+    context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
   },
   
   RESEARCH_PROGRESS_SLOW: {

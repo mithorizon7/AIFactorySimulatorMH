@@ -14,8 +14,12 @@ import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
 import ComputePanel from "@/components/factory/ComputePanel";
 import HelpPanel from "@/components/factory/HelpPanel";
-import TutorialGuide from "@/components/factory/TutorialGuide";
 import AdvisorToast from "@/components/factory/AdvisorToast";
+
+// Unified Tutorial System
+import { UnifiedTutorialSystem } from "@/components/tutorial/UnifiedTutorialSystem";
+import { NarrativeNotification } from "@/components/narrative/NarrativeNotification";
+import { useNarrativeTriggers, NarrativeMessage } from "@/hooks/useNarrativeTriggers";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -66,6 +70,15 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
+  
+  // Unified tutorial and narrative system
+  const [currentNarrativeMessage, setCurrentNarrativeMessage] = useState<NarrativeMessage | null>(null);
+  
+  // Narrative trigger system
+  useNarrativeTriggers({
+    gameState,
+    onShowMessage: setCurrentNarrativeMessage
+  });
   
   // Detect first-time player and initialize tutorial
   useEffect(() => {
@@ -224,14 +237,22 @@ export default function AIFactory() {
             />
           )}
 
-          {/* Interactive Tutorial System with Spotlight Effects */}
-          {gameState.tutorial.isActive && (
-            <TutorialGuide 
-              step={gameState.tutorial.step}
-              onComplete={skipTutorial}
-              onAdvance={advanceTutorial}
-            />
-          )}
+          {/* Unified Tutorial System */}
+          <UnifiedTutorialSystem
+            gameState={gameState}
+            onNextStep={advanceTutorial}
+            onSkipTutorial={skipTutorial}
+            onComplete={() => {
+              skipTutorial();
+              startGame();
+            }}
+          />
+          
+          {/* Dynamic Narrative Notifications */}
+          <NarrativeNotification
+            message={currentNarrativeMessage}
+            onDismiss={() => setCurrentNarrativeMessage(null)}
+          />
         </div>
       </div>
 

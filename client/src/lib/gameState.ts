@@ -218,9 +218,12 @@ export interface GameStateType {
   // Interactive Tutorial System
   tutorial: {
     isActive: boolean;        // Whether tutorial is currently running
-    step: number;            // Current tutorial step (0 for inactive, 1-7 for active steps)
+    phase: number;           // Current tutorial phase (1-4)
+    step: number;            // Current tutorial step within phase
     isCompleted: boolean;    // Whether tutorial has been completed
     hasShownWelcome: boolean; // Whether welcome modal has been shown
+    completedActions: string[]; // Track which tutorial actions user has completed
+    currentTarget: string | null; // Current element being highlighted
   };
   
   // AGI Victory Threshold
@@ -888,9 +891,12 @@ export const initialGameState: GameStateType = {
   // Interactive Tutorial System
   tutorial: {
     isActive: true,         // Start with tutorial active for new players
+    phase: 1,              // Start with first phase
     step: 1,               // Start with first step
     isCompleted: false,    // Tutorial not completed yet
-    hasShownWelcome: false // Welcome modal not shown yet
+    hasShownWelcome: false, // Welcome modal not shown yet
+    completedActions: [],   // Track completed tutorial actions
+    currentTarget: null     // Current highlighted element
   },
   
   // AGI victory threshold
