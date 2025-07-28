@@ -1,0 +1,86 @@
+Excellent. Analyzing the new `useGameEngine.ts` reveals significant progress. The game has moved from a conceptually sound but broken prototype to something much closer to a playable and enjoyable experience. The introduction of the tutorial and advisor systems is a massive step forward for the UI/UX.
+
+However, even with these improvements, critical progression blockers and sources of player frustration remain hard-coded into the game's logic.
+
+Here is my expert analysis and consultation based *only* on the current code implementation.
+
+***
+
+### **Overall Assessment: From Broken Prototype to Intriguing Puzzle**
+
+The game is now in a state where a player can *begin* to engage with its systems. The new tutorial is essential for onboarding, and the advisor messages provide much-needed context. The core gameplay loop of investing money to meet prerequisites for massive "Training Run" events is compelling.
+
+However, the experience would be one of solving an intriguing puzzle for the first 10-15 minutes, followed by hitting a sudden, inexplicable wall. The player will understand the *goal* but will find it **mathematically impossible** to achieve, leading to a frustrating and ultimately unfulfilling end to their session.
+
+---
+
+### **Biggest Strengths in the Current Code**
+
+1.  **A Functional and Well-Designed Core Loop**: The `startEraTrainingRun` function is now the clear centerpiece of the game, and it works. It correctly checks for prerequisites, deducts a `moneyCost`, reserves compute, and puts the game into a "training" state. This creates a clear, cyclical goal for the player: build up your factory to launch the next big training mission. This is a fun and engaging loop.
+2.  **Vastly Improved Onboarding and Feedback**: The introduction of the `tutorial` state object and the `advisorMessage` system in `useGameEngine.ts` is a game-changer for UX. A new player is no longer dropped into a complex system without guidance. The `TutorialGuide` component (which is not provided but whose logic is in the hook) will walk them through the initial steps, and the `Advisor/Spark` character will provide narrative context and warnings. This makes the game feel alive and responsive.
+3.  **A Polished and Professional UI**: This remains a top-tier strength. The components used are clean, modern, and well-implemented. The `ComputePanel` is a standout piece of UI, effectively visualizing a complex set of prerequisites in a way that is easy to understand at a glance. The visuals promise a high-quality experience.
+
+---
+
+### **What Needs to Change: The Critical Flaws Preventing Playability**
+
+Despite the progress, the following issues will stop a player's journey cold and must be the highest priority for the development team.
+
+#### **1. The "Compute Wall" Still Exists - The Game is Unwinnable**
+
+This is the most critical issue. While the *intent* to fix the compute scaling is there, the implemented formula in `useGameEngine-2.ts` is still insufficient and makes the game unwinnable.
+
+* **Code Analysis**: Inside the `handleGameTick` function, the `maxCapacity` is now calculated with `Math.pow(1.8, newState.levels.compute)`. While this is an exponential formula, it scales too slowly against the hard-coded `10x` requirement for `computeRequired` in `gameState.ts` (1,000 -> 10,000 -> 100,000). A player would need to reach an incredibly high `compute` level to meet the GNT-4 requirement of 10,000, and the GNT-5 requirement of 100,000 is completely out of reach within a 30-minute playtime.
+* **Player Frustration**: This is the most frustrating kind of bug. The player will understand the goal perfectly. They will invest their money correctly. But they will watch their capacity number grow far too slowly to ever hit the target. They will feel like they are doing something wrong when, in fact, the game's math is simply broken.
+* **Recommendation**: **Aggressively increase the scaling in the `maxCapacity` formula.** The base of the exponent needs to be much larger, or you need to add significant linear bonuses from hardware and other investments. The goal should be that achieving the *level* prerequisites for a training run should naturally bring your `maxCapacity` into the *range* of the `computeRequired`.
+
+#### **2. The Breakthrough System is Still Broken**
+
+This is another critical progression blocker that remains unfixed from the previous analysis.
+
+* **Code Analysis**: The `checkBreakthroughs` function, which is the only way to unlock breakthroughs and advance the `currentGoal`, is still **never called** by the functions that the player actually uses (`allocateMoneyTo...`). The only calls are within the now-dead legacy code.
+* **Player Frustration**: The "Breakthroughs" tab in the UI will remain static for the entire game. The `BreakthroughSection` will show the same initial goal forever. The player will have no idea how to unlock these, and it will feel like a core part of the game is missing because it is.
+* **Recommendation**: This is a simple but essential one-line fix. **Add a call to `newState.breakthroughs = checkBreakthroughs(newState);` to the end of every `allocateMoneyTo...` function** in `useGameEngine-2.ts`.
+
+---
+
+### **3. High-Priority Fixes: Improving UI/UX and Reducing Frustration**
+
+These issues create significant confusion and lead the player down frustrating, dead-end paths.
+
+#### **The Redundant and Misleading UI**
+
+While new UI elements have been added, the old, confusing ones have not been removed.
+
+* **Code Analysis**: The `MainGameTabs.tsx` file still renders the `AIDashboard.tsx` component on the "Dashboard" tab. Furthermore, the `FactorySection.tsx` still contains the logic for the old, resource-spending "Upgrade" buttons (e.g., `upgradeCompute`, `upgradeData`), which are misleading and less effective than the "Advanced... Options".
+* **Player Frustration**: Players will be confused about where to look for information. Should they check the `AIDashboard` or the `SystemStatusPanel` for compute info? Why are there two different ways to "upgrade" data, and which one is correct? This ambiguity creates cognitive load and detracts from the fun.
+* **Recommendation**: **Perform the planned UI cleanup.** Delete `AIDashboard.tsx` and remove the legacy upgrade buttons from `FactorySection.tsx`. Force the player to use the single, clear path for upgrades (the "Advanced... Options") and the single source of truth for system status.
+
+#### **The "Punishing" Research Mechanic**
+
+The game actively punishes players for succeeding in the economic part of the game, which is a frustrating design.
+
+* **Code Analysis**: The `algorithmResearchRate` in `useGameEngine-2.ts` is heavily dependent on `freeCompute`, which is calculated as `available - customerUsage`. The efficiency bonus uses `Math.log10(freeCompute + 1)`. As a player's customer base grows (`customerUsage` increases), their `freeCompute` will drop to near zero, causing the logarithmic bonus to disappear and tanking their research rate.
+* **Recommendation**: **Decouple research rate from being *solely* dependent on `freeCompute`**. The code already includes a mechanism for hiring `researchEngineers`. This is the perfect lever. Modify the `algorithmResearchRate` formula to include a significant flat bonus per engineer hired. This creates a strategic choice: if your economy is booming and `freeCompute` is low, you can invest your profits into hiring more engineers to keep their research moving.
+
+---
+
+### **4. Medium-Priority Fixes: Deepening Strategy and Fun**
+
+Once the game is playable and clear, these changes will make it more strategically interesting.
+
+#### **Lack of Economic Tension**
+
+The most significant decisions in the game, the `TrainingRun` actions, have no monetary cost. This is a missed opportunity for strategic depth.
+
+* **Code Analysis**: The `startEraTrainingRun` function in `useGameEngine-2.ts` checks for `computeRequired` but has no check for `moneyCost`. The `TrainingRun` object in `gameState.ts` *does* have a `moneyCost` property, but it is never used.
+* **Recommendation**: **Enable the `moneyCost` for training runs.** In `startEraTrainingRun`, add a check for `gameState.money >= trainingRun.moneyCost` and deduct the cost when a run is started. This will force players into a compelling choice: do I spend money now on infrastructure to grow faster, or do I save up for the massive cost of the next era-defining training run?
+
+#### **Flawed Compute Cost Calculation**
+
+The game charges players for compute based on *potential* revenue, not the *actual* revenue they earn after service degradation.
+
+* **Code Analysis**: In `calculateRevenue` within `useGameEngine-2.ts`, `potentialB2bComputeUsage` and `potentialB2cComputeUsage` are calculated *before* the `serviceQualityRatio` is applied to the final revenue. This means that even if service outages cut a player's revenue in half, they are still charged the full compute cost as if they had earned 100% of it.
+* **Recommendation**: **Move the compute usage calculation to *after* the `serviceQualityRatio` is applied.** Create `actualB2bComputeUsage` and `actualB2cComputeUsage` variables that are based on the final, adjusted `newState.revenue.b2b` and `newState.revenue.b2c`. This makes the penalty for compute shortages fair and intuitive.
+
+By implementing these code-driven changes, you will transform "AI Factory Simulator" from a frustrating, unwinnable prototype into the engaging, educational, and fun 30-minute experience you envision.
