@@ -299,22 +299,47 @@ export const narrative = {
     context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
   },
 
-  // Original Tutorial Steps (preserved for reference and integration)
+  // Spark Character Dialogue - Tutorial Steps
   TUTORIAL_STEP_1: {
     title: "Welcome to the Factory!",
-    content: "I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
-    context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips."
+    content: "Hi there! I'm Spark, your AI advisor. Together, we're going to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
+    context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips.",
+    speaker: "spark"
   },
   
   TUTORIAL_STEP_2: {
     title: "Expanding Your Operations",
-    content: "Excellent! Now let's diversify. Click on the Data Factory to start collecting the information our AI needs to learn from.",
-    context: "Data is the fuel of AI. Companies like OpenAI trained GPT models on hundreds of billions of tokens from books, websites, and articles."
+    content: "Excellent work! Now let's diversify our approach. Click on the Data Factory to start collecting the information our AI needs to learn from.",
+    context: "Data is the fuel of AI. Companies like OpenAI trained GPT models on hundreds of billions of tokens from books, websites, and articles.",
+    speaker: "spark"
   },
   
   TUTORIAL_STEP_3: {
     title: "The Algorithm Lab",
-    content: "Perfect! Now we need smart algorithms to process all that compute and data. Open the Algorithm Lab to start researching.",
-    context: "Algorithms are the 'recipes' that tell our AI how to think. Breakthroughs like Transformers revolutionized the entire field."
+    content: "Perfect progress! Now we need smart algorithms to process all that compute and data. Open the Algorithm Lab to start researching cutting-edge techniques.",
+    context: "Algorithms are the 'recipes' that tell our AI how to think. Breakthroughs like Transformers revolutionized the entire field.",
+    speaker: "spark"
+  },
+
+  // Spark's Strategic Advice
+  SPARK_BREAKTHROUGH_ADVICE: {
+    title: "Breakthrough Achieved!",
+    content: "Amazing! This breakthrough will unlock new possibilities. Remember, real AI progress comes from combining compute power, quality data, and algorithmic innovation.",
+    context: "Each breakthrough represents years of research compressed into game mechanics. These mirror real-world AI milestones.",
+    speaker: "spark"
+  },
+
+  SPARK_TRAINING_GUIDANCE: {
+    title: "Training Run Strategy",
+    content: "Pro tip from your AI advisor: Schedule training runs when customer demand is low. This maximizes your learning while minimizing lost revenue!",
+    context: "Real AI companies carefully balance research training with customer service demands.",
+    speaker: "spark"
+  },
+
+  SPARK_SCALING_WISDOM: {
+    title: "Scaling Insights",
+    content: "You're learning the fundamental truth of AI: scaling compute, data, and algorithms together creates emergent capabilities. This is how we'll reach AGI!",
+    context: "Modern AI breakthroughs follow predictable scaling laws discovered by researchers at OpenAI, DeepMind, and others.",
+    speaker: "spark"
   }
 };

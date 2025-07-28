@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { GameStateType } from '@/lib/gameState';
 import { narrative } from '@/lib/narrativeContent';
 
-interface NarrativeMessage {
+export interface NarrativeMessage {
   id: string;
   title: string;
   content: string;
@@ -10,6 +10,7 @@ interface NarrativeMessage {
   timestamp: number;
   priority: 'low' | 'normal' | 'high' | 'critical';
   category: 'tutorial' | 'warning' | 'achievement' | 'advice' | 'breakthrough';
+  speaker?: 'spark' | 'system';
 }
 
 interface UseNarrativeTriggersProps {
@@ -71,7 +72,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       });
     }
 
-    // 4. First Training Run Completion
+    // 4. First Training Run Completion with Spark
     if (prevState.training.active && !gameState.training.active && 
         !gameState.narrativeFlags.hasSeenFirstTraining) {
       onShowMessage({
@@ -81,7 +82,8 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
         context: narrative.TRAINING_FIRST_SUCCESS.context,
         timestamp: Date.now(),
         priority: 'normal',
-        category: 'achievement'
+        category: 'achievement',
+        speaker: 'spark'
       });
     }
 

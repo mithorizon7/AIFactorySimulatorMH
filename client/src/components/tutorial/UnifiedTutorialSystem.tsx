@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GameStateType } from "@/lib/gameState";
 import { tutorialContent } from "@/lib/narrativeContent";
 import { ArrowRight, Lightbulb, Cpu, Database, Cog, Target, TrendingUp, DollarSign, Zap, Trophy, Sparkles, X } from "lucide-react";
+import SparkCharacter from "@/components/character/SparkCharacter";
 
 interface UnifiedTutorialProps {
   gameState: GameStateType;
@@ -22,6 +23,7 @@ interface TutorialStep {
   icon: string;
   nextTarget?: string;
   highlightTab?: string;
+  speaker?: string;
 }
 
 export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, onComplete }: UnifiedTutorialProps) {
@@ -35,7 +37,8 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
 
   // Get current tutorial step from unified content
   const currentPhase = `PHASE_${gameState.tutorial.phase}` as keyof typeof tutorialContent;
-  const currentStep = tutorialContent[currentPhase]?.[gameState.tutorial.step] as TutorialStep | undefined;
+  const stepKey = gameState.tutorial.step as keyof typeof tutorialContent[typeof currentPhase];
+  const currentStep = tutorialContent[currentPhase]?.[stepKey] as TutorialStep | undefined;
   
   if (!currentStep) {
     return null;
@@ -138,21 +141,35 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
 
   const isLastStep = gameState.tutorial.phase === 4 && gameState.tutorial.step === 2;
 
-  // Modal style tutorial steps
+  // Modal style tutorial steps with Spark character
   if (currentStep.modalStyle) {
+    const showSpark = currentStep.speaker === 'spark';
+
     return (
       <Dialog open={true} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-[600px] bg-gray-900 border-gray-700">
+        <DialogContent className="sm:max-w-[700px] bg-gray-900 border-gray-700">
           <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              {getIcon(currentStep.icon)}
-              <DialogTitle className="text-xl font-bold text-white">
-                {currentStep.title}
-              </DialogTitle>
-            </div>
-            <DialogDescription className="text-gray-300 text-base leading-relaxed">
-              {currentStep.content}
-            </DialogDescription>
+            {showSpark ? (
+              <div className="mb-4">
+                <SparkCharacter 
+                  message={currentStep.content}
+                  size="medium"
+                  className="mb-4"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-2">
+                  {getIcon(currentStep.icon)}
+                  <DialogTitle className="text-xl font-bold text-white">
+                    {currentStep.title}
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-gray-300 text-base leading-relaxed">
+                  {currentStep.content}
+                </DialogDescription>
+              </>
+            )}
           </DialogHeader>
           
           <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 my-4">

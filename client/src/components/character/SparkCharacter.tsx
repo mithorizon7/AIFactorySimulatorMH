@@ -1,0 +1,88 @@
+import React, { useState, useRef } from 'react';
+import Lottie from 'lottie-react';
+import sparkAnimation from '../../assets/spark-animation.json';
+
+interface SparkCharacterProps {
+  message?: string;
+  onAnimationComplete?: () => void;
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+}
+
+export function SparkCharacter({ 
+  message, 
+  onAnimationComplete, 
+  size = 'medium',
+  className = ''
+}: SparkCharacterProps) {
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const lottieRef = useRef<any>(null);
+
+  const sizeClasses = {
+    small: 'w-16 h-20',
+    medium: 'w-24 h-30',
+    large: 'w-32 h-40'
+  };
+
+  const handleAnimationComplete = () => {
+    setAnimationComplete(true);
+    if (onAnimationComplete) {
+      onAnimationComplete();
+    }
+  };
+
+  const handleAnimationLoaded = () => {
+    // Play animation once and then stop
+    if (lottieRef.current) {
+      lottieRef.current.setSpeed(1);
+      lottieRef.current.play();
+    }
+  };
+
+  return (
+    <div className={`flex items-start gap-3 ${className}`}>
+      {/* Spark Character Animation */}
+      <div className={`${sizeClasses[size]} flex-shrink-0 relative`}>
+        <Lottie
+          lottieRef={lottieRef}
+          animationData={sparkAnimation}
+          loop={false}
+          autoplay={false}
+          onComplete={handleAnimationComplete}
+          onDOMLoaded={handleAnimationLoaded}
+          className="w-full h-full"
+          style={{
+            background: 'transparent'
+          }}
+        />
+        
+        {/* Spark's "AI Glow" Effect */}
+        <div className="absolute inset-0 rounded-full bg-blue-400/20 blur-md animate-pulse" />
+        
+        {/* Character Name Badge */}
+        <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+          Spark
+        </div>
+      </div>
+
+      {/* Message Bubble */}
+      {message && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg px-4 py-3 relative max-w-md flex-1 shadow-lg">
+          {/* Speech Bubble Arrow */}
+          <div className="absolute left-0 top-4 transform -translate-x-2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-r-8 border-r-blue-600" />
+          
+          {/* Message Content */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-blue-200">Spark AI Advisor</span>
+            </div>
+            <p className="text-sm leading-relaxed">{message}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default SparkCharacter;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NarrativeMessage } from '@/hooks/useNarrativeTriggers';
 import { Button } from '@/components/ui/button';
 import { X, Lightbulb, AlertTriangle, Trophy, Target, Zap } from 'lucide-react';
+import SparkCharacter from '@/components/character/SparkCharacter';
 
 interface NarrativeNotificationProps {
   message: NarrativeMessage | null;
@@ -68,53 +69,70 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
 
   return (
     <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right-4 duration-300">
-      <div className={`bg-gray-900 border-2 ${getBorderColor()} ${getBackgroundColor()} rounded-lg shadow-2xl max-w-md p-4`}>
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5">
-            {getIcon()}
+      {message.speaker === 'spark' ? (
+        <div className="bg-gray-900 border-2 border-blue-500 rounded-lg shadow-2xl max-w-lg p-4">
+          <SparkCharacter
+            message={message.content}
+            size="small"
+            className="mb-3"
+          />
+          <div className="bg-black/20 border border-gray-700/50 rounded p-3">
+            <div className="flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-blue-300 mb-1">Real-World Context</p>
+                <p className="text-xs text-blue-200 leading-relaxed">{message.context}</p>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
-              <h3 className="font-bold text-white text-sm">
-                {message.title}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onDismiss}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDismiss}
+            className="absolute top-2 right-2 h-6 w-6 p-0 text-gray-400 hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <div className={`bg-gray-900 border-2 ${getBorderColor()} ${getBackgroundColor()} rounded-lg shadow-2xl max-w-md p-4`}>
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              {getIcon()}
             </div>
             
-            <p className="text-gray-300 text-sm mb-3 leading-relaxed">
-              {message.content}
-            </p>
-            
-            <div className="bg-black/20 border border-gray-700/50 rounded p-3">
-              <div className="flex items-start gap-2">
-                <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-medium text-blue-300 mb-1">Real-World Context</p>
-                  <p className="text-xs text-blue-200 leading-relaxed">{message.context}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-bold text-white text-sm">
+                  {message.title}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDismiss}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                {message.content}
+              </p>
+              
+              <div className="bg-black/20 border border-gray-700/50 rounded p-3">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-blue-300 mb-1">Real-World Context</p>
+                    <p className="text-xs text-blue-200 leading-relaxed">{message.context}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="flex justify-end mt-3">
-          <Button 
-            onClick={onDismiss}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-          >
-            Got it!
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
