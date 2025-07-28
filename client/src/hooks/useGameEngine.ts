@@ -1193,6 +1193,9 @@ export function useGameEngine() {
         // Each engineer increases algorithm research rate by 0.5 per day
         newState.training.algorithmResearchRate += 0.5;
         
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
         return newState;
       });
       
@@ -1460,22 +1463,22 @@ export function useGameEngine() {
           }
           
           // As money is invested in compute and hardware improves, max capacity increases
-          // FIXED FORMULA: Exponential scaling to match 10x training requirements
+          // AGGRESSIVE SCALING: Much more aggressive exponential scaling to match 10x training requirements
           if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
             const baseCapacity = 2000;
             
-            // Exponential scaling based on compute level (matches 10x progression requirement)
-            // Level 1 = ~3,000, Level 2 = ~5,000, Level 3 = ~8,000, Level 4 = ~12,000+
-            const computeLevelMultiplier = Math.pow(1.8, newState.levels.compute); // Exponential growth
+            // MUCH MORE AGGRESSIVE exponential scaling based on compute level
+            // Level 1 = ~6,000, Level 2 = ~18,000, Level 3 = ~54,000, Level 4 = ~162,000+
+            const computeLevelMultiplier = Math.pow(3.0, newState.levels.compute); // Increased from 1.8 to 3.0
             
-            // Hardware provides significant flat bonuses (scales with money invested)
-            const hardwareLevelBonus = newState.computeInputs.hardware * 2000; // Increased from 500 to 2000
+            // Hardware provides massive flat bonuses (scales with money invested)
+            const hardwareLevelBonus = newState.computeInputs.hardware * 5000; // Increased from 2000 to 5000
             
-            // Electricity provides percentage boost (compounding effect)
-            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.15); // Increased from 0.1 to 0.15
+            // Electricity provides significant percentage boost (compounding effect)
+            const electricityBonus = 1 + (newState.computeInputs.electricity * 0.25); // Increased from 0.15 to 0.25
             
-            // Money investment provides additional scaling
-            const moneyInvestmentBonus = newState.computeInputs.money * 800; // Additional scaling factor
+            // Money investment provides substantial additional scaling
+            const moneyInvestmentBonus = newState.computeInputs.money * 2000; // Increased from 800 to 2000
             
             newState.computeCapacity.maxCapacity = Math.floor(
               (baseCapacity * computeLevelMultiplier + hardwareLevelBonus + moneyInvestmentBonus) * electricityBonus
@@ -1553,6 +1556,9 @@ export function useGameEngine() {
         newState.bonuses.computeToAlgorithm *= 1.03;
         newState.bonuses.computeToIntelligence *= 1.03;
         
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
         return newState;
       });
       
@@ -1581,6 +1587,9 @@ export function useGameEngine() {
         
         // Hardware quality has significant impact on intelligence
         newState.bonuses.computeToIntelligence *= 1.1;
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });
@@ -1611,6 +1620,9 @@ export function useGameEngine() {
         // Regulatory environment affects investor confidence
         newState.revenue.investors += 200;
         
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
         return newState;
       });
       
@@ -1639,6 +1651,9 @@ export function useGameEngine() {
         
         // Quantity has a more modest effect on intelligence than quality
         newState.bonuses.dataToIntelligence *= 1.03;
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });
@@ -1671,6 +1686,9 @@ export function useGameEngine() {
         
         // Format innovation also improves algorithmic efficiency
         newState.bonuses.dataToAlgorithm *= 1.05;
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });
@@ -1803,6 +1821,9 @@ export function useGameEngine() {
         // Increase cost for next upgrade
         newState.revenue.developerToolsCost = Math.round(newState.revenue.developerToolsCost * 2);
         
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
+        
         return newState;
       });
       
@@ -1835,6 +1856,9 @@ export function useGameEngine() {
         
         // Increase cost for next upgrade
         newState.revenue.chatbotImprovementCost = Math.round(newState.revenue.chatbotImprovementCost * 2.5);
+        
+        // Check for breakthroughs
+        newState.breakthroughs = checkBreakthroughs(newState);
         
         return newState;
       });

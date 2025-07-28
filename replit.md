@@ -91,6 +91,9 @@ Three main resource factories:
 
 ## Changelog
 
+- January 28, 2025. **CRITICAL FIXES**: Fixed two game-breaking progression blockers that made the game unwinnable:
+  1. **Compute Scaling Fix**: Upgraded maxCapacity formula from Math.pow(1.8, level) to Math.pow(3.0, level) with significantly increased hardware bonuses (2000→5000) and money investment bonuses (800→2000). This enables reaching the required compute thresholds for all training runs (GNT-4: 10,000, GNT-5: 100,000, GNT-6: 1,000,000).
+  2. **Breakthrough System Fix**: Added missing checkBreakthroughs() calls to all 9 infrastructure upgrade functions (allocateMoneyToElectricity, allocateMoneyToHardware, allocateMoneyToRegulations, allocateMoneyToDataQuantity, allocateMoneyToDataFormats, hireResearchEngineer, improveDeveloperTools, improveChatbot). The breakthrough system now properly unlocks as players invest in upgrades.
 - January 28, 2025. Major attached assets cleanup: Moved 40 outdated files to archive folder, retained 7 essential reference documents. Added README.md guide for future developers.
 - July 02, 2025. Initial setup
 
