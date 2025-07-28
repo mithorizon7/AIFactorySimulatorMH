@@ -46,25 +46,26 @@ export function SparkCharacter({
     const sparkSize = size === 'small' ? 'w-16 h-16' : size === 'large' ? 'w-32 h-32' : 'w-24 h-24';
     
     return (
-      <div className={`${sparkSize} relative flex items-center justify-center`}>
-        {/* Main Spark Circle */}
-        <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+      <div className={`${sparkSize} relative flex items-center justify-center border-2 border-blue-400`}>
+        {/* Main Spark Circle - Made more visible with border */}
+        <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-600 to-blue-700 rounded-full flex items-center justify-center shadow-xl border-2 border-white/20">
           {/* Inner Spark */}
-          <div className="w-3/4 h-3/4 bg-gradient-to-tr from-white/30 to-transparent rounded-full flex items-center justify-center">
+          <div className="w-3/4 h-3/4 bg-gradient-to-tr from-white/40 to-blue-300/20 rounded-full flex items-center justify-center">
             {/* Spark Eyes */}
             <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
         </div>
         
-        {/* Floating Particles */}
-        <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-bounce"></div>
-        <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-blue-300 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
+        {/* Floating Particles - Made larger and more visible */}
+        <div className="absolute -top-2 -right-2 w-3 h-3 bg-yellow-400 rounded-full animate-bounce shadow-lg"></div>
+        <div className="absolute -bottom-2 -left-2 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '1s' }}></div>
         
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-blue-400/30 rounded-full blur-sm animate-pulse"></div>
+        {/* Glow Effect - Enhanced */}
+        <div className="absolute inset-0 bg-blue-400/40 rounded-full blur-lg animate-pulse"></div>
+        <div className="absolute inset-1 bg-purple-400/30 rounded-full blur-md animate-pulse" style={{ animationDelay: '1.5s' }}></div>
       </div>
     );
   };
