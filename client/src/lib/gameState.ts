@@ -250,6 +250,21 @@ export interface GameStateType {
   
   // AGI Victory Threshold
   agiThreshold: number; // Intelligence score needed to win
+  
+  // Victory Statistics for Leaderboard and Summary
+  victoryStats: {
+    gameStartTime: number; // Timestamp when game started
+    totalTimeElapsed: number; // Total time in seconds
+    peakMoney: number; // Highest money amount achieved
+    totalMoneyEarned: number; // Total money earned throughout game
+    peakB2BSubscribers: number; // Highest B2B subscriber count
+    peakB2CSubscribers: number; // Highest B2C subscriber count
+    breakthroughsUnlocked: number; // Total breakthroughs achieved
+    erasReached: number; // Highest era reached (starts at GNT-2 = 1)
+    finalIntelligence: number; // Intelligence at victory
+    strategiesUsed: string[]; // Key strategies player used
+    hasAchievedAGI: boolean; // Whether player reached AGI
+  };
 }
 
 export interface Breakthrough {
@@ -980,5 +995,20 @@ export const initialGameState: GameStateType = {
   },
   
   // AGI victory threshold
-  agiThreshold: 1000 // Intelligence needed to achieve AGI
+  agiThreshold: 1000, // Intelligence needed to achieve AGI
+  
+  // Victory Statistics for Leaderboard and Summary
+  victoryStats: {
+    gameStartTime: 0, // Timestamp when game started
+    totalTimeElapsed: 0, // Total time in seconds
+    peakMoney: 0, // Highest money amount achieved
+    totalMoneyEarned: 0, // Total money earned throughout game
+    peakB2BSubscribers: 0, // Highest B2B subscriber count
+    peakB2CSubscribers: 0, // Highest B2C subscriber count
+    breakthroughsUnlocked: 0, // Total breakthroughs achieved
+    erasReached: 1, // Highest era reached (starts at GNT-2 = 1)
+    finalIntelligence: 0, // Intelligence at victory
+    strategiesUsed: [], // Key strategies player used
+    hasAchievedAGI: false // Whether player reached AGI
+  }
 };

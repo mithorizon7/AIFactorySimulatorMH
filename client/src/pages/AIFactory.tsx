@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
-import GameSummaryModal from "@/components/factory/GameSummaryModal";
+import VictoryScreen from "@/components/victory/VictoryScreen";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
@@ -233,7 +233,7 @@ export default function AIFactory() {
           )}
 
           {showSummaryModal && (
-            <GameSummaryModal 
+            <VictoryScreen 
               gameState={gameState}
               onClose={handleCloseSummaryModal}
               onReset={handleResetAndCloseSummary}

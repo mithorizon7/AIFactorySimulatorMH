@@ -17,6 +17,14 @@ export function useGameEngine() {
 
   // Start the game
   const startGame = () => {
+    // Initialize game start time for statistics tracking
+    setGameState(prevState => ({
+      ...prevState,
+      victoryStats: {
+        ...prevState.victoryStats,
+        gameStartTime: Date.now()
+      }
+    }));
     setIsRunning(true);
   };
 
@@ -110,7 +118,50 @@ export function useGameEngine() {
     }));
   };
 
-  // Auto-advance tutorial based on user actions (for the interactive tutorial system)
+  // Update victory statistics during gameplay
+  const updateVictoryStatistics = (state: GameStateType) => {
+    // Update time elapsed
+    if (state.victoryStats.gameStartTime > 0) {
+      state.victoryStats.totalTimeElapsed = Math.floor((Date.now() - state.victoryStats.gameStartTime) / 1000);
+    }
+    
+    // Track peak money
+    state.victoryStats.peakMoney = Math.max(state.victoryStats.peakMoney, state.money);
+    
+    // Track total money earned (revenue increase from previous tick)
+    const currentRevenue = state.revenue.b2b + state.revenue.b2c + state.revenue.investors;
+    state.victoryStats.totalMoneyEarned += currentRevenue;
+    
+    // Track peak subscribers
+    state.victoryStats.peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.b2bSubscribers || 0);
+    state.victoryStats.peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.b2cSubscribers || 0);
+    
+    // Track breakthroughs unlocked
+    state.victoryStats.breakthroughsUnlocked = state.breakthroughs.filter(b => b.unlocked).length;
+    
+    // Track highest era reached
+    const eraToNumber = {
+      [Era.GNT2]: 1,
+      [Era.GNT3]: 2,
+      [Era.GNT4]: 3,
+      [Era.GNT5]: 4,
+      [Era.GNT6]: 5,
+      [Era.GNT7]: 6
+    };
+    state.victoryStats.erasReached = Math.max(state.victoryStats.erasReached, eraToNumber[state.currentEra] || 1);
+    
+    // Update final intelligence (continuously updated)
+    state.victoryStats.finalIntelligence = state.intelligence;
+    
+    // Track strategic decisions/achievements
+    // This could be enhanced later to track specific strategies
+    
+    // Mark AGI achievement
+    if (state.intelligence >= state.agiThreshold) {
+      state.victoryStats.hasAchievedAGI = true;
+    }
+  };
+
   const checkTutorialProgression = (state: GameStateType) => {
     if (!state.tutorial.isActive || state.tutorial.isCompleted) return;
     
@@ -1405,6 +1456,9 @@ export function useGameEngine() {
           // Increment game days elapsed (representing time passing)
           // Each real second = 1 in-game day
           newState.daysElapsed += 1;
+          
+          // Update victory statistics continuously
+          updateVictoryStatistics(newState);
           
           // Check and process investment milestones
           checkInvestmentMilestones(newState);
