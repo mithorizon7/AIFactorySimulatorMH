@@ -18,6 +18,28 @@ interface UseNarrativeTriggersProps {
   onShowMessage: (message: NarrativeMessage) => void;
 }
 
+// Helper function to check if training can be started (basic prerequisite check)
+function checkTrainingPrerequisites(gameState: GameStateType): boolean {
+  // Basic checks: has compute capacity, some algorithm research progress, and at least one breakthrough
+  const hasComputeCapacity = gameState.computeCapacity.used < gameState.computeCapacity.maxCapacity;
+  const hasAlgorithmProgress = gameState.training.algorithmResearchProgress > 30; // 30% minimum
+  const hasBreakthrough = gameState.breakthroughs.some(b => b.unlocked);
+  
+  return hasComputeCapacity && hasAlgorithmProgress && hasBreakthrough;
+}
+
+// Helper function to check for resource imbalances
+function checkResourceImbalance(gameState: GameStateType): boolean {
+  const { compute, data, algorithm } = gameState.levels;
+  
+  // Check if any resource is significantly behind others
+  const maxLevel = Math.max(compute, data, algorithm);
+  const minLevel = Math.min(compute, data, algorithm);
+  
+  // If the difference is more than 3 levels, consider it imbalanced
+  return (maxLevel - minLevel) > 3;
+}
+
 export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeTriggersProps) {
   const previousStateRef = useRef<GameStateType | null>(null);
 
@@ -218,20 +240,88 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       });
     }
 
+    // 13. STUCK DETECTION - Contextual guidance when players appear stuck (with cooldown)
+    
+    const now = Date.now();
+    const stuckHintCooldown = 120000; // 2 minutes between stuck hints
+    const canShowStuckHint = now - gameState.narrativeFlags.lastStuckHintAt > stuckHintCooldown;
+
+    if (canShowStuckHint) {
+      // Priority order: training-blocked > no-money > no-revenue > no-breakthroughs
+      
+      // 1. Unable to start training due to prerequisites (highest priority)
+      const canStartTraining = checkTrainingPrerequisites(gameState);
+      if (!canStartTraining && !gameState.training.active && 
+          gameState.intelligence > 150 && !gameState.narrativeFlags.hasSeenStuckTrainingBlocked) {
+        gameState.narrativeFlags.hasSeenStuckTrainingBlocked = true;
+        gameState.narrativeFlags.lastStuckHintAt = now;
+        gameState.narrativeFlags.lastStuckHintId = 'stuck-training-blocked';
+        onShowMessage({
+          id: 'stuck-training-blocked',
+          title: narrative.STUCK_TRAINING_BLOCKED_HINT.title,
+          content: narrative.STUCK_TRAINING_BLOCKED_HINT.content,
+          context: narrative.STUCK_TRAINING_BLOCKED_HINT.context,
+          timestamp: now,
+          priority: 'high',
+          category: 'advice',
+          speaker: 'spark'
+        });
+      }
+      // 2. Stuck with no money and no revenue streams (check for actual revenue vs. enablement)
+      else if (gameState.money < 500 && totalRevenue === 0 && 
+               !gameState.narrativeFlags.hasSeenStuckNoMoney) {
+        gameState.narrativeFlags.hasSeenStuckNoMoney = true;
+        gameState.narrativeFlags.lastStuckHintAt = now;
+        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-money';
+        onShowMessage({
+          id: 'stuck-no-money',
+          title: narrative.STUCK_NO_MONEY_HINT.title,
+          content: narrative.STUCK_NO_MONEY_HINT.content,
+          context: narrative.STUCK_NO_MONEY_HINT.context,
+          timestamp: now,
+          priority: 'high',
+          category: 'advice',
+          speaker: 'spark'
+        });
+      }
+      // 3. High intelligence but no revenue generation
+      else if (gameState.intelligence > 500 && totalRevenue === 0 && 
+               !gameState.narrativeFlags.hasSeenStuckNoRevenue) {
+        gameState.narrativeFlags.hasSeenStuckNoRevenue = true;
+        gameState.narrativeFlags.lastStuckHintAt = now;
+        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-revenue';
+        onShowMessage({
+          id: 'stuck-no-revenue',
+          title: narrative.STUCK_NO_REVENUE_HINT.title,
+          content: narrative.STUCK_NO_REVENUE_HINT.content,
+          context: narrative.STUCK_NO_REVENUE_HINT.context,
+          timestamp: now,
+          priority: 'high',
+          category: 'advice',
+          speaker: 'spark'
+        });
+      }
+      // 4. Long periods without breakthrough progress (lowest priority, with time gate)
+      else if (gameState.intelligence > 200 && gameState.breakthroughs.filter(b => b.unlocked).length === 0 && 
+               gameState.daysElapsed > 5 && !gameState.narrativeFlags.hasSeenStuckNoBreakthroughs) {
+        gameState.narrativeFlags.hasSeenStuckNoBreakthroughs = true;
+        gameState.narrativeFlags.lastStuckHintAt = now;
+        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-breakthroughs';
+        onShowMessage({
+          id: 'stuck-no-breakthroughs',
+          title: narrative.STUCK_NO_BREAKTHROUGHS_HINT.title,
+          content: narrative.STUCK_NO_BREAKTHROUGHS_HINT.content,
+          context: narrative.STUCK_NO_BREAKTHROUGHS_HINT.context,
+          timestamp: now,
+          priority: 'high',
+          category: 'advice',
+          speaker: 'spark'
+        });
+      }
+    }
+
     previousStateRef.current = gameState;
   }, [gameState, onShowMessage]);
 }
 
-// Helper function to check for resource imbalances
-function checkResourceImbalance(gameState: GameStateType): boolean {
-  const { compute, data, algorithm } = gameState.levels;
-  
-  // Check if any resource is significantly behind others
-  const maxLevel = Math.max(compute, data, algorithm);
-  const minLevel = Math.min(compute, data, algorithm);
-  
-  // If the difference is more than 3 levels, consider it imbalanced
-  return (maxLevel - minLevel) > 3;
-}
 
-export type { NarrativeMessage };

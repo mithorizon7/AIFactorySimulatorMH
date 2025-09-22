@@ -217,6 +217,14 @@ export interface GameStateType {
     hasGrantedEarlyGrant: boolean;
     hasGranted20MinBoost: boolean;
     hasGrantedLateStageFunding: boolean;
+    // Stuck detection flags for guidance
+    hasSeenStuckNoMoney: boolean;
+    hasSeenStuckNoRevenue: boolean;
+    hasSeenStuckTrainingBlocked: boolean;
+    hasSeenStuckNoBreakthroughs: boolean;
+    // Stuck detection cooldown system
+    lastStuckHintAt: number;
+    lastStuckHintId: string;
   };
   
   // Interactive Tutorial System
@@ -674,7 +682,15 @@ export const initialGameState: GameStateType = {
     // Fail-safe funding flags (one-time only)
     hasGrantedEarlyGrant: false,
     hasGranted20MinBoost: false,
-    hasGrantedLateStageFunding: false
+    hasGrantedLateStageFunding: false,
+    // Stuck detection flags for guidance
+    hasSeenStuckNoMoney: false,
+    hasSeenStuckNoRevenue: false,
+    hasSeenStuckTrainingBlocked: false,
+    hasSeenStuckNoBreakthroughs: false,
+    // Stuck detection cooldown system
+    lastStuckHintAt: 0,
+    lastStuckHintId: ''
   },
   
   // Breakthroughs - Organized by AI eras

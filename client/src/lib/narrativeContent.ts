@@ -341,5 +341,34 @@ export const narrative = {
     content: "You're learning the fundamental truth of AI: scaling compute, data, and algorithms together creates emergent capabilities. This is how we'll reach AGI!",
     context: "Modern AI breakthroughs follow predictable scaling laws discovered by researchers at OpenAI, DeepMind, and others.",
     speaker: "spark"
+  },
+
+  // Stuck Detection Guidance from Spark
+  STUCK_NO_MONEY_HINT: {
+    title: "Financial Strategy Tip",
+    content: "I notice you're low on funds and haven't been making revenue. Try enabling the API or Chatbot to start generating income from your current AI capabilities!",
+    context: "Revenue generation is crucial for funding further research. Enable customer-facing services to monetize your AI progress.",
+    speaker: "spark"
+  },
+
+  STUCK_NO_REVENUE_HINT: {
+    title: "Revenue Strategy Guidance",
+    content: "You have good intelligence but no revenue streams! Enable the API for developers or the Chatbot for consumers to start making money from your AI.",
+    context: "Even basic AI capabilities can generate revenue. Companies like OpenAI started monetizing GPT models early in development.",
+    speaker: "spark"
+  },
+
+  STUCK_TRAINING_BLOCKED_HINT: {
+    title: "Training Prerequisites Help",
+    content: "Training is blocked? You need sufficient compute capacity, algorithm research progress, and breakthrough unlocks. Focus on whichever prerequisite is missing!",
+    context: "Real AI training runs require careful resource planning. Check compute availability, research completeness, and algorithm breakthroughs.",
+    speaker: "spark"
+  },
+
+  STUCK_NO_BREAKTHROUGHS_HINT: {
+    title: "Research Progress Tip",
+    content: "Stuck on breakthroughs? Invest in all three pillars (compute, data, algorithms) evenly. Breakthroughs unlock when you reach the required investment levels!",
+    context: "AI breakthroughs often require balanced investment across multiple areas, just like how GPT required advances in compute, data, and architecture.",
+    speaker: "spark"
   }
 };
