@@ -1120,16 +1120,35 @@ export function useGameEngine() {
     return newState;
   };
 
+  // Late-game economic balance: Calculate scaled investment costs with diminishing returns
+  const getScaledInvestmentCost = (baseCost: number, currentLevel: number, era: Era): number => {
+    // Base scaling factor increases with era to maintain challenge in advanced gameplay
+    const eraScalingFactor = era === Era.GNT2 ? 1.0 : 
+                            era === Era.GNT3 ? 1.2 : 
+                            era === Era.GNT4 ? 1.5 : 
+                            era === Era.GNT5 ? 2.0 : 
+                            era === Era.GNT6 ? 3.0 : 4.0; // GNT-7 and beyond
+
+    // Exponential scaling: each level costs significantly more
+    const levelScaling = Math.pow(1.4, currentLevel);
+    
+    // Late-game scaling for advanced eras to prevent trivialization  
+    const scaledCost = baseCost * levelScaling * eraScalingFactor;
+    
+    return Math.floor(scaledCost);
+  };
+
   // Money allocation functions
   const allocateMoneyToCompute = () => {
-    if (gameState.money >= 100) {
+    const cost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
+    if (gameState.money >= cost) {
       setGameState(prevState => {
         const newState = { ...prevState };
-        newState.money -= 100;
+        newState.money -= cost;
         newState.computeInputs.money += 1;
         
         // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += 100;
+        newState.narrativeFlags.totalInvestmentAmount += cost;
         
         // Also increase compute level for training prerequisites
         newState.levels.compute += 1;
@@ -1150,26 +1169,27 @@ export function useGameEngine() {
       
       toast({
         title: "Infrastructure Upgraded",
-        description: "Your AI's compute level has increased, helping meet training prerequisites!",
+        description: `Compute level increased! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(100, gameState.levels.compute + 1, gameState.currentEra))}.`,
       });
     } else {
       toast({
         title: "Not enough money",
-        description: "You need at least $100 to improve compute infrastructure.",
+        description: `You need at least $${formatCurrency(cost)} to improve compute infrastructure.`,
         variant: "destructive",
       });
     }
   };
 
   const allocateMoneyToData = () => {
-    if (gameState.money >= 75) {
+    const cost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
+    if (gameState.money >= cost) {
       setGameState(prevState => {
         const newState = { ...prevState };
-        newState.money -= 75;
+        newState.money -= cost;
         newState.dataInputs.quality += 1;
         
         // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += 75;
+        newState.narrativeFlags.totalInvestmentAmount += cost;
         
         // *** ADD THIS LINE ***
         // This brings the Data resource in line with Compute and Algorithm,
@@ -1191,32 +1211,29 @@ export function useGameEngine() {
       });
       
       toast({
-        title: "Money Allocated to Data",
-        description: "Your AI now has access to higher quality data!",
+        title: "Data Infrastructure Upgraded",
+        description: `Data quality improved! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(75, gameState.levels.data + 1, gameState.currentEra))}.`,
       });
     } else {
       toast({
         title: "Not enough money",
-        description: "You need at least $75 to improve data quality.",
+        description: `You need at least $${formatCurrency(cost)} to improve data quality.`,
         variant: "destructive",
       });
     }
   };
 
   const allocateMoneyToAlgorithm = () => {
-    const baseCost = 125;
-    const currentLevel = gameState.algorithmInputs.architectures;
-    // Cost increases with each level of engineers hired
-    const scaledCost = Math.floor(baseCost * (1 + (currentLevel * 0.1))); 
+    const cost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
     
-    if (gameState.money >= scaledCost) {
+    if (gameState.money >= cost) {
       setGameState(prevState => {
         const newState = { ...prevState };
-        newState.money -= scaledCost;
+        newState.money -= cost;
         newState.algorithmInputs.architectures += 1;
         
         // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += scaledCost;
+        newState.narrativeFlags.totalInvestmentAmount += cost;
         
         // Increase algorithm production based on architecture improvements
         newState.production.algorithm *= 1.15;
@@ -1239,13 +1256,13 @@ export function useGameEngine() {
       });
       
       toast({
-        title: "Hired Better AI Research Engineers",
-        description: "Your enhanced research team will improve algorithm development speed and unlock new model architectures!",
+        title: "Algorithm Infrastructure Upgraded",
+        description: `Research team enhanced! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(125, gameState.levels.algorithm + 1, gameState.currentEra))}.`,
       });
     } else {
       toast({
         title: "Not enough money",
-        description: `You need at least $${scaledCost} to hire better research engineers.`,
+        description: `You need at least $${formatCurrency(cost)} to hire better research engineers.`,
         variant: "destructive",
       });
     }
@@ -1622,10 +1639,11 @@ export function useGameEngine() {
 
   // Additional money allocation functions for enabling inputs
   const allocateMoneyToElectricity = () => {
-    if (gameState.money >= 85) {
+    const cost = getScaledInvestmentCost(85, gameState.computeInputs.electricity, gameState.currentEra);
+    if (gameState.money >= cost) {
       setGameState(prevState => {
         const newState = { ...prevState };
-        newState.money -= 85;
+        newState.money -= cost;
         newState.computeInputs.electricity += 1;
         
         // Improve compute production based on better electricity
