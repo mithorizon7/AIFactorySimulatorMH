@@ -796,7 +796,23 @@ export function useGameEngine() {
         } else {
           // Calculate growth rate for existing developer base
           const baseGrowthRate = 0.05 * intelligenceInfluence;
-          const adjustedGrowthRate = baseGrowthRate * developerToolsEffect;
+          let adjustedGrowthRate = baseGrowthRate * developerToolsEffect;
+          
+          // MARKET SATURATION: Apply diminishing returns for large developer counts
+          // Simulates market saturation as suggested in economic tuning document
+          const currentDevelopers = newState.revenue.developers;
+          if (currentDevelopers > 10000) {
+            // Beyond 10K developers, growth rate is reduced significantly
+            const saturationFactor = Math.max(0.1, 1 - ((currentDevelopers - 10000) / 50000));
+            adjustedGrowthRate *= saturationFactor;
+          } else if (currentDevelopers > 5000) {
+            // Between 5K-10K, gradual slowdown begins
+            const saturationFactor = 1 - ((currentDevelopers - 5000) / 25000);
+            adjustedGrowthRate *= saturationFactor;
+          }
+          
+          // Cap maximum growth rate to prevent explosive scaling
+          adjustedGrowthRate = Math.min(adjustedGrowthRate, 0.15); // Max 15% per update
           
           // Store the growth rate for UI display
           newState.revenue.developerGrowthRate = adjustedGrowthRate;
@@ -835,7 +851,23 @@ export function useGameEngine() {
           const chatbotBonus = newState.revenue.chatbotImprovementLevel * 0.05;
           
           // Calculate total subscriber growth rate
-          const totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
+          let totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
+          
+          // MARKET SATURATION: Apply diminishing returns for large subscriber counts
+          // Simulates consumer market saturation as suggested in economic tuning document
+          const currentSubscribers = newState.revenue.subscribers;
+          if (currentSubscribers > 100000) {
+            // Beyond 100K subscribers, growth slows significantly 
+            const saturationFactor = Math.max(0.05, 1 - ((currentSubscribers - 100000) / 500000));
+            totalGrowthRate *= saturationFactor;
+          } else if (currentSubscribers > 50000) {
+            // Between 50K-100K, gradual market saturation begins
+            const saturationFactor = 1 - ((currentSubscribers - 50000) / 250000);
+            totalGrowthRate *= saturationFactor;
+          }
+          
+          // Cap maximum growth rate to prevent explosive scaling
+          totalGrowthRate = Math.min(totalGrowthRate, 0.12); // Max 12% per update
           
           // Store the growth rate for UI display
           newState.revenue.subscriberGrowthRate = totalGrowthRate;
