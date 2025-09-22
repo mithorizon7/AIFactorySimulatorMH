@@ -181,9 +181,9 @@ export const narrative = {
   },
   
   ERA_ADVANCE_AGI: {
-    title: "We've Achieved AGI!",
-    content: "Incredible! We've done it! Our AI has achieved Artificial General Intelligence. It can now match or exceed human performance across all cognitive tasks.",
-    context: "This represents the ultimate goal - AI that can learn, reason, and adapt like humans across any domain or challenge."
+    title: "🏆 HISTORIC BREAKTHROUGH: AGI ACHIEVED! 🏆",
+    content: "**EXTRAORDINARY ACHIEVEMENT!** You've successfully built the world's first Artificial General Intelligence! Your AI now matches human-level performance across ALL cognitive domains - reasoning, creativity, learning, and adaptation.",
+    context: "This is the ultimate milestone in AI development! You've balanced the three pillars perfectly: massive compute power, high-quality data, and breakthrough algorithms. In the real world, achieving AGI would represent the most significant technological advancement in human history."
   },
   
   // Investment Milestones

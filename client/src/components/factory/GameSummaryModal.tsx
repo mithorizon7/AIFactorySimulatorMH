@@ -1,5 +1,6 @@
 import { GameStateType } from "@/lib/gameState";
 import { Button } from "@/components/ui/button";
+import { SparkCharacter } from "@/components/character/SparkCharacter";
 
 interface GameSummaryModalProps {
   gameState: GameStateType;
@@ -23,7 +24,16 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full p-6">
-        <h2 className="text-2xl font-bold text-center mb-6">AI Factory Summary</h2>
+        {gameState.intelligence >= gameState.agiThreshold ? (
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-2">
+              🎉 AGI ACHIEVED! 🎉
+            </h2>
+            <p className="text-lg text-gray-300">You've built the world's first Artificial General Intelligence!</p>
+          </div>
+        ) : (
+          <h2 className="text-2xl font-bold text-center mb-6">AI Factory Summary</h2>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-gray-700 rounded-lg p-4">
@@ -133,21 +143,61 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
           </div>
         </div>
         
+        {gameState.intelligence >= gameState.agiThreshold ? (
+          <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 rounded-lg p-4 mb-6 relative">
+            <SparkCharacter 
+              position="corner"
+              size="small"
+            />
+            <div className="text-center pr-16">
+              <h3 className="text-lg font-bold text-yellow-300 mb-2">🏆 Historic Achievement Unlocked</h3>
+              <p className="text-gray-200 mb-3">
+                You've successfully navigated the challenges of AI development - from initial research to artificial general intelligence. 
+                Just like real AI pioneers, you balanced compute scaling, data quality, and algorithmic breakthroughs.
+              </p>
+              <p className="text-sm text-yellow-200">
+                Your AGI represents the culmination of decades of AI research compressed into this simulation. 
+                In the real world, this achievement would mark a turning point for humanity.
+              </p>
+            </div>
+            <div className="mt-4 bg-black/20 border border-yellow-500/20 rounded p-3">
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0 text-xl">⚡</div>
+                <div>
+                  <p className="text-xs font-medium text-yellow-300 mb-1">Message from Spark</p>
+                  <p className="text-xs text-yellow-200 leading-relaxed">
+                    "Incredible work! You've mastered the three pillars of AI development and achieved what researchers worldwide are striving for. 
+                    This is exactly how real AGI will emerge - through the perfect synthesis of compute, data, and algorithms!"
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        
         <div className="text-center">
-          <p className="text-gray-300 mb-4">The most impressive AI breakthroughs happen when all three factors work together - just like in your AI Factory!</p>
+          <p className="text-gray-300 mb-4">
+            {gameState.intelligence >= gameState.agiThreshold 
+              ? "Congratulations on mastering the three pillars of AI development!"
+              : "The most impressive AI breakthroughs happen when all three factors work together - just like in your AI Factory!"
+            }
+          </p>
           
           <div className="flex justify-center space-x-4">
             <Button
               className="bg-gray-600 hover:bg-gray-500 text-white font-medium"
               onClick={onReset}
             >
-              Play Again
+              {gameState.intelligence >= gameState.agiThreshold ? "Build Another AGI" : "Play Again"}
             </Button>
             <Button
-              className="bg-blue-600 hover:bg-blue-500 text-white font-medium"
+              className={`${gameState.intelligence >= gameState.agiThreshold 
+                ? "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500" 
+                : "bg-blue-600 hover:bg-blue-500"
+              } text-white font-medium`}
               onClick={onClose}
             >
-              Finish
+              {gameState.intelligence >= gameState.agiThreshold ? "Celebrate Victory" : "Finish"}
             </Button>
           </div>
         </div>
