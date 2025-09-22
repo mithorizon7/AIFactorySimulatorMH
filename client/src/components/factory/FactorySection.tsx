@@ -646,7 +646,7 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Investments in data curation lead to more accurate AI models.
+                  <strong className="text-green-300">⭐ Raises Data Level</strong> - Investments in data curation lead to more accurate AI models and unlock training prerequisites.
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
@@ -682,7 +682,7 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  More data through web scraping and licensing leads to better capabilities.
+                  <strong className="text-amber-400">⚡ Boosts Production</strong> - More data through web scraping and licensing leads to better capabilities. <em className="text-gray-500">Quality upgrades needed for Data Level.</em>
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
@@ -717,7 +717,7 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Investment in multimodal data unlocks new AI capabilities.
+                  <strong className="text-amber-400">⚡ Boosts Production</strong> - Investment in multimodal data unlocks new AI capabilities. <em className="text-gray-500">Quality upgrades needed for Data Level.</em>
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
