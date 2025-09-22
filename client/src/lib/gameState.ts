@@ -213,6 +213,10 @@ export interface GameStateType {
     hasSeenInvestmentMilestone1M: boolean;
     hasSeenInvestmentMilestone10M: boolean;
     totalInvestmentAmount: number; // Track total money spent
+    // Fail-safe funding flags (one-time only)
+    hasGrantedEarlyGrant: boolean;
+    hasGranted20MinBoost: boolean;
+    hasGrantedLateStageFunding: boolean;
   };
   
   // Interactive Tutorial System
@@ -621,6 +625,16 @@ export const initialGameState: GameStateType = {
       era: Era.GNT5,
       description: "Massive investment round as your AI approaches transformative capabilities.",
       realWorldParallel: "Large AI companies secure hundreds of millions in Series C funding when they demonstrate transformative technology potential."
+    },
+    {
+      id: 5,
+      name: "Series D",
+      requiredIntelligence: 800, // Intelligence threshold for Series D
+      funding: 1000000, // $1,000,000 funding for expensive late-game
+      unlocked: false,
+      era: Era.GNT6,
+      description: "Unprecedented investment as your AI approaches AGI-level capabilities.",
+      realWorldParallel: "Only the most advanced AI companies reach Series D funding, with valuations exceeding $10 billion as they approach transformative AGI capabilities."
     }
   ],
   nextMilestoneId: 2, // Next milestone to reach is Series A (id: 2)
@@ -656,7 +670,11 @@ export const initialGameState: GameStateType = {
     hasSeenBalanceAdvice: false,
     hasSeenInvestmentMilestone1M: false,
     hasSeenInvestmentMilestone10M: false,
-    totalInvestmentAmount: 0
+    totalInvestmentAmount: 0,
+    // Fail-safe funding flags (one-time only)
+    hasGrantedEarlyGrant: false,
+    hasGranted20MinBoost: false,
+    hasGrantedLateStageFunding: false
   },
   
   // Breakthroughs - Organized by AI eras

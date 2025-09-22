@@ -1,0 +1,28 @@
+Tuning the Economic and Revenue Systems
+The in-game economy (B2B API revenue and B2C subscribers) is crucial for funding expensive later-era projects, and it also adds fun by simulating a startup’s growth. To improve its playability:
+Encourage Early Revenue Streams: As mentioned, prompt players to enable the API by GNT-3 era. We might also consider automatically enabling it after a short delay if the player doesn’t act (e.g. 60 seconds after the “API Service Unlocked” toast
+GitHub
+, if still off, Spark could say “Let’s turn on the API to start earning money” and flip it on with the player’s consent). This prevents a novice from unknowingly handicapping themselves by leaving a revenue source idle.
+Scale Revenue Gradually: Currently, revenue can explode exponentially once intelligence is high. The formulas show that developer count growth accelerates super-linearly with intelligence
+GitHub
+, potentially leading to thousands of developers and huge income in seconds. While the “hockey stick” growth is realistic and rewarding, we should ensure it doesn’t destabilize gameplay. Monitoring playtests will tell us if the late-game money comes in too fast to be meaningful. If players are swimming in cash far beyond what they can spend (e.g. millions before they even reach the final training), we could gently cap the growth:
+One approach is diminishing returns on very high developer counts or subscriber counts (simulating market saturation). For example, beyond 10,000 developers, each additional 1,000 might contribute slightly less revenue than the previous (to avoid an uncontrolled spiral).
+Another approach is simply providing more things to spend money on, so excess cash translates into optional achievements or improvements (cosmetic upgrades, bonus content) rather than making the core goals too easy.
+Subscriber Churn and Capacity Management: The game already models service capacity and will cause subscriber churn if compute is critically overloaded
+GitHub
+GitHub
+. This adds a nice strategic element (player must scale compute to match user growth). We should keep an eye on whether players understand this mechanism. If many players lose subscribers due to capacity without understanding why, we might add an alert via Spark: “Users are leaving because the AI response times are slow – add more Compute infrastructure!”. The existing warnings for high compute usage
+GitHub
+GitHub
+ lay the groundwork; it’s about ensuring players notice and act on them. Possibly, making the “Compute Usage” bar in the UI turn red when >90% could be a helpful visual cue.
+Refining Random Events and Difficulty Spikes
+Random events are an excellent way to keep the simulation interesting and tie it to real-world scenarios, but we must ensure they don’t introduce frustration or unfair setbacks:
+Scale or Limit Negative Events: Currently, there is at least one major negative event, “GPU Shortage Crisis,” in the GNT-3 era that cuts compute production by 25%
+GitHub
+. While this is an educational moment (showing external factors affecting AI progress), a unlucky trigger at the wrong time could stall a struggling player. We should consider either reducing the magnitude of this penalty (e.g. 10-15% instead of 25%), or making it a temporary effect. For instance, the shortage could last “X days” in-game and then resolve with a follow-up event that restores compute output. This way the player experiences the setback but knows it’s not permanent.
+Interactive Event Responses: Whenever possible, turn events into choices for the player. Instead of an automatic 25% compute reduction, present a dilemma: “Global GPU shortage! Do we (A) Pay a premium to secure hardware (cost $5,000, mitigates impact to 10%), or (B) Wait it out (no cost, but -25% compute for 30 days)?”. This makes the gameplay more engaging and allows the player to feel in control, thus reducing frustration. Implementing this would require a new UI for event decisions and branching outcomes, which could be a longer-term enhancement.
+Positive Events and Rewards: Balance out the negatives with exciting positive events. The game already includes several positive breakthroughs and initiatives (e.g. “Large-Scale Web Scraping” gives +20% data production
+GitHub
+). We can add more fun random boosts – for example, “Open Source Contribution: An open-source community improves your code, boosting algorithm efficiency by 10%!” These keep morale high and provide catch-up mechanics for slower players (a lucky break when they need it). Since events trigger roughly every 30 in-game days with 20% probability
+GitHub
+, adding a few more positive events increases the chance that every player sees at least one lucky event in their playthrough.

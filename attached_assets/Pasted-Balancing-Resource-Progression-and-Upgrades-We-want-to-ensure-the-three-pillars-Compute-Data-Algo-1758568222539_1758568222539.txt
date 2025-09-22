@@ -1,0 +1,25 @@
+Balancing Resource Progression and Upgrades
+We want to ensure the three pillars (Compute, Data, Algorithms) advance together without one dominating or lagging behind. The game logic already encourages balance – intelligence gain gets a synergy bonus when all three levels are developed evenly
+GitHub
+. We can reinforce this balance in a few ways:
+Consistent Level-Up Mechanics: Make sure each pillar’s “level” increases with player investment in a clear way. Currently, investing $100 in compute raises the compute level by 1
+GitHub
+, and investing in Data Quality raises the data level by 1
+GitHub
+. However, investing in Data Quantity or Formats does not increase the data level (they boost production only)
+GitHub
+GitHub
+. This could confuse players who pour money into quantity and wonder why their “Data level” stays low. We have two options:
+Option A: Simplify and tie the Data level to the highest of quality/quantity. For example, each data upgrade (of any type) could contribute partially to the level. But this might blur the educational point that data quality is key.
+Option B: Clarify via UI that “Data Quality upgrades are required to raise your Data level.” This could be done in the tooltip or Spark’s dialogue. Since the code already treats quality as the level-gating factor (with a dev comment noting this fix)
+GitHub
+, emphasizing it to the player maintains balance and learning objectives.
+Upgrade Cost vs. Benefit Tweaks: Review the cost-benefit of each upgrade to ensure no single strategy dominates. For instance, Data Quantity ($60 for +15% data production) gives a bigger immediate boost than Data Quality ($75 for +10% production)
+GitHub
+GitHub
+, but quality also raises the level (unlocking breakthroughs and training). This is a good trade-off. We should verify similar trade-offs for compute and algorithm inputs. If any upgrade is currently underutilized, consider adjusting its cost or effect. For example, Regulation costs $120 and currently gives a one-time investor bonus of $200 plus a 15% compute boost
+GitHub
+ – if playtesters rarely spend on it, we might boost its investor confidence effect (maybe unlock a minor funding event) to make it more attractive.
+Algorithm Research Reset: After each era’s training, the algorithm research progress might need resetting to introduce a meaningful research phase for the next era. In the current code, once you reach 100% research to unlock a training run, it stays at 100% (there is no explicit reset when moving to the next era)
+GitHub
+. This means the first era requires research but subsequent eras can be unlocked instantly once other prerequisites are met. For better pacing, we should reset algorithmResearchProgress to 0% after completing a training run, requiring the player to conduct new research for the next era (albeit faster, since they likely have more free compute and possibly hired engineers by then). This adds a consistent gameplay loop: invest -> research -> train for each era, reinforcing the learning pattern. If we implement this, we must be cautious to not slow down the game too much – we can increase the base research rate in later eras so that each research phase only takes a minute or two with upgrades. The goal is to add a bit of active gameplay (allocating resources to research) rather than an instant skip.

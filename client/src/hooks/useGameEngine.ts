@@ -556,6 +556,70 @@ export function useGameEngine() {
     }
   };
 
+  // FAIL-SAFE FUNDING MECHANISM: Prevents players from getting completely stuck
+  const checkFailSafeFunding = (state: GameStateType) => {
+    // Emergency funding if player is stuck with very low money and hasn't progressed (ONE-TIME ONLY)
+    if (state.money < 50 && timeElapsed > 300 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGrantedEarlyGrant) {
+      const emergencyFunding = 2000 + Math.floor(state.intelligence * 5);
+      state.money += emergencyFunding;
+      state.narrativeFlags.hasGrantedEarlyGrant = true;
+      
+      toast({
+        title: "Emergency Research Grant!",
+        description: `A government research grant has provided $${emergencyFunding.toLocaleString()} to prevent your AI research from stalling.`,
+        duration: 7000,
+      });
+    }
+    
+    // Major progress boost if player is severely behind pace (ONE-TIME ONLY + BREAKTHROUGH UNLOCK)
+    if (timeElapsed > 1200 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGranted20MinBoost) {
+      // Mark breakthrough event as used
+      state.narrativeFlags.hasGranted20MinBoost = true;
+      
+      // Provide targeted help: unlock first GNT-2 breakthrough and boost resources to meet prerequisites
+      const firstBreakthrough = state.breakthroughs.find(b => b.era === Era.GNT2 && !b.unlocked);
+      if (firstBreakthrough) {
+        firstBreakthrough.unlocked = true;
+        state.intelligence += 100; // Breakthrough bonus
+      }
+      
+      // Ensure intelligence reaches at least 200 for GNT-3 progression (deterministic)
+      if (state.intelligence < 200) {
+        state.intelligence = 200;
+      }
+      
+      // Boost levels to meet basic GNT-3 training prerequisites
+      state.levels.compute = Math.max(state.levels.compute, 2);
+      state.levels.data = Math.max(state.levels.data, 2);
+      state.levels.algorithm = Math.max(state.levels.algorithm, 2);
+      
+      // Provide funding for investments
+      state.money += 3000;
+      
+      // CRITICAL: Immediately re-evaluate breakthroughs and era progression
+      state.breakthroughs = checkBreakthroughs(state);
+      
+      toast({
+        title: "Research Breakthrough Event!",
+        description: "Your persistent effort has paid off! A major breakthrough has unlocked and your research infrastructure has been upgraded to meet progression requirements.",
+        duration: 8000,
+      });
+    }
+    
+    // Late-game funding safety net for expensive final training runs (ONE-TIME ONLY)
+    if (state.intelligence >= 750 && state.money < 100000 && state.currentEra === Era.GNT6 && !state.narrativeFlags.hasGrantedLateStageFunding) {
+      const lateStageFunding = 500000;
+      state.money += lateStageFunding;
+      state.narrativeFlags.hasGrantedLateStageFunding = true;
+      
+      toast({
+        title: "Strategic Investment Partnership!",
+        description: `A major tech corporation has partnered with you, providing $${lateStageFunding.toLocaleString()} to accelerate your path to AGI.`,
+        duration: 7000,
+      });
+    }
+  };
+
   // Check for contextual strategic warnings and hints
   const checkStrategicWarnings = (state: GameStateType) => {
     // Skip if already showing an advisor message
@@ -1293,6 +1357,9 @@ export function useGameEngine() {
           // Check and process investment milestones
           checkInvestmentMilestones(newState);
           
+          // FAIL-SAFE MECHANISM: Check for players who might be stuck
+          checkFailSafeFunding(newState);
+          
           // Check for strategic warnings and contextual hints
           checkStrategicWarnings(newState);
           
@@ -1368,6 +1435,10 @@ export function useGameEngine() {
                 // Apply era-specific bonuses
                 // This calls the same function we use when manually advancing eras
                 advanceToNextEra(newState, activeEra);
+                
+                // CRITICAL FIX: Reset algorithm research progress for the next era
+                // This ensures each era requires meaningful research investment
+                newState.training.algorithmResearchProgress = 0;
                 
                 // Show completion message
                 toast({
