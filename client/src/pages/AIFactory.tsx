@@ -136,7 +136,7 @@ export default function AIFactory() {
         userId: null,
         intelligence: gameState.intelligence,
         money: gameState.money,
-        timeElapsed: timeElapsed,
+        timeRemaining: timeElapsed,
         resourceCompute: Math.floor(gameState.resources.compute),
         resourceData: Math.floor(gameState.resources.data),
         resourceAlgorithm: Math.floor(gameState.resources.algorithm),

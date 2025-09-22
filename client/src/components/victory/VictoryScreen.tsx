@@ -349,51 +349,145 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
             </Card>
           )}
 
-          {/* Educational Context */}
+          {/* Educational Context - Your AI Development Journey */}
           <Card className="bg-gray-700 border-gray-600">
             <CardHeader>
-              <CardTitle className="text-xl">What You've Learned About AI Development</CardTitle>
+              <CardTitle className="text-xl">Your AI Development Journey - Real World Connections</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-blue-400 rounded-sm" />
+            <CardContent className="space-y-6">
+              {/* Resource Investment Analysis */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-white">How Your Investments Shaped AI Progress</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-blue-400 rounded-sm" />
+                      </div>
+                      <h5 className="font-medium text-blue-300">Compute ({gameState.levels.compute}/10)</h5>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-2">
+                      Your Level {gameState.levels.compute} compute infrastructure {gameState.levels.compute >= 5 
+                        ? "enabled large-scale AI training" 
+                        : "supported basic AI operations"}.
+                    </p>
+                    <p className="text-xs text-blue-200">
+                      Real-world parallel: {gameState.levels.compute >= 7 
+                        ? "Like Meta's AI supercomputers or Google's TPU clusters that train frontier models"
+                        : gameState.levels.compute >= 4
+                        ? "Similar to mid-sized AI companies using cloud GPUs for model training"
+                        : "Like startups using basic cloud compute for AI prototypes"}
+                    </p>
                   </div>
-                  <h4 className="font-medium text-white mb-2">Compute</h4>
-                  <p className="text-sm text-gray-300">
-                    AI needs powerful computers. Companies invest billions in specialized hardware like GPUs and TPUs.
-                  </p>
+                  
+                  <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-green-400 rounded-sm" />
+                      </div>
+                      <h5 className="font-medium text-green-300">Data ({gameState.levels.data}/10)</h5>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-2">
+                      Your Level {gameState.levels.data} data strategy {gameState.levels.data >= 5 
+                        ? "provided high-quality, diverse training datasets" 
+                        : "gave access to basic training data"}.
+                    </p>
+                    <p className="text-xs text-green-200">
+                      Real-world parallel: {gameState.levels.data >= 7 
+                        ? "Like OpenAI's curated datasets or Anthropic's Constitutional AI training data"
+                        : gameState.levels.data >= 4
+                        ? "Similar to companies using filtered web data and synthetic datasets"
+                        : "Like open-source datasets used for research prototypes"}
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-purple-900/20 border border-purple-700/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-purple-400 rounded-sm" />
+                      </div>
+                      <h5 className="font-medium text-purple-300">Algorithms ({gameState.levels.algorithm}/10)</h5>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-2">
+                      Your Level {gameState.levels.algorithm} research {gameState.levels.algorithm >= 5 
+                        ? "unlocked advanced AI architectures and training methods" 
+                        : "provided foundational AI techniques"}.
+                    </p>
+                    <p className="text-xs text-purple-200">
+                      Real-world parallel: {gameState.levels.algorithm >= 7 
+                        ? "Like breakthrough architectures (Transformers, RLHF) that enable GPT-4 and Claude"
+                        : gameState.levels.algorithm >= 4
+                        ? "Similar to improved training techniques used by AI labs worldwide"
+                        : "Like basic neural networks used in early AI applications"}
+                    </p>
+                  </div>
                 </div>
-                
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-green-400 rounded-sm" />
+              </div>
+
+              {/* Breakthrough Impact Analysis */}
+              {unlockedBreakthroughs.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-medium text-white">Breakthrough Impact on Your Success</h4>
+                  <div className="space-y-2">
+                    {unlockedBreakthroughs.slice(0, 3).map(breakthrough => (
+                      <div key={breakthrough.id} className="p-3 bg-gray-600/50 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${
+                            breakthrough.type === 'compute' ? 'bg-blue-400' :
+                            breakthrough.type === 'data' ? 'bg-green-400' :
+                            breakthrough.type === 'algorithm' ? 'bg-purple-400' :
+                            'bg-yellow-400'
+                          }`} />
+                          <div>
+                            <div className="font-medium text-white text-sm">{breakthrough.name}</div>
+                            <div className="text-xs text-gray-300 mt-1">{breakthrough.realWorldParallel}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <h4 className="font-medium text-white mb-2">Data</h4>
-                  <p className="text-sm text-gray-300">
-                    Quality data is crucial. AI learns from examples - better data leads to smarter AI.
-                  </p>
                 </div>
-                
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-purple-400 rounded-sm" />
+              )}
+
+              {/* Strategic Insights */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-white">Strategic Lessons for Real AI Development</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 bg-gray-600/30 rounded-lg">
+                    <h5 className="text-sm font-medium text-yellow-300 mb-2">🎯 What Worked</h5>
+                    <ul className="text-xs text-gray-300 space-y-1">
+                      {gameState.levels.compute >= 6 && <li>• Heavy compute investment enabled large-scale training</li>}
+                      {gameState.levels.data >= 6 && <li>• Quality data curation improved model performance</li>}
+                      {gameState.levels.algorithm >= 6 && <li>• Research breakthroughs unlocked new capabilities</li>}
+                      {gameState.victoryStats.peakB2BSubscribers > gameState.victoryStats.peakB2CSubscribers 
+                        ? <li>• B2B focus provided stable revenue for R&D</li>
+                        : <li>• Consumer adoption drove scale and data collection</li>}
+                    </ul>
                   </div>
-                  <h4 className="font-medium text-white mb-2">Algorithms</h4>
-                  <p className="text-sm text-gray-300">
-                    Research breakthroughs like transformers and RLHF have made modern AI possible.
-                  </p>
+                  
+                  <div className="p-3 bg-gray-600/30 rounded-lg">
+                    <h5 className="text-sm font-medium text-blue-300 mb-2">💡 Alternative Strategies</h5>
+                    <ul className="text-xs text-gray-300 space-y-1">
+                      {gameState.levels.compute < 6 && <li>• More compute investment could have accelerated training</li>}
+                      {gameState.levels.data < 6 && <li>• Better data quality would improve model capabilities</li>}
+                      {gameState.levels.algorithm < 6 && <li>• More research could unlock architectural breakthroughs</li>}
+                      {unlockedBreakthroughs.length < 3 && <li>• Balancing all three pillars unlocks more breakthroughs</li>}
+                    </ul>
+                  </div>
                 </div>
               </div>
               
               {isAGIAchieved && (
-                <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
-                  <h4 className="font-bold text-yellow-300 mb-2">🏆 AGI Achievement</h4>
-                  <p className="text-gray-200 text-sm">
-                    You've successfully balanced all three pillars of AI development to achieve Artificial General Intelligence. 
-                    This represents the culmination of decades of AI research compressed into this simulation. 
-                    In the real world, this achievement would mark a turning point for humanity.
+                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border border-yellow-500/30 rounded-lg">
+                  <h4 className="font-bold text-yellow-300 mb-2">🏆 AGI Achievement - The Real Challenge Ahead</h4>
+                  <p className="text-gray-200 text-sm leading-relaxed">
+                    In this simulation, you balanced compute, data, and algorithms to achieve AGI in {formatTime(gameState.victoryStats.totalTimeElapsed)}. 
+                    In reality, companies like OpenAI, Anthropic, and DeepMind are racing toward this goal with investments in the hundreds of billions. 
+                    Your strategy of {gameState.levels.compute >= gameState.levels.data && gameState.levels.compute >= gameState.levels.algorithm 
+                      ? "compute-first development" 
+                      : gameState.levels.data >= gameState.levels.algorithm 
+                      ? "data-centric AI" 
+                      : "research-driven innovation"} mirrors real approaches used by leading AI labs today.
                   </p>
                 </div>
               )}

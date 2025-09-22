@@ -18,12 +18,14 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private gameStates: Map<number, GameState>;
   private breakthroughs: Breakthrough[];
+  private leaderboardEntries: LeaderboardEntry[];
   currentId: number;
   currentGameStateId: number;
 
   constructor() {
     this.users = new Map();
     this.gameStates = new Map();
+    this.leaderboardEntries = [];
     this.currentId = 1;
     this.currentGameStateId = 1;
     this.breakthroughs = [
@@ -114,7 +116,7 @@ export class MemStorage implements IStorage {
     return this.breakthroughs;
   }
 
-  // Leaderboard operations - MemStorage versions
+  // Leaderboard operations - MemStorage versions with actual persistence
   async saveLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry> {
     const newEntry: LeaderboardEntry = {
       id: this.currentId++,
@@ -122,21 +124,44 @@ export class MemStorage implements IStorage {
       createdAt: new Date().toISOString()
     };
     
-    // For MemStorage, we'll just store in memory
-    // In real implementation, this would go to database
+    // Actually store the entry in memory
+    this.leaderboardEntries.push(newEntry);
     return newEntry;
   }
 
   async getLeaderboard(limit: number = 50): Promise<LeaderboardEntry[]> {
-    // Return empty array for MemStorage
-    // In real implementation, this would query the database
-    return [];
+    // Sort by performance: highest intelligence first, then fastest time, then highest peak money
+    return this.leaderboardEntries
+      .sort((a, b) => {
+        // Primary sort: highest intelligence first
+        if (b.finalIntelligence !== a.finalIntelligence) {
+          return b.finalIntelligence - a.finalIntelligence;
+        }
+        // Tie breaker: fastest time (lowest totalTimeElapsed)
+        if (a.totalTimeElapsed !== b.totalTimeElapsed) {
+          return a.totalTimeElapsed - b.totalTimeElapsed;
+        }
+        // Final tie breaker: highest peak money
+        return b.peakMoney - a.peakMoney;
+      })
+      .slice(0, limit);
   }
 
   async getPlayerRanking(finalIntelligence: number): Promise<{ rank: number; total: number; percentile: number }> {
-    // Return default ranking for MemStorage
-    // In real implementation, this would calculate based on database
-    return { rank: 1, total: 1, percentile: 100 };
+    const total = this.leaderboardEntries.length;
+    if (total === 0) {
+      return { rank: 1, total: 1, percentile: 100 };
+    }
+
+    // Count players with better performance than the given intelligence
+    const playersAhead = this.leaderboardEntries.filter(entry => {
+      return entry.finalIntelligence > finalIntelligence;
+    }).length;
+
+    const rank = playersAhead + 1;
+    const percentile = Math.round(((total - rank + 1) / total) * 100);
+    
+    return { rank, total, percentile };
   }
 }
 
