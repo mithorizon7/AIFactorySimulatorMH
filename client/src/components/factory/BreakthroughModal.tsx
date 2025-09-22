@@ -35,14 +35,17 @@ export default function BreakthroughModal({ breakthrough, onClose }: Breakthroug
     };
   }, []);
   
+  // Production-safe color mappings
+  const breakthroughTypeColors = {
+    compute: 'bg-blue-600 text-blue-400',
+    data: 'bg-green-600 text-green-400',
+    algorithm: 'bg-purple-600 text-purple-400',
+    combined: 'bg-yellow-500 text-yellow-500',
+    default: 'bg-gray-400 text-gray-400'
+  };
+  
   const getBreakthroughTypeColor = (type: string) => {
-    switch (type) {
-      case 'compute': return 'bg-[#3B82F6] text-[#3B82F6]';
-      case 'data': return 'bg-[#10B981] text-[#10B981]';
-      case 'algorithm': return 'bg-[#8B5CF6] text-[#8B5CF6]';
-      case 'combined': return 'bg-yellow-500 text-yellow-500';
-      default: return 'bg-gray-400 text-gray-400';
-    }
+    return breakthroughTypeColors[type as keyof typeof breakthroughTypeColors] || breakthroughTypeColors.default;
   };
   
   const getNextChallengeHint = () => {

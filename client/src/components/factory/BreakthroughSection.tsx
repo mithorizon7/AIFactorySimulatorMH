@@ -34,25 +34,30 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
     return Math.min(Math.round((progress / totalRequirements) * 100), 100);
   };
   
+  // Production-safe color mappings
+  const breakthroughTypeColors = {
+    compute: 'border-blue-600 text-blue-400',
+    data: 'border-green-600 text-green-400',
+    algorithm: 'border-purple-600 text-purple-400',
+    combined: 'border-yellow-500 text-yellow-500',
+    default: 'border-gray-400 text-gray-400'
+  };
+  
   const getBreakthroughTypeColor = (type: string) => {
-    switch (type) {
-      case 'compute': return 'border-[#3B82F6] text-[#3B82F6]';
-      case 'data': return 'border-[#10B981] text-[#10B981]';
-      case 'algorithm': return 'border-[#8B5CF6] text-[#8B5CF6]';
-      case 'combined': return 'border-yellow-500 text-yellow-500';
-      default: return 'border-gray-400 text-gray-400';
-    }
+    return breakthroughTypeColors[type as keyof typeof breakthroughTypeColors] || breakthroughTypeColors.default;
+  };
+  
+  // Production-safe requirement badge colors
+  const requirementBadgeColors = {
+    compute: 'bg-blue-600',
+    data: 'bg-green-600',
+    algorithm: 'bg-purple-600',
+    default: 'bg-gray-500'
   };
   
   const getRequirementBadges = (breakthrough: any) => {
     return Object.entries(breakthrough.requiredLevels).map(([resource, level]) => {
-      let color;
-      switch (resource) {
-        case 'compute': color = 'bg-[#3B82F6]'; break;
-        case 'data': color = 'bg-[#10B981]'; break;
-        case 'algorithm': color = 'bg-[#8B5CF6]'; break;
-        default: color = 'bg-gray-500';
-      }
+      const color = requirementBadgeColors[resource as keyof typeof requirementBadgeColors] || requirementBadgeColors.default;
       
       return (
         <span key={resource} className={`${color} text-white px-2 py-1 rounded-full`}>

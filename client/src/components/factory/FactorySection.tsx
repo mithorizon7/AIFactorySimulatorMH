@@ -62,7 +62,7 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
   }
   const categoryColors = {
     compute: "text-blue-400",
-    data: "text-green-400",
+    data: "text-green-400", 
     algorithm: "text-purple-400"
   };
   
@@ -70,6 +70,65 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
     compute: "bg-blue-900/20",
     data: "bg-green-900/20",
     algorithm: "bg-purple-900/20"
+  };
+
+  // Production-safe LearningDialog color mappings
+  const dialogTriggerColors = {
+    compute: "bg-blue-900/30 hover:bg-blue-900/50 border-blue-500/40",
+    data: "bg-green-900/30 hover:bg-green-900/50 border-green-500/40", 
+    algorithm: "bg-purple-900/30 hover:bg-purple-900/50 border-purple-500/40"
+  };
+
+  const dialogContentColors = {
+    compute: "bg-blue-900/20 border-blue-600/50",
+    data: "bg-green-900/20 border-green-600/50",
+    algorithm: "bg-purple-900/20 border-purple-600/50"
+  };
+
+  const dialogIconBgColors = {
+    compute: "bg-blue-900/50",
+    data: "bg-green-900/50", 
+    algorithm: "bg-purple-900/50"
+  };
+
+  // Production-safe color mappings for educational panels
+  const eraColorClasses = {
+    foundation: {
+      text: "text-green-200",
+      accent: "text-amber-200",
+      icon: "text-green-400"
+    },
+    scaling: {
+      text: "text-green-200", 
+      accent: "text-amber-200",
+      icon: "text-green-400"
+    },
+    advanced: {
+      text: "text-green-200",
+      accent: "text-purple-200", 
+      icon: "text-green-400"
+    }
+  };
+
+  const algorithmColorClasses = {
+    foundation: {
+      text: "text-purple-200",
+      accent: "text-amber-200",
+      progress: "text-gray-400",
+      icon: "text-purple-400"
+    },
+    innovation: {
+      text: "text-purple-200",
+      accent: "text-amber-200", 
+      progress: "text-gray-400",
+      icon: "text-purple-400"
+    },
+    agi: {
+      text: "text-purple-200",
+      accent: "text-cyan-200",
+      progress: "text-cyan-300",
+      icon: "text-purple-400"
+    }
   };
   
   // Use effect to pause/resume game when dialog opens/closes
@@ -92,16 +151,16 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
         <Button 
           variant="outline" 
           size="sm"
-          className={`text-xs px-2 py-1 h-auto ml-2 inline-flex items-center bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/30 hover:bg-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-900/50 border border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-500/40 rounded-md`}
+          className={`text-xs px-2 py-1 h-auto ml-2 inline-flex items-center ${dialogTriggerColors[category]} rounded-md`}
         >
           <Info className={`h-3.5 w-3.5 mr-1 ${categoryColors[category]}`} />
           What is this?
         </Button>
       </DialogTrigger>
-      <DialogContent className={`${categoryBgColors[category]} border-${category === "compute" ? "blue" : category === "data" ? "green" : "purple"}-600/50 shadow-lg`}>
+      <DialogContent className={`${dialogContentColors[category]} shadow-lg`}>
         <DialogHeader className="p-2 mb-2 bg-gray-900/50 rounded-lg border-b border-gray-700">
           <DialogTitle className={`${categoryColors[category]} flex items-center gap-2 text-xl font-bold`}>
-            <div className={`p-1.5 rounded-full ${category === "compute" ? "bg-blue-900/50" : category === "data" ? "bg-green-900/50" : "bg-purple-900/50"}`}>
+            <div className={`p-1.5 rounded-full ${dialogIconBgColors[category]}`}>
               <Info className="h-5 w-5" />
             </div>
             {title}
@@ -516,31 +575,34 @@ export default function FactorySection({
                       const dataLevel = gameState.levels.data;
                       
                       if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
+                        const colors = eraColorClasses.foundation;
                         return (
                           <>
                             <div>🔍 <strong>Foundation Phase:</strong> Building basic data pipelines and establishing quality standards</div>
-                            <div className="text-green-200 italic">Like early AI labs collecting web scrapes and academic papers - quality matters more than quantity at this stage</div>
+                            <div className={`${colors.text} italic`}>Like early AI labs collecting web scrapes and academic papers - quality matters more than quantity at this stage</div>
                             {dataLevel < 3 && (
-                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Focus on Data Quality improvements to establish robust collection processes</div>
+                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Focus on Data Quality improvements to establish robust collection processes</div>
                             )}
                           </>
                         );
                       } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                        const colors = eraColorClasses.scaling;
                         return (
                           <>
                             <div>📈 <strong>Scaling Phase:</strong> Massively expanding data collection while maintaining high standards</div>
-                            <div className="text-green-200 italic">Modern AI companies process trillions of tokens - like how GPT models trained on the entire internet</div>
+                            <div className={`${colors.text} italic`}>Modern AI companies process trillions of tokens - like how GPT models trained on the entire internet</div>
                             {dataLevel < 5 && (
-                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Balance Data Quantity scaling with Quality improvements for optimal training</div>
+                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Balance Data Quantity scaling with Quality improvements for optimal training</div>
                             )}
                           </>
                         );
                       } else {
+                        const colors = eraColorClasses.advanced;
                         return (
                           <>
                             <div>🚀 <strong>Advanced Phase:</strong> Specialized datasets and multimodal data integration for AGI capabilities</div>
-                            <div className="text-green-200 italic">Cutting-edge research requires diverse, high-quality datasets across text, images, code, and reasoning tasks</div>
-                            <div className="text-purple-200">💡 <strong>AGI Focus:</strong> Multimodal data formats become critical for general intelligence</div>
+                            <div className={`${colors.text} italic`}>Cutting-edge research requires diverse, high-quality datasets across text, images, code, and reasoning tasks</div>
+                            <div className={colors.accent}>💡 <strong>AGI Focus:</strong> Multimodal data formats become critical for general intelligence</div>
                           </>
                         );
                       }
@@ -728,34 +790,37 @@ export default function FactorySection({
                       const researchProgress = gameState.training.algorithmResearchProgress;
                       
                       if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
+                        const colors = algorithmColorClasses.foundation;
                         return (
                           <>
                             <div>🔬 <strong>Foundation Research:</strong> Developing core neural network architectures and training methods</div>
-                            <div className="text-purple-200 italic">Early stages focus on proving basic concepts - like how attention mechanisms revolutionized NLP in 2017</div>
+                            <div className={`${colors.text} italic`}>Early stages focus on proving basic concepts - like how attention mechanisms revolutionized NLP in 2017</div>
                             {algorithmLevel < 3 && (
-                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Hire Research Engineers to accelerate architectural breakthroughs</div>
+                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Hire Research Engineers to accelerate architectural breakthroughs</div>
                             )}
-                            <div className="mt-1 text-xs text-gray-400">Research Progress: {researchProgress.toFixed(1)}% toward next breakthrough</div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% toward next breakthrough</div>
                           </>
                         );
                       } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                        const colors = algorithmColorClasses.innovation;
                         return (
                           <>
                             <div>⚡ <strong>Innovation Phase:</strong> Advanced architectures and training optimizations for massive scale</div>
-                            <div className="text-purple-200 italic">Focus shifts to scaling architectures efficiently - like how GPT-4 optimized training for trillion-parameter models</div>
+                            <div className={`${colors.text} italic`}>Focus shifts to scaling architectures efficiently - like how GPT-4 optimized training for trillion-parameter models</div>
                             {algorithmLevel < 5 && (
-                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Balance architectural improvements with research talent acquisition</div>
+                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Balance architectural improvements with research talent acquisition</div>
                             )}
-                            <div className="mt-1 text-xs text-gray-400">Research Progress: {researchProgress.toFixed(1)}% - approaching major architectural leap</div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% - approaching major architectural leap</div>
                           </>
                         );
                       } else {
+                        const colors = algorithmColorClasses.agi;
                         return (
                           <>
                             <div>🚀 <strong>AGI Research:</strong> Novel architectures for general intelligence and reasoning capabilities</div>
-                            <div className="text-purple-200 italic">Cutting-edge research into unified architectures that can handle any task - the holy grail of AI</div>
-                            <div className="text-cyan-200">💡 <strong>AGI Focus:</strong> Research engineers become critical for breakthrough discoveries</div>
-                            <div className="mt-1 text-xs text-cyan-300">Research Progress: {researchProgress.toFixed(1)}% - pushing the boundaries of what's possible</div>
+                            <div className={`${colors.text} italic`}>Cutting-edge research into unified architectures that can handle any task - the holy grail of AI</div>
+                            <div className={colors.accent}>💡 <strong>AGI Focus:</strong> Research engineers become critical for breakthrough discoveries</div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% - pushing the boundaries of what's possible</div>
                           </>
                         );
                       }
