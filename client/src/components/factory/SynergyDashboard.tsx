@@ -174,7 +174,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
               <Progress value={Math.min(100, Math.round((bonuses.dataToIntelligence - 1) * 100))} 
                 className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
               <div className="mt-1 text-xs text-gray-400 flex justify-between">
-                <span>Level: {levels.data}</span>
+                <span title="Data Level increases with Data Quality upgrades">Level: {levels.data}</span>
                 <span>Production: {formatRate(production.data)}/s</span>
               </div>
             </div>

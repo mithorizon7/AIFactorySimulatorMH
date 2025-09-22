@@ -248,7 +248,14 @@ export default function MainGameTabs({
                       <Database className="h-4 w-4" /> Data
                     </h3>
                   </ResourceTooltip>
-                  <span className="text-green-400 font-bold">Lvl {gameState.levels.data}</span>
+                  <ResourceTooltip 
+                    content="Data Level increases with Data Quality upgrades"
+                    resourceType="data"
+                    buttonPosition="inline"
+                    side="top"
+                  >
+                    <span className="text-green-400 font-bold cursor-help">Lvl {gameState.levels.data}</span>
+                  </ResourceTooltip>
                 </div>
                 <div className="mt-2 text-xl font-semibold">
                   <AnimatedNumber value={gameState.resources.data.toFixed(0)} />

@@ -58,7 +58,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
               <div className="flex justify-between text-sm">
                 <span className="flex items-center">
                   <div className="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
-                  Data Level
+                  <span title="Data Level increases with Data Quality upgrades">Data Level</span>
                 </span>
                 <span className="font-medium">{gameState.levels.data}</span>
               </div>
