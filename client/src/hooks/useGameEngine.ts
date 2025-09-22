@@ -132,9 +132,9 @@ export function useGameEngine() {
     const currentRevenue = state.revenue.b2b + state.revenue.b2c + state.revenue.investors;
     state.victoryStats.totalMoneyEarned += currentRevenue;
     
-    // Track peak subscribers
-    state.victoryStats.peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.b2bSubscribers || 0);
-    state.victoryStats.peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.b2cSubscribers || 0);
+    // Track peak subscribers (B2B = developers, B2C = subscribers)
+    state.victoryStats.peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.developers || 0);
+    state.victoryStats.peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.subscribers || 0);
     
     // Track breakthroughs unlocked
     state.victoryStats.breakthroughsUnlocked = state.breakthroughs.filter(b => b.unlocked).length;

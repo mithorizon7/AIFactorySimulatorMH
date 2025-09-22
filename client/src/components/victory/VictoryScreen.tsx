@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 import { Trophy, Clock, DollarSign, Users, Lightbulb, Target, Medal, Rocket } from "lucide-react";
 import type { LeaderboardEntry } from "@shared/schema";
 
@@ -94,26 +95,18 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
         hasAchievedAGI: gameState.victoryStats.hasAchievedAGI
       };
 
-      const response = await fetch('/api/leaderboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(leaderboardEntry)
-      });
+      const response = await apiRequest('POST', '/api/leaderboard', leaderboardEntry);
       
       if (response.ok) {
         // Get player ranking
-        const rankResponse = await fetch(`/api/ranking/${Math.floor(gameState.intelligence)}`);
-        if (rankResponse.ok) {
-          const rankData = await rankResponse.json();
-          setRanking(rankData);
-        }
+        const rankResponse = await apiRequest('GET', `/api/ranking/${Math.floor(gameState.intelligence)}`);
+        const rankData = await rankResponse.json();
+        setRanking(rankData);
         
         // Get updated leaderboard
-        const leaderboardResponse = await fetch('/api/leaderboard?limit=10');
-        if (leaderboardResponse.ok) {
-          const leaderboardData = await leaderboardResponse.json();
-          setLeaderboard(leaderboardData);
-        }
+        const leaderboardResponse = await apiRequest('GET', '/api/leaderboard?limit=10');
+        const leaderboardData = await leaderboardResponse.json();
+        setLeaderboard(leaderboardData);
         
         setHasSubmitted(true);
         setShowLeaderboard(true);
