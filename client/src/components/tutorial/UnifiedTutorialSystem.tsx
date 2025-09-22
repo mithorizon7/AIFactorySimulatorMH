@@ -31,18 +31,10 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [isVisible, setIsVisible] = useState(false);
 
-  if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted) {
-    return null;
-  }
-
   // Get current tutorial step from unified content
   const currentPhase = `PHASE_${gameState.tutorial.phase}` as keyof typeof tutorialContent;
   const stepKey = gameState.tutorial.step as keyof typeof tutorialContent[typeof currentPhase];
   const currentStep = tutorialContent[currentPhase]?.[stepKey] as TutorialStep | undefined;
-  
-  if (!currentStep) {
-    return null;
-  }
 
   const getIcon = (iconName: string) => {
     const iconProps = { className: "h-6 w-6" };
@@ -138,6 +130,15 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
       };
     }
   }, [currentStep]);
+
+  // Early returns after all hooks are declared
+  if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted) {
+    return null;
+  }
+
+  if (!currentStep) {
+    return null;
+  }
 
   const isLastStep = gameState.tutorial.phase === 4 && gameState.tutorial.step === 2;
 
