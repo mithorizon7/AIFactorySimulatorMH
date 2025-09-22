@@ -225,6 +225,12 @@ export interface GameStateType {
     // Stuck detection cooldown system
     lastStuckHintAt: number;
     lastStuckHintId: string;
+    
+    // Service unlock guidance flags
+    shownApiServiceAvailable: boolean;
+    shownChatbotServiceAvailable: boolean;
+    shownApiOptimizationAdvice: boolean;
+    shownChatbotOptimizationAdvice: boolean;
   };
   
   // Interactive Tutorial System
@@ -690,7 +696,13 @@ export const initialGameState: GameStateType = {
     hasSeenStuckNoBreakthroughs: false,
     // Stuck detection cooldown system
     lastStuckHintAt: 0,
-    lastStuckHintId: ''
+    lastStuckHintId: '',
+    
+    // Service unlock guidance flags
+    shownApiServiceAvailable: false,
+    shownChatbotServiceAvailable: false,
+    shownApiOptimizationAdvice: false,
+    shownChatbotOptimizationAdvice: false
   },
   
   // Breakthroughs - Organized by AI eras

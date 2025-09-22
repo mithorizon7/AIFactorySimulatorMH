@@ -177,9 +177,40 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       });
     }
 
-    // 9. Revenue Focus Advice
+    // 9. API Service Available (when GNT-3 unlocked but not enabled)
+    if (gameState.revenue.apiAvailable && !gameState.revenue.apiEnabled && 
+        !gameState.narrativeFlags.shownApiServiceAvailable) {
+      gameState.narrativeFlags.shownApiServiceAvailable = true;
+      onShowMessage({
+        id: 'api-service-available',
+        title: narrative.API_SERVICE_AVAILABLE.title,
+        content: narrative.API_SERVICE_AVAILABLE.content,
+        context: narrative.API_SERVICE_AVAILABLE.context,
+        timestamp: Date.now(),
+        priority: 'high',
+        category: 'achievement'
+      });
+    }
+
+    // 10. Chatbot Service Available (when GNT-4 unlocked but not enabled)  
+    if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotEnabled && 
+        !gameState.narrativeFlags.shownChatbotServiceAvailable) {
+      gameState.narrativeFlags.shownChatbotServiceAvailable = true;
+      onShowMessage({
+        id: 'chatbot-service-available',
+        title: narrative.CHATBOT_SERVICE_AVAILABLE.title,
+        content: narrative.CHATBOT_SERVICE_AVAILABLE.content,
+        context: narrative.CHATBOT_SERVICE_AVAILABLE.context,
+        timestamp: Date.now(),
+        priority: 'high',
+        category: 'achievement'
+      });
+    }
+
+    // 11. Revenue Focus Advice (fallback for generic revenue guidance)
     if (gameState.intelligence > 300 && gameState.revenue.b2b === 0 && 
-        gameState.revenue.b2c === 0) {
+        gameState.revenue.b2c === 0 && !gameState.revenue.apiAvailable && 
+        !gameState.revenue.chatbotAvailable) {
       onShowMessage({
         id: 'advice-revenue-focus',
         title: narrative.ADVICE_REVENUE_FOCUS.title,
@@ -191,7 +222,39 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       });
     }
 
-    // 10. Era Advancements
+    // 12. API Optimization Advice (running but suboptimal)
+    if (gameState.revenue.apiEnabled && gameState.revenue.b2b > 0 && gameState.revenue.b2b < 5000 &&
+        gameState.revenue.developerToolsLevel === 1 && gameState.money > 50000 && 
+        !gameState.narrativeFlags.shownApiOptimizationAdvice) {
+      gameState.narrativeFlags.shownApiOptimizationAdvice = true;
+      onShowMessage({
+        id: 'api-optimization-advice',
+        title: narrative.API_OPTIMIZATION_ADVICE.title,
+        content: narrative.API_OPTIMIZATION_ADVICE.content,
+        context: narrative.API_OPTIMIZATION_ADVICE.context,
+        timestamp: Date.now(),
+        priority: 'normal',
+        category: 'advice'
+      });
+    }
+
+    // 13. Chatbot Optimization Advice (running but growth is slow)
+    if (gameState.revenue.chatbotEnabled && gameState.revenue.subscribers > 100 && 
+        gameState.revenue.subscriberGrowthRate < 100 && gameState.revenue.chatbotImprovementLevel === 1 && 
+        gameState.money > 25000 && !gameState.narrativeFlags.shownChatbotOptimizationAdvice) {
+      gameState.narrativeFlags.shownChatbotOptimizationAdvice = true;
+      onShowMessage({
+        id: 'chatbot-optimization-advice',
+        title: narrative.CHATBOT_OPTIMIZATION_ADVICE.title,
+        content: narrative.CHATBOT_OPTIMIZATION_ADVICE.content,
+        context: narrative.CHATBOT_OPTIMIZATION_ADVICE.context,
+        timestamp: Date.now(),
+        priority: 'normal',
+        category: 'advice'
+      });
+    }
+
+    // 14. Era Advancements
     if (gameState.currentEra !== prevState.currentEra) {
       const eraKey = `ERA_ADVANCE_${gameState.currentEra}` as keyof typeof narrative;
       if (narrative[eraKey]) {

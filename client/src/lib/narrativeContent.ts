@@ -169,15 +169,15 @@ export const narrative = {
   },
   
   ERA_ADVANCE_GNT3: {
-    title: "We're in a New Era: GNT-3!",
-    content: "Remarkable! Our AI is now in the GNT-3 era. Its capabilities have scaled dramatically, and it's showing emergent abilities it wasn't explicitly trained for.",
-    context: "This mirrors GPT-3's 175 billion parameters, which established 'scaling laws' - predictable improvements from larger models and datasets."
+    title: "🚀 New Era: GNT-3 Unlocked!",
+    content: "Remarkable! Our AI has reached GNT-3 capabilities. Most exciting: **API Services are now available!** Companies can integrate your AI into their applications for B2B revenue.",
+    context: "GPT-3's 175B parameters established 'scaling laws' and launched the API economy. Real companies now generate millions from AI API services. Check your Economy tab to enable this new revenue stream!"
   },
   
   ERA_ADVANCE_GNT4: {
-    title: "We're in a New Era: GNT-4!",
-    content: "Extraordinary! We've reached GNT-4 capabilities. Our AI now demonstrates sophisticated reasoning, creativity, and can handle multimodal inputs.",
-    context: "Similar to GPT-4's leap in capabilities, this represents AI that can reason about images, write code, and solve complex problems."
+    title: "🎯 New Era: GNT-4 Unlocked!",
+    content: "Extraordinary! We've reached GNT-4 capabilities with sophisticated reasoning and creativity. **Chatbot Services are now available!** Create consumer subscriptions like ChatGPT Plus.",
+    context: "GPT-4's leap enabled consumer AI assistants. ChatGPT Plus generates hundreds of millions in subscription revenue. Enable Chatbot Services in the Economy tab to start building your consumer base!"
   },
   
   ERA_ADVANCE_AGI: {
@@ -242,6 +242,31 @@ export const narrative = {
     title: "Strategic Advice: Revenue Opportunities",
     content: "Our AI capabilities are strong enough to generate revenue! Consider activating API services or subscription offerings.",
     context: "The best AI companies balance research with revenue generation, using profits to fund even more ambitious projects."
+  },
+
+  // New Service-Specific Guidance
+  API_SERVICE_AVAILABLE: {
+    title: "💼 API Services Ready to Launch!",
+    content: "Your AI has reached GNT-3 capabilities! **API Services are now unlocked** - enable them in the Economy tab to start generating B2B revenue from companies integrating your AI.",
+    context: "Companies pay premium rates for reliable AI APIs. Start with a competitive rate around $1,500/tick and adjust based on demand."
+  },
+
+  CHATBOT_SERVICE_AVAILABLE: {
+    title: "👥 Consumer Chatbot Ready!",
+    content: "GNT-4 unlocked **Chatbot Services**! Enable consumer subscriptions in the Economy tab. Start with $15-20/month - users will pay for reliable, high-quality AI assistance.",
+    context: "ChatGPT Plus and similar services generate massive subscription revenue. Balance price and quality to maximize growth."
+  },
+
+  API_OPTIMIZATION_ADVICE: {
+    title: "🔧 API Optimization Opportunity",
+    content: "Your API service is running but could be optimized! Consider adjusting rates or improving developer tools to maximize revenue without losing customers.",
+    context: "Successful API businesses constantly optimize pricing. Monitor usage patterns and adjust rates to find the sweet spot between revenue and adoption."
+  },
+
+  CHATBOT_OPTIMIZATION_ADVICE: {
+    title: "📈 Chatbot Growth Strategy",
+    content: "Your chatbot has subscribers but growth could improve! Consider improving chatbot capabilities or running ad campaigns to accelerate user acquisition.",
+    context: "Consumer AI products succeed through quality and marketing. Invest in improvements to reduce churn and attract new users."
   },
   
   // Enhanced Strategic Warnings
