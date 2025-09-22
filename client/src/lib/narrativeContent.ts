@@ -106,29 +106,38 @@ export const tutorialContent = {
       highlightTab: "progression"
     },
     3: {
-      title: "Building Economic Value",
-      content: "Your AI is becoming capable! Soon you can generate revenue through API services and consumer applications to fund further research.",
-      context: "Real AI companies balance research with revenue. OpenAI's API business and ChatGPT subscriptions fund continued AGI research.",
-      action: "Check the Economy tab to see revenue opportunities",
-      targetElement: "economy-tab", 
-      modalStyle: false,
+      title: "Strategic Funding Progression",
+      content: "Notice something brilliant! Your intelligence growth unlocks funding rounds exactly when you need them. Series A ($5,000) unlocks right as you approach expensive training runs.",
+      context: "This mirrors real AI development - startups raise funding rounds (Seed→Series A→Series B) precisely when they need capital for the next breakthrough. The timing isn't random - it's strategic!",
+      action: "Check the Economy tab to see your funding progression",
+      targetElement: "economy-tab",
+      modalStyle: false, 
       icon: "dollar-sign",
       highlightTab: "economy"
     }
   },
 
-  // Phase 4: Advanced Concepts
+  // Phase 4: Advanced Concepts  
   PHASE_4: {
     1: {
+      title: "The Funding-Training Connection",
+      content: "Here's the genius design! Series A funding ($5,000) unlocks exactly when GNT-3 training costs $5,000. Series B ($25,000) arrives just as GNT-4 training needs $25,000. Perfect timing!",
+      context: "Real AI companies raise funding precisely when they need capital for major training runs. This elegant progression mirrors how OpenAI, Anthropic, and DeepMind sequence their funding and research milestones.",
+      action: "Click on Training to see how funding aligns with costs",
+      targetElement: "training-panel", 
+      modalStyle: false,
+      icon: "target"
+    },
+    2: {
       title: "Training Runs: The Path to AGI",
-      content: "Here's where the magic happens! Training Runs are major computational efforts that advance your AI to the next era. Each requires meeting specific prerequisites.",
-      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost tens of millions of dollars.",
-      action: "Explore the training requirements",
+      content: "Now you understand the funding strategy! Training Runs are major computational efforts that advance your AI to the next era, funded by your strategic milestone progression.",
+      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost tens of millions of dollars - hence the need for strategic funding rounds.",
+      action: "Explore the training requirements and begin your AGI journey",
       targetElement: "training-panel",
       modalStyle: false,
       icon: "zap"
     },
-    2: {
+    3: {
       title: "Tutorial Complete!",
       content: "Outstanding! You now understand the fundamentals of AI development. Continue investing, researching, and training to achieve AGI!",
       context: "You're now ready to explore advanced strategies: balancing resources, managing compute capacity, timing training runs, and scaling revenue.",
