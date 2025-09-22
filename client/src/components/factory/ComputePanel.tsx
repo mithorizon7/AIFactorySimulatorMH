@@ -469,25 +469,104 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             </span>
           </div>
 
-          {/* For in-progress training, show prominent progress bar */}
+          {/* For in-progress training, show enhanced progress display */}
           {trainingStatus === TrainingStatus.IN_PROGRESS && (
-            <div className="mt-4 bg-gray-800 p-3 rounded-md border border-blue-800/30">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-blue-400">Training Progress</span>
-                <span className="text-blue-300 font-bold">{trainingProgress}%</span>
-              </div>
-              <Progress 
-                value={trainingProgress} 
-                className="h-3 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-600 [&>div]:to-blue-400"
-              />
-              <div className="mt-3 text-sm flex justify-between">
-                <div className="flex items-center">
-                  <TimerIcon className="h-4 w-4 mr-1 text-blue-400" />
-                  <span className="text-blue-300">{gameState.training.daysRemaining} days remaining</span>
+            <div className="mt-4 space-y-4">
+              {/* Main Progress Section */}
+              <div className="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border border-blue-500/40 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <RocketIcon className="h-5 w-5 text-blue-400" />
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-300">Training in Progress</h4>
+                      <p className="text-xs text-blue-200">Advancing to {nextEra}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-blue-300">{trainingProgress}%</div>
+                    <div className="text-xs text-blue-400">Complete</div>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <BrainIcon className="h-4 w-4 mr-1 text-amber-400" />
-                  <span className="text-amber-300">+{targetTrainingRun?.intelligenceGain.toLocaleString()} Intelligence</span>
+                
+                <Progress 
+                  value={trainingProgress} 
+                  className="h-3 bg-gray-700 [&>div]:bg-gradient-to-r [&>div]:from-blue-600 [&>div]:to-blue-400 mb-3"
+                />
+                
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-blue-300">
+                    <TimerIcon className="h-4 w-4 mr-1" />
+                    <span>{gameState.training.daysRemaining} days remaining</span>
+                  </div>
+                  <div className="flex items-center text-amber-300">
+                    <BrainIcon className="h-4 w-4 mr-1" />
+                    <span>+{targetTrainingRun?.intelligenceGain.toLocaleString()} Intelligence</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Training Education Panel */}
+              <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0">📚</div>
+                  <div>
+                    <h5 className="text-xs font-medium text-yellow-300 mb-2">What's Happening During Training</h5>
+                    <div className="text-xs text-gray-300 space-y-2">
+                      {(() => {
+                        const progressStage = trainingProgress;
+                        if (progressStage < 25) {
+                          return (
+                            <>
+                              <div>🔧 <strong>Infrastructure Setup:</strong> Allocating {targetTrainingRun?.computeRequired.toLocaleString()} compute units and initializing training clusters</div>
+                              <div className="text-yellow-200 italic">Like setting up massive GPU farms - this phase mirrors how companies like OpenAI prepare their hardware infrastructure</div>
+                            </>
+                          );
+                        } else if (progressStage < 50) {
+                          return (
+                            <>
+                              <div>🧠 <strong>Parameter Initialization:</strong> Creating neural network architecture and loading training data</div>
+                              <div className="text-yellow-200 italic">Real models have billions of parameters that need precise initialization - this is why training takes so much compute</div>
+                            </>
+                          );
+                        } else if (progressStage < 75) {
+                          return (
+                            <>
+                              <div>⚡ <strong>Active Training:</strong> Neural networks learning patterns from data through gradient descent</div>
+                              <div className="text-yellow-200 italic">This is the core learning phase where the model develops its capabilities - like how GPT models learn language patterns</div>
+                            </>
+                          );
+                        } else {
+                          return (
+                            <>
+                              <div>🎯 <strong>Final Optimization:</strong> Fine-tuning model performance and validating new capabilities</div>
+                              <div className="text-yellow-200 italic">The final phase where breakthrough capabilities emerge - like when GPT-3 showed few-shot learning</div>
+                            </>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resource Impact Display */}
+              <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3">
+                <h5 className="text-xs font-medium text-gray-300 mb-2">Training Impact</h5>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Compute Reserved:</span>
+                    <span className="text-blue-400 font-medium">{gameState.training.computeReserved} units</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Training Investment:</span>
+                    <span className="text-green-400 font-medium">${targetTrainingRun?.moneyCost.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                  💡 Customer services continue running on remaining {(computeCapacity.maxCapacity - gameState.training.computeReserved)} compute units
                 </div>
               </div>
             </div>
@@ -803,44 +882,130 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                 </div>
               )}
               
-              {/* Training Resources Required */}
+              {/* Training Readiness Status */}
               {trainingStatus === TrainingStatus.AVAILABLE && !isTrainingActive && (
-                <div className="grid grid-cols-3 gap-3 mt-3">
-                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
-                    <span className="text-xs font-medium text-gray-300">Compute Required</span>
-                    <div className={`mt-1 text-lg font-bold flex items-center ${hasEnoughCompute ? 'text-green-400' : 'text-red-400'}`}>
-                      <CpuIcon className="h-4 w-4 mr-1" />
-                      {targetTrainingRun?.computeRequired.toLocaleString()}
+                <>
+                  {/* Readiness Indicator */}
+                  <div className="mt-3 mb-4">
+                    {canStartTraining ? (
+                      <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-500/40 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-green-300">Training Ready!</h4>
+                              <p className="text-xs text-green-200">All prerequisites met • Sufficient resources available</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-green-300 font-medium">Next Era: {nextEra}</div>
+                            <div className="text-[10px] text-green-400">+{targetTrainingRun?.intelligenceGain} Intelligence</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/30 border border-amber-500/30 rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ClockIcon className="h-5 w-5 text-amber-400" />
+                            <div>
+                              <h4 className="font-semibold text-amber-300">Almost Ready</h4>
+                              <p className="text-xs text-amber-200">
+                                {missingPrerequisites.length} requirement{missingPrerequisites.length !== 1 ? 's' : ''} remaining
+                                {!hasEnoughCompute && " • Need more compute"}
+                                {!hasEnoughMoney && " • Need more funding"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-amber-300 font-medium">{Math.round(overallCompletionPercent)}% Ready</div>
+                            <div className="text-[10px] text-amber-400">Target: {nextEra}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Training Impact Preview */}
+                  <div className="grid grid-cols-3 gap-3 mt-3">
+                    <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                      <span className="text-xs font-medium text-gray-300">Compute Required</span>
+                      <div className={`mt-1 text-lg font-bold flex items-center ${hasEnoughCompute ? 'text-green-400' : 'text-red-400'}`}>
+                        <CpuIcon className="h-4 w-4 mr-1" />
+                        {targetTrainingRun?.computeRequired.toLocaleString()}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {hasEnoughCompute 
+                          ? "✓ Sufficient compute available" 
+                          : `⚠ Need ${(targetTrainingRun?.computeRequired || 0) - computeCapacity.available} more compute`}
+                      </div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {hasEnoughCompute 
-                        ? "✓ Sufficient compute available" 
-                        : `⚠ Need ${(targetTrainingRun?.computeRequired || 0) - computeCapacity.available} more compute`}
+                    <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                      <span className="text-xs font-medium text-gray-300">Training Cost</span>
+                      <div className={`mt-1 text-lg font-bold flex items-center ${gameState.money >= (targetTrainingRun?.moneyCost || 0) ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className="text-green-400 mr-1">$</span>
+                        {targetTrainingRun?.moneyCost.toLocaleString()}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {gameState.money >= (targetTrainingRun?.moneyCost || 0) 
+                          ? "✓ Sufficient funds available" 
+                          : `⚠ Need $${((targetTrainingRun?.moneyCost || 0) - gameState.money).toLocaleString()} more`}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                      <span className="text-xs font-medium text-gray-300">Intelligence Gain</span>
+                      <div className="mt-1 text-lg font-bold text-amber-400 flex items-center">
+                        <BrainIcon className="h-4 w-4 mr-1" />
+                        +{targetTrainingRun?.intelligenceGain.toLocaleString()}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {Math.round((targetTrainingRun?.intelligenceGain || 0) / gameState.agiThreshold * 100)}% toward AGI threshold
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
-                    <span className="text-xs font-medium text-gray-300">Training Cost</span>
-                    <div className={`mt-1 text-lg font-bold flex items-center ${gameState.money >= (targetTrainingRun?.moneyCost || 0) ? 'text-green-400' : 'text-red-400'}`}>
-                      <span className="text-green-400 mr-1">$</span>
-                      {targetTrainingRun?.moneyCost.toLocaleString()}
+
+                  {/* Optimal Timing Guidance */}
+                  {canStartTraining && (
+                    <div className="mt-3 bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0">💡</div>
+                        <div>
+                          <h5 className="text-xs font-medium text-blue-300 mb-1">Optimal Timing Advice</h5>
+                          <div className="text-xs text-blue-200 space-y-1">
+                            {(() => {
+                              const currentRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
+                              const computeUsagePercent = gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity;
+                              const suggestions = [];
+                              
+                              if (computeUsagePercent >= 0.8) {
+                                suggestions.push("⚠ High compute usage - training may reduce customer service quality");
+                              } else if (computeUsagePercent <= 0.5) {
+                                suggestions.push("✓ Low compute usage - ideal time to train without affecting customers");
+                              }
+                              
+                              if (currentRevenue < 10000 && gameState.money >= (targetTrainingRun?.moneyCost || 0) * 2) {
+                                suggestions.push("✓ Strong cash reserves - safe to invest in training now");
+                              } else if (currentRevenue >= 10000 && computeUsagePercent >= 0.7) {
+                                suggestions.push("Consider scaling compute capacity before training to avoid revenue loss");
+                              }
+                              
+                              if (suggestions.length === 0) {
+                                suggestions.push("✓ Good conditions for training - proceed when ready");
+                              }
+                              
+                              return suggestions.map((suggestion, i) => (
+                                <div key={i}>• {suggestion}</div>
+                              ));
+                            })()}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {gameState.money >= (targetTrainingRun?.moneyCost || 0) 
-                        ? "✓ Sufficient funds available" 
-                        : `⚠ Need $${((targetTrainingRun?.moneyCost || 0) - gameState.money).toLocaleString()} more`}
-                    </div>
-                  </div>
-                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
-                    <span className="text-xs font-medium text-gray-300">Intelligence Gain</span>
-                    <div className="mt-1 text-lg font-bold text-amber-400 flex items-center">
-                      <BrainIcon className="h-4 w-4 mr-1" />
-                      +{targetTrainingRun?.intelligenceGain.toLocaleString()}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {Math.round((targetTrainingRun?.intelligenceGain || 0) / gameState.agiThreshold * 100)}% toward AGI threshold
-                    </div>
-                  </div>
-                </div>
+                  )}
+                </>
               )}
               
               {/* Start Training Button */}
