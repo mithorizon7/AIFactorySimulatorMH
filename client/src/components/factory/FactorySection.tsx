@@ -1,4 +1,4 @@
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, Era } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
@@ -503,6 +503,52 @@ export default function FactorySection({
                 </div>
               </div>
             </div>
+
+            {/* Dynamic Data Factory Educational Content */}
+            <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0">📊</div>
+                <div>
+                  <h5 className="text-xs font-medium text-green-300 mb-2">Data Development Focus</h5>
+                  <div className="text-xs text-gray-300 space-y-2">
+                    {(() => {
+                      const currentEra = gameState.currentEra;
+                      const dataLevel = gameState.levels.data;
+                      
+                      if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
+                        return (
+                          <>
+                            <div>🔍 <strong>Foundation Phase:</strong> Building basic data pipelines and establishing quality standards</div>
+                            <div className="text-green-200 italic">Like early AI labs collecting web scrapes and academic papers - quality matters more than quantity at this stage</div>
+                            {dataLevel < 3 && (
+                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Focus on Data Quality improvements to establish robust collection processes</div>
+                            )}
+                          </>
+                        );
+                      } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                        return (
+                          <>
+                            <div>📈 <strong>Scaling Phase:</strong> Massively expanding data collection while maintaining high standards</div>
+                            <div className="text-green-200 italic">Modern AI companies process trillions of tokens - like how GPT models trained on the entire internet</div>
+                            {dataLevel < 5 && (
+                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Balance Data Quantity scaling with Quality improvements for optimal training</div>
+                            )}
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            <div>🚀 <strong>Advanced Phase:</strong> Specialized datasets and multimodal data integration for AGI capabilities</div>
+                            <div className="text-green-200 italic">Cutting-edge research requires diverse, high-quality datasets across text, images, code, and reasoning tasks</div>
+                            <div className="text-purple-200">💡 <strong>AGI Focus:</strong> Multimodal data formats become critical for general intelligence</div>
+                          </>
+                        );
+                      }
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
             
 
           </div>
@@ -665,6 +711,56 @@ export default function FactorySection({
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
                   <div className="bg-[#8B5CF6] h-full" style={{ width: getAlgorithmBarWidth() }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Algorithm Lab Educational Content */}
+            <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <div className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0">🧠</div>
+                <div>
+                  <h5 className="text-xs font-medium text-purple-300 mb-2">Algorithm Research Focus</h5>
+                  <div className="text-xs text-gray-300 space-y-2">
+                    {(() => {
+                      const currentEra = gameState.currentEra;
+                      const algorithmLevel = gameState.levels.algorithm;
+                      const researchProgress = gameState.training.algorithmResearchProgress;
+                      
+                      if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
+                        return (
+                          <>
+                            <div>🔬 <strong>Foundation Research:</strong> Developing core neural network architectures and training methods</div>
+                            <div className="text-purple-200 italic">Early stages focus on proving basic concepts - like how attention mechanisms revolutionized NLP in 2017</div>
+                            {algorithmLevel < 3 && (
+                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Hire Research Engineers to accelerate architectural breakthroughs</div>
+                            )}
+                            <div className="mt-1 text-xs text-gray-400">Research Progress: {researchProgress.toFixed(1)}% toward next breakthrough</div>
+                          </>
+                        );
+                      } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                        return (
+                          <>
+                            <div>⚡ <strong>Innovation Phase:</strong> Advanced architectures and training optimizations for massive scale</div>
+                            <div className="text-purple-200 italic">Focus shifts to scaling architectures efficiently - like how GPT-4 optimized training for trillion-parameter models</div>
+                            {algorithmLevel < 5 && (
+                              <div className="text-amber-200">💡 <strong>Next Step:</strong> Balance architectural improvements with research talent acquisition</div>
+                            )}
+                            <div className="mt-1 text-xs text-gray-400">Research Progress: {researchProgress.toFixed(1)}% - approaching major architectural leap</div>
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            <div>🚀 <strong>AGI Research:</strong> Novel architectures for general intelligence and reasoning capabilities</div>
+                            <div className="text-purple-200 italic">Cutting-edge research into unified architectures that can handle any task - the holy grail of AI</div>
+                            <div className="text-cyan-200">💡 <strong>AGI Focus:</strong> Research engineers become critical for breakthrough discoveries</div>
+                            <div className="mt-1 text-xs text-cyan-300">Research Progress: {researchProgress.toFixed(1)}% - pushing the boundaries of what's possible</div>
+                          </>
+                        );
+                      }
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>
