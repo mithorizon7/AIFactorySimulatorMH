@@ -192,7 +192,26 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       });
     }
 
-    // 10. Chatbot Service Available (when GNT-4 unlocked but not enabled)  
+    // 10. Auto-Enable API Service Suggestion (after 60 seconds delay)
+    if (gameState.revenue.apiAvailable && 
+        !gameState.revenue.apiEnabled &&
+        gameState.narrativeFlags.apiServiceUnlockedTime &&
+        !gameState.narrativeFlags.hasOfferedApiAutoEnable &&
+        (Date.now() - gameState.narrativeFlags.apiServiceUnlockedTime) > 60000) { // 60 seconds
+      
+      gameState.narrativeFlags.hasOfferedApiAutoEnable = true;
+      onShowMessage({
+        id: 'api-auto-enable-suggestion',
+        title: narrative.API_AUTO_ENABLE_SUGGESTION.title,
+        content: narrative.API_AUTO_ENABLE_SUGGESTION.content,
+        context: narrative.API_AUTO_ENABLE_SUGGESTION.context,
+        timestamp: Date.now(),
+        priority: 'high',
+        category: 'guidance'
+      });
+    }
+
+    // 11. Chatbot Service Available (when GNT-4 unlocked but not enabled)  
     if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotEnabled && 
         !gameState.narrativeFlags.shownChatbotServiceAvailable) {
       gameState.narrativeFlags.shownChatbotServiceAvailable = true;

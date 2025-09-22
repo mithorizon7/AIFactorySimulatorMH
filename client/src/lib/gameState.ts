@@ -231,6 +231,10 @@ export interface GameStateType {
     shownChatbotServiceAvailable: boolean;
     shownApiOptimizationAdvice: boolean;
     shownChatbotOptimizationAdvice: boolean;
+    
+    // Auto-enabling guidance flags
+    apiServiceUnlockedTime: number | null; // Timestamp when API service was unlocked
+    hasOfferedApiAutoEnable: boolean; // Whether we've offered to auto-enable API service
   };
   
   // Interactive Tutorial System
@@ -702,7 +706,11 @@ export const initialGameState: GameStateType = {
     shownApiServiceAvailable: false,
     shownChatbotServiceAvailable: false,
     shownApiOptimizationAdvice: false,
-    shownChatbotOptimizationAdvice: false
+    shownChatbotOptimizationAdvice: false,
+    
+    // Auto-enabling guidance flags
+    apiServiceUnlockedTime: null, // Timestamp when API service was unlocked
+    hasOfferedApiAutoEnable: false // Whether we've offered to auto-enable API service
   },
   
   // Breakthroughs - Organized by AI eras

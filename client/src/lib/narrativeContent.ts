@@ -260,6 +260,12 @@ export const narrative = {
     context: "Companies pay premium rates for reliable AI APIs. Start with a competitive rate around $1,500/tick and adjust based on demand."
   },
 
+  API_AUTO_ENABLE_SUGGESTION: {
+    title: "💡 Enable API Services?",
+    content: "I notice you haven't enabled API services yet. This is one of the most important revenue streams for funding your AI development. **Would you like me to enable it for you** with a competitive starting rate?",
+    context: "Many successful AI companies generate most of their revenue through API access. Enable now to start building your developer ecosystem."
+  },
+
   CHATBOT_SERVICE_AVAILABLE: {
     title: "👥 Consumer Chatbot Ready!",
     content: "GNT-4 unlocked **Chatbot Services**! Enable consumer subscriptions in the Economy tab. Start with $15-20/month - users will pay for reliable, high-quality AI assistance.",

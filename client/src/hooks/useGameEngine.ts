@@ -754,6 +754,9 @@ export function useGameEngine() {
     // Check if services should be available based on current era
     if (newState.currentEra >= Era.GNT3 && !newState.revenue.apiAvailable) {
       newState.revenue.apiAvailable = true;
+      // Track when API service was unlocked for auto-enabling suggestion
+      newState.narrativeFlags.apiServiceUnlockedTime = Date.now();
+      
       toast({
         title: "API Service Unlocked",
         description: "Your AI is now capable enough to offer limited API services to developers. You can enable this service in the Economy tab.",
