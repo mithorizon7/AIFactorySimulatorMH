@@ -40,9 +40,14 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
   // Get active training run status if any
   const isTrainingActive = gameState.training.active;
   const trainingStatus = targetTrainingRun?.status || TrainingStatus.LOCKED;
+  
+  // Clamp training progress to [0, 100] to prevent display issues
   const trainingProgress = isTrainingActive && targetTrainingRun ? 
-    Math.round(((targetTrainingRun.daysRequired - gameState.training.daysRemaining) / targetTrainingRun.daysRequired) * 100) : 
+    Math.min(100, Math.max(0, Math.round(((targetTrainingRun.daysRequired - gameState.training.daysRemaining) / targetTrainingRun.daysRequired) * 100))) : 
     0;
+  
+  // Check if we're at the terminal era (GNT7)
+  const isAtTerminalEra = gameState.currentEra === Era.GNT7;
   
   // Calculate algorithm research progress
   const algorithmResearchProgress = Math.round(gameState.training.algorithmResearchProgress);
@@ -204,9 +209,10 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
     algorithm: Math.round((metPrereqsByCategory.algorithm / totalPrereqsByCategory.algorithm) * 100)
   };
   
-  // Calculate overall completion percentage
+  // Calculate overall completion percentage (clamp to [0, 100] and handle edge case when no prerequisites)
   const metPrereqs = allPrerequisites.filter(p => p.isMet).length;
-  const overallCompletionPercent = Math.round((metPrereqs / allPrerequisites.length) * 100);
+  const overallCompletionPercent = allPrerequisites.length === 0 ? 0 : 
+    Math.min(100, Math.max(0, Math.round((metPrereqs / allPrerequisites.length) * 100)));
   
   // Check if there's enough compute for the training run
   const hasEnoughCompute = computeCapacity.available >= (targetTrainingRun?.computeRequired || 0);
@@ -412,49 +418,85 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
       </CardHeader>
       
       <CardContent className="space-y-4 pt-4">
-        {/* Era Transition Visualization - Simplified but Elegant */}
-        <div className="relative flex items-center justify-center mb-4 mt-2">
-          {/* Background Track */}
-          <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
-            {/* Progress Bar */}
-            <div 
-              className="h-full bg-blue-500"
-              style={{ 
-                width: `${overallCompletionPercent}%`, 
-                transition: 'width 0.5s ease-out'
-              }}
-            ></div>
+        {/* Era Transition Visualization - Hide if at terminal era */}
+        {!isAtTerminalEra && (
+          <div className="relative flex items-center justify-center mb-4 mt-2">
+            {/* Background Track */}
+            <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+              {/* Progress Bar */}
+              <div 
+                className="h-full bg-blue-500"
+                style={{ 
+                  width: `${overallCompletionPercent}%`, 
+                  transition: 'width 0.5s ease-out'
+                }}
+              ></div>
+            </div>
+            
+            {/* Era Labels */}
+            <div className="absolute flex justify-between w-full">
+              <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm">
+                {gameState.currentEra}
+              </div>
+              <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm border border-gray-700">
+                <ChevronRightIcon className="h-3 w-3 mr-1" />
+                {nextEra}
+              </div>
+            </div>
+            
+            {/* Progress Indicator (only shows if in progress) */}
+            {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
+              <div 
+                className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm z-10"
+                style={{ 
+                  left: `${overallCompletionPercent}%`, 
+                  top: '0',
+                  transform: 'translateX(-50%) translateY(-50%)',
+                  transition: 'left 0.5s ease-out'
+                }}
+              >
+                {overallCompletionPercent}%
+              </div>
+            )}
           </div>
-          
-          {/* Era Labels */}
-          <div className="absolute flex justify-between w-full">
-            <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm">
-              {gameState.currentEra}
-            </div>
-            <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm border border-gray-700">
-              <ChevronRightIcon className="h-3 w-3 mr-1" />
-              {nextEra}
+        )}
+
+        {/* Terminal Era Message - show when at GNT7 */}
+        {isAtTerminalEra && (
+          <div className="mb-4 bg-gradient-to-r from-purple-900/40 to-pink-900/40 border border-purple-500/40 rounded-lg p-4">
+            <div className="text-center">
+              <div className="flex justify-center mb-2">
+                <div className="relative">
+                  <BrainIcon className="h-8 w-8 text-purple-400" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              <h3 className="text-lg font-bold text-purple-300 mb-1">Maximum Era Reached</h3>
+              <p className="text-sm text-purple-200 mb-2">
+                🎉 Congratulations! You've reached {gameState.currentEra}, the final era of AI development.
+              </p>
+              <div className="bg-purple-900/30 border border-purple-700/30 rounded-lg p-3 mt-3">
+                <p className="text-xs text-purple-100 mb-2">
+                  <strong>Focus on AGI:</strong> Continue improving your intelligence score to reach the AGI threshold of {gameState.agiThreshold.toLocaleString()} points.
+                </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-purple-300">Current Intelligence:</span>
+                  <span className="text-purple-200 font-bold">{Math.floor(gameState.intelligence).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs mt-1">
+                  <span className="text-purple-300">Progress to AGI:</span>
+                  <span className="text-purple-200 font-bold">
+                    {Math.min(100, Math.round((gameState.intelligence / gameState.agiThreshold) * 100))}%
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          
-          {/* Progress Indicator (only shows if in progress) */}
-          {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
-            <div 
-              className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm z-10"
-              style={{ 
-                left: `${overallCompletionPercent}%`, 
-                top: '0',
-                transform: 'translateX(-50%) translateY(-50%)',
-                transition: 'left 0.5s ease-out'
-              }}
-            >
-              {overallCompletionPercent}%
-            </div>
-          )}
-        </div>
+        )}
         
-        {/* Current Training Run Status */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-900 rounded-lg border border-gray-700 p-4">
+        {/* Current Training Run Status - Hide if at terminal era */}
+        {!isAtTerminalEra && (
+          <div className="bg-gradient-to-r from-gray-900 to-gray-900 rounded-lg border border-gray-700 p-4">
           <div className="flex justify-between items-start mb-3">
             <div>
               <h3 className="text-lg text-white font-medium flex items-center gap-2">
@@ -1047,6 +1089,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             </div>
           )}
         </div>
+        )}
         
         {/* Educational Content */}
         <div className="text-xs text-gray-400 p-3 rounded-lg bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700">
