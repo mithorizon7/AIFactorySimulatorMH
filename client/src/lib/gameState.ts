@@ -878,7 +878,7 @@ export const initialGameState: GameStateType = {
       effect: {
         type: 'compute',
         impact: 'negative',
-        magnitude: 25 // 25% reduction in compute production
+        magnitude: 15 // 15% reduction in compute production (reduced from 25% for better balance)
       },
       realWorldContext: "From 2020-2022, global chip shortages severely constrained GPU availability for AI research, significantly increasing costs and slowing progress."
     },
@@ -933,6 +933,32 @@ export const initialGameState: GameStateType = {
         magnitude: 50 // 50% boost to hardware effectiveness
       },
       realWorldContext: "While still speculative, quantum computing may eventually provide massive speedups for certain AI workloads."
+    },
+    {
+      id: 9,
+      title: "Open Source AI Movement",
+      description: "The community has released powerful open-source models, accelerating research and reducing costs!",
+      triggered: false,
+      era: Era.GNT3,
+      effect: {
+        type: 'algorithm',
+        impact: 'positive',
+        magnitude: 25 // 25% boost to algorithm research
+      },
+      realWorldContext: "Open source models like BERT, T5, and others democratized AI research and enabled rapid innovation."
+    },
+    {
+      id: 10,
+      title: "Cloud Computing Expansion",
+      description: "Major cloud providers have expanded their AI infrastructure, making compute more accessible!",
+      triggered: false,
+      era: Era.GNT4,
+      effect: {
+        type: 'compute',
+        impact: 'positive',
+        magnitude: 20 // 20% boost to compute efficiency
+      },
+      realWorldContext: "The expansion of cloud AI services by providers like AWS, Google Cloud, and Azure made powerful compute resources more accessible."
     }
   ],
   
