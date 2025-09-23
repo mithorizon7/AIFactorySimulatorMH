@@ -81,7 +81,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Transformer Architecture",
         description: "The foundation of modern AI systems, transformers use 'attention mechanisms' to understand relationships between different parts of text or data. This breakthrough replaces older sequential processing with parallel attention, dramatically improving AI's ability to understand context and meaning.",
         realWorldExample: "The 2017 paper 'Attention Is All You Need' by Google researchers introduced transformers, which became the foundation for ChatGPT, GPT-4, BERT, and virtually all modern language models. Every major AI company now builds on this architecture.",
-        howToImprove: "Focus on Algorithm research investments. This breakthrough requires Algorithm Level 2 - upgrade your Algorithm Architectures to develop more sophisticated neural network designs. The transformer breakthrough unlocks when your AI research advances sufficiently.",
+        howToImprove: "Focus on Algorithm research investments. This breakthrough requires Algorithm Level 2 - click on the Algorithm section and upgrade 'Algorithm Architectures' to develop more sophisticated neural network designs. The transformer breakthrough unlocks when your AI research advances sufficiently.",
         industryImpact: "Transformers revolutionized AI by enabling models to process long sequences efficiently, making modern conversational AI and large language models possible. This single architectural innovation underpins the entire current AI revolution.",
         resourceConnection: "Algorithm-focused breakthrough that enhances how your AI processes information across all domains."
       },
@@ -89,7 +89,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Unsupervised Pre-training",
         description: "A training methodology where AI learns language patterns from vast amounts of text without needing human-labeled examples. The AI discovers grammar, facts, reasoning patterns, and world knowledge simply by predicting the next word in billions of sentences.",
         realWorldExample: "GPT models are trained on hundreds of billions of words from books, websites, and articles. The AI learns to complete sentences like 'The capital of France is...' by seeing this pattern millions of times, without being explicitly taught geography.",
-        howToImprove: "Invest heavily in Data Quality and Data Quantity. This breakthrough requires Data Level 2 - focus on gathering more diverse, high-quality datasets. Larger and more varied data leads to better unsupervised learning capabilities.",
+        howToImprove: "Invest heavily in Data Quality and Data Quantity. This breakthrough requires Data Level 2 - click on the Data section and upgrade both 'Data Quality' and 'Data Quantity' options. Larger and more varied datasets lead to better unsupervised learning capabilities.",
         industryImpact: "Unsupervised pre-training enables AI to learn from the entire internet, acquiring broad knowledge without expensive human annotation. This made large-scale AI development economically viable and unlocked general-purpose AI capabilities.",
         resourceConnection: "Data-centric breakthrough that improves learning efficiency from all your data sources."
       },
@@ -97,7 +97,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Massive Parameter Scaling",
         description: "Dramatically increasing the number of parameters (learnable weights) in AI models from millions to billions. More parameters allow AI to memorize more patterns, facts, and capabilities, leading to emergent abilities that smaller models cannot achieve.",
         realWorldExample: "GPT-3 with 175 billion parameters showed capabilities that GPT-2 (1.5B parameters) couldn't match - like few-shot learning, basic reasoning, and code generation. The scale itself unlocked new emergent behaviors.",
-        howToImprove: "Requires massive Compute investments. This breakthrough needs Compute Level 3 - upgrade Electricity, Hardware, and Regulations to support training larger models. More compute capacity enables handling billions of parameters effectively.",
+        howToImprove: "Requires massive Compute investments. This breakthrough needs Compute Level 3 - click on the Compute section and upgrade 'Electricity', 'Hardware', and 'Regulations' to support training larger models. More compute capacity enables handling billions of parameters effectively.",
         industryImpact: "Scaling laws revealed that bigger models consistently perform better, driving an industry arms race for compute resources. Companies now spend hundreds of millions on single training runs to achieve state-of-the-art performance.",
         resourceConnection: "Compute-intensive breakthrough that multiplies the effectiveness of your data and algorithms through sheer scale."
       },
@@ -105,7 +105,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Few-Shot Learning",
         description: "The ability of AI to learn new tasks from just a few examples provided in the prompt, without additional training. Large-scale models develop this capability as an emergent property of having seen millions of diverse examples during training.",
         realWorldExample: "You can ask GPT-4 to translate between languages it wasn't specifically trained for by showing just 2-3 example translations in your prompt. The model generalizes from these few examples to handle new cases correctly.",
-        howToImprove: "Requires balanced Algorithm Level 3 and Data Level 3 investments. Combine sophisticated architecture development with diverse, high-quality datasets. The interaction between advanced algorithms and rich data enables few-shot capabilities.",
+        howToImprove: "Requires balanced Algorithm Level 3 and Data Level 3 investments. Click on the Algorithm section to upgrade 'Algorithm Architectures' and the Data section to upgrade both data options. The interaction between advanced algorithms and rich data enables few-shot capabilities.",
         industryImpact: "Few-shot learning made AI systems incredibly versatile, eliminating the need to train separate models for each task. This breakthrough enabled general-purpose AI assistants and dramatically reduced AI deployment costs.",
         resourceConnection: "Combined breakthrough requiring both algorithm sophistication and data diversity to enable flexible task adaptation."
       },
@@ -113,7 +113,7 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Instruction Tuning",
         description: "Fine-tuning AI models to follow human instructions more reliably and safely. This process trains AI to understand and execute commands while aligning with human values and intentions, making AI systems more helpful and controllable.",
         realWorldExample: "ChatGPT and Claude use instruction tuning to follow commands like 'Explain quantum physics to a 10-year-old' or 'Write a professional email declining a job offer.' Without this training, models would just continue text rather than follow instructions.",
-        howToImprove: "Focus on Algorithm Level 4 - advance your Algorithm Architectures to develop more sophisticated training techniques. Instruction tuning requires advanced algorithmic methods for alignment and safety.",
+        howToImprove: "Focus on Algorithm Level 4 - click on the Algorithm section and continue upgrading 'Algorithm Architectures' to develop more sophisticated training techniques. Instruction tuning requires advanced algorithmic methods for alignment and safety.",
         industryImpact: "Instruction tuning transformed AI from text completion tools into practical assistants. This breakthrough enabled the transition from research curiosities to consumer-ready AI products used by millions.",
         resourceConnection: "Algorithm-focused breakthrough that enhances AI's ability to understand and follow human intentions across all interactions."
       },
@@ -121,39 +121,39 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         title: "Multimodal Integration",
         description: "Enabling AI to process and understand multiple types of data simultaneously - text, images, audio, and video. This creates AI systems that can reason about visual scenes, understand diagrams, and connect information across different modalities.",
         realWorldExample: "GPT-4 with vision can analyze charts, explain memes, read handwritten notes, and describe images in detail. DALL-E creates images from text descriptions. These models understand connections between visual and textual information.",
-        howToImprove: "Requires both Compute Level 4 and Data Level 4. Multimodal models need massive compute for processing diverse data types and extensive datasets containing images, text, audio, and video for comprehensive training.",
+        howToImprove: "Requires both Compute Level 4 and Data Level 4. Click on the Compute section to upgrade all compute options and the Data section to upgrade all data options. Multimodal models need massive computational resources and diverse datasets for comprehensive training.",
         industryImpact: "Multimodal AI enables applications like AI-powered design tools, medical image analysis, autonomous vehicles, and educational assistants that can understand visual materials and real-world contexts.",
         resourceConnection: "Combined breakthrough leveraging both computational power and diverse data types to create more comprehensive AI understanding."
       },
       7: { // Advanced Reasoning
         title: "Advanced Reasoning",
         description: "AI's ability to break down complex problems into logical steps, perform multi-step reasoning, and solve problems requiring planning and abstract thinking. This represents a major leap toward human-like cognitive capabilities.",
-        realWorldExample: "Future AI systems may solve complex mathematical proofs, design sophisticated engineering systems, or create detailed business strategies by reasoning through multiple steps and considering various constraints simultaneously.",
-        howToImprove: "Requires balanced Algorithm Level 5 and Data Level 5. Advanced reasoning emerges from sophisticated architectures trained on diverse reasoning examples - mathematical proofs, logical puzzles, and complex problem-solving scenarios.",
-        industryImpact: "Advanced reasoning will enable AI to tackle complex scientific research, engineering design, strategic planning, and other high-level cognitive tasks currently requiring human experts.",
+        realWorldExample: "Current AI models like GPT-4 can solve multi-step math problems, write detailed code with complex logic, and reason through legal cases. Future systems will extend this to novel scientific discoveries, complex engineering designs, and strategic business planning across multiple domains.",
+        howToImprove: "Requires balanced Algorithm Level 5 and Data Level 5. Click on both Algorithm and Data sections to continue upgrading all available options. Advanced reasoning emerges from sophisticated architectures trained on diverse reasoning examples - mathematical proofs, logical puzzles, and complex problem-solving scenarios.",
+        industryImpact: "Advanced reasoning enables AI to tackle complex scientific research, engineering design, strategic planning, and other high-level cognitive tasks currently requiring human experts. This capability bridges the gap between current AI assistants and true artificial general intelligence.",
         resourceConnection: "Combined breakthrough requiring both algorithmic sophistication and diverse reasoning datasets to enable complex problem-solving capabilities."
       },
       8: { // Self-Improvement Capabilities
         title: "Self-Improvement Capabilities",
         description: "AI systems that can analyze and improve their own code, architecture, and algorithms. This represents a potential acceleration point where AI development becomes self-reinforcing, with AI helping to design better AI.",
-        realWorldExample: "Future AI might analyze its own neural network architecture, identify inefficiencies, and propose improvements to its training process or model design, potentially accelerating AI development exponentially.",
-        howToImprove: "Focus intensively on Algorithm Level 6. Self-improvement requires the most advanced algorithmic techniques for self-analysis, code generation, and architectural optimization. This is primarily an algorithm-driven capability.",
-        industryImpact: "Self-improving AI could accelerate technological progress across all fields, potentially leading to rapid advances in science, engineering, and AI capabilities themselves. This breakthrough represents a critical threshold toward superintelligence.",
+        realWorldExample: "Early examples include AI systems that can write and optimize their own code, like AlphaCode for programming competitions. Future systems might automatically optimize neural network architectures, improve training algorithms, or design more efficient hardware configurations for AI workloads.",
+        howToImprove: "Focus intensively on Algorithm Level 6. Click on the Algorithm section and maximize all algorithm upgrades. Self-improvement requires the most advanced algorithmic techniques for self-analysis, code generation, and architectural optimization. This is primarily an algorithm-driven capability requiring sophisticated meta-learning approaches.",
+        industryImpact: "Self-improving AI could accelerate technological progress across all fields, potentially leading to rapid advances in science, engineering, and AI capabilities themselves. This breakthrough represents a critical threshold that could fundamentally change the pace of technological development.",
         resourceConnection: "Algorithm-centric breakthrough that could fundamentally accelerate all future AI development and technological progress."
       },
       9: { // Advanced Tool Use
         title: "Advanced Tool Use",
         description: "AI systems that can effectively use external tools, APIs, databases, and services to extend their capabilities beyond their training. This enables AI to interact with the real world and access up-to-date information and specialized functions.",
-        realWorldExample: "Future AI assistants might automatically book flights, analyze real-time market data, control smart home devices, run code in development environments, and coordinate with other AI systems to accomplish complex multi-step tasks.",
-        howToImprove: "Requires Algorithm Level 7 and Compute Level 6. Tool use demands sophisticated algorithms for planning and coordination, plus substantial compute for managing multiple simultaneous interactions with external systems.",
-        industryImpact: "Advanced tool use will enable AI to become autonomous agents capable of handling complex real-world tasks, potentially automating entire workflows across industries and enabling new forms of human-AI collaboration.",
+        realWorldExample: "Current examples include ChatGPT with plugins, Claude with computer use capabilities, and GitHub Copilot integrating with development environments. Advanced versions will autonomously coordinate multiple tools, manage complex workflows, and interact with real-world systems safely and effectively.",
+        howToImprove: "Requires Algorithm Level 7 and Compute Level 6. Click on both Algorithm and Compute sections to upgrade all available options. Tool use demands sophisticated algorithms for planning and coordination, plus substantial compute for managing multiple simultaneous interactions with external systems.",
+        industryImpact: "Advanced tool use enables AI to become autonomous agents capable of handling complex real-world tasks, potentially automating entire workflows across industries and enabling new forms of human-AI collaboration in professional environments.",
         resourceConnection: "Combined breakthrough requiring algorithmic sophistication for coordination and compute power for managing complex external interactions."
       },
       10: { // General Problem Solving (AGI)
         title: "General Problem Solving (AGI)",
         description: "The ability to solve novel problems across any domain without domain-specific training. This represents true artificial general intelligence - AI that can learn, reason, and adapt to completely new situations as effectively as humans.",
         realWorldExample: "AGI would enable an AI system to excel at scientific research, creative writing, strategic planning, interpersonal communication, and physical manipulation tasks without being specifically trained for each domain.",
-        howToImprove: "Requires Algorithm Level 8, Data Level 7, and Compute Level 7. AGI represents the culmination of all three pillars - the most advanced algorithms, comprehensive data from all domains, and massive computational resources.",
+        howToImprove: "Requires Algorithm Level 8, Data Level 7, and Compute Level 7. Click on all three resource sections (Algorithm, Data, Compute) and maximize every upgrade option. AGI represents the culmination of all three pillars - the most advanced algorithms, comprehensive data from all domains, and massive computational resources.",
         industryImpact: "AGI represents the ultimate goal of AI research - systems that match or exceed human cognitive abilities across all domains. This breakthrough could transform every aspect of human civilization and scientific progress.",
         resourceConnection: "Ultimate combined breakthrough requiring mastery of all three pillars: algorithms, data, and compute working in perfect harmony to achieve human-level general intelligence."
       }
