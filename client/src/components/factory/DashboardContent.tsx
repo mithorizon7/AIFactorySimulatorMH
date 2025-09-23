@@ -113,32 +113,32 @@ export default function DashboardContent({
       // Critical Financial Intelligence
       netCashFlow: (() => {
         const totalRevenue = (
-          gameState.services.api.active ? gameState.services.api.monthlyRevenue * 30 : 0
+          (gameState.services?.api?.active ? gameState.services.api.monthlyRevenue * 30 : 0)
         ) + (
-          gameState.services.chatbot.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0
+          (gameState.services?.chatbot?.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0)
         );
         const totalCosts = (
-          gameState.computeCapacity.maxCapacity * 50 + // Infrastructure costs
-          gameState.levels.compute * 1000 + // Operational costs
-          gameState.levels.data * 800 +
-          gameState.levels.algorithm * 600
+          (gameState.computeCapacity?.maxCapacity || 0) * 50 + // Infrastructure costs
+          (gameState.levels?.compute || 0) * 1000 + // Operational costs
+          (gameState.levels?.data || 0) * 800 +
+          (gameState.levels?.algorithm || 0) * 600
         );
         return totalRevenue - totalCosts;
       })(),
       cashRunwayDays: (() => {
         const totalRevenue = (
-          gameState.services.api.active ? gameState.services.api.monthlyRevenue * 30 : 0
+          (gameState.services?.api?.active ? gameState.services.api.monthlyRevenue * 30 : 0)
         ) + (
-          gameState.services.chatbot.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0
+          (gameState.services?.chatbot?.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0)
         );
         const totalCosts = (
-          gameState.computeCapacity.maxCapacity * 50 + // Infrastructure costs
-          gameState.levels.compute * 1000 + // Operational costs
-          gameState.levels.data * 800 +
-          gameState.levels.algorithm * 600
+          (gameState.computeCapacity?.maxCapacity || 0) * 50 + // Infrastructure costs
+          (gameState.levels?.compute || 0) * 1000 + // Operational costs
+          (gameState.levels?.data || 0) * 800 +
+          (gameState.levels?.algorithm || 0) * 600
         );
         const netCashFlow = totalRevenue - totalCosts;
-        return netCashFlow >= 0 ? 999 : Math.max(0, Math.floor(gameState.money / Math.abs(netCashFlow)));
+        return netCashFlow >= 0 ? 999 : Math.max(0, Math.floor((gameState.money || 0) / Math.abs(netCashFlow || 1)));
       })()
     };
     
