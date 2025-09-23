@@ -138,6 +138,12 @@ export interface GameStateType {
     apiAvailable: boolean;  // Whether API service is available yet (era-gated)
     chatbotAvailable: boolean; // Whether chatbot service is available yet (era-gated)
     
+    // Platform Development Status
+    apiPlatformBuilt: boolean; // Whether the API platform has been developed (requires investment)
+    apiPlatformCost: number;   // Cost to build the API platform
+    chatbotPlatformBuilt: boolean; // Whether the chatbot platform has been developed
+    chatbotPlatformCost: number;   // Cost to build the chatbot platform
+    
     // Revenue Service Status
     apiEnabled: boolean;   // Whether the company has activated API service (user choice)
     chatbotEnabled: boolean; // Whether the company has activated chatbot service (user choice)
@@ -594,6 +600,12 @@ export const initialGameState: GameStateType = {
     // Era-based Revenue Availability (initially unavailable)
     apiAvailable: false,      // API service not available until GNT-3 era
     chatbotAvailable: false,  // Chatbot service not available until GNT-4 era
+    
+    // Platform Development Status
+    apiPlatformBuilt: false,  // API platform not built initially (requires investment)
+    apiPlatformCost: 8000,    // Cost to build API platform ($8K - balanced for GNT-3 era)
+    chatbotPlatformBuilt: false, // Chatbot platform not built initially
+    chatbotPlatformCost: 15000,  // Cost to build chatbot platform ($15K - balanced for GNT-4 era)
     
     // Revenue Service Status (user choices, both start disabled)
     apiEnabled: false,        // API service not enabled initially
