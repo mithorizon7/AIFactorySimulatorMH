@@ -244,6 +244,10 @@ export interface GameStateType {
     // Auto-enabling guidance flags
     apiServiceUnlockedTime: number | null; // Timestamp when API service was unlocked
     hasOfferedApiAutoEnable: boolean; // Whether we've offered to auto-enable API service
+    
+    // Breakthrough effect flags (prevent duplicate applications)
+    fewShotTrainingBonus: boolean; // Whether few-shot learning training cost reduction has been applied
+    selfImprovementTrainingBonus: boolean; // Whether self-improvement training cost reduction has been applied
   };
   
   // Interactive Tutorial System
@@ -745,7 +749,11 @@ export const initialGameState: GameStateType = {
     
     // Auto-enabling guidance flags
     apiServiceUnlockedTime: null, // Timestamp when API service was unlocked
-    hasOfferedApiAutoEnable: false // Whether we've offered to auto-enable API service
+    hasOfferedApiAutoEnable: false, // Whether we've offered to auto-enable API service
+    
+    // Breakthrough effect flags (prevent duplicate applications)
+    fewShotTrainingBonus: false, // Whether few-shot learning training cost reduction has been applied
+    selfImprovementTrainingBonus: false // Whether self-improvement training cost reduction has been applied
   },
   
   // Breakthroughs - Organized by AI eras

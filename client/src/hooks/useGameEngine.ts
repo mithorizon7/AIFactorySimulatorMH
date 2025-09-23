@@ -415,15 +415,19 @@ export function useGameEngine() {
           state.revenue.baseApiRate += 200; // Premium few-shot API pricing
           state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0); // Capped at 3x growth
         }
-        // Fixed 10% training cost reduction (clear intent)
-        Object.keys(state.training.runs).forEach(era => {
-          const typedEra = era as keyof typeof state.training.runs;
-          const run = state.training.runs[typedEra];
-          if (run.status === 'not_started') {
-            run.computeRequired = Math.floor(run.computeRequired * 0.90); // 10% reduction
-            run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% reduction
-          }
-        });
+        // Improve training efficiency globally (additive, not multiplicative)
+        if (!state.narrativeFlags.fewShotTrainingBonus) {
+          state.narrativeFlags.fewShotTrainingBonus = true;
+          // Apply 10% reduction to all future training runs only once
+          Object.keys(state.training.runs).forEach(era => {
+            const typedEra = era as keyof typeof state.training.runs;
+            const run = state.training.runs[typedEra];
+            if (run.status === 'not_started') {
+              run.computeRequired = Math.floor(run.computeRequired * 0.90); // 10% reduction
+              run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% reduction
+            }
+          });
+        }
         break;
         
       case 5: // Instruction Tuning (2021-2022)
@@ -463,15 +467,21 @@ export function useGameEngine() {
         state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.20);
         state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.20);
         state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
-        // Self-improvement reduces future research costs (15% reduction)
-        Object.keys(state.training.runs).forEach(era => {
-          const typedEra = era as keyof typeof state.training.runs;
-          const run = state.training.runs[typedEra];
-          if (run.status === 'not_started') {
-            run.computeRequired = Math.floor(run.computeRequired * 0.85); // 15% reduction
-            run.moneyCost = Math.floor(run.moneyCost * 0.85); // 15% reduction
-          }
-        });
+        // Self-improvement reduces future research costs (additional 10% reduction, non-stacking)
+        if (!state.narrativeFlags.selfImprovementTrainingBonus) {
+          state.narrativeFlags.selfImprovementTrainingBonus = true;
+          // Apply additional 10% reduction to remaining training runs only once
+          Object.keys(state.training.runs).forEach(era => {
+            const typedEra = era as keyof typeof state.training.runs;
+            const run = state.training.runs[typedEra];
+            if (run.status === 'not_started') {
+              // This creates a combined 19% reduction (0.90 * 0.90 = 0.81 if few-shot was already applied)
+              // But only if few-shot was unlocked first, otherwise just 10%
+              run.computeRequired = Math.floor(run.computeRequired * 0.90); // Additional 10% reduction
+              run.moneyCost = Math.floor(run.moneyCost * 0.90); // Additional 10% reduction  
+            }
+          });
+        }
         break;
         
       case 9: // Advanced Tool Use (Future)
