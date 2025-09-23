@@ -55,91 +55,226 @@ export default function DashboardContent({
     return `~${daysRemaining} days`;
   };
 
-  // Intelligent Strategic Action Analysis System
+  // Advanced Intelligent Priority Actions System
   const getNextActions = () => {
     const actions = [];
     
-    // === GAME PHASE DETECTION ===
-    const gamePhase = (() => {
-      if (gameState.currentEra === 'GNT-2') return 'foundation';
-      if (gameState.currentEra === 'GNT-3' || gameState.currentEra === 'GNT-4') return 'scaling';
-      return 'advanced';
+    // === COMPREHENSIVE GAME STATE ANALYSIS ===
+    const metrics = {
+      // Financial Intelligence
+      totalRevenue: gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors,
+      cashPosition: gameState.money,
+      revenueGrowthPotential: gameState.revenue.b2b < 1000000, // Can still scale significantly
+      financialStability: gameState.money > 500000 && (gameState.revenue.b2b + gameState.revenue.b2c) > 50000,
+      
+      // Capacity Intelligence
+      capacityUtilization: gameState.computeCapacity.maxCapacity > 0 ? 
+        gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity : 0,
+      freeCompute: gameState.computeCapacity.maxCapacity - gameState.computeCapacity.used,
+      computeGrowthPotential: gameState.computeCapacity.maxCapacity < 100000, // Can still scale meaningfully
+      
+      // Resource Intelligence
+      resources: {
+        compute: gameState.levels.compute,
+        data: gameState.levels.data,
+        algorithm: gameState.levels.algorithm
+      },
+      avgResourceLevel: (gameState.levels.compute + gameState.levels.data + gameState.levels.algorithm) / 3,
+      resourceGaps: (() => {
+        const levels = [gameState.levels.compute, gameState.levels.data, gameState.levels.algorithm];
+        const max = Math.max(...levels);
+        return {
+          compute: max - gameState.levels.compute,
+          data: max - gameState.levels.data,
+          algorithm: max - gameState.levels.algorithm
+        };
+      })(),
+      
+      // Production Intelligence  
+      intelligenceRate: (
+        gameState.production.compute * gameState.bonuses.computeToIntelligence +
+        gameState.production.data * gameState.bonuses.dataToIntelligence +
+        gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
+      ) * 86400, // per day
+      
+      // Strategic Intelligence
+      currentEra: gameState.currentEra,
+      agiProgress: gameState.intelligence / gameState.agiThreshold,
+      canTrain: gameState.training && !gameState.training.active,
+      daysToAgi: (() => {
+        const rate = (
+          gameState.production.compute * gameState.bonuses.computeToIntelligence +
+          gameState.production.data * gameState.bonuses.dataToIntelligence +
+          gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
+        ) * 86400;
+        return rate > 0 ? Math.ceil((gameState.agiThreshold - gameState.intelligence) / rate) : 999;
+      })()
+    };
+    
+    // === INTELLIGENT ERA DETECTION ===
+    const eraPhase = (() => {
+      const era = metrics.currentEra;
+      const avg = metrics.avgResourceLevel;
+      const revenue = metrics.totalRevenue;
+      
+      if (era === 'GNT-2' || (avg < 6 && revenue < 25000)) return { phase: 'foundation', era: 'startup' };
+      if (era === 'GNT-2' && avg >= 6) return { phase: 'foundation', era: 'growth' };
+      if (era === 'GNT-3') return { phase: 'scaling', era: 'early_scale' };  
+      if (era === 'GNT-4') return { phase: 'scaling', era: 'mid_scale' };
+      if (era === 'GNT-5') return { phase: 'advanced', era: 'optimization' };
+      if (era === 'GNT-6') return { phase: 'advanced', era: 'breakthrough' };
+      if (era === 'GNT-7') return { phase: 'advanced', era: 'agi_push' };
+      
+      // Fallback based on progress
+      if (metrics.agiProgress < 0.2) return { phase: 'foundation', era: 'startup' };
+      if (metrics.agiProgress < 0.5) return { phase: 'scaling', era: 'early_scale' };
+      if (metrics.agiProgress < 0.8) return { phase: 'advanced', era: 'optimization' };
+      return { phase: 'advanced', era: 'agi_push' };
     })();
     
-    // === STRATEGIC BOTTLENECK ANALYSIS ===
-    const capacityUtilization = gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity;
-    const revenueRate = gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors;
-    const totalProduction = gameState.production.compute + gameState.production.data + gameState.production.algorithm;
-    const resourceBalance = {
-      compute: gameState.levels.compute,
-      data: gameState.levels.data,
-      algorithm: gameState.levels.algorithm
-    };
-    const avgResourceLevel = (resourceBalance.compute + resourceBalance.data + resourceBalance.algorithm) / 3;
-    const isResourceImbalanced = Math.max(...Object.values(resourceBalance)) - Math.min(...Object.values(resourceBalance)) > 3;
-    
-    // === PHASE-SPECIFIC STRATEGIC GUIDANCE ===
-    
-    if (gamePhase === 'foundation') {
-      // Early game: Focus on establishing sustainable foundation
+    // === RISK & OPPORTUNITY ANALYSIS ===
+    const analysis = {
+      // Critical Risks (Priority 0)
+      systemOverload: metrics.capacityUtilization > 0.9,
+      cashCrisis: metrics.cashRunwayDays < 30 && metrics.netCashFlow < 0,
+      revenueCollapse: metrics.totalRevenue < 5000 && gameState.money < 100000,
       
-      if (gameState.money < 500000 && revenueRate < 50000) {
+      // High Impact Opportunities (Priority 1)
+      trainingReady: metrics.canTrain && metrics.freeCompute > 1000,
+      majorFunding: gameState.investmentMilestones.some(m => 
+        !m.unlocked && gameState.intelligence >= m.requiredIntelligence && gameState.money > 1000000
+      ),
+      breakthroughReady: gameState.breakthroughs.filter(b => 
+        !b.unlocked && 
+        (!b.requiredLevels.compute || metrics.resources.compute >= b.requiredLevels.compute) &&
+        (!b.requiredLevels.data || metrics.resources.data >= b.requiredLevels.data) &&
+        (!b.requiredLevels.algorithm || metrics.resources.algorithm >= b.requiredLevels.algorithm)
+      ).length > 0,
+      
+      // Growth Opportunities (Priority 2)
+      resourceImbalance: Object.entries(metrics.resourceGaps).filter(([,gap]) => gap > 2).length > 0,
+      capacityWaste: metrics.capacityUtilization < 0.4 && metrics.freeCompute > 2000,
+      revenueOptimization: metrics.totalRevenue > 50000 && metrics.netCashFlow > 100000,
+      
+      // Efficiency Improvements (Priority 3)
+      synergyOpportunity: (gameState.bonuses.computeToIntelligence + 
+                          gameState.bonuses.dataToIntelligence + 
+                          gameState.bonuses.algorithmToIntelligence) / 3 < 2,
+      agiAcceleration: metrics.daysToAgi > 50 && metrics.intelligenceRate > 0
+    };
+    
+    // === INTELLIGENT ACTION GENERATION SYSTEM ===
+    
+    // Priority 0: Critical Issues (Always shown first)
+    if (analysis.systemOverload) {
+      actions.unshift({
+        priority: 0,
+        action: "CRITICAL: System Overload",
+        description: `${Math.round(metrics.capacityUtilization * 100)}% capacity used - performance degrading rapidly`,
+        educational: "High compute usage causes service slowdowns, customer dissatisfaction, and training failures. Immediate expansion needed",
+        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+        color: "border-red-500/50 bg-red-900/30",
+        buttonColor: "bg-red-600 hover:bg-red-700",
+        urgent: true,
+        strategies: ["Expand Compute"],
+        onClick: () => { setActiveTab('resources'); handleNavigateToResource('compute'); }
+      });
+    }
+    
+    if (analysis.revenueCollapse) {
+      actions.unshift({
+        priority: 0,
+        action: "URGENT: Revenue Crisis",
+        description: `$${Math.round(gameState.money).toLocaleString()} funds + $${Math.round(metrics.totalRevenue).toLocaleString()}/day income - bankruptcy imminent`,
+        educational: "Without revenue or capital, R&D stops completely. Launch services immediately or game over is inevitable",
+        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+        color: "border-red-500/50 bg-red-900/30",
+        buttonColor: "bg-red-600 hover:bg-red-700",
+        urgent: true,
+        strategies: ["Launch API", "Seek Investment"],
+        onClick: () => setActiveTab('economy')
+      });
+    }
+    
+    // Priority 1: Major Opportunities Based on Era
+    if (analysis.trainingReady && eraPhase.phase !== 'foundation') {
+      const nextEra = metrics.currentEra === 'GNT-2' ? 'GNT-3' : metrics.currentEra === 'GNT-3' ? 'GNT-4' : 
+                     metrics.currentEra === 'GNT-4' ? 'GNT-5' : metrics.currentEra === 'GNT-5' ? 'GNT-6' : 'GNT-7';
+      actions.push({
+        priority: 1,
+        action: `Era Advancement: ${nextEra}`,
+        description: `${Math.round(metrics.freeCompute)} free compute ready for ${nextEra} training run`,
+        educational: `Training to ${nextEra} unlocks new capabilities, better revenue streams, and advances toward AGI. Reserve compute for 30 days`,
+        icon: <BrainCog className="h-5 w-5 text-purple-400" />,
+        color: "border-purple-500/50 bg-purple-900/20",
+        buttonColor: "bg-purple-600 hover:bg-purple-700",
+        strategies: ["Begin Training"],
+        onClick: trainModel
+      });
+    }
+    
+    if (analysis.breakthroughReady) {
+      const availableBreakthroughs = gameState.breakthroughs.filter(b => 
+        !b.unlocked && 
+        (!b.requiredLevels?.compute || metrics.resources.compute >= b.requiredLevels.compute) &&
+        (!b.requiredLevels?.data || metrics.resources.data >= b.requiredLevels.data) &&
+        (!b.requiredLevels?.algorithm || metrics.resources.algorithm >= b.requiredLevels.algorithm)
+      ).length;
+      
+      actions.push({
+        priority: 1,
+        action: "Research Breakthroughs",
+        description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? 's' : ''} ready to unlock`,
+        educational: "Breakthroughs provide permanent multipliers and unlock advanced capabilities. They're essential for scaling efficiency",
+        icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
+        color: "border-yellow-500/50 bg-yellow-900/20",
+        buttonColor: "bg-yellow-600 hover:bg-yellow-700",
+        strategies: ["Research Advances"],
+        onClick: () => setActiveTab('breakthroughs')
+      });
+    }
+    
+    // Priority 2: Era-Specific Strategic Guidance
+    if (eraPhase.phase === 'foundation') {
+      if (gameState.money < 500000 && metrics.totalRevenue < 25000) {
         actions.push({
-          priority: 1,
-          action: "Establish Revenue Foundation",
-          description: "Low funds + limited income. Time to monetize your capabilities",
-          educational: "Early revenue is crucial - it funds your research and prevents game over. Both API and chatbot services generate ongoing income",
+          priority: 2,
+          action: "Establish Revenue Foundation", 
+          description: "Low funds + minimal income - time to monetize your AI capabilities",
+          educational: "Early revenue funds research and prevents bankruptcy. Both API services and chatbot products generate steady income streams",
           icon: <TrendingUp className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
           buttonColor: "bg-green-600 hover:bg-green-700",
-          strategies: ["Launch API Service", "Build Chatbot Platform", "Seek Investment"],
+          strategies: ["Launch API Service", "Build Chatbot", "Seek Investment"],
           onClick: () => setActiveTab('economy')
         });
       }
       
-      if (isResourceImbalanced && avgResourceLevel < 8) {
-        const laggingResource = Object.entries(resourceBalance).sort(([,a], [,b]) => a - b)[0][0];
+      if (analysis.resourceImbalance && metrics.avgResourceLevel < 10) {
+        const biggestGap = Object.entries(metrics.resourceGaps).reduce((max, [name, gap]) => 
+          gap > max.gap ? { name, gap } : max, { name: '', gap: 0 });
         actions.push({
-          priority: 2,
-          action: "Balance Your Foundation",
-          description: `${laggingResource} is lagging behind - balanced growth prevents bottlenecks`,
-          educational: "In early game, keeping resources balanced is more important than specializing. Imbalanced resources create inefficiencies that compound over time",
+          priority: 2, 
+          action: "Balance Resource Development",
+          description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance prevents bottlenecks`,
+          educational: "Balanced early growth is crucial. Resource imbalances create inefficiencies that compound over time and limit scaling",
           icon: <BarChart3 className="h-5 w-5 text-blue-400" />,
           color: "border-blue-500/50 bg-blue-900/20",
           buttonColor: "bg-blue-600 hover:bg-blue-700",
-          strategies: [`Boost ${laggingResource.charAt(0).toUpperCase() + laggingResource.slice(1)}`],
-          onClick: () => { setActiveTab('resources'); handleNavigateToResource(laggingResource); }
+          strategies: [`Boost ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
+          onClick: () => { setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
         });
       }
-      
-    } else if (gamePhase === 'scaling') {
-      // Mid game: Strategic choices and specialization
-      
-      const canTrain = gameState.training && !gameState.training.active;
-      const hasTrainingCompute = (gameState.computeCapacity.maxCapacity - gameState.computeCapacity.used) > 1000;
-      
-      if (canTrain && hasTrainingCompute) {
-        actions.push({
-          priority: 1,
-          action: "Era Advancement Opportunity",
-          description: `Ready to train next-gen AI model. This is your path to ${gameState.currentEra === 'GNT-3' ? 'GNT-4' : 'GNT-5'}`,
-          educational: "Training runs are major milestones that unlock new capabilities and revenue opportunities. Reserve compute for 30 days",
-          icon: <BrainCog className="h-5 w-5 text-purple-400" />,
-          color: "border-purple-500/50 bg-purple-900/20",
-          buttonColor: "bg-purple-600 hover:bg-purple-700",
-          strategies: ["Begin Training"],
-          onClick: trainModel
-        });
-      }
-      
-      if (revenueRate > 100000 && gameState.money > 2000000) {
-        const nextMilestone = gameState.investmentMilestones.find(m => !m.unlocked && gameState.intelligence >= m.requiredIntelligence);
+    } else if (eraPhase.phase === 'scaling') {
+      if (analysis.majorFunding) {
+        const nextMilestone = gameState.investmentMilestones.find(m => 
+          !m.unlocked && gameState.intelligence >= m.requiredIntelligence);
         if (nextMilestone) {
           actions.push({
             priority: 2,
-            action: "Scale Through Investment",
-            description: `${nextMilestone.name} available: $${(nextMilestone.funding / 1000000).toFixed(1)}M funding`,
-            educational: "Major funding rounds provide capital for aggressive scaling. Use this to dominate compute infrastructure or acquire rare datasets",
+            action: "Major Investment Opportunity",
+            description: `${nextMilestone.name}: $${(nextMilestone.funding / 1000000).toFixed(1)}M funding available`,
+            educational: "Major funding rounds provide capital for aggressive scaling and market dominance. Use wisely for compute or data acquisition",
             icon: <DollarSign className="h-5 w-5 text-emerald-400" />,
             color: "border-emerald-500/50 bg-emerald-900/20",
             buttonColor: "bg-emerald-600 hover:bg-emerald-700",
@@ -148,110 +283,78 @@ export default function DashboardContent({
           });
         }
       }
-      
-    } else {
-      // Advanced game: Optimization and AGI push
-      
-      const intelligenceGrowthRate = baseIntelligenceRate * 86400;
-      const daysToAGI = intelligenceGrowthRate > 0 ? Math.ceil((gameState.agiThreshold - gameState.intelligence) / intelligenceGrowthRate) : 999;
-      
-      if (daysToAGI > 100 && intelligenceGrowthRate > 0) {
+    } else if (eraPhase.phase === 'advanced') {
+      if (analysis.agiAcceleration) {
         actions.push({
-          priority: 1,
+          priority: 2,
           action: "Accelerate AGI Timeline",
-          description: `Current pace: ${daysToAGI} days to AGI. Time to optimize for the final push`,
-          educational: "Late game is about maximizing intelligence growth rate through synergies between compute, data, and algorithms. Focus on breakthrough multipliers",
+          description: `Current pace: ${metrics.daysToAgi} days to AGI - optimize for the final breakthrough`,
+          educational: "Late game is about maximizing intelligence growth through synergies. Focus on breakthrough multipliers and resource optimization",
           icon: <Target className="h-5 w-5 text-amber-400" />,
-          color: "border-amber-500/50 bg-amber-900/20",
+          color: "border-amber-500/50 bg-amber-900/20", 
           buttonColor: "bg-amber-600 hover:bg-amber-700",
-          strategies: ["Optimize Synergies", "Unlock Breakthroughs", "Scale Infrastructure"],
+          strategies: ["Optimize Synergies", "Max Efficiency", "Final Push"],
           onClick: () => setActiveTab('breakthroughs')
         });
       }
     }
     
-    // === CRITICAL SYSTEM HEALTH CHECKS ===
-    if (capacityUtilization > 0.9) {
-      actions.unshift({
-        priority: 0,
-        action: "SYSTEM OVERLOAD - Immediate Action Required",
-        description: `${Math.round(capacityUtilization * 100)}% capacity used. Performance degrading - expand compute now or reduce usage`,
-        educational: "High compute usage means your services are slowing down, customers are experiencing delays, and training runs may fail",
-        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-        color: "border-red-500/50 bg-red-900/30",
-        buttonColor: "bg-red-600 hover:bg-red-700",
-        urgent: true,
-        strategies: ["Expand Infrastructure"],
-        onClick: () => { setActiveTab('resources'); handleNavigateToResource('compute'); }
-      });
-    }
-    
-    // === BREAKTHROUGH & OPPORTUNITY DETECTION ===
-    const availableBreakthroughs = gameState.breakthroughs.filter(b => 
-      !b.unlocked && 
-      (!b.requiredLevels.compute || gameState.levels.compute >= b.requiredLevels.compute) &&
-      (!b.requiredLevels.data || gameState.levels.data >= b.requiredLevels.data) &&
-      (!b.requiredLevels.algorithm || gameState.levels.algorithm >= b.requiredLevels.algorithm)
-    );
-    
-    if (availableBreakthroughs.length > 0 && actions.length < 3) {
-      actions.push({
-        priority: 2,
-        action: "Research Breakthrough Available",
-        description: `${availableBreakthroughs.length} breakthrough${availableBreakthroughs.length > 1 ? 's' : ''} ready to unlock`,
-        educational: "Breakthroughs provide permanent bonuses and unlock new strategies. They're force multipliers for all your resources",
-        icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
-        color: "border-yellow-500/50 bg-yellow-900/20",
-        buttonColor: "bg-yellow-600 hover:bg-yellow-700",
-        strategies: ["Research Breakthroughs"],
-        onClick: () => setActiveTab('breakthroughs')
-      });
-    }
-    
-    // === INTELLIGENT FALLBACK GUIDANCE ===
-    // Only show if we don't have enough strategic actions
-    if (actions.length < 2) {
-      // Smart resource optimization based on current situation
-      const resourceGaps = Object.entries(resourceBalance)
-        .map(([name, level]) => ({ name, level, gap: avgResourceLevel - level }))
-        .filter(r => r.gap > 1)
-        .sort((a, b) => b.gap - a.gap);
-        
-      if (resourceGaps.length > 0) {
-        const topGap = resourceGaps[0];
+    // Priority 3: Smart Optimization and Fallback Guidance
+    if (actions.length < 3) {
+      // Capacity optimization opportunities
+      if (analysis.capacityWaste) {
         actions.push({
           priority: 3,
-          action: "Strategic Resource Development",
-          description: `${topGap.name} optimization would provide the biggest impact right now`,
-          educational: `${topGap.name} improvements boost both production and unlock higher-level capabilities. This creates compound growth effects`,
-          icon: topGap.name === 'compute' ? <Cpu className="h-5 w-5 text-blue-400" /> : 
-                topGap.name === 'data' ? <Database className="h-5 w-5 text-green-400" /> : 
-                <Lightbulb className="h-5 w-5 text-purple-400" />,
-          color: topGap.name === 'compute' ? "border-blue-500/50 bg-blue-900/20" : 
-                 topGap.name === 'data' ? "border-green-500/50 bg-green-900/20" : 
-                 "border-purple-500/50 bg-purple-900/20",
-          buttonColor: topGap.name === 'compute' ? "bg-blue-600 hover:bg-blue-700" : 
-                       topGap.name === 'data' ? "bg-green-600 hover:bg-green-700" : 
-                       "bg-purple-600 hover:bg-purple-700",
-          strategies: [`Develop ${topGap.name.charAt(0).toUpperCase() + topGap.name.slice(1)}`],
-          onClick: () => { setActiveTab('resources'); handleNavigateToResource(topGap.name); }
+          action: "Optimize Compute Utilization",
+          description: `${Math.round(metrics.capacityUtilization * 100)}% utilization - scale services to use excess capacity`,
+          educational: "Underutilized compute is money wasted. Launch more services or reduce infrastructure to optimize costs and efficiency",
+          icon: <Cpu className="h-5 w-5 text-blue-400" />,
+          color: "border-blue-500/50 bg-blue-900/20",
+          buttonColor: "bg-blue-600 hover:bg-blue-700",
+          strategies: ["Scale Services", "Right-Size Infrastructure"],
+          onClick: () => setActiveTab('economy')
         });
       }
-    }
-    
-    // === PROSPERITY & GROWTH OPPORTUNITIES ===
-    if (actions.length < 3 && gameState.money > 1000000 && revenueRate > 50000) {
-      actions.push({
-        priority: 4,
-        action: "Expand Your AI Empire",
-        description: "Strong financial position - time for strategic expansion and optimization",
-        educational: "With stable revenue, you can take calculated risks and make bold moves. Consider scaling infrastructure or pursuing ambitious research",
-        icon: <TrendingUp className="h-5 w-5 text-emerald-400" />,
-        color: "border-emerald-500/50 bg-emerald-900/20",
-        buttonColor: "bg-emerald-600 hover:bg-emerald-700",
-        strategies: ["Scale Resources", "Optimize Revenue", "Research Breakthroughs"],
-        onClick: () => setActiveTab('resources')
-      });
+      
+      // Resource gap optimization
+      if (analysis.resourceImbalance) {
+        const biggestGap = Object.entries(metrics.resourceGaps).reduce((max, [name, gap]) => 
+          gap > max.gap ? { name, gap } : max, { name: '', gap: 0 });
+        if (biggestGap.gap > 0) {
+          actions.push({
+            priority: 3,
+            action: "Optimize Resource Balance",
+            description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance improves overall efficiency`,
+            educational: "Resource imbalances create bottlenecks that limit overall system performance. Balanced growth unlocks synergies",
+            icon: biggestGap.name === 'compute' ? <Cpu className="h-5 w-5 text-blue-400" /> :
+                  biggestGap.name === 'data' ? <Database className="h-5 w-5 text-green-400" /> :
+                  <Lightbulb className="h-5 w-5 text-purple-400" />,
+            color: biggestGap.name === 'compute' ? "border-blue-500/50 bg-blue-900/20" :
+                   biggestGap.name === 'data' ? "border-green-500/50 bg-green-900/20" :
+                   "border-purple-500/50 bg-purple-900/20",
+            buttonColor: biggestGap.name === 'compute' ? "bg-blue-600 hover:bg-blue-700" :
+                         biggestGap.name === 'data' ? "bg-green-600 hover:bg-green-700" :
+                         "bg-purple-600 hover:bg-purple-700",
+            strategies: [`Develop ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
+            onClick: () => { setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
+          });
+        }
+      }
+      
+      // Revenue optimization opportunities
+      if (analysis.revenueOptimization && metrics.financialStability) {
+        actions.push({
+          priority: 3,
+          action: "Expand Your AI Empire",
+          description: `Strong position: $${Math.round(gameState.money).toLocaleString()} + $${Math.round(metrics.totalRevenue).toLocaleString()}/day - time for strategic expansion`,
+          educational: "Financial strength enables bold moves. Scale infrastructure aggressively, pursue breakthrough research, or launch new services",
+          icon: <TrendingUp className="h-5 w-5 text-emerald-400" />,
+          color: "border-emerald-500/50 bg-emerald-900/20",
+          buttonColor: "bg-emerald-600 hover:bg-emerald-700",
+          strategies: ["Scale Infrastructure", "Research Advances", "Launch Services"],
+          onClick: () => setActiveTab('resources')
+        });
+      }
     }
     
     // === FINAL PRIORITIZATION & CURATION ===
