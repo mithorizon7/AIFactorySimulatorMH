@@ -234,7 +234,14 @@ export default function DashboardContent({
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
         strategies: ["Launch Services", "Secure Funding"],
-        onClick: () => setActiveTab('economy')
+        onClick: () => openPriorityActionDialog({
+          action: "Cash Flow Emergency",
+          description: `${metrics.cashRunwayDays} days of funding left with $${Math.round(Math.abs(metrics.netCashFlow)).toLocaleString()}/day burn rate`,
+          educational: "Negative cash flow is the #1 killer of AI startups. Without immediate revenue or funding, your research stops, talent leaves, and competitors gain advantage. Act now to secure your company's future.",
+          icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+          strategies: ["Launch API Services", "Secure Emergency Funding", "Cut Operating Costs"],
+          dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
+        })
       });
     }
     
@@ -273,7 +280,14 @@ export default function DashboardContent({
         color: "border-purple-500/50 bg-purple-900/20",
         buttonColor: "bg-purple-600 hover:bg-purple-700",
         strategies: ["Begin Training"],
-        onClick: trainModel
+        onClick: () => openPriorityActionDialog({
+          action: `Era Advancement: ${nextEra}`,
+          description: `${Math.round(metrics.freeCompute)} free compute ready for ${nextEra} training run`,
+          educational: `Training to ${nextEra} is a major breakthrough moment that unlocks new AI capabilities, revenue streams, and brings you closer to AGI. This 30-day training run will transform your AI's intelligence and open new possibilities.`,
+          icon: <BrainCog className="h-5 w-5 text-purple-400" />,
+          strategies: ["Execute Training Run", "Review Requirements", "Optimize Setup"],
+          dialogAction: () => { setSelectedAction(null); trainModel(); }
+        })
       });
     }
     
