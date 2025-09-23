@@ -405,11 +405,12 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-blue-400 font-medium"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
-              Advanced Compute Options
+              <span>Advanced Compute Options</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-blue-400">Click to expand</span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
@@ -656,11 +657,12 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-green-400 font-medium"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
-              Advanced Data Options
+              <span>Advanced Data Options</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-green-400">Click to expand</span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
@@ -874,11 +876,12 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-md text-sm text-purple-400 font-medium"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
-              Advanced Algorithm Options
+              <span>Advanced Algorithm Options</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-purple-400">Click to expand</span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
