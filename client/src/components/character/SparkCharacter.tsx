@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import Lottie from 'lottie-react';
 import sparkAnimation from '../../assets/spark-animation.json';
+import robotHelperAnimation from '../../assets/robot-helper.json';
 
 interface SparkCharacterProps {
   message?: string;
@@ -41,31 +42,23 @@ export function SparkCharacter({
     }
   };
 
-  // Fallback Spark visual component
+  // Fallback Spark visual component using Robot Helper animation
   const SparkFallback = ({ size }: { size: 'small' | 'medium' | 'large' }) => {
     const sparkSize = size === 'small' ? 'w-16 h-16' : size === 'large' ? 'w-32 h-32' : 'w-24 h-24';
     
     return (
-      <div className={`${sparkSize} relative flex items-center justify-center border-2 border-blue-400`}>
-        {/* Main Spark Circle - Made more visible with border */}
-        <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-600 to-blue-700 rounded-full flex items-center justify-center shadow-xl border-2 border-white/20">
-          {/* Inner Spark */}
-          <div className="w-3/4 h-3/4 bg-gradient-to-tr from-white/40 to-blue-300/20 rounded-full flex items-center justify-center">
-            {/* Spark Eyes */}
-            <div className="flex gap-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg"></div>
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-lg" style={{ animationDelay: '0.5s' }}></div>
-            </div>
-          </div>
-        </div>
+      <div className={`${sparkSize} relative flex items-center justify-center`}>
+        {/* Use Robot Helper Lottie animation as fallback */}
+        <Lottie
+          animationData={robotHelperAnimation}
+          loop={true}
+          autoplay={true}
+          className="w-full h-full"
+          style={{ background: 'transparent' }}
+        />
         
-        {/* Floating Particles - Made larger and more visible */}
-        <div className="absolute -top-2 -right-2 w-3 h-3 bg-yellow-400 rounded-full animate-bounce shadow-lg"></div>
-        <div className="absolute -bottom-2 -left-2 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-bounce shadow-lg" style={{ animationDelay: '1s' }}></div>
-        
-        {/* Glow Effect - Enhanced */}
-        <div className="absolute inset-0 bg-blue-400/40 rounded-full blur-lg animate-pulse"></div>
-        <div className="absolute inset-1 bg-purple-400/30 rounded-full blur-md animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        {/* Glow Effect for AI character */}
+        <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-md animate-pulse"></div>
       </div>
     );
   };
