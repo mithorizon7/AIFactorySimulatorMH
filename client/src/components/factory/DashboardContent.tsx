@@ -308,7 +308,14 @@ export default function DashboardContent({
         color: "border-yellow-500/50 bg-yellow-900/20",
         buttonColor: "bg-yellow-600 hover:bg-yellow-700",
         strategies: ["Research Advances"],
-        onClick: () => setActiveTab('breakthroughs')
+        onClick: () => openPriorityActionDialog({
+          action: "Research Breakthroughs",
+          description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? 's' : ''} ready to unlock`,
+          educational: "Breakthroughs provide permanent multipliers that compound over time. They unlock advanced capabilities, improve efficiency, and are essential for competitive advantage. Each breakthrough makes your entire operation more powerful.",
+          icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
+          strategies: ["Unlock Breakthroughs", "Prioritize High-Impact", "Review Research"],
+          dialogAction: () => { setSelectedAction(null); setActiveTab('breakthroughs'); }
+        })
       });
     }
     
@@ -324,7 +331,14 @@ export default function DashboardContent({
           color: "border-green-500/50 bg-green-900/20",
           buttonColor: "bg-green-600 hover:bg-green-700",
           strategies: ["Launch API Service", "Build Chatbot", "Seek Investment"],
-          onClick: () => setActiveTab('economy')
+          onClick: () => openPriorityActionDialog({
+            action: "Establish Revenue Foundation",
+            description: "Low funds + minimal income - time to monetize your AI capabilities",
+            educational: "Early revenue is the lifeblood of AI development. It funds research, attracts investors, and provides runway to achieve breakthrough moments. Every dollar of revenue accelerates your path to AGI.",
+            icon: <TrendingUp className="h-5 w-5 text-green-400" />,
+            strategies: ["Launch API Service", "Build Chatbot Product", "Secure Funding"],
+            dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
+          })
         });
       }
       
@@ -340,7 +354,14 @@ export default function DashboardContent({
           color: "border-blue-500/50 bg-blue-900/20",
           buttonColor: "bg-blue-600 hover:bg-blue-700",
           strategies: [`Boost ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
-          onClick: () => { setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
+          onClick: () => openPriorityActionDialog({
+            action: "Balance Resource Development",
+            description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance prevents bottlenecks`,
+            educational: "Balanced resource development prevents costly bottlenecks that cripple growth. Resource imbalances create inefficiencies that compound over time, limiting your scaling potential and competitive advantage.",
+            icon: <BarChart3 className="h-5 w-5 text-blue-400" />,
+            strategies: [`Prioritize ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`, "Optimize Balance", "Review Strategy"],
+            dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
+          })
         });
       }
     } else if (eraPhase.phase === 'scaling') {
@@ -357,7 +378,14 @@ export default function DashboardContent({
             color: "border-emerald-500/50 bg-emerald-900/20",
             buttonColor: "bg-emerald-600 hover:bg-emerald-700",
             strategies: ["Accept Funding", "Review Terms"],
-            onClick: () => setActiveTab('economy')
+            onClick: () => openPriorityActionDialog({
+              action: "Major Investment Opportunity",
+              description: `${nextMilestone.name}: $${(nextMilestone.funding / 1000000).toFixed(1)}M funding available`,
+              educational: "Major funding rounds provide transformational capital for aggressive scaling and market dominance. Use this strategic inflection point to accelerate compute expansion or data acquisition before competitors.",
+              icon: <DollarSign className="h-5 w-5 text-emerald-400" />,
+              strategies: ["Accept Funding", "Negotiate Terms", "Plan Deployment"],
+              dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
+            })
           });
         }
       }
@@ -372,7 +400,14 @@ export default function DashboardContent({
           color: "border-amber-500/50 bg-amber-900/20", 
           buttonColor: "bg-amber-600 hover:bg-amber-700",
           strategies: ["Optimize Synergies", "Max Efficiency", "Final Push"],
-          onClick: () => setActiveTab('breakthroughs')
+          onClick: () => openPriorityActionDialog({
+            action: "Accelerate AGI Timeline",
+            description: `Current pace: ${metrics.daysToAgi} days to AGI - optimize for the final breakthrough`,
+            educational: "You're approaching the ultimate AI milestone - Artificial General Intelligence. The endgame requires maximizing intelligence growth through breakthrough synergies and resource optimization. Every day counts toward this historic achievement.",
+            icon: <Target className="h-5 w-5 text-amber-400" />,
+            strategies: ["Optimize Synergies", "Maximize Efficiency", "Strategic Focus"],
+            dialogAction: () => { setSelectedAction(null); setActiveTab('breakthroughs'); }
+          })
         });
       }
     }
@@ -390,7 +425,14 @@ export default function DashboardContent({
           color: "border-blue-500/50 bg-blue-900/20",
           buttonColor: "bg-blue-600 hover:bg-blue-700",
           strategies: ["Scale Services", "Right-Size Infrastructure"],
-          onClick: () => setActiveTab('economy')
+          onClick: () => openPriorityActionDialog({
+            action: "Optimize Compute Utilization",
+            description: `${Math.round(metrics.capacityUtilization * 100)}% utilization - scale services to use excess capacity`,
+            educational: "Underutilized compute represents wasted money and missed revenue opportunities. Every unused compute cycle could be generating income through customer services or advancing research through training runs.",
+            icon: <Cpu className="h-5 w-5 text-blue-400" />,
+            strategies: ["Scale Services", "Right-Size Infrastructure", "Launch Products"],
+            dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
+          })
         });
       }
       
@@ -414,7 +456,14 @@ export default function DashboardContent({
                          biggestGap.name === 'data' ? "bg-green-600 hover:bg-green-700" :
                          "bg-purple-600 hover:bg-purple-700",
             strategies: [`Develop ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
-            onClick: () => { setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
+            onClick: () => openPriorityActionDialog({
+              action: "Optimize Resource Balance",
+              description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance improves overall efficiency`,
+              educational: "Resource imbalances create bottlenecks that limit your entire system's potential. Balanced development unlocks powerful synergies and prevents costly inefficiencies that compound over time.",
+              icon: biggestGap.name === 'compute' ? <Cpu className="h-5 w-5 text-blue-400" /> : biggestGap.name === 'data' ? <Database className="h-5 w-5 text-green-400" /> : <Lightbulb className="h-5 w-5 text-purple-400" />,
+              strategies: [`Prioritize ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`, "Balance Development", "Strategic Focus"],
+              dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
+            })
           });
         }
       }
@@ -430,7 +479,14 @@ export default function DashboardContent({
           color: "border-emerald-500/50 bg-emerald-900/20",
           buttonColor: "bg-emerald-600 hover:bg-emerald-700",
           strategies: ["Scale Infrastructure", "Research Advances", "Launch Services"],
-          onClick: () => setActiveTab('resources')
+          onClick: () => openPriorityActionDialog({
+            action: "Expand Your AI Empire",
+            description: `Strong position: $${Math.round(gameState.money).toLocaleString()} + $${Math.round(metrics.totalRevenue).toLocaleString()}/day - time for strategic expansion`,
+            educational: "Financial strength creates strategic opportunities. Use your competitive advantage to scale infrastructure aggressively, pursue breakthrough research, or launch new revenue streams before competitors catch up.",
+            icon: <TrendingUp className="h-5 w-5 text-emerald-400" />,
+            strategies: ["Scale Infrastructure", "Breakthrough Research", "Launch New Services"],
+            dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); }
+          })
         });
       }
     }
