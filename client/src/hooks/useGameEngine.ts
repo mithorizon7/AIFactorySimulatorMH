@@ -363,76 +363,104 @@ export function useGameEngine() {
 
   // Apply specific game effects when a breakthrough is unlocked
   const applyBreakthroughEffects = (state: GameStateType, breakthroughId: number) => {
+    // Add modest intelligence bonus based on breakthrough significance
+    const intelligenceBonuses = {
+      1: 20,  // Transformer Architecture 
+      2: 25,  // Large-Scale Language Modeling
+      3: 30,  // Few-Shot Learning
+      4: 35,  // Code Generation
+      5: 40,  // Human Feedback Integration
+      6: 45,  // Multimodal Understanding
+      7: 60,  // Advanced Reasoning
+      8: 100, // Autonomous Agents (AGI breakthrough)
+    };
+    
+    state.intelligence += intelligenceBonuses[breakthroughId as keyof typeof intelligenceBonuses] || 15;
+    
     switch (breakthroughId) {
-      case 1: // Transformer Architecture Discovery
-        // 15% improvement in all AI model efficiency
-        state.production.compute *= 1.15;
-        state.production.data *= 1.15;  
-        state.production.algorithm *= 1.15;
+      case 1: // Transformer Architecture Discovery (2017)
+        // Persistent 10% boost to all production efficiency through bonuses
+        state.bonuses.computeToData *= 1.10;
+        state.bonuses.computeToAlgorithm *= 1.10;
+        state.bonuses.dataToAlgorithm *= 1.10;
         break;
         
-      case 2: // Large-Scale Language Modeling
-        // Unlocks B2B API services. +25% revenue from text generation services
-        state.revenue.b2b *= 1.25;
-        if (state.apiPlatformBuilt) {
-          state.revenue.b2b += 500; // Additional base revenue from new text generation APIs
-        }
+      case 2: // Large-Scale Language Modeling (2019-2020)
+        // Unlocks API availability and improves base API pricing
+        state.revenue.apiAvailable = true;
+        state.revenue.baseApiRate += 200; // Better baseline API pricing
+        state.revenue.developerGrowthRate *= 1.25; // 25% faster developer acquisition
         break;
         
-      case 3: // Few-Shot Learning Emergence  
-        // Unlocks advanced API pricing tiers. +40% B2B revenue. Reduces training costs by 20%
-        state.revenue.b2b *= 1.40;
-        // Reduce future training costs by reducing compute requirements
+      case 3: // Few-Shot Learning Emergence (2020)
+        // Improves API efficiency, reduces compute costs
+        state.revenue.baseApiRate += 300; // Premium API pricing for few-shot capabilities
+        // Reduce training costs for future runs only (not in-progress)
         Object.keys(state.training.runs).forEach(era => {
           const typedEra = era as keyof typeof state.training.runs;
-          state.training.runs[typedEra].computeRequired *= 0.8; // 20% reduction
+          const run = state.training.runs[typedEra];
+          if (run.status === 'not_started') {
+            run.computeRequired = Math.max(Math.floor(run.computeRequired * 0.85), Math.floor(run.computeRequired * 0.7)); // 15% reduction, min 30% of original
+            run.moneyCost = Math.max(Math.floor(run.moneyCost * 0.85), Math.floor(run.moneyCost * 0.7)); // 15% reduction, min 30% of original
+          }
         });
         break;
         
-      case 4: // Code Generation Mastery
-        // Unlocks developer tools market. +60% B2B revenue. New subscription tier
-        state.revenue.b2b *= 1.60;
-        if (state.chatbotPlatformBuilt) {
-          state.revenue.b2b += 1000; // Developer tools subscription revenue
-        }
+      case 4: // Code Generation Mastery (2021)
+        // Unlocks developer tools market segment
+        state.revenue.developerGrowthRate *= 1.5; // 50% faster developer acquisition
+        state.revenue.baseApiRate += 500; // Premium developer tools pricing
+        // Improve algorithm research efficiency
+        state.bonuses.algorithmToIntelligence *= 1.20;
         break;
         
-      case 5: // Human Feedback Integration
-        // Unlocks consumer chatbot services. +100% B2C revenue
-        state.revenue.b2c *= 2.0; // Double B2C revenue
-        if (state.chatbotPlatformBuilt) {
-          state.revenue.b2c += 2000; // New consumer chatbot subscriptions
-        }
+      case 5: // Human Feedback Integration (2022)
+        // Unlocks consumer chatbot services and improves B2C
+        state.revenue.chatbotAvailable = true;
+        state.revenue.monthlyFee += 15; // Improved chatbot quality commands premium pricing
+        state.revenue.subscriberGrowthRate *= 2.0; // Consumer market takes off
         break;
         
-      case 6: // Multimodal Understanding
-        // Unlocks multimodal API services. +80% revenue across all segments
-        state.revenue.b2b *= 1.80;
-        state.revenue.b2c *= 1.80;
+      case 6: // Multimodal Understanding (2023)
+        // Unlocks multimodal capabilities across both B2B and B2C
+        state.revenue.baseApiRate += 800; // Multimodal API premium
+        state.revenue.monthlyFee += 25; // Multimodal consumer features
+        // Enhance data processing capabilities
+        state.bonuses.dataToCompute *= 1.25;
+        state.bonuses.dataToAlgorithm *= 1.25;
         break;
         
-      case 7: // Advanced Reasoning Capabilities
-        // Unlocks scientific research applications. +150% premium service revenue
-        state.revenue.b2b *= 2.50; // Premium scientific research services
-        state.intelligence += 200; // Extra intelligence for reasoning breakthrough
+      case 7: // Advanced Reasoning Capabilities (2024-Future)
+        // Scientific research and enterprise premium services
+        state.revenue.baseApiRate += 1500; // Premium enterprise reasoning services
+        state.revenue.developerGrowthRate *= 1.8; // Enterprise adoption acceleration
+        // Major boost to intelligence generation from algorithms
+        state.bonuses.algorithmToIntelligence *= 1.50;
         break;
         
-      case 8: // Autonomous Agent Systems  
-        // Unlocks autonomous service offerings. +300% total revenue
-        state.revenue.b2b *= 4.0; // Autonomous enterprise services
-        state.revenue.b2c *= 4.0; // Autonomous consumer services
-        state.intelligence += 500; // Major intelligence boost for AGI-level capability
+      case 8: // Autonomous Agent Systems (Future AGI)
+        // Transformative capabilities across all segments
+        state.revenue.baseApiRate += 3000; // Autonomous agent premium pricing
+        state.revenue.monthlyFee += 100; // Consumer autonomous assistant premium
+        state.revenue.developerGrowthRate *= 3.0; // Massive enterprise adoption
+        state.revenue.subscriberGrowthRate *= 3.0; // Mass consumer adoption
+        // Major efficiency improvements across all resources
+        state.bonuses.computeToData *= 1.30;
+        state.bonuses.computeToAlgorithm *= 1.30;
+        state.bonuses.dataToCompute *= 1.30;
+        state.bonuses.dataToAlgorithm *= 1.30;
+        state.bonuses.algorithmToCompute *= 1.30;
+        state.bonuses.algorithmToData *= 1.30;
         break;
         
       default:
-        // Default breakthrough effect: small efficiency boost
-        state.intelligence += 50;
+        // Unknown breakthrough - minimal effect
         break;
     }
     
     toast({
-      title: "Breakthrough Effects Applied!",
-      description: "Your AI capabilities have been significantly enhanced. Check your revenue and efficiency improvements!",
+      title: "Breakthrough Unlocked!",
+      description: "Your AI capabilities have permanently improved. Check your bonuses and revenue rates for lasting enhancements!",
     });
   };
 
@@ -441,8 +469,9 @@ export function useGameEngine() {
     const updatedBreakthroughs = [...state.breakthroughs];
     let breakthroughUnlocked = false;
     
-    updatedBreakthroughs.forEach(breakthrough => {
-      if (!breakthrough.unlocked) {
+    // Find the first unlocked breakthrough (throttling: one per tick maximum)
+    for (const breakthrough of updatedBreakthroughs) {
+      if (!breakthrough.unlocked && !breakthroughUnlocked) {
         let allRequirementsMet = true;
         
         for (const [resource, level] of Object.entries(breakthrough.requiredLevels)) {
@@ -456,9 +485,8 @@ export function useGameEngine() {
         if (allRequirementsMet) {
           breakthroughUnlocked = true;
           breakthrough.unlocked = true;
-          state.intelligence += 100; // Increase intelligence on breakthrough
           
-          // Apply specific game effects for this breakthrough
+          // Apply specific game effects for this breakthrough (includes intelligence bonus)
           applyBreakthroughEffects(state, breakthrough.id);
           
           // NEW: Trigger Spark's message for breakthroughs
@@ -479,9 +507,12 @@ export function useGameEngine() {
             state.currentGoal.id = nextBreakthrough.id;
             state.currentGoal.progress = 0;
           }
+          
+          // Stop after unlocking one breakthrough per tick
+          break;
         }
       }
-    });
+    }
     
     // Check if we should advance to the next era
     if (breakthroughUnlocked) {
