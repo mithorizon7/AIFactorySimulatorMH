@@ -767,7 +767,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 2 },
       type: "algorithm",
       era: Era.GNT2,
-      realWorldParallel: "The 2017 'Attention Is All You Need' paper introduced transformers, revolutionizing how models handle sequential data like text."
+      realWorldParallel: "The 2017 'Attention Is All You Need' paper introduced transformers, revolutionizing how models handle sequential data like text.",
+      gameEffect: "Improves algorithm efficiency by 15% and enables better sequence processing capabilities",
+      contributingFactors: "Advanced algorithm research (Level 2) unlocks attention mechanisms and transformer architecture"
     },
     {
       id: 2,
@@ -777,7 +779,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { data: 2 },
       type: "data",
       era: Era.GNT2,
-      realWorldParallel: "Early generative models were built on unsupervised pre-training on diverse internet text, allowing them to learn language patterns without labeled examples."
+      realWorldParallel: "Early generative models were built on unsupervised pre-training on diverse internet text, allowing them to learn language patterns without labeled examples.",
+      gameEffect: "Increases data quality efficiency by 10% and enables self-supervised learning techniques",
+      contributingFactors: "High-quality data collection (Level 2) enables unsupervised learning from diverse text sources"
     },
     
     // GNT-3 Era Breakthroughs (Mid Phase I)
@@ -789,7 +793,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { compute: 3 },
       type: "compute",
       era: Era.GNT3,
-      realWorldParallel: "The leap to 175 billion parameters in large language models demonstrated how scale could dramatically improve capabilities."
+      realWorldParallel: "The leap to 175 billion parameters in large language models demonstrated how scale could dramatically improve capabilities.",
+      gameEffect: "Unlocks API services and increases compute-to-intelligence conversion by 15%",
+      contributingFactors: "Massive compute infrastructure (Level 3) enables training of billion-parameter models"
     },
     {
       id: 4,
@@ -799,7 +805,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 3, data: 3 },
       type: "combined",
       era: Era.GNT3,
-      realWorldParallel: "Advanced language models demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt."
+      realWorldParallel: "Advanced language models demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt.",
+      gameEffect: "Improves API efficiency and reduces future training costs by 10%",
+      contributingFactors: "Combination of advanced algorithms (Level 3) and high-quality data (Level 3) enables few-shot learning capabilities"
     },
     
     // GNT-4 Era Breakthroughs (Mid Phase II)
@@ -811,7 +819,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 4 },
       type: "algorithm",
       era: Era.GNT4,
-      realWorldParallel: "Instruction tuning demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety."
+      realWorldParallel: "Instruction tuning demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety.",
+      gameEffect: "Unlocks consumer chatbot services and increases subscriber growth rate by 30%",
+      contributingFactors: "Advanced algorithm optimization (Level 4) enables reliable instruction following and human alignment"
     },
     {
       id: 6,
@@ -821,7 +831,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { compute: 4, data: 4 },
       type: "combined",
       era: Era.GNT4,
-      realWorldParallel: "Multimodal AI systems can process both text and images simultaneously, opening up new applications and capabilities."
+      realWorldParallel: "Multimodal AI systems can process both text and images simultaneously, opening up new applications and capabilities.",
+      gameEffect: "Unlocks multimodal API capabilities and increases API rate by $300",
+      contributingFactors: "Combination of compute infrastructure (Level 4) and diverse data formats (Level 4) enables multimodal processing"
     },
     
     // GNT-5 Era Breakthroughs (Late Phase I - Near Future)
@@ -833,7 +845,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 5, data: 5 },
       type: "combined",
       era: Era.GNT5,
-      realWorldParallel: "Future AI systems are expected to have dramatically improved reasoning abilities, approaching human-like problem-solving."
+      realWorldParallel: "Future AI systems are expected to have dramatically improved reasoning abilities, approaching human-like problem-solving.",
+      gameEffect: "Unlocks premium enterprise reasoning services and increases API rate by $500",
+      contributingFactors: "Advanced algorithms (Level 5) combined with high-quality data (Level 5) enables sophisticated reasoning capabilities"
     },
     {
       id: 8,
@@ -843,7 +857,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 6 },
       type: "algorithm",
       era: Era.GNT5,
-      realWorldParallel: "Advanced AI systems may eventually help optimize their own code, create more efficient algorithms, and improve their architecture."
+      realWorldParallel: "Advanced AI systems may eventually help optimize their own code, create more efficient algorithms, and improve their architecture.",
+      gameEffect: "Enables self-improvement bonuses and reduces future training costs by additional 10%",
+      contributingFactors: "Highly advanced algorithm research (Level 6) unlocks recursive self-improvement capabilities"
     },
     
     // GNT-6 Era Breakthroughs (Late Phase II - Future)
@@ -855,7 +871,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 7, compute: 6 },
       type: "combined",
       era: Era.GNT6,
-      realWorldParallel: "Future AI systems will likely have sophisticated abilities to use external tools, APIs, and services to extend their capabilities."
+      realWorldParallel: "Future AI systems will likely have sophisticated abilities to use external tools, APIs, and services to extend their capabilities.",
+      gameEffect: "Unlocks advanced tool-using API capabilities and increases API rate by $800",
+      contributingFactors: "Combination of advanced algorithms (Level 7) and massive compute power (Level 6) enables sophisticated tool usage"
     },
     
     // GNT-7 Era Breakthroughs (Final Phase - AGI Threshold)
@@ -867,7 +885,9 @@ export const initialGameState: GameStateType = {
       requiredLevels: { algorithm: 8, data: 7, compute: 7 },
       type: "combined",
       era: Era.GNT7,
-      realWorldParallel: "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence."
+      realWorldParallel: "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence.",
+      gameEffect: "Achieves true AGI capabilities with massive revenue potential and premium AGI API services",
+      contributingFactors: "Perfect combination of cutting-edge algorithms (Level 8), high-quality data (Level 7), and massive compute infrastructure (Level 7) enables general problem solving"
     }
   ],
   

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Trophy, Clock, DollarSign, Users, Lightbulb, Target, Medal, Rocket } from "lucide-react";
 import type { LeaderboardEntry } from "@shared/schema";
 
@@ -30,6 +31,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
   const [ranking, setRanking] = useState<PlayerRanking | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const { toast } = useToast();
 
   const isAGIAchieved = gameState.intelligence >= gameState.agiThreshold;
   const unlockedBreakthroughs = gameState.breakthroughs.filter(b => b.unlocked);
@@ -113,6 +115,12 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
       }
     } catch (error) {
       console.error('Failed to submit to leaderboard:', error);
+      toast({
+        title: "Submission Failed",
+        description: "Failed to submit your score to the leaderboard. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setIsSubmitting(false);
     }

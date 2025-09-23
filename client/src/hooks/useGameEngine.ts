@@ -422,7 +422,7 @@ export function useGameEngine() {
           Object.keys(state.training.runs).forEach(era => {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
-            if (run.status === 'not_started') {
+            if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
               run.computeRequired = Math.floor(run.computeRequired * 0.90); // 10% reduction
               run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% reduction
             }
@@ -474,7 +474,7 @@ export function useGameEngine() {
           Object.keys(state.training.runs).forEach(era => {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
-            if (run.status === 'not_started') {
+            if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
               // This creates a combined 19% reduction (0.90 * 0.90 = 0.81 if few-shot was already applied)
               // But only if few-shot was unlocked first, otherwise just 10%
               run.computeRequired = Math.floor(run.computeRequired * 0.90); // Additional 10% reduction
