@@ -365,92 +365,126 @@ export function useGameEngine() {
   const applyBreakthroughEffects = (state: GameStateType, breakthroughId: number) => {
     // Add modest intelligence bonus based on breakthrough significance
     const intelligenceBonuses = {
-      1: 20,  // Transformer Architecture 
-      2: 25,  // Large-Scale Language Modeling
-      3: 30,  // Few-Shot Learning
-      4: 35,  // Code Generation
-      5: 40,  // Human Feedback Integration
-      6: 45,  // Multimodal Understanding
-      7: 60,  // Advanced Reasoning
-      8: 100, // Autonomous Agents (AGI breakthrough)
+      1: 20,   // Transformer Architecture 
+      2: 25,   // Unsupervised Pre-training
+      3: 30,   // Massive Parameter Scaling
+      4: 35,   // Few-Shot Learning
+      5: 40,   // Instruction Tuning
+      6: 45,   // Multimodal Integration
+      7: 60,   // Advanced Reasoning
+      8: 80,   // Self-Improvement Capabilities
+      9: 90,   // Advanced Tool Use
+      10: 150, // General Problem Solving (AGI)
     };
     
     state.intelligence += intelligenceBonuses[breakthroughId as keyof typeof intelligenceBonuses] || 15;
     
     switch (breakthroughId) {
-      case 1: // Transformer Architecture Discovery (2017)
-        // Persistent 10% boost to all production efficiency through bonuses
-        state.bonuses.computeToData *= 1.10;
-        state.bonuses.computeToAlgorithm *= 1.10;
-        state.bonuses.dataToAlgorithm *= 1.10;
+      case 1: // Transformer Architecture (2017)
+        // Foundational efficiency boost to all cross-resource synergies
+        state.bonuses.computeToData *= 1.08;
+        state.bonuses.computeToAlgorithm *= 1.08;
+        state.bonuses.dataToAlgorithm *= 1.08;
         break;
         
-      case 2: // Large-Scale Language Modeling (2019-2020)
-        // Unlocks API availability and improves base API pricing
+      case 2: // Unsupervised Pre-training (2018-2019)
+        // Improves data efficiency and enables self-supervised learning
+        state.bonuses.dataToCompute *= 1.15;
+        state.bonuses.dataToAlgorithm *= 1.15;
+        state.bonuses.dataToIntelligence *= 1.10;
+        break;
+        
+      case 3: // Massive Parameter Scaling (2019-2020)
+        // Unlocks API services and massive compute efficiency gains
         state.revenue.apiAvailable = true;
-        state.revenue.baseApiRate += 200; // Better baseline API pricing
-        state.revenue.developerGrowthRate *= 1.25; // 25% faster developer acquisition
+        state.revenue.baseApiRate += 300; // Better baseline API pricing
+        state.bonuses.computeToIntelligence *= 1.25; // Scale enables intelligence
         break;
         
-      case 3: // Few-Shot Learning Emergence (2020)
-        // Improves API efficiency, reduces compute costs
-        state.revenue.baseApiRate += 300; // Premium API pricing for few-shot capabilities
-        // Reduce training costs for future runs only (not in-progress)
+      case 4: // Few-Shot Learning (2020)
+        // Improves API efficiency and reduces training requirements
+        state.revenue.baseApiRate += 400; // Premium few-shot API pricing
+        state.revenue.developerGrowthRate *= 1.30; // Developers attracted by few-shot capabilities
+        // Reduce future training costs due to few-shot efficiency
         Object.keys(state.training.runs).forEach(era => {
           const typedEra = era as keyof typeof state.training.runs;
           const run = state.training.runs[typedEra];
           if (run.status === 'not_started') {
-            run.computeRequired = Math.max(Math.floor(run.computeRequired * 0.85), Math.floor(run.computeRequired * 0.7)); // 15% reduction, min 30% of original
-            run.moneyCost = Math.max(Math.floor(run.moneyCost * 0.85), Math.floor(run.moneyCost * 0.7)); // 15% reduction, min 30% of original
+            run.computeRequired = Math.max(Math.floor(run.computeRequired * 0.88), Math.floor(run.computeRequired * 0.75)); // 12% reduction, min 25% of original
+            run.moneyCost = Math.max(Math.floor(run.moneyCost * 0.88), Math.floor(run.moneyCost * 0.75)); // 12% reduction, min 25% of original
           }
         });
         break;
         
-      case 4: // Code Generation Mastery (2021)
-        // Unlocks developer tools market segment
-        state.revenue.developerGrowthRate *= 1.5; // 50% faster developer acquisition
-        state.revenue.baseApiRate += 500; // Premium developer tools pricing
-        // Improve algorithm research efficiency
-        state.bonuses.algorithmToIntelligence *= 1.20;
-        break;
-        
-      case 5: // Human Feedback Integration (2022)
-        // Unlocks consumer chatbot services and improves B2C
+      case 5: // Instruction Tuning (2021-2022)
+        // Unlocks consumer chatbot services and improves user experience
         state.revenue.chatbotAvailable = true;
-        state.revenue.monthlyFee += 15; // Improved chatbot quality commands premium pricing
-        state.revenue.subscriberGrowthRate *= 2.0; // Consumer market takes off
+        state.revenue.monthlyFee += 10; // Improved instruction following commands premium
+        state.revenue.subscriberGrowthRate *= 1.50; // Better UX drives adoption
+        state.bonuses.algorithmToIntelligence *= 1.20; // Better algorithms from instruction tuning
         break;
         
-      case 6: // Multimodal Understanding (2023)
-        // Unlocks multimodal capabilities across both B2B and B2C
-        state.revenue.baseApiRate += 800; // Multimodal API premium
-        state.revenue.monthlyFee += 25; // Multimodal consumer features
-        // Enhance data processing capabilities
-        state.bonuses.dataToCompute *= 1.25;
-        state.bonuses.dataToAlgorithm *= 1.25;
+      case 6: // Multimodal Integration (2022-2023)
+        // Unlocks multimodal capabilities and premium services
+        state.revenue.baseApiRate += 600; // Multimodal API premium
+        state.revenue.monthlyFee += 20; // Multimodal consumer features
+        state.revenue.developerGrowthRate *= 1.25; // Enterprise multimodal adoption
+        // Enhanced data processing for multiple modalities
+        state.bonuses.dataToCompute *= 1.20;
+        state.bonuses.dataToAlgorithm *= 1.20;
         break;
         
-      case 7: // Advanced Reasoning Capabilities (2024-Future)
-        // Scientific research and enterprise premium services
-        state.revenue.baseApiRate += 1500; // Premium enterprise reasoning services
-        state.revenue.developerGrowthRate *= 1.8; // Enterprise adoption acceleration
-        // Major boost to intelligence generation from algorithms
-        state.bonuses.algorithmToIntelligence *= 1.50;
+      case 7: // Advanced Reasoning (2024-Future)
+        // Premium enterprise reasoning services and research applications
+        state.revenue.baseApiRate += 1000; // Premium reasoning services
+        state.revenue.developerGrowthRate *= 1.60; // Enterprise adoption for reasoning
+        state.bonuses.algorithmToIntelligence *= 1.40; // Major intelligence boost from reasoning
         break;
         
-      case 8: // Autonomous Agent Systems (Future AGI)
-        // Transformative capabilities across all segments
-        state.revenue.baseApiRate += 3000; // Autonomous agent premium pricing
-        state.revenue.monthlyFee += 100; // Consumer autonomous assistant premium
-        state.revenue.developerGrowthRate *= 3.0; // Massive enterprise adoption
-        state.revenue.subscriberGrowthRate *= 3.0; // Mass consumer adoption
-        // Major efficiency improvements across all resources
-        state.bonuses.computeToData *= 1.30;
-        state.bonuses.computeToAlgorithm *= 1.30;
-        state.bonuses.dataToCompute *= 1.30;
-        state.bonuses.dataToAlgorithm *= 1.30;
+      case 8: // Self-Improvement Capabilities (Future)
+        // AI systems that can improve themselves
+        // Massive boost to all algorithm-related bonuses
         state.bonuses.algorithmToCompute *= 1.30;
         state.bonuses.algorithmToData *= 1.30;
+        state.bonuses.algorithmToIntelligence *= 1.50;
+        // Self-improvement reduces future research costs
+        Object.keys(state.training.runs).forEach(era => {
+          const typedEra = era as keyof typeof state.training.runs;
+          const run = state.training.runs[typedEra];
+          if (run.status === 'not_started') {
+            run.computeRequired = Math.max(Math.floor(run.computeRequired * 0.80), Math.floor(run.computeRequired * 0.60)); // 20% reduction, min 40% of original
+            run.moneyCost = Math.max(Math.floor(run.moneyCost * 0.80), Math.floor(run.moneyCost * 0.60)); // 20% reduction, min 40% of original
+          }
+        });
+        break;
+        
+      case 9: // Advanced Tool Use (Future)
+        // AI systems that can effectively use external tools and APIs
+        state.revenue.baseApiRate += 1500; // Tool-using AI commands premium
+        state.revenue.developerGrowthRate *= 2.0; // Enterprise tool integration demand
+        state.revenue.subscriberGrowthRate *= 1.80; // Consumer tool-using assistants
+        // Tool use enhances compute efficiency
+        state.bonuses.computeToData *= 1.25;
+        state.bonuses.computeToIntelligence *= 1.30;
+        break;
+        
+      case 10: // General Problem Solving (AGI Threshold)
+        // True artificial general intelligence capabilities
+        state.revenue.baseApiRate += 3000; // AGI commands extreme premium
+        state.revenue.monthlyFee += 150; // Consumer AGI assistant premium
+        state.revenue.developerGrowthRate *= 4.0; // Massive enterprise adoption
+        state.revenue.subscriberGrowthRate *= 4.0; // Mass consumer adoption
+        // AGI dramatically improves all cross-resource efficiencies
+        state.bonuses.computeToData *= 1.40;
+        state.bonuses.computeToAlgorithm *= 1.40;
+        state.bonuses.dataToCompute *= 1.40;
+        state.bonuses.dataToAlgorithm *= 1.40;
+        state.bonuses.algorithmToCompute *= 1.40;
+        state.bonuses.algorithmToData *= 1.40;
+        // All intelligence bonuses get massive boosts
+        state.bonuses.computeToIntelligence *= 1.60;
+        state.bonuses.dataToIntelligence *= 1.60;
+        state.bonuses.algorithmToIntelligence *= 1.60;
         break;
         
       default:
