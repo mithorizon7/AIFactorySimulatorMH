@@ -39,6 +39,9 @@ interface MainGameTabsProps {
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
   runAdvertisingCampaign?: () => void;
+  // Platform development functions
+  buildApiPlatform?: () => void;
+  buildChatbotPlatform?: () => void;
   // Training model function
   trainModel?: () => void;
 }
@@ -66,6 +69,9 @@ export default function MainGameTabs({
   improveDeveloperTools,
   improveChatbot,
   runAdvertisingCampaign,
+  // Platform development functions
+  buildApiPlatform,
+  buildChatbotPlatform,
   trainModel
 }: MainGameTabsProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -362,6 +368,8 @@ export default function MainGameTabs({
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
+            buildApiPlatform={buildApiPlatform}
+            buildChatbotPlatform={buildChatbotPlatform}
           />
         </div>
       </TabsContent>

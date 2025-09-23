@@ -64,6 +64,9 @@ export default function AIFactory() {
     improveDeveloperTools,
     improveChatbot,
     runAdvertisingCampaign,
+    // Platform development functions
+    buildApiPlatform,
+    buildChatbotPlatform,
     timeElapsed,
     formattedTime
   } = useGameEngine();
@@ -231,6 +234,8 @@ export default function AIFactory() {
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
+            buildApiPlatform={buildApiPlatform}
+            buildChatbotPlatform={buildChatbotPlatform}
           />
 
           {/* Welcome Introduction Modal */}

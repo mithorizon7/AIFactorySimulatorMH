@@ -17,6 +17,8 @@ interface EconomicSectionProps {
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
   runAdvertisingCampaign?: () => void;
+  buildApiPlatform?: () => void;
+  buildChatbotPlatform?: () => void;
 }
 
 export default function EconomicSection({
@@ -28,6 +30,8 @@ export default function EconomicSection({
   improveDeveloperTools,
   improveChatbot,
   runAdvertisingCampaign,
+  buildApiPlatform,
+  buildChatbotPlatform,
 }: EconomicSectionProps) {
   const { money, revenue } = gameState;
   
@@ -254,6 +258,105 @@ export default function EconomicSection({
         <InvestmentMilestones gameState={gameState} />
       </div>
       
+      {/* Platform Development */}
+      <div className="bg-gray-700 rounded-lg p-4 mb-5">
+        <h3 className="text-lg font-medium mb-3">Platform Development</h3>
+        <p className="text-sm text-gray-400 mb-3">
+          Build the infrastructure needed to offer revenue-generating services
+        </p>
+        
+        <div className="space-y-3">
+          {/* API Platform Development */}
+          {revenue.apiAvailable && !revenue.apiPlatformBuilt && (
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium text-blue-300">API Platform</h4>
+                <span className="text-xs bg-blue-900/40 border border-blue-500/30 px-2 py-1 rounded">
+                  Build Required
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-2">
+                Build the API infrastructure needed to serve developers and earn B2B revenue.
+              </p>
+              <button 
+                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                  money >= revenue.apiPlatformCost && buildApiPlatform
+                    ? "bg-blue-700 hover:bg-blue-600 text-white"
+                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+                }`}
+                onClick={buildApiPlatform}
+                disabled={money < revenue.apiPlatformCost || !buildApiPlatform}
+                data-testid="button-build-api-platform"
+              >
+                <span>Build API Platform</span>
+                <span className="bg-gray-700 text-blue-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.apiPlatformCost)}</span>
+              </button>
+            </div>
+          )}
+          
+          {/* Chatbot Platform Development */}
+          {revenue.chatbotAvailable && !revenue.chatbotPlatformBuilt && (
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium text-purple-300">Chatbot Platform</h4>
+                <span className="text-xs bg-purple-900/40 border border-purple-500/30 px-2 py-1 rounded">
+                  Build Required
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-2">
+                Build the chatbot infrastructure needed to serve consumers and earn B2C revenue.
+              </p>
+              <button 
+                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                  money >= revenue.chatbotPlatformCost && buildChatbotPlatform
+                    ? "bg-purple-700 hover:bg-purple-600 text-white"
+                    : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
+                }`}
+                onClick={buildChatbotPlatform}
+                disabled={money < revenue.chatbotPlatformCost || !buildChatbotPlatform}
+                data-testid="button-build-chatbot-platform"
+              >
+                <span>Build Chatbot Platform</span>
+                <span className="bg-gray-700 text-purple-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.chatbotPlatformCost)}</span>
+              </button>
+            </div>
+          )}
+          
+          {/* Platform Status Display */}
+          {(revenue.apiAvailable || revenue.chatbotAvailable) && (
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <h4 className="font-medium text-gray-300 mb-2">Platform Status</h4>
+              <div className="space-y-2">
+                {revenue.apiAvailable && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-400">API Platform:</span>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      revenue.apiPlatformBuilt 
+                        ? "bg-green-900/40 border border-green-500/30 text-green-300" 
+                        : "bg-amber-900/40 border border-amber-500/30 text-amber-300"
+                    }`}>
+                      {revenue.apiPlatformBuilt ? "✓ Built" : "⚠ Not Built"}
+                    </span>
+                  </div>
+                )}
+                {revenue.chatbotAvailable && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-400">Chatbot Platform:</span>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      revenue.chatbotPlatformBuilt 
+                        ? "bg-green-900/40 border border-green-500/30 text-green-300" 
+                        : "bg-amber-900/40 border border-amber-500/30 text-amber-300"
+                    }`}>
+                      {revenue.chatbotPlatformBuilt ? "✓ Built" : "⚠ Not Built"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
       {/* Revenue Streams */}
       <div className="bg-gray-700 rounded-lg p-4 mb-5">
         <h3 className="text-lg font-medium mb-3">Revenue Streams</h3>
@@ -391,6 +494,137 @@ export default function EconomicSection({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Service Controls */}
+      <div className="bg-gray-700 rounded-lg p-4 mb-5">
+        <h3 className="text-lg font-medium mb-3">Service Controls</h3>
+        <p className="text-sm text-gray-400 mb-3">
+          Enable and configure your revenue-generating services
+        </p>
+        
+        <div className="space-y-4">
+          {/* API Service Control */}
+          {revenue.apiAvailable && revenue.apiPlatformBuilt && (
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <h4 className="font-medium text-blue-300 mr-2">API Service</h4>
+                  <span className="text-xs bg-green-900/40 border border-green-500/30 text-green-300 px-2 py-1 rounded">
+                    Platform Ready
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="api-toggle" className="text-sm text-gray-300">
+                    {revenue.apiEnabled ? "Enabled" : "Disabled"}
+                  </Label>
+                  <Switch
+                    id="api-toggle"
+                    checked={revenue.apiEnabled}
+                    onCheckedChange={toggleApiService}
+                    data-testid="switch-api-service"
+                  />
+                </div>
+              </div>
+              
+              {/* API Rate Control */}
+              {revenue.apiEnabled && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">API Rate:</span>
+                    <span className="text-xs text-blue-300">${formatCurrency(tempApiRate)}/tick</span>
+                  </div>
+                  <Slider
+                    value={[tempApiRate]}
+                    onValueChange={handleApiRateChange}
+                    min={500}
+                    max={5000}
+                    step={100}
+                    className="w-full"
+                    data-testid="slider-api-rate"
+                  />
+                  <Button
+                    onClick={applyApiRateChanges}
+                    size="sm"
+                    className="w-full"
+                    data-testid="button-apply-api-rate"
+                  >
+                    Apply Rate Change
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Chatbot Service Control */}
+          {revenue.chatbotAvailable && revenue.chatbotPlatformBuilt && (
+            <div className="bg-gray-800 p-3 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <h4 className="font-medium text-purple-300 mr-2">Chatbot Service</h4>
+                  <span className="text-xs bg-green-900/40 border border-green-500/30 text-green-300 px-2 py-1 rounded">
+                    Platform Ready
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="chatbot-toggle" className="text-sm text-gray-300">
+                    {revenue.chatbotEnabled ? "Enabled" : "Disabled"}
+                  </Label>
+                  <Switch
+                    id="chatbot-toggle"
+                    checked={revenue.chatbotEnabled}
+                    onCheckedChange={toggleChatbotService}
+                    data-testid="switch-chatbot-service"
+                  />
+                </div>
+              </div>
+              
+              {/* Monthly Fee Control */}
+              {revenue.chatbotEnabled && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400">Monthly Fee:</span>
+                    <span className="text-xs text-purple-300">${formatCurrency(tempMonthlyFee)}/month</span>
+                  </div>
+                  <Slider
+                    value={[tempMonthlyFee]}
+                    onValueChange={handleMonthlyFeeChange}
+                    min={5}
+                    max={50}
+                    step={1}
+                    className="w-full"
+                    data-testid="slider-monthly-fee"
+                  />
+                  <Button
+                    onClick={applyMonthlyFeeChanges}
+                    size="sm"
+                    className="w-full"
+                    data-testid="button-apply-monthly-fee"
+                  >
+                    Apply Fee Change
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Service Availability Messages */}
+          {(!revenue.apiAvailable && !revenue.chatbotAvailable) && (
+            <div className="bg-gray-800 p-3 rounded-lg text-center">
+              <p className="text-sm text-gray-400">
+                Revenue services will unlock as you advance through AI eras
+              </p>
+            </div>
+          )}
+          
+          {(revenue.apiAvailable && !revenue.apiPlatformBuilt) || (revenue.chatbotAvailable && !revenue.chatbotPlatformBuilt) ? (
+            <div className="bg-amber-900/30 border border-amber-800 rounded-lg p-3">
+              <p className="text-sm text-amber-300 text-center">
+                Build platform infrastructure above to enable service controls
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
       
