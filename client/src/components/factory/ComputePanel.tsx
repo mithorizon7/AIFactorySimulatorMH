@@ -952,7 +952,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                       <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/30 border border-amber-500/30 rounded-lg p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <ClockIcon className="h-5 w-5 text-amber-400" />
+                            <TimerIcon className="h-5 w-5 text-amber-400" />
                             <div>
                               <h4 className="font-semibold text-amber-300">Almost Ready</h4>
                               <p className="text-xs text-amber-200">

@@ -229,7 +229,7 @@ export default function AIFactory() {
             hireResearchEngineer={hireResearchEngineer}
             toggleApiService={toggleApiService}
             toggleChatbotService={toggleChatbotService}
-            setApiRate={setApiRate}
+            trainModel={trainModel}
             setMonthlyFee={setMonthlyFee}
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}

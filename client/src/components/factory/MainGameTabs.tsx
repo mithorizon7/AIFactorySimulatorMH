@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon } from "lucide-react";
+import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon, Clock, Target, AlertTriangle, CheckCircle2, ArrowRight, TrendingUp } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -15,6 +15,7 @@ import EraProgressionPanel from "./EraProgressionPanel";
 import SynergyDashboard from "./SynergyDashboard";
 import SystemStatusPanel from "./SystemStatusPanel";
 import ComputePanel from "./ComputePanel";
+import DashboardContent from "./DashboardContent";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
@@ -152,179 +153,14 @@ export default function MainGameTabs({
         </div>
       </div>
       
-      {/* Dashboard Tab - Overview with most important metrics */}
-      <TabsContent value="dashboard" className="mt-0">
-        <div className="grid grid-cols-1 gap-6">
-          {/* Big Intelligence Goal Progress */}
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-4 rounded-lg border border-gray-700 shadow-lg">
-            <div className="flex justify-between items-center mb-2">
-              <ResourceTooltip 
-                resourceType="intelligence"
-                content={
-                  <div className="space-y-2">
-                    <p className="font-bold">Artificial General Intelligence (AGI)</p>
-                    <p>
-                      AGI represents AI systems that match or exceed human capabilities across virtually all cognitive tasks. 
-                      Unlike narrow AI designed for specific tasks, AGI would demonstrate human-like understanding, learning, 
-                      reasoning, and problem-solving across diverse domains.
-                    </p>
-                    <div className="mt-2 p-2 bg-amber-900/30 border border-amber-800/40 rounded-md">
-                      <h5 className="text-amber-300 font-medium text-xs">Capabilities & Challenges</h5>
-                      <p className="text-xs mt-1">
-                        True AGI would require robust common sense, causal reasoning, transfer learning, and potentially 
-                        self-improvement capabilities. Its development represents one of humanity's greatest scientific challenges.
-                      </p>
-                    </div>
-                  </div>
-                }
-              >
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <BrainCog className="text-amber-400 h-6 w-6" /> 
-                  AGI Progress
-                </h2>
-              </ResourceTooltip>
-              <div className="text-amber-400 font-bold text-xl">
-                <AnimatedNumber value={gameState.intelligence.toFixed(0)} /> / <AnimatedNumber value={gameState.agiThreshold} />
-              </div>
-            </div>
-            
-            <div className="w-full bg-gray-700 rounded-full h-5 mb-4">
-              <div 
-                className="bg-gradient-to-r from-amber-600 to-amber-400 h-5 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${Math.min(100, (gameState.intelligence / gameState.agiThreshold) * 100)}%` }}
-              ></div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-gray-800 p-4 rounded-lg border border-blue-900/50">
-                <div className="flex justify-between items-center">
-                  <ResourceTooltip 
-                    resourceType="compute"
-                    content={
-                      <div className="space-y-2">
-                        <p className="font-bold">{resourceDefinitions.compute.title}</p>
-                        <p>{resourceDefinitions.compute.description}</p>
-                        <div className="mt-2 p-2 bg-blue-900/30 border border-blue-800/40 rounded-md">
-                          <h5 className="text-blue-300 font-medium text-xs">Real World Example</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.compute.realWorldExample}</p>
-                        </div>
-                        <div className="mt-2 p-2 bg-blue-900/20 border border-blue-800/30 rounded-md">
-                          <h5 className="text-blue-300 font-medium text-xs">Industry Impact</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.compute.industryImpact}</p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    <h3 className="text-blue-400 font-medium flex items-center gap-2">
-                      <Cpu className="h-4 w-4" /> Compute
-                    </h3>
-                  </ResourceTooltip>
-                  <span className="text-blue-400 font-bold">Lvl {gameState.levels.compute}</span>
-                </div>
-                <div className="mt-2 text-xl font-semibold">
-                  <AnimatedNumber value={gameState.resources.compute.toFixed(0)} />
-                </div>
-                <div className="text-gray-400 text-sm">
-                  +<AnimatedNumber value={gameState.production.compute.toFixed(1)} />/sec
-                </div>
-              </div>
-              
-              <div className="bg-gray-800 p-4 rounded-lg border border-green-900/50">
-                <div className="flex justify-between items-center">
-                  <ResourceTooltip 
-                    resourceType="data"
-                    content={
-                      <div className="space-y-2">
-                        <p className="font-bold">{resourceDefinitions.data.title}</p>
-                        <p>{resourceDefinitions.data.description}</p>
-                        <div className="mt-2 p-2 bg-green-900/30 border border-green-800/40 rounded-md">
-                          <h5 className="text-green-300 font-medium text-xs">Real World Example</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.data.realWorldExample}</p>
-                        </div>
-                        <div className="mt-2 p-2 bg-green-900/20 border border-green-800/30 rounded-md">
-                          <h5 className="text-green-300 font-medium text-xs">Industry Impact</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.data.industryImpact}</p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    <h3 className="text-green-400 font-medium flex items-center gap-2">
-                      <Database className="h-4 w-4" /> Data
-                    </h3>
-                  </ResourceTooltip>
-                  <ResourceTooltip 
-                    content="Data Level increases with Data Quality upgrades"
-                    resourceType="data"
-                    buttonPosition="inline"
-                    side="top"
-                  >
-                    <span className="text-green-400 font-bold cursor-help">Lvl {gameState.levels.data}</span>
-                  </ResourceTooltip>
-                </div>
-                <div className="mt-2 text-xl font-semibold">
-                  <AnimatedNumber value={gameState.resources.data.toFixed(0)} />
-                </div>
-                <div className="text-gray-400 text-sm">
-                  +<AnimatedNumber value={gameState.production.data.toFixed(1)} />/sec
-                </div>
-              </div>
-              
-              <div className="bg-gray-800 p-4 rounded-lg border border-purple-900/50">
-                <div className="flex justify-between items-center">
-                  <ResourceTooltip 
-                    resourceType="algorithm"
-                    content={
-                      <div className="space-y-2">
-                        <p className="font-bold">{resourceDefinitions.algorithm.title}</p>
-                        <p>{resourceDefinitions.algorithm.description}</p>
-                        <div className="mt-2 p-2 bg-purple-900/30 border border-purple-800/40 rounded-md">
-                          <h5 className="text-purple-300 font-medium text-xs">Real World Example</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.algorithm.realWorldExample}</p>
-                        </div>
-                        <div className="mt-2 p-2 bg-purple-900/20 border border-purple-800/30 rounded-md">
-                          <h5 className="text-purple-300 font-medium text-xs">Industry Impact</h5>
-                          <p className="text-xs mt-1">{resourceDefinitions.algorithm.industryImpact}</p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    <h3 className="text-purple-400 font-medium flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4" /> Algorithm
-                    </h3>
-                  </ResourceTooltip>
-                  <span className="text-purple-400 font-bold">Lvl {gameState.levels.algorithm}</span>
-                </div>
-                <div className="mt-2 text-xl font-semibold">
-                  <AnimatedNumber value={gameState.resources.algorithm.toFixed(0)} />
-                </div>
-                <div className="text-gray-400 text-sm">
-                  +<AnimatedNumber value={gameState.production.algorithm.toFixed(1)} />/sec
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* AI Training System - Moved right under AGI Progress */}
-          <ComputePanel 
-            gameState={gameState}
-            trainModel={trainModel || (() => {})}
-            onNavigateToResource={handleNavigateToResource}
-          />
-          
-          {/* System Status Panel - Shows compute and service health */}
-          <SystemStatusPanel gameState={gameState} />
-          
-          {/* Removed AI Dashboard */}
-
-          {/* Resource Flow Visualization - Moved to bottom */}
-          <div className="mt-6">
-            <h3 className="text-lg font-medium mb-2 flex items-center">
-              <Zap className="h-4 w-4 mr-2 text-amber-400" />
-              Resource Flow Visualization
-            </h3>
-            <ResourceFlowVisualization gameState={gameState} />
-          </div>
-        </div>
+      {/* Dashboard Tab - Clean Command Center */}
+      <TabsContent value="dashboard" className="mt-0 space-y-6">
+        <DashboardContent 
+          gameState={gameState}
+          trainModel={trainModel || (() => {})}
+          setActiveTab={setActiveTab}
+          handleNavigateToResource={handleNavigateToResource}
+        />
       </TabsContent>
       
       {/* Resources Tab - Detailed resource management */}
