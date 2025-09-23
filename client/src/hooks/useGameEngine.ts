@@ -380,6 +380,12 @@ export function useGameEngine() {
       13: 95,  // World Models for Planning
       14: 105, // Verified Self-Improvement
       15: 110, // Agentic Autonomy & Orchestration
+      16: 55,  // Chain-of-Thought Reasoning
+      17: 40,  // Reinforcement Learning Training
+      18: 45,  // Next-Generation Computing Hardware
+      19: 50,  // AI-Generated Training Data
+      20: 85,  // AI Team Coordination
+      21: 55,  // Pocket-Sized AI
     };
     
     state.intelligence += intelligenceBonuses[breakthroughId as keyof typeof intelligenceBonuses] || 15;
@@ -598,6 +604,103 @@ export function useGameEngine() {
         state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.20);
         // Strong intelligence boosts from orchestration capabilities
         state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
+        break;
+        
+      case 16: // Chain-of-Thought Reasoning (GNT-5)
+        // Improves API success rate and reduces errors, with higher compute usage
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 150; // Premium for higher accuracy (reduced from 250)
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.12, 3.0); // Better success rate attracts developers
+        }
+        // Chain-of-thought improves algorithm effectiveness but increases compute usage
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
+        // Increased compute usage per customer to reflect deliberate thinking costs
+        Object.keys(state.training.runs).forEach(era => {
+          const typedEra = era as keyof typeof state.training.runs;
+          const run = state.training.runs[typedEra];
+          run.computePerCustomer = Math.floor(run.computePerCustomer * 1.4); // 40% increase in compute per customer
+        });
+        break;
+        
+      case 17: // Reinforcement Learning Training (GNT-4)
+        // Improves training effectiveness but increases training costs
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 120; // Premium for adaptive learning (reduced from 180)
+        }
+        // RL enhances algorithm-to-intelligence conversion through better training
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.15);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.12); // Better use of feedback data
+        // RL training requires more compute and money due to trial-and-error process
+        Object.keys(state.training.runs).forEach(era => {
+          const typedEra = era as keyof typeof state.training.runs;
+          const run = state.training.runs[typedEra];
+          if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
+            run.moneyCost = Math.floor(run.moneyCost * 1.25); // 25% increase in training costs for RL
+          }
+        });
+        break;
+        
+      case 18: // Next-Generation Computing Hardware (GNT-5)
+        // Major hardware improvements reduce costs and increase capacity
+        state.computeCapacity.maxCapacity = Math.floor(state.computeCapacity.maxCapacity * 1.50); // 50% capacity increase
+        state.computeCapacity.available = Math.min(state.computeCapacity.available * 1.50, state.computeCapacity.maxCapacity);
+        // Training cost reduction (one-time effect)
+        Object.keys(state.training.runs).forEach(era => {
+          const typedEra = era as keyof typeof state.training.runs;
+          const run = state.training.runs[typedEra];
+          if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
+            run.computeRequired = Math.floor(run.computeRequired * 0.65); // 35% reduction
+            run.moneyCost = Math.floor(run.moneyCost * 0.70); // 30% reduction
+          }
+        });
+        // Improved compute efficiency
+        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.20);
+        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.15);
+        break;
+        
+      case 19: // AI-Generated Training Data (GNT-5)
+        // Dramatically improves data production efficiency and quality
+        // Use persistent bonus multiplier instead of one-time multiplication
+        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.60); // 60% data efficiency increase
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.50); // Better synthetic data utilization
+        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.30); // Higher quality synthetic data
+        // Enables training on specialized domains
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 130; // Specialized domain capabilities (reduced from 200)
+        }
+        break;
+        
+      case 20: // AI Team Coordination (GNT-6)
+        // Multiple AI systems working together with higher success rates
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 250; // Premium for multi-agent systems (reduced from 400)
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0); // Enterprise demand for reliable systems
+        }
+        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
+          state.revenue.monthlyFee += 15; // Better chatbot through verification
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.15, 3.0);
+        }
+        // Multi-agent systems enhance algorithm coordination but require more compute
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.25); // Increased from 1.22 to match GNT-6 significance
+        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.20); // Increased from 1.15
+        // Multi-agent coordination increases compute usage
+        state.computeCapacity.used = Math.floor(state.computeCapacity.used * 1.3); // 30% increase in compute usage
+        break;
+        
+      case 21: // Pocket-Sized AI (GNT-5)
+        // Edge AI reduces cloud costs and improves responsiveness
+        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
+          state.revenue.monthlyFee += 12; // Privacy and speed premium
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.25, 3.0); // Privacy-focused adoption
+        }
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.15, 3.0); // Edge deployment appeal
+        }
+        // Edge AI improves algorithm efficiency and reduces compute load
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.16);
+        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.20); // More efficient inference
+        // Simulated cloud cost reduction through decreased compute usage
+        state.computeCapacity.used = Math.max(0, Math.floor(state.computeCapacity.used * 0.80)); // 20% reduction
         break;
         
       default:

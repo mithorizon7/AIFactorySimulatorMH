@@ -170,6 +170,48 @@ export const narrative = {
     context: "Companies like Google use AutoML to automatically discover network architectures that outperform human-designed ones."
   },
   
+  BREAKTHROUGH_16: {
+    title: "Breakthrough: Chain-of-Thought Reasoning!",
+    content: "Incredible! Our AI now thinks step-by-step before answering, just like how humans approach complex problems. This dramatically improves accuracy on math, logic, and coding tasks!",
+    context: "This mirrors OpenAI's o1 reasoning models that pause to think through problems systematically, achieving much higher success rates on challenging tasks.",
+    speaker: "spark"
+  },
+  
+  BREAKTHROUGH_17: {
+    title: "Breakthrough: Reinforcement Learning Training!",
+    content: "Outstanding! We've mastered reinforcement learning - our AI can now learn from trial and error, getting better through practice and feedback!",
+    context: "Modern AI systems use reinforcement learning to improve reasoning abilities, similar to how humans learn skills through repetition and feedback.",
+    speaker: "spark"
+  },
+  
+  BREAKTHROUGH_18: {
+    title: "Breakthrough: Next-Generation Computing Hardware!",
+    content: "Phenomenal! We've upgraded to cutting-edge hardware that processes AI calculations dramatically faster and more efficiently. The future is here!",
+    context: "Advanced GPU architectures like NVIDIA's Blackwell series provide massive speedups for AI development, making previously impossible projects feasible.",
+    speaker: "spark"
+  },
+  
+  BREAKTHROUGH_19: {
+    title: "Breakthrough: AI-Generated Training Data!",
+    content: "Revolutionary! Our AI can now create its own high-quality training examples, extending far beyond what's available on the internet!",
+    context: "As internet text becomes limited, AI systems generate synthetic training data that's carefully filtered and verified, opening new frontiers for learning.",
+    speaker: "spark"
+  },
+  
+  BREAKTHROUGH_20: {
+    title: "Breakthrough: AI Team Coordination!",
+    content: "Remarkable! Multiple AI assistants can now work together as a team, checking each other's work and solving complex problems through collaboration!",
+    context: "Multi-agent AI systems where different AIs specialize in planning, execution, and verification achieve much higher success rates on complex enterprise tasks.",
+    speaker: "spark"
+  },
+  
+  BREAKTHROUGH_21: {
+    title: "Breakthrough: Pocket-Sized AI!",
+    content: "Amazing! Powerful AI assistants now run directly on smartphones and laptops, providing instant, private responses without needing the cloud!",
+    context: "Edge AI enables fast, private assistance while reducing costs and improving user experience through on-device processing capabilities.",
+    speaker: "spark"
+  },
+  
   // Era Advancements (keyed by the new Era)
   ERA_ADVANCE_GNT2: {
     title: "We're in a New Era: GNT-2!",
