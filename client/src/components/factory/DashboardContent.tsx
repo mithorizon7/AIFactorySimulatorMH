@@ -215,14 +215,14 @@ export default function DashboardContent({
     if (analysis.cashCrisis) {
       actions.unshift({
         priority: 0,
-        action: "URGENT: Cash Crisis",
+        action: "URGENT: Cash Flow Issue",
         description: `${metrics.cashRunwayDays} days of funding left with $${Math.round(Math.abs(metrics.netCashFlow)).toLocaleString()}/day burn rate`,
-        educational: "Negative cash flow means imminent bankruptcy. Launch revenue services immediately or seek emergency funding to avoid game over",
+        educational: "Negative cash flow means your research will stall. Launch revenue services immediately or seek additional funding to keep operations running",
         icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
         color: "border-red-500/50 bg-red-900/30",
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
-        strategies: ["Launch Services", "Emergency Funding"],
+        strategies: ["Launch Services", "Secure Funding"],
         onClick: () => setActiveTab('economy')
       });
     }
@@ -231,8 +231,8 @@ export default function DashboardContent({
       actions.unshift({
         priority: 0,
         action: "URGENT: Revenue Crisis",
-        description: `$${Math.round(gameState.money).toLocaleString()} funds + $${Math.round(metrics.totalRevenue).toLocaleString()}/day income - bankruptcy imminent`,
-        educational: "Without revenue or capital, R&D stops completely. Launch services immediately or game over is inevitable",
+        description: `$${Math.round(gameState.money).toLocaleString()} funds + $${Math.round(metrics.totalRevenue).toLocaleString()}/day income - operations at risk`,
+        educational: "Without revenue or capital, R&D progress will halt. Launch services immediately or seek investment to continue development",
         icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
         color: "border-red-500/50 bg-red-900/30",
         buttonColor: "bg-red-600 hover:bg-red-700",
@@ -287,7 +287,7 @@ export default function DashboardContent({
           priority: 2,
           action: "Establish Revenue Foundation", 
           description: "Low funds + minimal income - time to monetize your AI capabilities",
-          educational: "Early revenue funds research and prevents bankruptcy. Both API services and chatbot products generate steady income streams",
+          educational: "Early revenue funds research and keeps operations running smoothly. Both API services and chatbot products generate steady income streams",
           icon: <TrendingUp className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
           buttonColor: "bg-green-600 hover:bg-green-700",
