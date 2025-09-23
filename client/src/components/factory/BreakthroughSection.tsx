@@ -156,6 +156,46 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         howToImprove: "Requires Algorithm Level 8, Data Level 7, and Compute Level 7. Click on all three resource sections (Algorithm, Data, Compute) and maximize every upgrade option. AGI represents the culmination of all three pillars - the most advanced algorithms, comprehensive data from all domains, and massive computational resources.",
         industryImpact: "AGI represents the ultimate goal of AI research - systems that match or exceed human cognitive abilities across all domains. This breakthrough could transform every aspect of human civilization and scientific progress.",
         resourceConnection: "Ultimate combined breakthrough requiring mastery of all three pillars: algorithms, data, and compute working in perfect harmony to achieve human-level general intelligence."
+      },
+      11: { // Continuous Learning & Live Personalization
+        title: "Continuous Learning & Live Personalization",
+        description: "AI systems that continuously learn and adapt from every user interaction while preserving privacy through federated learning techniques. This enables highly personalized experiences without centralizing sensitive user data.",
+        realWorldExample: "Future AI assistants will learn your work patterns, communication style, and preferences over time, becoming increasingly helpful while keeping your data local. Think of an AI that learns you prefer brief emails on Mondays but detailed explanations on complex topics.",
+        howToImprove: "Requires Algorithm Level 5 and Data Level 5. Click on both Algorithm and Data sections to upgrade all available options. Continuous learning requires sophisticated algorithms for online learning and diverse data formats to enable personalization across different user types.",
+        industryImpact: "Continuous learning enables AI to provide increasingly valuable services while addressing privacy concerns. This breakthrough makes AI more useful while maintaining user trust, potentially unlocking mass adoption of AI assistants.",
+        resourceConnection: "Combined breakthrough leveraging advanced algorithms and diverse data to enable privacy-preserving personalization."
+      },
+      12: { // Neuro-Symbolic Reasoning
+        title: "Neuro-Symbolic Reasoning",
+        description: "Hybrid AI systems combining the pattern recognition power of neural networks with the logical precision of symbolic reasoning. This creates AI that can provide verified, provable results for critical applications.",
+        realWorldExample: "A medical diagnosis AI that not only recognizes symptoms from medical images but can also explain its reasoning with formal logic, providing doctors with both the diagnosis and a verifiable chain of reasoning. This reduces AI hallucinations and enables use in high-stakes decisions.",
+        howToImprove: "Requires Algorithm Level 6 and Data Level 6. Click on both Algorithm and Data sections to continue upgrading. Neuro-symbolic systems need advanced algorithms to bridge neural and symbolic systems, plus structured data formats that support formal reasoning.",
+        industryImpact: "Neuro-symbolic AI enables deployment in safety-critical applications like healthcare, autonomous vehicles, and financial systems where explainability and correctness are essential. This breakthrough addresses the 'AI black box' problem.",
+        resourceConnection: "Combined breakthrough requiring sophisticated algorithms and structured data to bridge intuitive understanding with logical precision."
+      },
+      13: { // World Models for Planning
+        title: "World Models for Planning",
+        description: "AI systems that build internal models of how the world works, enabling them to simulate and test strategies before acting. This unlocks AI applications in robotics, autonomous systems, and complex planning scenarios.",
+        realWorldExample: "An autonomous robot that can mentally simulate different paths through a cluttered room before moving, or an AI urban planner that can model traffic patterns and test infrastructure changes in simulation before proposing real-world implementations.",
+        howToImprove: "Requires Compute Level 6 and Data Level 6. Click on both Compute and Data sections to maximize upgrades. World models need massive computational resources for complex simulations and diverse data sources to accurately model real-world physics and behaviors.",
+        industryImpact: "World models enable AI to work safely in physical environments and complex planning scenarios. This breakthrough opens applications in robotics, autonomous vehicles, scientific simulation, and strategic planning across industries.",
+        resourceConnection: "Combined breakthrough leveraging compute power and diverse data to enable sophisticated simulation and planning capabilities."
+      },
+      14: { // Verified Self-Improvement
+        title: "Verified Self-Improvement",
+        description: "AI systems capable of safely improving their own capabilities with formal mathematical guarantees that each change is beneficial. This enables recursive self-improvement while preventing degradation or unsafe modifications.",
+        realWorldExample: "An AI system that can automatically optimize its own neural network architecture, improve its training algorithms, or enhance its reasoning capabilities, but only after mathematically proving each change will improve performance without introducing risks.",
+        howToImprove: "Requires Algorithm Level 7 and Compute Level 6. Click on both Algorithm and Compute sections to maximize all upgrades. Verified self-improvement demands the most advanced algorithmic techniques for formal verification plus massive compute resources for testing and validation.",
+        industryImpact: "Verified self-improvement could accelerate AI development while maintaining safety. This breakthrough represents a potential inflection point where AI progress becomes self-reinforcing, leading to rapid advances across all technological domains.",
+        resourceConnection: "Combined breakthrough requiring cutting-edge algorithms and massive compute to enable safe recursive self-improvement."
+      },
+      15: { // Agentic Autonomy & Orchestration
+        title: "Agentic Autonomy & Orchestration",
+        description: "AI systems that can coordinate teams of specialized AI agents, each with different capabilities, to tackle complex multi-step challenges requiring distributed intelligence and collaborative problem-solving.",
+        realWorldExample: "An AI system managing a research project by coordinating specialist AIs for literature review, experimental design, data analysis, and paper writing, with each agent contributing their expertise while a coordinator agent manages the overall workflow and ensures quality.",
+        howToImprove: "Requires Algorithm Level 8, Compute Level 7, and Data Level 7. Click on all three resource sections and maximize every upgrade. Multi-agent coordination requires the most sophisticated algorithms, massive compute for parallel agent operation, and comprehensive data across all specialist domains.",
+        industryImpact: "Agentic autonomy enables AI to handle complex real-world projects that require diverse expertise and coordinated action. This breakthrough could automate entire workflows in research, engineering, business strategy, and other domains requiring multi-disciplinary collaboration.",
+        resourceConnection: "Ultimate combined breakthrough requiring mastery of all three pillars to enable sophisticated multi-agent coordination and autonomous workflow management."
       }
     };
 
