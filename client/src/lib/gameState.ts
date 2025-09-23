@@ -288,6 +288,8 @@ export interface Breakthrough {
   };
   type: 'compute' | 'data' | 'algorithm' | 'combined';
   realWorldParallel: string;
+  gameEffect: string; // What actual effect this breakthrough has on gameplay
+  contributingFactors: string; // What combination of compute/data/algorithm led to this breakthrough
   era?: Era; // Optional era association
 }
 
