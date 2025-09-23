@@ -83,16 +83,22 @@ export default function AIFactory() {
     onShowMessage: setCurrentNarrativeMessage
   });
   
-  // Detect first-time player and initialize tutorial
+  // Handle WelcomeIntroduction visibility for proper tutorial sequence
   useEffect(() => {
     const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
+    
     if (!hasPlayedBefore) {
-      setShowIntroduction(false); // Hide the old modal - tutorial system will handle onboarding
-      localStorage.setItem('hasPlayedAIFactory', 'true');
+      // For new players, show introduction after Phase 1 tutorial modals complete
+      // Phase 1 has 2 steps, so show introduction when we reach Phase 2 or complete Phase 1
+      if (gameState.tutorial.phase > 1 || 
+          (gameState.tutorial.phase === 1 && gameState.tutorial.step === 2 && gameState.tutorial.isActive)) {
+        setShowIntroduction(true);
+      }
     } else if (timeElapsed === 0 && !isRunning) {
+      // For returning players starting a new game
       setShowIntroduction(true);
     }
-  }, [timeElapsed, isRunning]);
+  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive, timeElapsed, isRunning]);
 
   // Save game state periodically
   useEffect(() => {
@@ -158,6 +164,17 @@ export default function AIFactory() {
 
   const handleCloseIntroduction = () => {
     setShowIntroduction(false);
+    
+    // Mark as played and continue tutorial for new players
+    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
+    if (!hasPlayedBefore) {
+      localStorage.setItem('hasPlayedAIFactory', 'true');
+      
+      // If we're still in Phase 1, advance to Phase 2 to continue tutorial
+      if (gameState.tutorial.isActive && gameState.tutorial.phase === 1) {
+        advanceTutorial(); // This will advance to Phase 2, Step 1
+      }
+    }
   };
 
   const handleCloseBreakthroughModal = () => {
