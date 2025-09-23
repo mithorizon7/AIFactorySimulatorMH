@@ -13,6 +13,8 @@ import {
   BarChart3, 
   DollarSign 
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 
 interface DashboardContentProps {
   gameState: GameStateType;
@@ -27,6 +29,14 @@ export default function DashboardContent({
   setActiveTab, 
   handleNavigateToResource 
 }: DashboardContentProps) {
+  
+  // State for Priority Actions dialog management
+  const [selectedAction, setSelectedAction] = useState<any | null>(null);
+
+  // Helper function to open Priority Action dialogs with educational content
+  const openPriorityActionDialog = (actionData: any) => {
+    setSelectedAction(actionData);
+  };
   
   // Calculate time remaining to AGI based on current progress
   const calculateTimeToAGI = () => {
@@ -62,7 +72,7 @@ export default function DashboardContent({
     // === COMPREHENSIVE GAME STATE ANALYSIS ===
     const metrics = {
       // Financial Intelligence
-      totalRevenue: gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors,
+      totalRevenue: gameState.revenue.b2b + gameState.revenue.b2c,
       cashPosition: gameState.money,
       revenueGrowthPotential: gameState.revenue.b2b < 1000000, // Can still scale significantly
       financialStability: gameState.money > 500000 && (gameState.revenue.b2b + gameState.revenue.b2c) > 50000,
@@ -112,30 +122,24 @@ export default function DashboardContent({
       
       // Critical Financial Intelligence
       netCashFlow: (() => {
-        const totalRevenue = (
-          (gameState.services?.api?.active ? gameState.services.api.monthlyRevenue * 30 : 0)
-        ) + (
-          (gameState.services?.chatbot?.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0)
-        );
+        // Use actual calculated revenue from game state
+        const totalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
         const totalCosts = (
-          (gameState.computeCapacity?.maxCapacity || 0) * 50 + // Infrastructure costs
-          (gameState.levels?.compute || 0) * 1000 + // Operational costs
-          (gameState.levels?.data || 0) * 800 +
-          (gameState.levels?.algorithm || 0) * 600
+          (gameState.computeCapacity?.maxCapacity || 0) * 10 + // Simplified infrastructure costs
+          (gameState.levels?.compute || 0) * 200 + // Simplified operational costs
+          (gameState.levels?.data || 0) * 150 +
+          (gameState.levels?.algorithm || 0) * 100
         );
         return totalRevenue - totalCosts;
       })(),
       cashRunwayDays: (() => {
-        const totalRevenue = (
-          (gameState.services?.api?.active ? gameState.services.api.monthlyRevenue * 30 : 0)
-        ) + (
-          (gameState.services?.chatbot?.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0)
-        );
+        // Use actual calculated revenue from game state
+        const totalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
         const totalCosts = (
-          (gameState.computeCapacity?.maxCapacity || 0) * 50 + // Infrastructure costs
-          (gameState.levels?.compute || 0) * 1000 + // Operational costs
-          (gameState.levels?.data || 0) * 800 +
-          (gameState.levels?.algorithm || 0) * 600
+          (gameState.computeCapacity?.maxCapacity || 0) * 10 + // Simplified infrastructure costs
+          (gameState.levels?.compute || 0) * 200 + // Simplified operational costs
+          (gameState.levels?.data || 0) * 150 +
+          (gameState.levels?.algorithm || 0) * 100
         );
         const netCashFlow = totalRevenue - totalCosts;
         return netCashFlow >= 0 ? 999 : Math.max(0, Math.floor((gameState.money || 0) / Math.abs(netCashFlow || 1)));
@@ -238,7 +242,14 @@ export default function DashboardContent({
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
         strategies: ["Launch API", "Seek Investment"],
-        onClick: () => setActiveTab('economy')
+        onClick: () => openPriorityActionDialog({
+          action: "Revenue Crisis Response",
+          description: "$1,000 funds + $0/day income - operations at risk",
+          educational: "Without revenue or capital, your R&D operations will stall. Early revenue funds research and keeps your AI development timeline on track. Launch services now or seek emergency funding to continue operations.",
+          icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+          strategies: ["Launch API Service", "Seek Investment", "Cut Costs"],
+          dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
+        })
       });
     }
     
@@ -594,11 +605,68 @@ export default function DashboardContent({
               </span>
             </div>
             <div className="text-sm text-gray-400">
-              Revenue: ${((gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors) / 1000).toFixed(1)}K/day
+              Revenue: ${((gameState.revenue.b2b + gameState.revenue.b2c) / 1000).toFixed(1)}K/day
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Priority Actions Educational Dialog */}
+      <Dialog open={!!selectedAction} onOpenChange={() => setSelectedAction(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedAction?.icon}
+              {selectedAction?.action}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedAction?.description}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedAction?.educational && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Why This Matters</h4>
+              <p className="text-sm text-blue-800 dark:text-blue-200">{selectedAction.educational}</p>
+            </div>
+          )}
+          
+          {selectedAction?.strategies && selectedAction.strategies.length > 1 && (
+            <div>
+              <h4 className="font-medium mb-2">Strategic Options</h4>
+              <div className="space-y-2">
+                {selectedAction.strategies.map((strategy: string, index: number) => (
+                  <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                    <Target className="h-4 w-4" />
+                    {strategy}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <button 
+              onClick={() => setSelectedAction(null)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              I'll Handle This Myself
+            </button>
+            <button
+              onClick={() => {
+                if (selectedAction?.dialogAction) {
+                  selectedAction.dialogAction();
+                } else {
+                  setSelectedAction(null);
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              {selectedAction?.strategies?.[0] || 'Take Action'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
