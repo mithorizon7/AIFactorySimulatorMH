@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { GameStateType } from "@/lib/gameState";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { 
@@ -28,6 +27,33 @@ export default function DashboardContent({
   handleNavigateToResource 
 }: DashboardContentProps) {
   
+  // Calculate time remaining to AGI based on current progress
+  const calculateTimeToAGI = () => {
+    const currentIntelligence = gameState.intelligence;
+    const targetIntelligence = gameState.agiThreshold;
+    const remainingIntelligence = targetIntelligence - currentIntelligence;
+    
+    // Calculate current intelligence growth rate based on resource production and bonuses
+    const baseIntelligenceRate = (
+      gameState.production.compute * gameState.bonuses.computeToIntelligence +
+      gameState.production.data * gameState.bonuses.dataToIntelligence +
+      gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
+    ) || 0;
+    
+    // Convert per-second rate to per-day (approximate)
+    const intelligenceRate = baseIntelligenceRate * 86400; // seconds per day
+    
+    if (intelligenceRate <= 0 || remainingIntelligence <= 0) {
+      return "Complete!";
+    }
+    
+    const daysRemaining = Math.ceil(remainingIntelligence / intelligenceRate);
+    if (daysRemaining > 999) {
+      return "999+ days";
+    }
+    return `~${daysRemaining} days`;
+  };
+
   // Smart action generation logic
   const getNextActions = () => {
     const actions = [];
@@ -35,8 +61,9 @@ export default function DashboardContent({
     // Check if training is available and should be top priority
     const canTrain = gameState.training && !gameState.training.active;
     const hasUnlockedBreakthrough = gameState.breakthroughs.some(b => b.unlocked && b.id === gameState.currentGoal.id);
+    const hasAvailableCompute = (gameState.computeCapacity.maxCapacity - gameState.computeCapacity.used) > 500;
     
-    if (canTrain && gameState.computeCapacity.available > 1000) {
+    if (canTrain && hasAvailableCompute) {
       actions.push({
         priority: 1,
         action: "Start AI Training Run",
@@ -96,16 +123,44 @@ export default function DashboardContent({
     }
     
     // System health warnings
-    if (gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity > 0.9) {
+    const capacityUtilization = gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity;
+    if (capacityUtilization > 0.9) {
       actions.unshift({
         priority: 0,
         action: "URGENT: System Overload",
-        description: "Your compute capacity is critically high - services degraded",
+        description: `Compute capacity at ${Math.round(capacityUtilization * 100)}% - services may degrade`,
         icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
         color: "border-red-500/50 bg-red-900/20",
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
         onClick: () => { setActiveTab('resources'); handleNavigateToResource('compute'); }
+      });
+    }
+    
+    // Financial health warnings
+    if (gameState.money < 100000 && (gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors) < 10000) {
+      actions.push({
+        priority: 1,
+        action: "Financial Risk Alert",
+        description: "Low funds and revenue - focus on monetization or seek investment",
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-400" />,
+        color: "border-yellow-500/50 bg-yellow-900/20",
+        buttonColor: "bg-yellow-600 hover:bg-yellow-700",
+        onClick: () => setActiveTab('economy')
+      });
+    }
+    
+    // Investment milestone suggestions
+    const nextMilestone = gameState.investmentMilestones.find(m => !m.unlocked && gameState.intelligence >= m.requiredIntelligence);
+    if (nextMilestone) {
+      actions.push({
+        priority: 2,
+        action: "Investment Milestone Ready!",
+        description: `${nextMilestone.name} funding available - $${(nextMilestone.funding / 1000000).toFixed(1)}M`,
+        icon: <TrendingUp className="h-5 w-5 text-green-400" />,
+        color: "border-green-500/50 bg-green-900/20",
+        buttonColor: "bg-green-600 hover:bg-green-700",
+        onClick: () => setActiveTab('economy')
       });
     }
     
@@ -148,7 +203,7 @@ export default function DashboardContent({
             </div>
             <div className="text-sm text-gray-400 flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              Time: {gameState.daysElapsed} days
+              Day {gameState.daysElapsed} • Est. {calculateTimeToAGI()}
             </div>
           </div>
         </div>
@@ -265,7 +320,7 @@ export default function DashboardContent({
               +<AnimatedNumber value={gameState.production.algorithm.toFixed(1)} />/sec
             </div>
             <div className="mt-2 text-xs text-gray-400">
-              Research: {Math.round(gameState.training.algorithmResearchProgress)}% complete
+              Research: {Math.round(gameState.training?.algorithmResearchProgress || 0)}% complete
             </div>
           </div>
         </div>
