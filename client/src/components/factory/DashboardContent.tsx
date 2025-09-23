@@ -10,7 +10,8 @@ import {
   Lightbulb, 
   Cpu, 
   Database, 
-  BarChart3 
+  BarChart3, 
+  DollarSign 
 } from "lucide-react";
 
 interface DashboardContentProps {
