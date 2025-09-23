@@ -1181,19 +1181,23 @@ export function useGameEngine() {
       unlockedBreakthroughs * 150 + regulatoryConfidence * 100 + growthPotential
     );
     
-    // Early-game booster funding (first 2 minutes)
-    if (timeElapsed < 120 && timeElapsed % 30 === 0 && timeElapsed > 0) {
+    // Early-game booster funding (first 2 minutes) - FIXED: prevent duplicate funding
+    if (timeElapsed < 120 && timeElapsed % 30 === 0 && timeElapsed > 0 && 
+        newState.narrativeFlags.lastSeedFundingTime !== timeElapsed) {
       const seedFunding = 2000 + Math.floor(newState.intelligence * 10);
       newState.money += seedFunding;
+      newState.narrativeFlags.lastSeedFundingTime = timeElapsed; // Prevent duplicates
       toast({
         title: "Seed Funding Received!",
         description: `You've secured $${formatCurrency(seedFunding)} in seed funding to help develop your AI.`,
       });
     }
-    // Regular investor funding rounds
-    else if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > minIntelligenceForInvestors) {
+    // Regular investor funding rounds - FIXED: prevent duplicate funding
+    else if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > minIntelligenceForInvestors &&
+             newState.narrativeFlags.lastInvestorFundingTime !== timeElapsed) {
       // Investor round happens every 30 seconds after reaching intelligence threshold
       newState.money += newState.revenue.investors;
+      newState.narrativeFlags.lastInvestorFundingTime = timeElapsed; // Prevent duplicates
       toast({
         title: "Investor Funding Received!",
         description: `You've secured $${formatCurrency(newState.revenue.investors)} in funding based on your progress!`,

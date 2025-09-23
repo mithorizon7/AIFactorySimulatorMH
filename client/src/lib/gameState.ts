@@ -217,6 +217,9 @@ export interface GameStateType {
     hasGrantedEarlyGrant: boolean;
     hasGranted20MinBoost: boolean;
     hasGrantedLateStageFunding: boolean;
+    // Track funding rounds to prevent duplicates
+    lastSeedFundingTime: number;
+    lastInvestorFundingTime: number;
     // Stuck detection flags for guidance
     hasSeenStuckNoMoney: boolean;
     hasSeenStuckNoRevenue: boolean;
@@ -708,6 +711,9 @@ export const initialGameState: GameStateType = {
     hasGrantedEarlyGrant: false,
     hasGranted20MinBoost: false,
     hasGrantedLateStageFunding: false,
+    // Track funding rounds to prevent duplicates
+    lastSeedFundingTime: -1,
+    lastInvestorFundingTime: -1,
     // Stuck detection flags for guidance
     hasSeenStuckNoMoney: false,
     hasSeenStuckNoRevenue: false,
