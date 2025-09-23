@@ -398,38 +398,49 @@ export function useGameEngine() {
     
     switch (breakthroughId) {
       case 1: // Transformer Architecture (2017)
-        // Foundational efficiency boost to all cross-resource synergies (capped)
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.05);
-        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.05);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.05);
+        // Foundational efficiency boost to all cross-resource synergies
+        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.08);
+        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.08);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.12); // Better attention-based processing
         break;
         
       case 2: // Unsupervised Pre-training (2018-2019)
-        // Improves data efficiency and enables self-supervised learning (capped)
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.10);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.10);
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.08);
+        // Improves data efficiency and enables self-supervised learning
+        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.15);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.15);
+        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.20); // Better learning from raw data
+        // One-time training cost reduction
+        if (!state.narrativeFlags.unsupervisedPretrainingBonus) {
+          state.narrativeFlags.unsupervisedPretrainingBonus = true;
+          Object.keys(state.training.runs).forEach(era => {
+            const typedEra = era as keyof typeof state.training.runs;
+            const run = state.training.runs[typedEra];
+            if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
+              run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% cost reduction
+            }
+          });
+        }
         break;
         
       case 3: // Massive Parameter Scaling (2019-2020)
-        // Unlocks API services only if platforms are built, modest pricing boost
+        // Unlocks API services and dramatic intelligence improvements from scale
         state.revenue.apiAvailable = true;
         if (state.revenue.apiPlatformBuilt) {
-          state.revenue.baseApiRate += 150; // Modest baseline boost, requires platform investment
+          state.revenue.baseApiRate += 200; // Premium for emergent capabilities
         }
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.15);
+        // Major compute-to-intelligence boost from scaling laws
+        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.25);
         break;
         
       case 4: // Few-Shot Learning (2020)
-        // Improves API efficiency only if API is enabled, capped growth
+        // Improves API efficiency and reduces training costs
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
           state.revenue.baseApiRate += 200; // Premium few-shot API pricing
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0); // Capped at 3x growth
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0);
         }
-        // Improve training efficiency globally (additive, not multiplicative)
+        // Improve training efficiency
         if (!state.narrativeFlags.fewShotTrainingBonus) {
           state.narrativeFlags.fewShotTrainingBonus = true;
-          // Apply 10% reduction to all future training runs only once
           Object.keys(state.training.runs).forEach(era => {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
@@ -442,26 +453,26 @@ export function useGameEngine() {
         break;
         
       case 5: // Instruction Tuning (2021-2022)
-        // Unlocks consumer chatbot services with modest improvements
+        // Unlocks consumer chatbot services
         state.revenue.chatbotAvailable = true;
         if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 5; // Modest instruction following premium
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.30, 3.0); // Capped growth
+          state.revenue.monthlyFee += 8; // Instruction following premium
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.30, 3.0);
         }
         state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.15);
         break;
         
       case 6: // Multimodal Integration (2022-2023)
-        // Unlocks multimodal capabilities with platform requirements
+        // Unlocks multimodal capabilities
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
           state.revenue.baseApiRate += 300; // Multimodal API premium
         }
         if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
           state.revenue.monthlyFee += 10; // Multimodal consumer features
         }
-        // Enhanced data processing for multiple modalities (capped)
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.15);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.15);
+        // Enhanced data processing for multiple modalities
+        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.20);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.20);
         break;
         
       case 7: // Advanced Reasoning (2024-Future)
@@ -607,50 +618,36 @@ export function useGameEngine() {
         break;
         
       case 16: // Chain-of-Thought Reasoning (GNT-5)
-        // Improves API success rate and reduces errors, with higher compute usage
+        // Improves API success rate and reduces errors
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 150; // Premium for higher accuracy (reduced from 250)
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.12, 3.0); // Better success rate attracts developers
+          state.revenue.baseApiRate += 180; // Premium for higher accuracy
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.15, 3.0);
         }
-        // Chain-of-thought improves algorithm effectiveness but increases compute usage
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
-        // Increased compute usage per customer to reflect deliberate thinking costs
-        Object.keys(state.training.runs).forEach(era => {
-          const typedEra = era as keyof typeof state.training.runs;
-          const run = state.training.runs[typedEra];
-          run.computePerCustomer = Math.floor(run.computePerCustomer * 1.4); // 40% increase in compute per customer
-        });
+        // Chain-of-thought improves algorithm effectiveness
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.20);
         break;
         
       case 17: // Reinforcement Learning Training (GNT-4)
-        // Improves training effectiveness but increases training costs
+        // Improves training effectiveness
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 120; // Premium for adaptive learning (reduced from 180)
+          state.revenue.baseApiRate += 150; // Premium for adaptive learning
         }
-        // RL enhances algorithm-to-intelligence conversion through better training
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.15);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.12); // Better use of feedback data
-        // RL training requires more compute and money due to trial-and-error process
-        Object.keys(state.training.runs).forEach(era => {
-          const typedEra = era as keyof typeof state.training.runs;
-          const run = state.training.runs[typedEra];
-          if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-            run.moneyCost = Math.floor(run.moneyCost * 1.25); // 25% increase in training costs for RL
-          }
-        });
+        // RL enhances algorithm-to-intelligence conversion
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.15); // Better use of feedback data
         break;
         
       case 18: // Next-Generation Computing Hardware (GNT-5)
-        // Major hardware improvements reduce costs and increase capacity
+        // Major hardware improvements reduce costs and increase efficiency
         state.computeCapacity.maxCapacity = Math.floor(state.computeCapacity.maxCapacity * 1.50); // 50% capacity increase
         state.computeCapacity.available = Math.min(state.computeCapacity.available * 1.50, state.computeCapacity.maxCapacity);
-        // Training cost reduction (one-time effect)
+        // Training cost reduction
         Object.keys(state.training.runs).forEach(era => {
           const typedEra = era as keyof typeof state.training.runs;
           const run = state.training.runs[typedEra];
           if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-            run.computeRequired = Math.floor(run.computeRequired * 0.65); // 35% reduction
-            run.moneyCost = Math.floor(run.moneyCost * 0.70); // 30% reduction
+            run.computeRequired = Math.floor(run.computeRequired * 0.70); // 30% reduction
+            run.moneyCost = Math.floor(run.moneyCost * 0.75); // 25% reduction
           }
         });
         // Improved compute efficiency
@@ -660,47 +657,42 @@ export function useGameEngine() {
         
       case 19: // AI-Generated Training Data (GNT-5)
         // Dramatically improves data production efficiency and quality
-        // Use persistent bonus multiplier instead of one-time multiplication
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.60); // 60% data efficiency increase
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.50); // Better synthetic data utilization
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.30); // Higher quality synthetic data
+        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.40); // 40% data efficiency increase
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.35); // Better synthetic data utilization
+        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.25); // Higher quality synthetic data
         // Enables training on specialized domains
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 130; // Specialized domain capabilities (reduced from 200)
+          state.revenue.baseApiRate += 160; // Specialized domain capabilities
         }
         break;
         
       case 20: // AI Team Coordination (GNT-6)
         // Multiple AI systems working together with higher success rates
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 250; // Premium for multi-agent systems (reduced from 400)
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0); // Enterprise demand for reliable systems
+          state.revenue.baseApiRate += 300; // Premium for multi-agent systems
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.25, 3.0);
         }
         if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 15; // Better chatbot through verification
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.15, 3.0);
+          state.revenue.monthlyFee += 15; // Better chatbot through coordination
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.20, 3.0);
         }
-        // Multi-agent systems enhance algorithm coordination but require more compute
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.25); // Increased from 1.22 to match GNT-6 significance
-        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.20); // Increased from 1.15
-        // Multi-agent coordination increases compute usage
-        state.computeCapacity.used = Math.floor(state.computeCapacity.used * 1.3); // 30% increase in compute usage
+        // Multi-agent systems enhance algorithm coordination
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
+        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.25);
         break;
         
       case 21: // Pocket-Sized AI (GNT-5)
         // Edge AI reduces cloud costs and improves responsiveness
         if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
           state.revenue.monthlyFee += 12; // Privacy and speed premium
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.25, 3.0); // Privacy-focused adoption
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.25, 3.0);
         }
         if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.15, 3.0); // Edge deployment appeal
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.18, 3.0);
         }
-        // Edge AI improves algorithm efficiency and reduces compute load
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.16);
-        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.20); // More efficient inference
-        // Simulated cloud cost reduction through decreased compute usage
-        state.computeCapacity.used = Math.max(0, Math.floor(state.computeCapacity.used * 0.80)); // 20% reduction
+        // Edge AI improves algorithm efficiency
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
+        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.15); // More efficient inference
         break;
         
       default:

@@ -249,6 +249,8 @@ export interface GameStateType {
     fewShotTrainingBonus: boolean; // Whether few-shot learning training cost reduction has been applied
     selfImprovementTrainingBonus: boolean; // Whether self-improvement training cost reduction has been applied
     verifiedSelfImprovementBonus: boolean; // Whether verified self-improvement training cost reduction has been applied
+    unsupervisedPretrainingBonus: boolean; // Whether unsupervised pretraining bonus has been applied
+    pocketAiConstraints: boolean; // Whether pocket AI constraints have been applied
   };
   
   // Interactive Tutorial System
@@ -755,7 +757,9 @@ export const initialGameState: GameStateType = {
     // Breakthrough effect flags (prevent duplicate applications)
     fewShotTrainingBonus: false, // Whether few-shot learning training cost reduction has been applied
     selfImprovementTrainingBonus: false, // Whether self-improvement training cost reduction has been applied
-    verifiedSelfImprovementBonus: false // Whether verified self-improvement training cost reduction has been applied
+    verifiedSelfImprovementBonus: false, // Whether verified self-improvement training cost reduction has been applied
+    unsupervisedPretrainingBonus: false, // Whether unsupervised pretraining bonus has been applied
+    pocketAiConstraints: false // Whether pocket AI constraints have been applied
   },
   
   // Breakthroughs - Organized by AI eras
