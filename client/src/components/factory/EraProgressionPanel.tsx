@@ -261,74 +261,8 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
         </div>
       </div>
       
-      {/* Breakthroughs Section */}
-      <div className="mb-4">
-        <h3 className="text-md font-medium mb-2 flex items-center">
-          <CheckCircleIcon className="h-4 w-4 mr-1 text-green-400" />
-          Current Era Breakthroughs
-        </h3>
-        
-        <div className="space-y-2">
-          {currentEraBreakthroughs.length > 0 ? (
-            currentEraBreakthroughs.map(breakthrough => (
-              <div 
-                key={breakthrough.id}
-                className={`flex items-center p-2 rounded-md ${
-                  breakthrough.unlocked ? 'bg-green-900/20' : 'bg-gray-700'
-                }`}
-              >
-                <div className="mr-3">
-                  {breakthrough.unlocked ? (
-                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <LockIcon className="h-5 w-5 text-gray-500" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <EducationalTooltip
-                    content={
-                      <div className="space-y-2">
-                        <p className="font-bold">{breakthrough.name}</p>
-                        <p>{breakthrough.description}</p>
-                        {breakthrough.realWorldParallel && (
-                          <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                            <span className="font-semibold">Real-world parallel:</span> {breakthrough.realWorldParallel}
-                          </p>
-                        )}
-                      </div>
-                    }
-                    resourceColor="green-400"
-                  >
-                    <h4 className="text-sm font-medium">{breakthrough.name}</h4>
-                  </EducationalTooltip>
-                  <div className="flex space-x-2 mt-1">
-                    {Object.entries(breakthrough.requiredLevels).map(([resource, level]) => (
-                      <Badge 
-                        key={resource} 
-                        variant="outline" 
-                        className={`text-xs ${
-                          levels[resource as keyof typeof levels] >= level 
-                            ? 'text-green-400 border-green-400' 
-                            : 'text-gray-400 border-gray-400'
-                        }`}
-                      >
-                        {resource}: {level}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-sm text-gray-400 italic p-2">
-              No remaining breakthroughs in this era.
-            </div>
-          )}
-        </div>
-      </div>
-      
       {/* Next Era Requirements */}
-      <div>
+      <div className="mb-4">
         <h3 className="text-md font-medium mb-2 flex items-center">
           <MapPinIcon className="h-4 w-4 mr-1 text-blue-400" />
           {nextEra} Requirements
@@ -394,6 +328,72 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
           <div className="text-xs text-gray-400">
             Next Era Breakthroughs: {nextEraBreakthroughs.filter(b => b.unlocked).length}/{nextEraBreakthroughs.length}
           </div>
+        </div>
+      </div>
+      
+      {/* Breakthroughs Section */}
+      <div>
+        <h3 className="text-md font-medium mb-2 flex items-center">
+          <CheckCircleIcon className="h-4 w-4 mr-1 text-green-400" />
+          Current Era Breakthroughs
+        </h3>
+        
+        <div className="space-y-2">
+          {currentEraBreakthroughs.length > 0 ? (
+            currentEraBreakthroughs.map(breakthrough => (
+              <div 
+                key={breakthrough.id}
+                className={`flex items-center p-2 rounded-md ${
+                  breakthrough.unlocked ? 'bg-green-900/20' : 'bg-gray-700'
+                }`}
+              >
+                <div className="mr-3">
+                  {breakthrough.unlocked ? (
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <LockIcon className="h-5 w-5 text-gray-500" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <EducationalTooltip
+                    content={
+                      <div className="space-y-2">
+                        <p className="font-bold">{breakthrough.name}</p>
+                        <p>{breakthrough.description}</p>
+                        {breakthrough.realWorldParallel && (
+                          <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                            <span className="font-semibold">Real-world parallel:</span> {breakthrough.realWorldParallel}
+                          </p>
+                        )}
+                      </div>
+                    }
+                    resourceColor="green-400"
+                  >
+                    <h4 className="text-sm font-medium">{breakthrough.name}</h4>
+                  </EducationalTooltip>
+                  <div className="flex space-x-2 mt-1">
+                    {Object.entries(breakthrough.requiredLevels).map(([resource, level]) => (
+                      <Badge 
+                        key={resource} 
+                        variant="outline" 
+                        className={`text-xs ${
+                          levels[resource as keyof typeof levels] >= level 
+                            ? 'text-green-400 border-green-400' 
+                            : 'text-gray-400 border-gray-400'
+                        }`}
+                      >
+                        {resource}: {level}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-gray-400 italic p-2">
+              No remaining breakthroughs in this era.
+            </div>
+          )}
         </div>
       </div>
     </div>
