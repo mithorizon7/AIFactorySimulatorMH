@@ -108,6 +108,37 @@ export default function DashboardContent({
           gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
         ) * 86400;
         return rate > 0 ? Math.ceil((gameState.agiThreshold - gameState.intelligence) / rate) : 999;
+      })(),
+      
+      // Critical Financial Intelligence
+      netCashFlow: (() => {
+        const totalRevenue = (
+          gameState.services.api.active ? gameState.services.api.monthlyRevenue * 30 : 0
+        ) + (
+          gameState.services.chatbot.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0
+        );
+        const totalCosts = (
+          gameState.computeCapacity.maxCapacity * 50 + // Infrastructure costs
+          gameState.levels.compute * 1000 + // Operational costs
+          gameState.levels.data * 800 +
+          gameState.levels.algorithm * 600
+        );
+        return totalRevenue - totalCosts;
+      })(),
+      cashRunwayDays: (() => {
+        const totalRevenue = (
+          gameState.services.api.active ? gameState.services.api.monthlyRevenue * 30 : 0
+        ) + (
+          gameState.services.chatbot.active ? gameState.services.chatbot.monthlyRevenue * 30 : 0
+        );
+        const totalCosts = (
+          gameState.computeCapacity.maxCapacity * 50 + // Infrastructure costs
+          gameState.levels.compute * 1000 + // Operational costs
+          gameState.levels.data * 800 +
+          gameState.levels.algorithm * 600
+        );
+        const netCashFlow = totalRevenue - totalCosts;
+        return netCashFlow >= 0 ? 999 : Math.max(0, Math.floor(gameState.money / Math.abs(netCashFlow)));
       })()
     };
     
@@ -178,6 +209,21 @@ export default function DashboardContent({
         urgent: true,
         strategies: ["Expand Compute"],
         onClick: () => { setActiveTab('resources'); handleNavigateToResource('compute'); }
+      });
+    }
+    
+    if (analysis.cashCrisis) {
+      actions.unshift({
+        priority: 0,
+        action: "URGENT: Cash Crisis",
+        description: `${metrics.cashRunwayDays} days of funding left with $${Math.round(Math.abs(metrics.netCashFlow)).toLocaleString()}/day burn rate`,
+        educational: "Negative cash flow means imminent bankruptcy. Launch revenue services immediately or seek emergency funding to avoid game over",
+        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+        color: "border-red-500/50 bg-red-900/30",
+        buttonColor: "bg-red-600 hover:bg-red-700",
+        urgent: true,
+        strategies: ["Launch Services", "Emergency Funding"],
+        onClick: () => setActiveTab('economy')
       });
     }
     
