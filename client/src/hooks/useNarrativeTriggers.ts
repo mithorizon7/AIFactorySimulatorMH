@@ -207,7 +207,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
         context: narrative.API_AUTO_ENABLE_SUGGESTION.context,
         timestamp: Date.now(),
         priority: 'high',
-        category: 'guidance'
+        category: 'advice'
       });
     }
 

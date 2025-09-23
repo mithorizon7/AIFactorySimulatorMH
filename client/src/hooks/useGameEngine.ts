@@ -1714,17 +1714,7 @@ export function useGameEngine() {
     };
   }, [isRunning]);
 
-  // Check if player has reached AGI threshold
-  useEffect(() => {
-    if (gameState.intelligence >= gameState.agiThreshold && isRunning) {
-      setIsRunning(false);
-      toast({
-        title: "Victory! AGI Achieved",
-        description: `Congratulations! You've developed AGI in ${formattedTime}! Your time has been recorded.`,
-        duration: 8000,
-      });
-    }
-  }, [gameState.intelligence, isRunning, formattedTime]);
+  // AGI achievement is handled by AIFactory.tsx to avoid conflicts
 
   // Additional money allocation functions for enabling inputs
   const allocateMoneyToElectricity = () => {
