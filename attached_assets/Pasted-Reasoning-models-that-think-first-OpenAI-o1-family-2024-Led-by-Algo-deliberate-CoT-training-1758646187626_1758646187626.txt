@@ -1,0 +1,60 @@
+Reasoning models that “think first” (OpenAI o1 family, 2024)
+* Led by: Algo (deliberate/CoT training + RL), Compute (more inference “thinking” tokens), Data (curated reasoning traces).
+* Why: Better multi-step problem solving; more predictable chain-of-thought internals.
+* Game effect: Add a toggle “Deliberate Inference”: task success +8–15 pp on math/code/logic; inference cost +40–120%; unlocks “Verifier” (self-consistency & tool checks) for error rate −30%.
+* Popup: “This model pauses to think—costs more, fails less on hard problems.”
+* Tie-in: OpenAI o1 launches. OpenAI+1
+
+
+Reinforcement-Learning Renaissance for LLMs (2024–2026)
+* What led to it (C/D/A): Algorithms (RL training for reasoning vs. only SFT/DPO), Data (AI/auto-generated curricula & verifiable evaluators), Compute (more “thinking” tokens + RL steps).
+* Why it matters: Labs show that RL—beyond classic RLHF—can incentivize multi-step reasoning skills themselves (OpenAI’s o1; DeepSeek-R1’s pure-RL training). OpenAI+1
+* Game effect: Add toggle “Reasoning-RL Training Loop.” Requires an Evaluator track (unit tests/verifiers). Effects: hard-task success +10–15 pp, eval pass-rate +20%; costs: training compute +20–30%, inference +30–80% if “deliberate thinking” is enabled; risk: reward-hacking unless Verifier/Audit is funded. OpenAI+1
+
+
+Blackwell-class GPUs & FP4 inference (2025 roll-out)
+* Led by: Compute (2× attention accel; FP4), Algo (Transformer Engine improvements), Data (bigger batches).
+* Why: Major cost/time drop for training & serving; lets you hold bigger contexts/models in memory.
+* Game effect: When the calendar hits 2025Q2, auto-unlock “Blackwell Upgrade”: training time −35%, inference cost −30%, context limit +50%, but capex spike +25% (HBM3E supply).
+* Popup: “New silicon = more tokens, faster loops. Budget for HBM.”
+* Tie-in: NVIDIA Blackwell/GB200; HBM3E ramp. NVIDIA Newsroom+2NVIDIA+2
+
+
+Synthetic-data engines (quality-controlled) (2025)
+* Led by: Data (curation, filtering, self-play), Algo (weak-to-strong, judges), Compute (cheap generation at scale).
+* Why: Human web text is finite; quality-controlled synthetic and “refined” data extend scaling.
+* Game effect: Add “Data Engine”: once you invest in “Quality Filters” and “Judge-in-the-loop,” pretrain tokens per dollar +60%, performance +3–5 pp on target domains; risk slider: “model collapse” if quality guardrail underfunded.
+* Popup: “Don’t just scrape—manufacture excellent data, then prune ruthlessly.”
+* Tie-in: Surveys on LLM-synthetic data; weak-to-strong; industry reports on data shortage. Business Insider+3ACL Anthology+3arXiv+3
+
+
+Multi-agent tool ecosystems with verifiers (2025–2026)
+* Led by: Algo (ReAct, ToT, Reflexion + LLM-as-judge), Data (feedback traces), Compute (orchestration).
+* Why: Reliability jumps when agents plan, call tools, debate, and verify.
+* Game effect: Add “Agent Orchestrator”: workflow success +20 pp on structured enterprise tasks; latency +30%unless you buy “Spec Decode Accelerator”; customer “SLA rebate risk −50%.”
+* Popup: “Plan, act, check. Teams of AIs with a judge catch more errors.”
+* Tie-in: ReAct; Tree-of-Thought; Reflexion; LLM-as-judge. NeurIPS Papers+3arXiv+3arXiv+3
+
+
+Breakthrough — Small, Very Efficient On-Device Intelligence (SLMs + NPUs)
+Plain English Tiny but capable models (1–7B class) now run on phones/laptops with good reasoning/tool-use for everyday tasks. They’re cheap, private, and fast, and can personalize via adapters—sometimes beating much larger models on focused tasks.
+What led to it (C/D/A)
+* Compute: Rapid NPU gains (Apple/Qualcomm), memory-efficient kernels, 3–4-bit quantization.
+* Data: High-quality, curated small-model corpora; distilled traces from larger models.
+* Algorithms: PEFT/LoRA, distillation, speculative decoding, KV-cache quant; small-model scaling tactics (e.g., Phi-style curated data).
+Why it matters
+* Latency & privacy: On-device responses; data stays local (paired with Private Cloud Compute).
+* Cost: Offloads traffic from the cloud; edge-first product design (notifications, rewriting, offline assist).
+* Personalization: Per-user adapters without retraining the base.
+Game effect
+* Unlock Edge Intelligence Tier:
+    * Personal task latency −40%, cloud inference cost −20% (traffic offload).
+    * Enterprise conversion +10% in regulated sectors (privacy win).
+    * Add Adapter Mesh (optional): retention +15%, time-to-specialize −50%, serving overhead +5%.
+    * Constraint: Context cap lower than flagship cloud LLM (unless user enables “Hybrid Compose,” which adds +5% latency to call cloud for hard cases).
+Popup copy example (choose/build your own) “Tiny brains, huge impact: fast, private, and good enough for daily work—then tap the cloud when a heavy lift appears.”
+Reality anchors Apple Apple Intelligence (on-device + Private Cloud Compute); Llama 3.2 (1B/3B edge-sized); Microsoft Phi-3 small models; Qwen open-weights across tiny sizes. Qwen+6Apple Machine Learning Research+6Apple Machine Learning Research+6
+
+Where to slot them in your eras
+* Diffusion/World-Sim Video: becomes available now → 2025, and gates/boosts your World-Model Training and Physical Agents lines.
+* Edge SLMs: 2024 → 2026 rollout, unlocking your Edge Tier + Adapter Mesh + Federated Updates path (continuous personalization).
