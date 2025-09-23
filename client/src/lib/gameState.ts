@@ -248,6 +248,7 @@ export interface GameStateType {
     // Breakthrough effect flags (prevent duplicate applications)
     fewShotTrainingBonus: boolean; // Whether few-shot learning training cost reduction has been applied
     selfImprovementTrainingBonus: boolean; // Whether self-improvement training cost reduction has been applied
+    verifiedSelfImprovementBonus: boolean; // Whether verified self-improvement training cost reduction has been applied
   };
   
   // Interactive Tutorial System
@@ -753,7 +754,8 @@ export const initialGameState: GameStateType = {
     
     // Breakthrough effect flags (prevent duplicate applications)
     fewShotTrainingBonus: false, // Whether few-shot learning training cost reduction has been applied
-    selfImprovementTrainingBonus: false // Whether self-improvement training cost reduction has been applied
+    selfImprovementTrainingBonus: false, // Whether self-improvement training cost reduction has been applied
+    verifiedSelfImprovementBonus: false // Whether verified self-improvement training cost reduction has been applied
   },
   
   // Breakthroughs - Organized by AI eras
@@ -861,6 +863,18 @@ export const initialGameState: GameStateType = {
       gameEffect: "Enables self-improvement bonuses and reduces future training costs by additional 10%",
       contributingFactors: "Highly advanced algorithm research (Level 6) unlocks recursive self-improvement capabilities"
     },
+    {
+      id: 11,
+      name: "Continuous Learning & Live Personalization",
+      description: "Your AI can now learn and adapt from every interaction while protecting user privacy!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 5 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel: "Future AI systems will continuously learn from user interactions using federated learning and adapter modules, personalizing without compromising privacy.",
+      gameEffect: "Improves customer retention by 15% and enables adaptive pricing based on usage patterns",
+      contributingFactors: "Combination of advanced algorithms (Level 5) and high-quality data systems (Level 5) enables privacy-preserving continuous learning"
+    },
     
     // GNT-6 Era Breakthroughs (Late Phase II - Future)
     {
@@ -875,6 +889,42 @@ export const initialGameState: GameStateType = {
       gameEffect: "Unlocks advanced tool-using API capabilities and increases API rate by $800",
       contributingFactors: "Combination of advanced algorithms (Level 7) and massive compute power (Level 6) enables sophisticated tool usage"
     },
+    {
+      id: 12,
+      name: "Neuro-Symbolic Reasoning",
+      description: "Your AI can now combine intuitive understanding with formal logic and mathematical proofs!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6, data: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel: "Hybrid AI systems that combine neural networks with symbolic reasoning can provide verified, provable results for critical applications.",
+      gameEffect: "Reduces service defect rates by 60% and unlocks premium verified reasoning services",
+      contributingFactors: "Advanced algorithms (Level 6) combined with structured data systems (Level 6) enables formal verification capabilities"
+    },
+    {
+      id: 13,
+      name: "World Models for Planning",
+      description: "Your AI can now simulate reality to test ideas before taking action in the real world!",
+      unlocked: false,
+      requiredLevels: { compute: 6, data: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel: "AI systems that learn world models can plan and test strategies in simulation before acting, opening applications in robotics and autonomous systems.",
+      gameEffect: "Reduces research experiment time by 40% and unlocks robotics market opportunities",
+      contributingFactors: "Massive compute infrastructure (Level 6) and diverse data sources (Level 6) enable complex world simulation"
+    },
+    {
+      id: 14,
+      name: "Verified Self-Improvement",
+      description: "Your AI can now safely improve itself with mathematical guarantees that changes are beneficial!",
+      unlocked: false,
+      requiredLevels: { algorithm: 7, compute: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel: "Self-improving AI systems with formal verification ensure that each upgrade is provably better, preventing AI systems from degrading themselves.",
+      gameEffect: "Enables compounding 5% efficiency improvements and additional 15% training cost reduction",
+      contributingFactors: "Cutting-edge algorithms (Level 7) and massive compute (Level 6) enable verified recursive self-improvement"
+    },
     
     // GNT-7 Era Breakthroughs (Final Phase - AGI Threshold)
     {
@@ -888,6 +938,18 @@ export const initialGameState: GameStateType = {
       realWorldParallel: "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence.",
       gameEffect: "Achieves true AGI capabilities with massive revenue potential and premium AGI API services",
       contributingFactors: "Perfect combination of cutting-edge algorithms (Level 8), high-quality data (Level 7), and massive compute infrastructure (Level 7) enables general problem solving"
+    },
+    {
+      id: 15,
+      name: "Agentic Autonomy & Orchestration",
+      description: "Your AI can now coordinate teams of specialized AI agents to tackle complex multi-step challenges!",
+      unlocked: false,
+      requiredLevels: { algorithm: 8, compute: 7, data: 7 },
+      type: "combined",
+      era: Era.GNT7,
+      realWorldParallel: "Advanced AI orchestration systems can manage teams of specialized AI agents, each with different capabilities, working together on complex real-world problems.",
+      gameEffect: "Unlocks autonomous workflow systems and premium enterprise orchestration services",
+      contributingFactors: "Perfect integration of advanced algorithms (Level 8), massive compute (Level 7), and comprehensive data (Level 7) enables multi-agent coordination"
     }
   ],
   

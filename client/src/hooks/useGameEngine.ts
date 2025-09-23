@@ -375,6 +375,11 @@ export function useGameEngine() {
       8: 70,   // Self-Improvement Capabilities
       9: 80,   // Advanced Tool Use
       10: 120, // General Problem Solving (AGI)
+      11: 60,  // Continuous Learning & Live Personalization
+      12: 90,  // Neuro-Symbolic Reasoning
+      13: 95,  // World Models for Planning
+      14: 105, // Verified Self-Improvement
+      15: 110, // Agentic Autonomy & Orchestration
     };
     
     state.intelligence += intelligenceBonuses[breakthroughId as keyof typeof intelligenceBonuses] || 15;
@@ -519,6 +524,80 @@ export function useGameEngine() {
         state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.40);
         state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.40);
         state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.40);
+        break;
+        
+      case 11: // Continuous Learning & Live Personalization (GNT-5)
+        // Improves customer retention and enables adaptive services
+        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.15, 3.0); // 15% retention boost
+          state.revenue.monthlyFee += 8; // Personalization premium
+        }
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.12, 3.0); // Adaptive API pricing
+        }
+        // Improves data-to-algorithm efficiency through continuous learning
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.18);
+        break;
+        
+      case 12: // Neuro-Symbolic Reasoning (GNT-6)
+        // Reduces defect rates and unlocks premium verified services
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 600; // Premium for verified reasoning
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.25, 3.0); // Formal verification appeals to enterprises
+        }
+        // Symbolic reasoning enhances algorithm-to-intelligence conversion
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.22);
+        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.15); // Structured data becomes more valuable
+        break;
+        
+      case 13: // World Models for Planning (GNT-6)
+        // Reduces experiment time and opens new market opportunities
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 450; // Simulation and planning services
+        }
+        // World models require and enhance compute-data synergy
+        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.20);
+        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.20);
+        // Planning capabilities boost intelligence efficiency
+        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.18);
+        break;
+        
+      case 14: // Verified Self-Improvement (GNT-6)
+        // Enables compounding efficiency and additional training cost reduction
+        if (!state.narrativeFlags.verifiedSelfImprovementBonus) {
+          state.narrativeFlags.verifiedSelfImprovementBonus = true;
+          // Apply additional 15% reduction to remaining training runs only once
+          Object.keys(state.training.runs).forEach(era => {
+            const typedEra = era as keyof typeof state.training.runs;
+            const run = state.training.runs[typedEra];
+            if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
+              run.computeRequired = Math.floor(run.computeRequired * 0.85); // Additional 15% reduction
+              run.moneyCost = Math.floor(run.moneyCost * 0.85); // Additional 15% reduction
+            }
+          });
+        }
+        // Verified self-improvement enhances all algorithm bonuses
+        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.25);
+        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.25);
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.35);
+        break;
+        
+      case 15: // Agentic Autonomy & Orchestration (GNT-7)
+        // Unlocks autonomous workflow systems and premium enterprise services
+        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
+          state.revenue.baseApiRate += 1200; // Premium enterprise orchestration
+          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.80, 3.0); // High enterprise demand
+        }
+        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
+          state.revenue.monthlyFee += 30; // Autonomous assistant capabilities
+          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.60, 3.0);
+        }
+        // Agentic systems enhance cross-resource coordination
+        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.20);
+        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.20);
+        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.20);
+        // Strong intelligence boosts from orchestration capabilities
+        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
         break;
         
       default:
