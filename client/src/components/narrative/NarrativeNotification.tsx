@@ -55,15 +55,15 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
   const getBackgroundColor = () => {
     switch (message.category) {
       case 'warning':
-        return 'bg-orange-900/20';
+        return 'bg-orange-900/90';
       case 'achievement':
-        return 'bg-yellow-900/20';
+        return 'bg-yellow-900/90';
       case 'breakthrough':
-        return 'bg-purple-900/20';
+        return 'bg-purple-900/90';
       case 'advice':
-        return 'bg-blue-900/20';
+        return 'bg-blue-900/90';
       default:
-        return 'bg-gray-900/20';
+        return 'bg-gray-900/90';
     }
   };
 

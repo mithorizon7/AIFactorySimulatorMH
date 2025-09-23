@@ -750,11 +750,12 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       <div className="absolute bottom-6 left-6 right-6">
         <div className="text-sm text-gray-300 mb-2">Resource synergy effects:</div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs min-h-[120px]">
           {/* Compute Effects Group */}
-          <div className="space-y-1">
-            <div className="text-blue-400 font-medium mb-1">Compute Effects:</div>
-            <EducationalTooltip
+          <div className="space-y-1 flex flex-col h-full">
+            <div className="text-blue-400 font-medium mb-2">Compute Effects:</div>
+            <div className="flex-1 space-y-1">
+              <EducationalTooltip
               content={
                 <div className="space-y-1">
                   <p className="font-medium">{synergyEffects.computeToData.title}</p>
@@ -802,12 +803,14 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
                 → Intelligence: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
+            </div>
           </div>
           
           {/* Data Effects Group */}
-          <div className="space-y-1">
-            <div className="text-green-400 font-medium mb-1">Data Effects:</div>
-            <EducationalTooltip
+          <div className="space-y-1 flex flex-col h-full">
+            <div className="text-green-400 font-medium mb-2">Data Effects:</div>
+            <div className="flex-1 space-y-1">
+              <EducationalTooltip
               content={
                 <div className="space-y-1">
                   <p className="font-medium">{synergyEffects.dataToCompute.title}</p>
@@ -857,12 +860,14 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
                 → Intelligence: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
+            </div>
           </div>
           
           {/* Algorithm Effects Group */}
-          <div className="space-y-1">
-            <div className="text-purple-400 font-medium mb-1">Algorithm Effects:</div>
-            <EducationalTooltip
+          <div className="space-y-1 flex flex-col h-full">
+            <div className="text-purple-400 font-medium mb-2">Algorithm Effects:</div>
+            <div className="flex-1 space-y-1">
+              <EducationalTooltip
               content={
                 <div className="space-y-1">
                   <p className="font-medium">{synergyEffects.algorithmToCompute.title}</p>
@@ -912,6 +917,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
                 → Intelligence: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
+            </div>
           </div>
         </div>
       </div>
