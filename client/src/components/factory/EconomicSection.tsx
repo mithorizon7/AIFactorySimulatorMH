@@ -239,6 +239,128 @@ export default function EconomicSection({
         </div>
       </div>
       
+      {/* Revenue Streams */}
+      <div className="bg-gray-700 rounded-lg p-4 mb-5">
+        <h3 className="text-lg font-medium mb-3">Revenue Streams</h3>
+        
+        <div className="space-y-3">
+          {/* API Services (B2B) */}
+          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-blue-400 mr-3"></div>
+              <div>
+                <h4 className="text-sm font-medium text-blue-300">API Services (B2B)</h4>
+                <ResourceTooltip 
+                  content={
+                    <div className="space-y-3">
+                      <p className="text-sm">Monetize the raw, foundational power of your AI model as a utility for other businesses. This isn't a consumer product—it's infrastructure.</p>
+                      
+                      <div className="p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                        <h5 className="text-blue-300 font-semibold text-sm mb-2">Real World Example</h5>
+                        <p className="text-sm text-blue-100 leading-relaxed">OpenAI's API, Anthropic's Claude API, and Amazon Web Services (AWS) all follow this model—selling access to powerful infrastructure that other companies build upon.</p>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                        <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                        <p className="text-sm text-gray-200 leading-relaxed">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
+                      </div>
+                    </div>
+                  }
+                  resourceColor="blue-400"
+                >
+                  <span className="ml-1 text-xs text-blue-300 underline cursor-help">ⓘ</span>
+                </ResourceTooltip>
+              </div>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-blue-300">${formatCurrency(revenue.b2b)}/tick</span>
+              {revenue.apiAvailable && (
+                <div className="text-xs text-gray-400 mt-1">
+                  Developer Tools Level: {revenue.developerToolsLevel}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Subscriptions (B2C) */}
+          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-purple-400 mr-3"></div>
+              <div>
+                <h4 className="text-sm font-medium text-purple-300">Subscriptions (B2C)</h4>
+                <ResourceTooltip 
+                  content={
+                    <div className="space-y-3">
+                      <p className="text-sm">Direct-to-consumer AI services offering accessible, user-friendly AI capabilities to individual users through subscription plans.</p>
+                      
+                      <div className="p-3 bg-purple-900/30 border border-purple-700/50 rounded-lg">
+                        <h5 className="text-purple-300 font-semibold text-sm mb-2">Real World Example</h5>
+                        <p className="text-sm text-purple-100 leading-relaxed">ChatGPT Plus is the quintessential example, along with subscription-based AI tools like Midjourney that focus on delivering consistent, reliable consumer experiences.</p>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                        <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                        <p className="text-sm text-gray-200 leading-relaxed">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
+                      </div>
+                    </div>
+                  }
+                  resourceColor="purple-400"
+                >
+                  <span className="ml-1 text-xs text-purple-300 underline cursor-help">ⓘ</span>
+                </ResourceTooltip>
+              </div>
+            </div>
+            <div>
+              {revenue.chatbotAvailable ? (
+                <span className="text-sm font-medium text-purple-300">${formatCurrency(revenue.b2c)}/tick</span>
+              ) : (
+                <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
+                  Unlocks in GNT-4 Era
+                </span>
+              )}
+              {revenue.chatbotAvailable && (
+                <div className="text-xs text-gray-400 mt-1">
+                  Active Subscribers: {revenue.subscribers.toLocaleString()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Investor Funding */}
+          <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+            <div className="flex items-center">
+              <div className="w-3 h-3 rounded-full bg-amber-400 mr-3"></div>
+              <div>
+                <h4 className="text-sm font-medium text-amber-300">Investor Funding</h4>
+                <ResourceTooltip 
+                  content={
+                    <div className="space-y-3">
+                      <p className="text-sm">Strategic investment from venture capital firms and institutional investors based on your AI's demonstrated capabilities and market potential.</p>
+                      
+                      <div className="p-3 bg-amber-900/30 border border-amber-700/50 rounded-lg">
+                        <h5 className="text-amber-300 font-semibold text-sm mb-2">Real World Example</h5>
+                        <p className="text-sm text-amber-100 leading-relaxed">OpenAI's $13B funding from Microsoft, Anthropic's $4B from Amazon, and other major AI investments that fuel massive compute infrastructure and research.</p>
+                      </div>
+                      
+                      <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                        <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
+                        <p className="text-sm text-gray-200 leading-relaxed">Depends on breakthrough achievements, regulatory compliance, and rapid intelligence growth. Show consistent progress to attract larger rounds.</p>
+                      </div>
+                    </div>
+                  }
+                  resourceColor="amber-400"
+                >
+                  <span className="ml-1 text-xs text-amber-300 underline cursor-help">ⓘ</span>
+                </ResourceTooltip>
+              </div>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-amber-300">${formatCurrency(revenue.investors)} total</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Investment Milestones */}
       <div className="mb-5">
         <InvestmentMilestones gameState={gameState} />
