@@ -2056,6 +2056,66 @@ export function useGameEngine() {
       });
     }
   };
+
+// Platform development functions
+
+// Function to build the API platform (required before enabling API service)
+const buildApiPlatform = () => {
+  const buildCost = gameState.revenue.apiPlatformCost;
+  
+  if (gameState.money >= buildCost) {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.money -= buildCost;
+      newState.revenue.apiPlatformBuilt = true;
+      
+      // Check for breakthroughs
+      newState.breakthroughs = checkBreakthroughs(newState);
+      
+      return newState;
+    });
+    
+    toast({
+      title: "API Platform Built!",
+      description: "Your API platform is now ready. You can enable API services to start earning B2B revenue.",
+    });
+  } else {
+    toast({
+      title: "Not enough money",
+      description: `You need at least $${buildCost.toLocaleString()} to build the API platform.`,
+      variant: "destructive",
+    });
+  }
+};
+
+// Function to build the chatbot platform (required before enabling chatbot service)
+const buildChatbotPlatform = () => {
+  const buildCost = gameState.revenue.chatbotPlatformCost;
+  
+  if (gameState.money >= buildCost) {
+    setGameState(prevState => {
+      const newState = { ...prevState };
+      newState.money -= buildCost;
+      newState.revenue.chatbotPlatformBuilt = true;
+      
+      // Check for breakthroughs
+      newState.breakthroughs = checkBreakthroughs(newState);
+      
+      return newState;
+    });
+    
+    toast({
+      title: "Chatbot Platform Built!",
+      description: "Your chatbot platform is now ready. You can enable chatbot services to start earning B2C revenue.",
+    });
+  } else {
+    toast({
+      title: "Not enough money",
+      description: `You need at least $${buildCost.toLocaleString()} to build the chatbot platform.`,
+      variant: "destructive",
+    });
+  }
+};
   
   // Function to run an advertising campaign (instantly adds subscribers)
   const runAdvertisingCampaign = () => {
@@ -2135,6 +2195,9 @@ export function useGameEngine() {
     improveDeveloperTools,
     improveChatbot,
     runAdvertisingCampaign,
+    // Platform development functions
+    buildApiPlatform,
+    buildChatbotPlatform,
     timeElapsed,
     formattedTime
   };
