@@ -1889,6 +1889,16 @@ export function useGameEngine() {
 
   // Revenue service management functions
   const toggleApiService = () => {
+    // Check if API platform has been built
+    if (!gameState.revenue.apiPlatformBuilt && !gameState.revenue.apiEnabled) {
+      toast({
+        title: "Platform Required",
+        description: "You must build the API platform first before enabling API services.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setGameState(prevState => {
       const newState = { ...prevState };
       newState.revenue.apiEnabled = !newState.revenue.apiEnabled;
@@ -1910,6 +1920,16 @@ export function useGameEngine() {
   };
   
   const toggleChatbotService = () => {
+    // Check if chatbot platform has been built
+    if (!gameState.revenue.chatbotPlatformBuilt && !gameState.revenue.chatbotEnabled) {
+      toast({
+        title: "Platform Required",
+        description: "You must build the chatbot platform first before enabling chatbot services.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setGameState(prevState => {
       const newState = { ...prevState };
       newState.revenue.chatbotEnabled = !newState.revenue.chatbotEnabled;
