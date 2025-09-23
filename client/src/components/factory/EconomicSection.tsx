@@ -12,7 +12,6 @@ interface EconomicSectionProps {
   gameState: GameStateType;
   toggleApiService: () => void;
   toggleChatbotService: () => void;
-  setApiRate: (rate: number) => void;
   setMonthlyFee: (fee: number) => void;
   improveDeveloperTools?: () => void;
   improveChatbot?: () => void;
@@ -25,7 +24,6 @@ export default function EconomicSection({
   gameState,
   toggleApiService,
   toggleChatbotService,
-  setApiRate,
   setMonthlyFee,
   improveDeveloperTools,
   improveChatbot,
@@ -35,20 +33,8 @@ export default function EconomicSection({
 }: EconomicSectionProps) {
   const { money, revenue } = gameState;
   
-  // Local state for API rate slider
-  const [tempApiRate, setTempApiRate] = useState(revenue.baseApiRate);
   // Local state for monthly fee slider
   const [tempMonthlyFee, setTempMonthlyFee] = useState(revenue.monthlyFee);
-  
-  // Handle API rate change
-  const handleApiRateChange = (value: number[]) => {
-    setTempApiRate(value[0]);
-  };
-  
-  // Apply API rate changes
-  const applyApiRateChanges = () => {
-    setApiRate(tempApiRate);
-  };
   
   // Handle monthly fee change
   const handleMonthlyFeeChange = (value: number[]) => {
@@ -528,30 +514,16 @@ export default function EconomicSection({
                 </div>
               </div>
               
-              {/* API Rate Control */}
+              {/* API Rate Display (Auto-Optimized) */}
               {revenue.apiEnabled && (
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400">API Rate:</span>
-                    <span className="text-xs text-blue-300">${formatCurrency(tempApiRate)}/tick</span>
+                    <span className="text-xs text-blue-300">${formatCurrency(revenue.baseApiRate)}/tick</span>
                   </div>
-                  <Slider
-                    value={[tempApiRate]}
-                    onValueChange={handleApiRateChange}
-                    min={500}
-                    max={5000}
-                    step={100}
-                    className="w-full"
-                    data-testid="slider-api-rate"
-                  />
-                  <Button
-                    onClick={applyApiRateChanges}
-                    size="sm"
-                    className="w-full"
-                    data-testid="button-apply-api-rate"
-                  >
-                    Apply Rate Change
-                  </Button>
+                  <div className="text-xs text-gray-500 text-center py-2 bg-gray-900/50 rounded border border-gray-700">
+                    💡 Auto-optimized based on market demand and developer adoption
+                  </div>
                 </div>
               )}
             </div>

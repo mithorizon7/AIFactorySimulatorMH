@@ -1118,6 +1118,36 @@ export function useGameEngine() {
     // Developer tools bonus: 5% per level
     const developerToolsBonus = newState.revenue.developerToolsLevel * 0.05;
     
+    // ===== Auto-Optimize API Rate Based on Market Conditions =====
+    if (newState.revenue.apiAvailable) {
+      // Base rate ranges from $500 to $5000
+      const minRate = 500;
+      const maxRate = 5000;
+      
+      // Market demand factor: More developers = higher rates possible
+      const marketDemandFactor = Math.min(2.0, 1 + (newState.revenue.developers / 1000)); // Caps at 2x for 1000+ developers
+      
+      // Service quality factor: Poor service = must reduce rates
+      const serviceQualityFactor = Math.max(0.5, 
+        newState.computeCapacity.used / newState.computeCapacity.maxCapacity < 0.9 ? 1.0 : 
+        newState.computeCapacity.used / newState.computeCapacity.maxCapacity < 0.95 ? 0.8 : 0.6
+      );
+      
+      // Developer tools factor: Better tools = can charge premium rates
+      const toolsQualityFactor = 1 + (newState.revenue.developerToolsLevel * 0.1); // 10% per level
+      
+      // Intelligence factor: Smarter AI = higher value
+      const intelligenceFactor = Math.min(2.0, 1 + (newState.intelligence / 500)); // Caps at 2x for 500+ intelligence
+      
+      // Calculate optimal rate
+      const optimalRate = Math.round(
+        minRate * marketDemandFactor * serviceQualityFactor * toolsQualityFactor * intelligenceFactor
+      );
+      
+      // Clamp to valid range and update
+      newState.revenue.baseApiRate = Math.max(minRate, Math.min(maxRate, optimalRate));
+    }
+    
     // Calculate revenue per developer (scales with API rate and tools)
     const revenuePerDeveloper = newState.revenue.baseApiRate * (1 + developerToolsBonus);
     

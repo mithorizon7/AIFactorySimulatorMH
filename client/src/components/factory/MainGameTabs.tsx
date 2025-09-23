@@ -33,7 +33,6 @@ interface MainGameTabsProps {
   // Revenue service functions
   toggleApiService: () => void;
   toggleChatbotService: () => void;
-  setApiRate: (rate: number) => void;
   setMonthlyFee: (fee: number) => void;
   // Revenue enhancement functions
   improveDeveloperTools?: () => void;
@@ -63,7 +62,6 @@ export default function MainGameTabs({
   // Revenue service functions
   toggleApiService,
   toggleChatbotService,
-  setApiRate,
   setMonthlyFee,
   // Revenue enhancement functions
   improveDeveloperTools,
@@ -363,7 +361,6 @@ export default function MainGameTabs({
             gameState={gameState}
             toggleApiService={function() { if (toggleApiService) toggleApiService(); }}
             toggleChatbotService={function() { if (toggleChatbotService) toggleChatbotService(); }}
-            setApiRate={function(rate: number) { if (setApiRate) setApiRate(rate); }}
             setMonthlyFee={function(fee: number) { if (setMonthlyFee) setMonthlyFee(fee); }}
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
