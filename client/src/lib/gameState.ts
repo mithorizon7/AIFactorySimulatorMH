@@ -950,6 +950,80 @@ export const initialGameState: GameStateType = {
       realWorldParallel: "Advanced AI orchestration systems can manage teams of specialized AI agents, each with different capabilities, working together on complex real-world problems.",
       gameEffect: "Unlocks autonomous workflow systems and premium enterprise orchestration services",
       contributingFactors: "Perfect integration of advanced algorithms (Level 8), massive compute (Level 7), and comprehensive data (Level 7) enables multi-agent coordination"
+    },
+    
+    // Additional Advanced Breakthroughs
+    {
+      id: 16,
+      name: "Chain-of-Thought Reasoning",
+      description: "Your AI now pauses to think step-by-step before answering, dramatically improving accuracy on complex problems!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, compute: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel: "Models like OpenAI's o1 use deliberate reasoning processes, taking time to think through problems step-by-step before providing answers, similar to how humans approach complex math or logic problems.",
+      gameEffect: "Improves API success rate by 12% and reduces error rates by 30%, but increases inference costs by 40%",
+      contributingFactors: "Advanced algorithms (Level 5) combined with sufficient compute power (Level 4) enables deliberate step-by-step reasoning processes"
+    },
+    {
+      id: 17,
+      name: "Reinforcement Learning Training",
+      description: "Your AI can now learn from trial and error, getting better at tasks through practice and feedback!",
+      unlocked: false,
+      requiredLevels: { algorithm: 4, data: 4 },
+      type: "combined",
+      era: Era.GNT4,
+      realWorldParallel: "Modern AI systems use reinforcement learning to improve reasoning abilities through practice, similar to how humans get better at skills through repetition and feedback.",
+      gameEffect: "Improves training success rate by 15% and enables adaptive learning, but increases training time by 25%",
+      contributingFactors: "Advanced algorithms (Level 4) combined with quality feedback data (Level 4) enables trial-and-error learning processes"
+    },
+    {
+      id: 18,
+      name: "Next-Generation Computing Hardware",
+      description: "Your servers now use cutting-edge chips that process AI calculations much faster and more efficiently!",
+      unlocked: false,
+      requiredLevels: { compute: 5 },
+      type: "compute",
+      era: Era.GNT5,
+      realWorldParallel: "Advanced GPU architectures like NVIDIA's Blackwell series provide massive speedups for AI training and inference, making AI development faster and more cost-effective.",
+      gameEffect: "Reduces training costs by 35%, inference costs by 30%, and increases compute capacity by 50%",
+      contributingFactors: "Massive compute infrastructure investment (Level 5) unlocks access to state-of-the-art hardware accelerators"
+    },
+    {
+      id: 19,
+      name: "AI-Generated Training Data",
+      description: "Your AI can now create its own high-quality training examples, extending beyond what's available on the internet!",
+      unlocked: false,
+      requiredLevels: { data: 5, algorithm: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel: "As the internet's text becomes limited, AI systems can generate synthetic training data that's carefully filtered and verified, extending the available knowledge for training.",
+      gameEffect: "Increases data production rate by 60% and improves data quality by 25%, enabling training on specialized domains",
+      contributingFactors: "High-quality data systems (Level 5) combined with advanced algorithms (Level 4) enables controlled synthetic data generation"
+    },
+    {
+      id: 20,
+      name: "AI Team Coordination",
+      description: "Multiple AI assistants can now work together, checking each other's work and solving problems as a team!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6, compute: 5 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel: "Multi-agent AI systems where different AIs specialize in planning, execution, and verification can achieve much higher success rates on complex tasks through collaboration.",
+      gameEffect: "Improves enterprise task success rate by 20% and reduces service errors by 50%, but increases compute usage by 30%",
+      contributingFactors: "Advanced algorithms (Level 6) and substantial compute resources (Level 5) enable coordination between multiple AI systems"
+    },
+    {
+      id: 21,
+      name: "Pocket-Sized AI",
+      description: "Powerful AI assistants now run directly on phones and laptops, providing instant responses while keeping data private!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel: "Small, efficient AI models can run on consumer devices like smartphones and laptops, providing fast, private AI assistance without sending data to the cloud.",
+      gameEffect: "Reduces cloud costs by 20%, improves response speed by 40%, and increases privacy-focused customer adoption by 25%",
+      contributingFactors: "Efficient algorithms (Level 5) combined with optimized data processing (Level 4) enables powerful AI to run on consumer devices"
     }
   ],
   
