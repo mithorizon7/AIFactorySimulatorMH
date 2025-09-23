@@ -196,6 +196,54 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
         howToImprove: "Requires Algorithm Level 8, Compute Level 7, and Data Level 7. Click on all three resource sections and maximize every upgrade. Multi-agent coordination requires the most sophisticated algorithms, massive compute for parallel agent operation, and comprehensive data across all specialist domains.",
         industryImpact: "Agentic autonomy enables AI to handle complex real-world projects that require diverse expertise and coordinated action. This breakthrough could automate entire workflows in research, engineering, business strategy, and other domains requiring multi-disciplinary collaboration.",
         resourceConnection: "Ultimate combined breakthrough requiring mastery of all three pillars to enable sophisticated multi-agent coordination and autonomous workflow management."
+      },
+      16: { // Chain-of-Thought Reasoning
+        title: "Chain-of-Thought Reasoning",
+        description: "AI systems that can think step-by-step through complex problems, showing their reasoning process before arriving at answers. This dramatically improves accuracy on logic, math, and complex reasoning tasks by mimicking how humans break down difficult problems.",
+        realWorldExample: "OpenAI's o1 models pause to think through problems systematically, like a student working through a math problem step-by-step on paper. For example, when asked 'If a train travels 60 mph for 2.5 hours, how far does it go?', the AI shows: Step 1: Speed = 60 mph, Step 2: Time = 2.5 hours, Step 3: Distance = Speed × Time = 60 × 2.5 = 150 miles.",
+        howToImprove: "Requires Algorithm Level 5 and Compute Level 4. Focus on maximizing Algorithm research for sophisticated reasoning capabilities, then upgrade Compute infrastructure to handle the increased processing demands of step-by-step thinking.",
+        industryImpact: "Chain-of-thought reasoning enables AI to tackle complex problems requiring multi-step analysis, from scientific research to legal reasoning to strategic planning. This breakthrough makes AI more reliable and explainable in high-stakes applications.",
+        resourceConnection: "Combined breakthrough leveraging advanced algorithms for reasoning logic and substantial compute power for deliberate thinking processes."
+      },
+      17: { // Reinforcement Learning Training
+        title: "Reinforcement Learning Training", 
+        description: "AI systems that learn through trial and error, improving their performance through practice and feedback. Like humans learning to play a sport or instrument, the AI gets better by trying different approaches and learning from successes and failures.",
+        realWorldExample: "AlphaGo defeated world champions by playing millions of games against itself, learning strategies no human had discovered. Similarly, modern AI uses reinforcement learning to improve reasoning by practicing on thousands of problems and learning from mistakes.",
+        howToImprove: "Requires Algorithm Level 4 and Data Level 4. Upgrade Algorithm research to develop sophisticated learning techniques, then enhance Data systems to provide rich feedback signals for the AI to learn from during practice sessions.",
+        industryImpact: "Reinforcement learning enables AI to improve continuously, making it ideal for dynamic environments like robotics, game playing, financial trading, and personalized recommendations where optimal strategies must be discovered through experience.",
+        resourceConnection: "Combined breakthrough using advanced algorithms for learning strategies and comprehensive data for providing learning feedback signals."
+      },
+      18: { // Next-Generation Computing Hardware
+        title: "Next-Generation Computing Hardware",
+        description: "Cutting-edge processors and accelerators specifically designed for AI calculations, providing massive speedups for training and running AI models. These specialized chips can perform AI operations hundreds of times faster than general-purpose processors.",
+        realWorldExample: "NVIDIA's latest GPU architectures like Blackwell and Hopper are specifically designed for AI, with features like transformer engines that accelerate language model training. A single modern AI chip can replace hundreds of older processors for AI workloads.",
+        howToImprove: "Requires Compute Level 5. Focus entirely on maximizing your Compute infrastructure investments, particularly in Hardware upgrades. Next-generation chips become available once you've demonstrated serious commitment to compute infrastructure.",
+        industryImpact: "Advanced AI hardware dramatically reduces the cost and time required for AI development, making previously impossible AI applications economically viable. This hardware enables real-time AI processing for autonomous vehicles, instant language translation, and large-scale AI deployment.",
+        resourceConnection: "Pure compute breakthrough that unlocks the hardware foundation needed for the most demanding AI applications."
+      },
+      19: { // AI-Generated Training Data
+        title: "AI-Generated Training Data",
+        description: "AI systems that can create their own high-quality training examples, extending far beyond what's available on the internet. As the web's text becomes exhausted, AI generates new synthetic data that's carefully filtered and verified for training even more advanced systems.",
+        realWorldExample: "When training data from the internet becomes limited, AI systems can generate millions of math problems, coding exercises, reasoning puzzles, and specialized domain content. This synthetic data is then filtered and verified to ensure quality, creating endless training opportunities.",
+        howToImprove: "Requires Data Level 5 and Algorithm Level 4. Maximize Data infrastructure to handle massive synthetic data generation and processing, then upgrade Algorithm capabilities to intelligently create and filter high-quality synthetic examples.",
+        industryImpact: "AI-generated training data enables continuous improvement beyond internet-scale data, allowing AI to develop expertise in specialized domains where human-created examples are scarce. This breakthrough enables AI advancement in niche fields like advanced mathematics, specialized science, and novel creative domains.",
+        resourceConnection: "Combined breakthrough leveraging sophisticated data systems for synthetic content generation and advanced algorithms for intelligent data creation and filtering."
+      },
+      20: { // AI Team Coordination
+        title: "AI Team Coordination",
+        description: "Multiple specialized AI assistants working together as a coordinated team, with each AI handling different aspects of complex problems. Like a human project team, different AIs contribute their expertise while a coordinator ensures quality and manages the overall workflow.",
+        realWorldExample: "An AI research team might include one AI for literature review, another for experimental design, a third for data analysis, and a fourth for writing, with a coordinator AI managing the project timeline and ensuring all work integrates properly to produce high-quality research papers.",
+        howToImprove: "Requires Algorithm Level 6 and Compute Level 5. This advanced breakthrough demands cutting-edge Algorithm research for multi-agent coordination, plus substantial Compute infrastructure to run multiple AI systems simultaneously and coordinate their interactions.",
+        industryImpact: "AI team coordination enables tackling complex, multi-faceted problems that require diverse expertise and sustained collaboration. This breakthrough could automate entire professional workflows in consulting, research, engineering, and strategic planning.",
+        resourceConnection: "Advanced combined breakthrough requiring sophisticated algorithms for multi-agent orchestration and massive compute resources for parallel AI system operation."
+      },
+      21: { // Pocket-Sized AI
+        title: "Pocket-Sized AI",
+        description: "Powerful AI assistants that run directly on smartphones, laptops, and consumer devices, providing instant responses while keeping all data completely private. No internet connection required - the AI lives entirely on your device.",
+        realWorldExample: "Imagine having ChatGPT-level AI running directly on your phone, answering questions instantly even in airplane mode, helping with tasks without sending any data to the cloud. Your conversations, documents, and queries stay completely private on your device.",
+        howToImprove: "Requires Algorithm Level 5 and Data Level 4. Focus on Algorithm research to develop efficient model architectures that can run on limited hardware, then enhance Data systems to enable effective training of these compact but powerful models.",
+        industryImpact: "Edge AI eliminates privacy concerns, reduces cloud costs, and enables AI assistance anywhere without internet connectivity. This breakthrough makes AI truly ubiquitous while addressing growing privacy concerns about cloud-based AI services.",
+        resourceConnection: "Combined breakthrough using efficient algorithms to create compact models and optimized data processing to enable powerful AI in resource-constrained environments."
       }
     };
 
