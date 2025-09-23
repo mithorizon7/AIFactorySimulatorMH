@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import AIFactory from "@/pages/AIFactory";
 import { SparkTest } from "@/pages/SparkTest";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+// GamePauseProvider is used within AIFactory component
 
 function Router() {
   return (
@@ -18,10 +20,12 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router />
+        <Toaster />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
