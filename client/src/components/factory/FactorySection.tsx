@@ -236,6 +236,46 @@ export default function FactorySection({
   allocateMoneyToAlgorithmArchitectures,
   hireResearchEngineer,
 }: FactorySectionProps) {
+  // Color class definitions moved to component scope to fix undefined variable errors
+  const eraColorClasses = {
+    foundation: {
+      text: "text-green-200",
+      accent: "text-amber-200",
+      icon: "text-green-400"
+    },
+    scaling: {
+      text: "text-green-200", 
+      accent: "text-amber-200",
+      icon: "text-green-400"
+    },
+    advanced: {
+      text: "text-green-200",
+      accent: "text-purple-200", 
+      icon: "text-green-400"
+    }
+  };
+
+  const algorithmColorClasses = {
+    foundation: {
+      text: "text-purple-200",
+      accent: "text-amber-200",
+      progress: "text-gray-400",
+      icon: "text-purple-400"
+    },
+    innovation: {
+      text: "text-purple-200",
+      accent: "text-amber-200", 
+      progress: "text-gray-400",
+      icon: "text-purple-400"
+    },
+    agi: {
+      text: "text-purple-200",
+      accent: "text-cyan-200",
+      progress: "text-cyan-300",
+      icon: "text-purple-400"
+    }
+  };
+
   const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
 
   const getComputeBarWidth = () => {
