@@ -212,7 +212,14 @@ export default function DashboardContent({
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
         strategies: ["Expand Compute"],
-        onClick: () => { setActiveTab('resources'); handleNavigateToResource('compute'); }
+        onClick: () => openPriorityActionDialog({
+          action: "System Overload Resolution",
+          description: `${Math.round(metrics.capacityUtilization * 100)}% capacity used - performance degrading rapidly`,
+          educational: "High compute usage causes service slowdowns, customer dissatisfaction, and training failures. Immediate capacity expansion prevents revenue loss and maintains AI development momentum.",
+          icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
+          strategies: ["Expand Hardware", "Optimize Workloads", "Schedule Training"],
+          dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource('compute'); }
+        })
       });
     }
     
