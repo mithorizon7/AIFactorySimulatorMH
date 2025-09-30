@@ -279,14 +279,14 @@ export default function DashboardContent({
         icon: <BrainCog className="h-5 w-5 text-purple-400" />,
         color: "border-purple-500/50 bg-purple-900/20",
         buttonColor: "bg-purple-600 hover:bg-purple-700",
-        strategies: ["Begin Training"],
+        strategies: ["View Training"],
         onClick: () => openPriorityActionDialog({
           action: `Era Advancement: ${nextEra}`,
           description: `${Math.round(metrics.freeCompute)} free compute ready for ${nextEra} training run`,
-          educational: `Training to ${nextEra} is a major breakthrough moment that unlocks new AI capabilities, revenue streams, and brings you closer to AGI. This 30-day training run will transform your AI's intelligence and open new possibilities.`,
+          educational: `Training to ${nextEra} is a major breakthrough moment that unlocks new AI capabilities, revenue streams, and brings you closer to AGI. This 30-day training run will transform your AI's intelligence and open new possibilities. Visit the Training tab to review prerequisites and start your training run.`,
           icon: <BrainCog className="h-5 w-5 text-purple-400" />,
-          strategies: ["Execute Training Run", "Review Requirements", "Optimize Setup"],
-          dialogAction: () => { setSelectedAction(null); trainModel(); }
+          strategies: ["Open Training Tab", "Review Prerequisites", "Understand Requirements"],
+          dialogAction: () => { setSelectedAction(null); setActiveTab('training'); }
         })
       });
     }
