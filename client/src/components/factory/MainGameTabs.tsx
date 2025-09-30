@@ -98,68 +98,68 @@ export default function MainGameTabs({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="flex justify-center mb-4">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
-          <TabsList className="grid grid-cols-6 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1">
             <TabsTrigger 
               value="dashboard" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tutorial-id="dashboard-tab"
             >
-              <BarChart3 className="h-5 w-5" />
-              <span className="hidden sm:inline">Dashboard</span>
+              <BarChart3 className="h-5 w-5 flex-shrink-0" />
+              <span>Dashboard</span>
             </TabsTrigger>
             <TabsTrigger 
               value="training" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-testid="training-tab-trigger"
             >
-              <Target className="h-5 w-5" />
-              <span className="hidden sm:inline">Training</span>
+              <Target className="h-5 w-5 flex-shrink-0" />
+              <span>Training</span>
             </TabsTrigger>
             <TabsTrigger 
               value="resources" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
             >
-              <Zap className="h-5 w-5" />
-              <span className="hidden sm:inline">Resources</span>
+              <Zap className="h-5 w-5 flex-shrink-0" />
+              <span>Resources</span>
             </TabsTrigger>
             <TabsTrigger 
               value="economy" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
             >
-              <GanttChart className="h-5 w-5" />
-              <span className="hidden sm:inline">Economy</span>
+              <GanttChart className="h-5 w-5 flex-shrink-0" />
+              <span>Economy</span>
             </TabsTrigger>
             <TabsTrigger 
               value="breakthroughs" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
             >
-              <Lightbulb className="h-5 w-5" />
-              <span className="hidden sm:inline">Breakthroughs</span>
+              <Lightbulb className="h-5 w-5 flex-shrink-0" />
+              <span>Breakthroughs</span>
             </TabsTrigger>
             <TabsTrigger 
               value="progression" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
             >
-              <BrainCog className="h-5 w-5" />
-              <span className="hidden sm:inline">Progression</span>
+              <BrainCog className="h-5 w-5 flex-shrink-0" />
+              <span>Progression</span>
             </TabsTrigger>
           </TabsList>
         </div>
