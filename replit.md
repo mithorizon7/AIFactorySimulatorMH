@@ -91,6 +91,13 @@ Three main resource factories:
 
 ## Changelog
 
+- September 30, 2025. **TRAINING INTEGRATION COMPLETE**: Implemented dedicated Training tab for improved training run discoverability and educational guidance:
+  1. **TrainingTab.tsx Component**: Created comprehensive training interface with prominent "Start Training" CTA, training progress visualization, era advancement pathway, and detailed prerequisites display (compute level, data quality/quantity/formats, algorithm architectures, research progress)
+  2. **Final-Era Logic**: Fixed `getNextEra` function to properly return null when player reaches GNT-7, displaying "training complete" message instead of showing unavailable training controls
+  3. **MainGameTabs Integration**: Added Training tab between Dashboard and Resources with purple gradient styling, updated tab grid from 5 to 6 columns, proper gameState and trainModel props connection
+  4. **Dashboard Migration**: Updated "Era Advancement" Priority Action to navigate to Training tab instead of directly calling trainModel(), enhanced educational messaging to guide players to dedicated training interface
+  5. **Educational Design**: Training tab includes "Why Training Matters" section explaining the importance of training runs, 10x compute scaling visualization, era progression timeline (GNT-2 through AGI)
+  6. **Comprehensive Testing**: Verified all UI elements, navigation flow, prerequisites display, era progression timeline, and Start Training button states - 100% test pass rate
 - July 28, 2025. **SPARK CHARACTER INTEGRATION COMPLETE**: Implemented animated AI advisor character "Spark" throughout the educational game system:
   1. **SparkCharacter Component**: Created Lottie-animated character with play-once animation, corner positioning, and inline message display modes
   2. **Tutorial System Integration**: Spark appears in modal tutorials with corner positioning and character-driven educational dialogue
