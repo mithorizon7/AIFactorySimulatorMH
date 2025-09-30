@@ -91,6 +91,7 @@ Three main resource factories:
 
 ## Changelog
 
+- September 30, 2025. **TUTORIAL NARRATIVE ACCURACY FIX**: Corrected false educational claims about funding rounds matching training costs. Tutorial previously implied Series A ($5K) covered GNT-3 training, but GNT-3 actually costs $25K plus $8K for API platform ($33K total). Updated Phase 3 Step 3 and Phase 4 Step 1 to show complete economics: GNT-3 requires $33K (training + platform) vs $5K funding; GNT-4 requires $115K vs $25K funding. Tutorial now accurately teaches players must generate customer revenue to fill funding gaps, mirroring real AI companies like OpenAI that needed API revenue to fund GPT-4's $100M+ training costs. This ensures educational content matches actual game balance and provides accurate AI economics lessons.
 - September 30, 2025. **ALWAYS-ACCESSIBLE LEADERBOARD WITH GAME PAUSE COMPLETE**: Implemented motivational leaderboard system accessible anytime with automatic game pause and reset confirmation:
   1. **LeaderboardModal Component**: Created standalone modal displaying top 20 AGI achievers with rank medals (🥇🥈🥉), player stats (intelligence, time, money, users), strategy badges (B2B/B2C/Speed Run), and empty state messaging
   2. **GameHeader Integration**: Added Trophy button in top-right corner for instant leaderboard access, yellow styling to stand out, responsive labels (hidden on mobile for space)
