@@ -137,6 +137,7 @@ export default function MainGameTabs({
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
+              data-tutorial-id="economy-tab"
             >
               <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
@@ -157,6 +158,7 @@ export default function MainGameTabs({
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
+              data-tutorial-id="progression-tab"
             >
               <BrainCog className="h-5 w-5 flex-shrink-0" />
               <span>Progression</span>
