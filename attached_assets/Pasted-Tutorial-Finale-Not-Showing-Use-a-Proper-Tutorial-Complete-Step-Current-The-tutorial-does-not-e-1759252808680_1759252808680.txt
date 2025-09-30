@@ -1,0 +1,25 @@
+Tutorial Finale Not Showing – Use a Proper “Tutorial Complete” Step
+Current: The tutorial does not explicitly show the final completion message to the user. In the content there is a final step (Phase 4, “Tutorial Complete!” with a trophy icon)
+GitHub
+, but the code never displays it. Instead, the logic in advanceTutorial() marks the tutorial complete at Phase 4 Step 2 and immediately stops there
+GitHub
+GitHub
+. When the user reaches what the code thinks is the last step, it calls onComplete which invokes skipTutorial() in the UI, causing a “Tutorial Skipped” toast to appear
+GitHub
+GitHub
+. In other words, the tutorial ends with a skip message as if the user aborted it, rather than a proper congratulations screen.
+Desired: The tutorial should end with the intended “Tutorial Complete!” dialog or at least a clear completion message, not a skip notification. We want the user to see that final step (with the celebratory text: “Outstanding! You now understand the fundamentals…” and a “Begin your journey” button) – this reinforces that they’ve finished the onboarding
+GitHub
+. The “Skip” toast is misleading (implying the tutorial was skipped rather than completed) and should be avoided on normal completion.
+Why: Presenting a proper completion step enhances the user experience by rewarding them for sticking through the tutorial. It also prevents confusion – a skip toast could make the user think they missed something. Since the content for the final step is already written, not showing it is likely an oversight. Fixing this will align the implementation with the narrative design and polish the onboarding flow.
+Solution: Adjust the tutorial progression logic to include Phase 4 Step 3 as the true final step. In useGameEngine.ts, update the phaseLimits for phase 4 to 3 steps (instead of 2) so that advanceTutorial() doesn’t cut it short
+GitHub
+. Also, update how the last step’s Continue button is handled in the UI: in UnifiedTutorialSystem.tsx, isLastStep is currently defined as phase 4 & step 2
+GitHub
+ – this should become phase 4 & step 3. Then, modify the onComplete callback in AIFactory.tsx to use a dedicated completion function instead of skipTutorial()
+GitHub
+. (There is already a completeTutorial() in the engine code that sets the state to completed without the skip toast
+GitHub
+ – you can use that.) This way, when the user hits “Start Building!” on the final modal, you call completeTutorial() and then startGame(), showing a “Tutorial Complete” toast or modal as needed (you might repurpose the existing toast in advanceTutorial() that says “Tutorial Complete! You’re now ready…”
+GitHub
+). In short, let the Phase 4 Step 3 modal render and mark completion more gracefully. After this change, the user will see the Tutorial Complete dialog with the trophy icon, providing a satisfying closure to the tutorial.

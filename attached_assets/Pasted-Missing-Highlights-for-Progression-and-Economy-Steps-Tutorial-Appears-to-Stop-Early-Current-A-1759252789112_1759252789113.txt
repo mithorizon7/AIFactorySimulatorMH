@@ -1,0 +1,16 @@
+Missing Highlights for “Progression” and “Economy” Steps – Tutorial Appears to Stop Early
+Current: After the initial resource upgrades, the tutorial is supposed to highlight the Dashboard, Progression, and Economy tabs in Phase 3. However, the last two steps don’t appear because those tab elements lack the required data-tutorial-id or selector attributes. For example, only the Dashboard tab trigger has an identifier (data-tutorial-id="dashboard-tab")
+GitHub
+, while the Progression and Economy tabs have none, so the spotlight query in UnifiedTutorialSystem fails to find them
+GitHub
+. This causes the tutorial to silently halt, which is likely why you “just see a few popup screens” and nothing further.
+Desired: All tutorial steps should load and display their guidance. We want the Progression and Economy tab highlights to work the same as the Dashboard step – i.e. the tabs should glow/pulse with the blue outline and show Spark’s tooltip. This means giving those tab triggers consistent identifiers that the tutorial logic can target (e.g. data-tutorial-id="progression-tab" and ...="economy-tab", or using the existing highlightTab mechanism properly).
+Why: Fixing this will ensure the tutorial runs to completion instead of ending abruptly. It resolves the confusion where the player is left without guidance after the initial popups. In your code, the tutorial content for Phase 3 is already defined (steps to explore the Dashboard, Progression, Economy tabs)
+GitHub
+GitHub
+, so enabling those steps will provide a smoother, more comprehensive onboarding.
+Solution: Add the missing data attributes to the tab components and adjust the tutorial query if needed. For example, in MainGameTabs.tsx, set data-tutorial-id="progression-tab" on the Progression <TabsTrigger> and data-tutorial-id="economy-tab" on the Economy trigger, just as the Dashboard tab is labeled
+GitHub
+. This will allow document.querySelector([data-tutorial-id='progression-tab']) to find the element and apply the highlight. Alternatively, use the existing highlightTab field: currently UnifiedTutorialSystem looks for [data-tab="{name}"]
+GitHub
+, but since no such attribute is present, you could instead leverage the value of the tab or simply use the new data-tutorial-id. The quickest fix is adding those data-tutorial-id attributes and ensuring the tutorial content’s targetElement matches (“progression-tab” and “economy-tab”). This change will make the Phase 3 tutorial pop-ups visible to the player, allowing the tutorial to continue past the initial resource upgrade phase.

@@ -25,15 +25,16 @@ interface TrainingTabProps {
 export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
   const { training, currentEra, intelligence, levels, dataInputs, algorithmInputs, computeCapacity } = gameState;
 
-  // Determine the next era
-  const getNextEra = (currentEra: Era): Era => {
+  // Determine the next era (returns null if already at final era)
+  const getNextEra = (currentEra: Era): Era | null => {
     const eraOrder = [Era.GNT2, Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7];
     const currentIndex = eraOrder.indexOf(currentEra);
-    return currentIndex < eraOrder.length - 1 ? eraOrder[currentIndex + 1] : Era.GNT7;
+    // Return null if we're at the final era
+    return currentIndex < eraOrder.length - 1 ? eraOrder[currentIndex + 1] : null;
   };
 
   const nextEra = getNextEra(currentEra);
-  const nextTrainingRun = training.runs[nextEra as keyof typeof training.runs];
+  const nextTrainingRun = nextEra ? training.runs[nextEra as keyof typeof training.runs] : null;
   
   // Check prerequisites
   const checkPrerequisites = () => {
