@@ -91,6 +91,13 @@ Three main resource factories:
 
 ## Changelog
 
+- September 30, 2025. **MOBILE-RESPONSIVE TAB NAVIGATION COMPLETE**: Implemented comprehensive mobile-first responsive design for main game tab navigation:
+  1. **Responsive Grid Layout**: Changed from fixed 6-column layout to adaptive `grid-cols-2 sm:grid-cols-3 lg:grid-cols-6` (2 columns mobile → 3 columns tablet → 6 columns desktop)
+  2. **Always-Visible Labels**: Removed `hidden sm:inline` pattern - all tab labels (Dashboard, Training, Resources, Economy, Breakthroughs, Progression) now always visible for improved mobile UX
+  3. **Proper Touch Targets**: Added `min-h-[44px]` to meet Apple's minimum touch target recommendation, ensuring tabs are easily tappable on mobile devices
+  4. **Z-Index Stacking Fix**: Added `relative z-20` to wrapper and `relative z-10` to TabsList to prevent tab content from overlapping and blocking tab triggers on mobile
+  5. **Enhanced Spacing**: Increased bottom margin from `mb-4` to `mb-6` for better visual separation between tabs and content
+  6. **Comprehensive Testing**: Two Playwright test suites passed with 100% success rate across mobile (375x667), tablet (768x1024), and desktop (1440x900) viewports - verified responsive layouts, label visibility, touch targets, and direct click functionality
 - September 30, 2025. **TRAINING INTEGRATION COMPLETE**: Implemented dedicated Training tab for improved training run discoverability and educational guidance:
   1. **TrainingTab.tsx Component**: Created comprehensive training interface with prominent "Start Training" CTA, training progress visualization, era advancement pathway, and detailed prerequisites display (compute level, data quality/quantity/formats, algorithm architectures, research progress)
   2. **Final-Era Logic**: Fixed `getNextEra` function to properly return null when player reaches GNT-7, displaying "training complete" message instead of showing unavailable training controls
