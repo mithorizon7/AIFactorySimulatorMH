@@ -107,7 +107,7 @@ export const tutorialContent = {
     },
     3: {
       title: "Strategic Funding and Revenue",
-      content: "Important economic lesson! GNT-3 training costs $25,000, plus you'll need to build platforms (API $8K, eventually Chatbot $15K) to generate revenue. Series A ($5,000) covers only part of this - you must generate revenue from early customers.",
+      content: "Important economic lesson! GNT-3 training costs $25K, plus you'll need to build platforms (API $8K, eventually Chatbot $15K) to generate revenue. Series A ($5K) covers only part of this - you must generate revenue from early customers.",
       context: "This mirrors real AI development - startups raise funding rounds (Seed→Series A→Series B) but must quickly build products that generate revenue. Companies like OpenAI had to monetize GPT-3 through APIs to fund GPT-4 development!",
       action: "Check the Economy tab to see funding and revenue options",
       targetElement: "economy-tab",
