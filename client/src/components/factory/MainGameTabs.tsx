@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon, Clock, Target, AlertTriangle, CheckCircle2, ArrowRight, TrendingUp } from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
@@ -75,6 +75,13 @@ export default function MainGameTabs({
   trainModel
 }: MainGameTabsProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  // Auto-navigate to Resources tab when Phase 2 tutorial starts
+  useEffect(() => {
+    if (gameState.tutorial.isActive && gameState.tutorial.phase === 2 && gameState.tutorial.step === 1) {
+      setActiveTab("resources");
+    }
+  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive]);
 
   // Function to handle navigation to resource tabs
   const handleNavigateToResource = (resourceType: 'compute' | 'data' | 'algorithm') => {
