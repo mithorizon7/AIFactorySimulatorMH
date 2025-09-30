@@ -96,9 +96,9 @@ export default function MainGameTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-center mb-6 relative z-20">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1 relative z-10">
             <TabsTrigger 
               value="dashboard" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
