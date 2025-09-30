@@ -140,14 +140,21 @@ export default function MainGameTabs({
             </TabsTrigger>
             <TabsTrigger 
               value="economy" 
-              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
+              className={`flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
-                hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
+                hover:bg-gray-700 transition-all duration-200 min-h-[44px] relative
+                ${(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) ? 'animate-pulse ring-2 ring-green-400 shadow-lg shadow-green-400/50' : ''}`}
               data-tutorial-id="economy-tab"
             >
               <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
+              {(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) && (
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+              )}
             </TabsTrigger>
             <TabsTrigger 
               value="breakthroughs" 
