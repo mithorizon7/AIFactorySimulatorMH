@@ -1,4 +1,4 @@
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, Era } from "@/lib/gameState";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { 
   BrainCog, 
@@ -152,13 +152,13 @@ export default function DashboardContent({
       const avg = metrics.avgResourceLevel;
       const revenue = metrics.totalRevenue;
       
-      if (era === 'GNT-2' || (avg < 6 && revenue < 25000)) return { phase: 'foundation', era: 'startup' };
-      if (era === 'GNT-2' && avg >= 6) return { phase: 'foundation', era: 'growth' };
-      if (era === 'GNT-3') return { phase: 'scaling', era: 'early_scale' };  
-      if (era === 'GNT-4') return { phase: 'scaling', era: 'mid_scale' };
-      if (era === 'GNT-5') return { phase: 'advanced', era: 'optimization' };
-      if (era === 'GNT-6') return { phase: 'advanced', era: 'breakthrough' };
-      if (era === 'GNT-7') return { phase: 'advanced', era: 'agi_push' };
+      if (era === Era.GNT2 || (avg < 6 && revenue < 25000)) return { phase: 'foundation', era: 'startup' };
+      if (era === Era.GNT2 && avg >= 6) return { phase: 'foundation', era: 'growth' };
+      if (era === Era.GNT3) return { phase: 'scaling', era: 'early_scale' };  
+      if (era === Era.GNT4) return { phase: 'scaling', era: 'mid_scale' };
+      if (era === Era.GNT5) return { phase: 'advanced', era: 'optimization' };
+      if (era === Era.GNT6) return { phase: 'advanced', era: 'breakthrough' };
+      if (era === Era.GNT7) return { phase: 'advanced', era: 'agi_push' };
       
       // Fallback based on progress
       if (metrics.agiProgress < 0.2) return { phase: 'foundation', era: 'startup' };
