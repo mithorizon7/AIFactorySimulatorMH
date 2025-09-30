@@ -120,7 +120,7 @@ export function useGameEngine() {
       tutorial: { 
         isActive: false, 
         phase: 4,
-        step: 2,
+        step: 3,
         isCompleted: true,
         hasShownWelcome: true,
         completedActions: [],
