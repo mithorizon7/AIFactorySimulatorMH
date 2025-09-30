@@ -16,6 +16,7 @@ export interface NarrativeMessage {
 interface UseNarrativeTriggersProps {
   gameState: GameStateType;
   onShowMessage: (message: NarrativeMessage) => void;
+  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
 }
 
 // Helper function to check if training can be started (basic prerequisite check)
@@ -40,7 +41,7 @@ function checkResourceImbalance(gameState: GameStateType): boolean {
   return (maxLevel - minLevel) > 3;
 }
 
-export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeTriggersProps) {
+export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }: UseNarrativeTriggersProps) {
   const previousStateRef = useRef<GameStateType | null>(null);
 
   useEffect(() => {
@@ -180,8 +181,14 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     // 9. API Service Available (when GNT-3 unlocked but not enabled)
     if (gameState.revenue.apiAvailable && !gameState.revenue.apiEnabled && 
         !gameState.narrativeFlags.shownApiServiceAvailable) {
-      gameState.narrativeFlags.shownApiServiceAvailable = true;
-      gameState.narrativeFlags.highlightApiPlatform = true; // Enable visual highlight
+      setGameState(prevState => ({
+        ...prevState,
+        narrativeFlags: {
+          ...prevState.narrativeFlags,
+          shownApiServiceAvailable: true,
+          highlightApiPlatform: true // Enable visual highlight
+        }
+      }));
       onShowMessage({
         id: 'api-service-available',
         title: narrative.API_SERVICE_AVAILABLE.title,
@@ -200,7 +207,13 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
         !gameState.narrativeFlags.hasOfferedApiAutoEnable &&
         (Date.now() - gameState.narrativeFlags.apiServiceUnlockedTime) > 60000) { // 60 seconds
       
-      gameState.narrativeFlags.hasOfferedApiAutoEnable = true;
+      setGameState(prevState => ({
+        ...prevState,
+        narrativeFlags: {
+          ...prevState.narrativeFlags,
+          hasOfferedApiAutoEnable: true
+        }
+      }));
       onShowMessage({
         id: 'api-auto-enable-suggestion',
         title: narrative.API_AUTO_ENABLE_SUGGESTION.title,
@@ -215,8 +228,14 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     // 11. Chatbot Service Available (when GNT-4 unlocked but not enabled)  
     if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotEnabled && 
         !gameState.narrativeFlags.shownChatbotServiceAvailable) {
-      gameState.narrativeFlags.shownChatbotServiceAvailable = true;
-      gameState.narrativeFlags.highlightChatbotPlatform = true; // Enable visual highlight
+      setGameState(prevState => ({
+        ...prevState,
+        narrativeFlags: {
+          ...prevState.narrativeFlags,
+          shownChatbotServiceAvailable: true,
+          highlightChatbotPlatform: true // Enable visual highlight
+        }
+      }));
       onShowMessage({
         id: 'chatbot-service-available',
         title: narrative.CHATBOT_SERVICE_AVAILABLE.title,
@@ -247,7 +266,13 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     if (gameState.revenue.apiEnabled && gameState.revenue.b2b > 0 && gameState.revenue.b2b < 5000 &&
         gameState.revenue.developerToolsLevel === 1 && gameState.money > 50000 && 
         !gameState.narrativeFlags.shownApiOptimizationAdvice) {
-      gameState.narrativeFlags.shownApiOptimizationAdvice = true;
+      setGameState(prevState => ({
+        ...prevState,
+        narrativeFlags: {
+          ...prevState.narrativeFlags,
+          shownApiOptimizationAdvice: true
+        }
+      }));
       onShowMessage({
         id: 'api-optimization-advice',
         title: narrative.API_OPTIMIZATION_ADVICE.title,
@@ -263,7 +288,13 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     if (gameState.revenue.chatbotEnabled && gameState.revenue.subscribers > 100 && 
         gameState.revenue.subscriberGrowthRate < 100 && gameState.revenue.chatbotImprovementLevel === 1 && 
         gameState.money > 25000 && !gameState.narrativeFlags.shownChatbotOptimizationAdvice) {
-      gameState.narrativeFlags.shownChatbotOptimizationAdvice = true;
+      setGameState(prevState => ({
+        ...prevState,
+        narrativeFlags: {
+          ...prevState.narrativeFlags,
+          shownChatbotOptimizationAdvice: true
+        }
+      }));
       onShowMessage({
         id: 'chatbot-optimization-advice',
         title: narrative.CHATBOT_OPTIMIZATION_ADVICE.title,
@@ -337,9 +368,15 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       const canStartTraining = checkTrainingPrerequisites(gameState);
       if (!canStartTraining && !gameState.training.active && 
           gameState.intelligence > 150 && !gameState.narrativeFlags.hasSeenStuckTrainingBlocked) {
-        gameState.narrativeFlags.hasSeenStuckTrainingBlocked = true;
-        gameState.narrativeFlags.lastStuckHintAt = now;
-        gameState.narrativeFlags.lastStuckHintId = 'stuck-training-blocked';
+        setGameState(prevState => ({
+          ...prevState,
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            hasSeenStuckTrainingBlocked: true,
+            lastStuckHintAt: now,
+            lastStuckHintId: 'stuck-training-blocked'
+          }
+        }));
         onShowMessage({
           id: 'stuck-training-blocked',
           title: narrative.STUCK_TRAINING_BLOCKED_HINT.title,
@@ -354,9 +391,15 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       // 2. Stuck with no money and no revenue streams (check for actual revenue vs. enablement)
       else if (gameState.money < 500 && totalRevenue === 0 && 
                !gameState.narrativeFlags.hasSeenStuckNoMoney) {
-        gameState.narrativeFlags.hasSeenStuckNoMoney = true;
-        gameState.narrativeFlags.lastStuckHintAt = now;
-        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-money';
+        setGameState(prevState => ({
+          ...prevState,
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            hasSeenStuckNoMoney: true,
+            lastStuckHintAt: now,
+            lastStuckHintId: 'stuck-no-money'
+          }
+        }));
         onShowMessage({
           id: 'stuck-no-money',
           title: narrative.STUCK_NO_MONEY_HINT.title,
@@ -371,9 +414,15 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       // 3. High intelligence but no revenue generation
       else if (gameState.intelligence > 500 && totalRevenue === 0 && 
                !gameState.narrativeFlags.hasSeenStuckNoRevenue) {
-        gameState.narrativeFlags.hasSeenStuckNoRevenue = true;
-        gameState.narrativeFlags.lastStuckHintAt = now;
-        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-revenue';
+        setGameState(prevState => ({
+          ...prevState,
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            hasSeenStuckNoRevenue: true,
+            lastStuckHintAt: now,
+            lastStuckHintId: 'stuck-no-revenue'
+          }
+        }));
         onShowMessage({
           id: 'stuck-no-revenue',
           title: narrative.STUCK_NO_REVENUE_HINT.title,
@@ -388,9 +437,15 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
       // 4. Long periods without breakthrough progress (lowest priority, with time gate)
       else if (gameState.intelligence > 200 && gameState.breakthroughs.filter(b => b.unlocked).length === 0 && 
                gameState.daysElapsed > 5 && !gameState.narrativeFlags.hasSeenStuckNoBreakthroughs) {
-        gameState.narrativeFlags.hasSeenStuckNoBreakthroughs = true;
-        gameState.narrativeFlags.lastStuckHintAt = now;
-        gameState.narrativeFlags.lastStuckHintId = 'stuck-no-breakthroughs';
+        setGameState(prevState => ({
+          ...prevState,
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            hasSeenStuckNoBreakthroughs: true,
+            lastStuckHintAt: now,
+            lastStuckHintId: 'stuck-no-breakthroughs'
+          }
+        }));
         onShowMessage({
           id: 'stuck-no-breakthroughs',
           title: narrative.STUCK_NO_BREAKTHROUGHS_HINT.title,
@@ -405,7 +460,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     }
 
     previousStateRef.current = gameState;
-  }, [gameState, onShowMessage]);
+  }, [gameState, onShowMessage, setGameState]);
 }
 
 

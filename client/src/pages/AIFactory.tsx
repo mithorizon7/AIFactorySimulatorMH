@@ -86,7 +86,8 @@ export default function AIFactory() {
   // Narrative trigger system
   useNarrativeTriggers({
     gameState,
-    onShowMessage: setCurrentNarrativeMessage
+    onShowMessage: setCurrentNarrativeMessage,
+    setGameState
   });
   
   // Handle WelcomeIntroduction visibility for proper tutorial sequence
