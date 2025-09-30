@@ -91,6 +91,13 @@ Three main resource factories:
 
 ## Changelog
 
+- September 30, 2025. **ALWAYS-ACCESSIBLE LEADERBOARD WITH GAME PAUSE COMPLETE**: Implemented motivational leaderboard system accessible anytime with automatic game pause and reset confirmation:
+  1. **LeaderboardModal Component**: Created standalone modal displaying top 20 AGI achievers with rank medals (🥇🥈🥉), player stats (intelligence, time, money, users), strategy badges (B2B/B2C/Speed Run), and empty state messaging
+  2. **GameHeader Integration**: Added Trophy button in top-right corner for instant leaderboard access, yellow styling to stand out, responsive labels (hidden on mobile for space)
+  3. **Game Pause System**: Integrated with GamePauseContext to automatically pause game time when leaderboard opens, resume on close - prevents time loss during competitive viewing
+  4. **Reset Confirmation**: Implemented AlertDialog with detailed progress summary (intelligence level, time elapsed, money, resources) requiring explicit confirmation before reset - prevents accidental data loss
+  5. **Educational Design**: Leaderboard serves as motivation by showing other players' achievements and strategies, tip section encourages AGI completion for Hall of Fame entry
+  6. **Complete Testing**: Verified leaderboard access, pause/resume functionality, reset confirmation flow, and state persistence - 100% test pass rate with all features working correctly
 - September 30, 2025. **MOBILE-RESPONSIVE TAB NAVIGATION COMPLETE**: Implemented comprehensive mobile-first responsive design for main game tab navigation:
   1. **Responsive Grid Layout**: Changed from fixed 6-column layout to adaptive `grid-cols-2 sm:grid-cols-3 lg:grid-cols-6` (2 columns mobile → 3 columns tablet → 6 columns desktop)
   2. **Always-Visible Labels**: Removed `hidden sm:inline` pattern - all tab labels (Dashboard, Training, Resources, Economy, Breakthroughs, Progression) now always visible for improved mobile UX
