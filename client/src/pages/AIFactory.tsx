@@ -92,18 +92,16 @@ export default function AIFactory() {
   useEffect(() => {
     const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
     
+    // Only show WelcomeIntroduction for NEW players after Phase 1 tutorial modals complete
     if (!hasPlayedBefore) {
-      // For new players, show introduction after Phase 1 tutorial modals complete
       // Phase 1 has 2 steps, so show introduction when we reach Phase 2 or complete Phase 1
       if (gameState.tutorial.phase > 1 || 
           (gameState.tutorial.phase === 1 && gameState.tutorial.step === 2 && gameState.tutorial.isActive)) {
         setShowIntroduction(true);
       }
-    } else if (timeElapsed === 0 && !isRunning) {
-      // For returning players starting a new game
-      setShowIntroduction(true);
     }
-  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive, timeElapsed, isRunning]);
+    // Returning players go straight to main game interface, no introduction needed
+  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive]);
 
   // Save game state periodically
   useEffect(() => {

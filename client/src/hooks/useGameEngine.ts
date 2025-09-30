@@ -5,7 +5,18 @@ import { formatCurrency } from "@/lib/utils";
 import { narrative } from "@/lib/narrativeContent";
 
 export function useGameEngine() {
-  const [gameState, setGameState] = useState<GameStateType>({ ...initialGameState });
+  const [gameState, setGameState] = useState<GameStateType>(() => {
+    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
+    const state = { ...initialGameState };
+    
+    // If player has played before, disable tutorial
+    if (hasPlayedBefore) {
+      state.tutorial.isActive = false;
+      state.tutorial.isCompleted = true;
+    }
+    
+    return state;
+  });
   const [isRunning, setIsRunning] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(initialGameState.timeElapsed);
   const [advisorMessage, setAdvisorMessage] = useState<any | null>(null);
