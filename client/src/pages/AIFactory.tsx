@@ -92,16 +92,16 @@ export default function AIFactory() {
   useEffect(() => {
     const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
     
-    // Only show WelcomeIntroduction for NEW players after Phase 1 tutorial modals complete
+    // Only show WelcomeIntroduction for NEW players after Phase 1 tutorial modals are COMPLETE
     if (!hasPlayedBefore) {
-      // Phase 1 has 2 steps, so show introduction when we reach Phase 2 or complete Phase 1
-      if (gameState.tutorial.phase > 1 || 
-          (gameState.tutorial.phase === 1 && gameState.tutorial.step === 2 && gameState.tutorial.isActive)) {
+      // Show introduction only when we've moved to Phase 2 (Phase 1 fully completed)
+      // This prevents overlap with Phase 1 Step 2 modal
+      if (gameState.tutorial.phase > 1) {
         setShowIntroduction(true);
       }
     }
     // Returning players go straight to main game interface, no introduction needed
-  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive]);
+  }, [gameState.tutorial.phase]);
 
   // Save game state periodically
   useEffect(() => {
@@ -277,16 +277,18 @@ export default function AIFactory() {
             onOpenChange={handleCloseLeaderboard}
           />
 
-          {/* Unified Tutorial System */}
-          <UnifiedTutorialSystem
-            gameState={gameState}
-            onNextStep={advanceTutorial}
-            onSkipTutorial={skipTutorial}
-            onComplete={() => {
-              skipTutorial();
-              startGame();
-            }}
-          />
+          {/* Unified Tutorial System - Suspended during Introduction to prevent overlap */}
+          {!showIntroduction && (
+            <UnifiedTutorialSystem
+              gameState={gameState}
+              onNextStep={advanceTutorial}
+              onSkipTutorial={skipTutorial}
+              onComplete={() => {
+                skipTutorial();
+                startGame();
+              }}
+            />
+          )}
           
           {/* Dynamic Narrative Notifications */}
           <NarrativeNotification
