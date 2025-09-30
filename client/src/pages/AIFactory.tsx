@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import VictoryScreen from "@/components/victory/VictoryScreen";
+import LeaderboardModal from "@/components/leaderboard/LeaderboardModal";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough } from "@/lib/gameState";
 import { apiRequest } from "@/lib/queryClient";
 import "@/components/factory/resourceFlow.css";
-import { GamePauseProvider } from "@/contexts/GamePauseContext";
+import { GamePauseProvider, useGamePause } from "@/contexts/GamePauseContext";
 
 // New UI Components
 import WelcomeIntroduction from "@/components/factory/WelcomeIntroduction";
@@ -76,6 +77,7 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
+  const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
   
   // Unified tutorial and narrative system
   const [currentNarrativeMessage, setCurrentNarrativeMessage] = useState<NarrativeMessage | null>(null);
@@ -194,6 +196,14 @@ export default function AIFactory() {
     setShowSummaryModal(false);
   };
 
+  const handleOpenLeaderboard = () => {
+    setShowLeaderboard(true);
+  };
+
+  const handleCloseLeaderboard = () => {
+    setShowLeaderboard(false);
+  };
+
   return (
     <GamePauseProvider 
       pauseGame={pauseGame} 
@@ -211,6 +221,7 @@ export default function AIFactory() {
             startGame={startGame}
             pauseGame={pauseGame}
             resetGame={resetGame}
+            onOpenLeaderboard={handleOpenLeaderboard}
           />
           
           {/* Main Game Navigation Tabs - Moved directly under the header */}
@@ -261,6 +272,12 @@ export default function AIFactory() {
               onReset={handleResetAndCloseSummary}
             />
           )}
+
+          {/* Leaderboard Modal - Available anytime */}
+          <LeaderboardModal 
+            open={showLeaderboard}
+            onOpenChange={handleCloseLeaderboard}
+          />
 
           {/* Unified Tutorial System */}
           <UnifiedTutorialSystem

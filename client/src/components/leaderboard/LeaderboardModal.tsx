@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trophy, Clock, DollarSign, Lightbulb, Users, RefreshCw } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useGamePause } from "@/contexts/GamePauseContext";
 import type { LeaderboardEntry } from "@shared/schema";
 
 interface LeaderboardModalProps {
@@ -17,6 +18,7 @@ interface LeaderboardModalProps {
 }
 
 export default function LeaderboardModal({ open, onOpenChange }: LeaderboardModalProps) {
+  const { pauseForLearning, resumeFromLearning } = useGamePause();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,9 +64,12 @@ export default function LeaderboardModal({ open, onOpenChange }: LeaderboardModa
 
   useEffect(() => {
     if (open) {
+      pauseForLearning(); // Pause the game when leaderboard opens
       loadLeaderboard();
+    } else {
+      resumeFromLearning(); // Resume the game when leaderboard closes
     }
-  }, [open]);
+  }, [open, pauseForLearning, resumeFromLearning]);
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return "🥇";
