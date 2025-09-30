@@ -2579,6 +2579,7 @@ const buildChatbotPlatform = () => {
     // Interactive Tutorial System
     advanceTutorial,
     skipTutorial,
+    completeTutorial,
 
     // Train model function
     trainModel,

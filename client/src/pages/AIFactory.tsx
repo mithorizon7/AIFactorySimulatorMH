@@ -39,6 +39,7 @@ export default function AIFactory() {
     // Interactive Tutorial System
     advanceTutorial,
     skipTutorial,
+    completeTutorial,
     // Train model function
     trainModel,
     // Basic money allocation
@@ -284,7 +285,7 @@ export default function AIFactory() {
               onNextStep={advanceTutorial}
               onSkipTutorial={skipTutorial}
               onComplete={() => {
-                skipTutorial();
+                completeTutorial();
                 startGame();
               }}
             />
