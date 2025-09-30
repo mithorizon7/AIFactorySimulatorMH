@@ -181,6 +181,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     if (gameState.revenue.apiAvailable && !gameState.revenue.apiEnabled && 
         !gameState.narrativeFlags.shownApiServiceAvailable) {
       gameState.narrativeFlags.shownApiServiceAvailable = true;
+      gameState.narrativeFlags.highlightApiPlatform = true; // Enable visual highlight
       onShowMessage({
         id: 'api-service-available',
         title: narrative.API_SERVICE_AVAILABLE.title,
@@ -215,6 +216,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage }: UseNarrativeT
     if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotEnabled && 
         !gameState.narrativeFlags.shownChatbotServiceAvailable) {
       gameState.narrativeFlags.shownChatbotServiceAvailable = true;
+      gameState.narrativeFlags.highlightChatbotPlatform = true; // Enable visual highlight
       onShowMessage({
         id: 'chatbot-service-available',
         title: narrative.CHATBOT_SERVICE_AVAILABLE.title,

@@ -245,6 +245,10 @@ export interface GameStateType {
     apiServiceUnlockedTime: number | null; // Timestamp when API service was unlocked
     hasOfferedApiAutoEnable: boolean; // Whether we've offered to auto-enable API service
     
+    // Platform unlock visual highlights
+    highlightApiPlatform: boolean; // Whether to show pulsing highlight on API platform button
+    highlightChatbotPlatform: boolean; // Whether to show pulsing highlight on Chatbot platform button
+    
     // Breakthrough effect flags (prevent duplicate applications)
     fewShotTrainingBonus: boolean; // Whether few-shot learning training cost reduction has been applied
     selfImprovementTrainingBonus: boolean; // Whether self-improvement training cost reduction has been applied
@@ -753,6 +757,10 @@ export const initialGameState: GameStateType = {
     // Auto-enabling guidance flags
     apiServiceUnlockedTime: null, // Timestamp when API service was unlocked
     hasOfferedApiAutoEnable: false, // Whether we've offered to auto-enable API service
+    
+    // Platform unlock visual highlights
+    highlightApiPlatform: false, // Whether to show pulsing highlight on API platform button
+    highlightChatbotPlatform: false, // Whether to show pulsing highlight on Chatbot platform button
     
     // Breakthrough effect flags (prevent duplicate applications)
     fewShotTrainingBonus: false, // Whether few-shot learning training cost reduction has been applied
