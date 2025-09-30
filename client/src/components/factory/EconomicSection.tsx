@@ -387,17 +387,23 @@ export default function EconomicSection({
                 Build the API infrastructure needed to serve developers and earn B2B revenue.
               </p>
               <button 
-                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition relative ${
                   money >= revenue.apiPlatformCost && buildApiPlatform
                     ? "bg-blue-700 hover:bg-blue-600 text-white"
                     : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-                }`}
+                } ${gameState.narrativeFlags.highlightApiPlatform ? 'animate-pulse ring-2 ring-blue-400 shadow-lg shadow-blue-400/50' : ''}`}
                 onClick={buildApiPlatform}
                 disabled={money < revenue.apiPlatformCost || !buildApiPlatform}
                 data-testid="button-build-api-platform"
               >
                 <span>Build API Platform</span>
                 <span className="bg-gray-700 text-blue-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.apiPlatformCost)}</span>
+                {gameState.narrativeFlags.highlightApiPlatform && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                  </span>
+                )}
               </button>
             </div>
           )}
@@ -415,17 +421,23 @@ export default function EconomicSection({
                 Build the chatbot infrastructure needed to serve consumers and earn B2C revenue.
               </p>
               <button 
-                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${
+                className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition relative ${
                   money >= revenue.chatbotPlatformCost && buildChatbotPlatform
                     ? "bg-purple-700 hover:bg-purple-600 text-white"
                     : "bg-gray-600 opacity-70 cursor-not-allowed text-gray-300"
-                }`}
+                } ${gameState.narrativeFlags.highlightChatbotPlatform ? 'animate-pulse ring-2 ring-purple-400 shadow-lg shadow-purple-400/50' : ''}`}
                 onClick={buildChatbotPlatform}
                 disabled={money < revenue.chatbotPlatformCost || !buildChatbotPlatform}
                 data-testid="button-build-chatbot-platform"
               >
                 <span>Build Chatbot Platform</span>
                 <span className="bg-gray-700 text-purple-300 px-2 py-1 rounded text-xs">${formatCurrency(revenue.chatbotPlatformCost)}</span>
+                {gameState.narrativeFlags.highlightChatbotPlatform && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                  </span>
+                )}
               </button>
             </div>
           )}

@@ -2480,6 +2480,9 @@ const buildApiPlatform = () => {
       newState.money -= buildCost;
       newState.revenue.apiPlatformBuilt = true;
       
+      // Clear highlight flag now that platform is built
+      newState.narrativeFlags.highlightApiPlatform = false;
+      
       // Check for breakthroughs
       newState.breakthroughs = checkBreakthroughs(newState);
       
@@ -2508,6 +2511,9 @@ const buildChatbotPlatform = () => {
       const newState = { ...prevState };
       newState.money -= buildCost;
       newState.revenue.chatbotPlatformBuilt = true;
+      
+      // Clear highlight flag now that platform is built
+      newState.narrativeFlags.highlightChatbotPlatform = false;
       
       // Check for breakthroughs
       newState.breakthroughs = checkBreakthroughs(newState);
