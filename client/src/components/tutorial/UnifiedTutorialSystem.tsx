@@ -140,7 +140,7 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
     return null;
   }
 
-  const isLastStep = gameState.tutorial.phase === 4 && gameState.tutorial.step === 2;
+  const isLastStep = gameState.tutorial.phase === 4 && gameState.tutorial.step === 3;
 
   // Modal style tutorial steps with Spark character
   if (currentStep.modalStyle) {
