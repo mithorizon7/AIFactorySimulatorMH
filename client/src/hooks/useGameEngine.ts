@@ -67,7 +67,7 @@ export function useGameEngine() {
       const currentStep = newState.tutorial.step;
       
       // Define phase limits (steps per phase)
-      const phaseLimits = { 1: 2, 2: 6, 3: 3, 4: 2 };
+      const phaseLimits = { 1: 2, 2: 6, 3: 3, 4: 3 };
       const maxStepForPhase = phaseLimits[currentPhase as keyof typeof phaseLimits] || 1;
       
       if (currentStep < maxStepForPhase) {
