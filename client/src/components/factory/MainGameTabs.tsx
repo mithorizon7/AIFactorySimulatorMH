@@ -16,6 +16,7 @@ import SynergyDashboard from "./SynergyDashboard";
 import SystemStatusPanel from "./SystemStatusPanel";
 import ComputePanel from "./ComputePanel";
 import DashboardContent from "./DashboardContent";
+import { TrainingTab } from "./TrainingTab";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
@@ -97,7 +98,7 @@ export default function MainGameTabs({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="flex justify-center mb-4">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
-          <TabsList className="grid grid-cols-5 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg">
+          <TabsList className="grid grid-cols-6 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg">
             <TabsTrigger 
               value="dashboard" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
@@ -108,6 +109,17 @@ export default function MainGameTabs({
             >
               <BarChart3 className="h-5 w-5" />
               <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="training" 
+              className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white
+                data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
+                data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
+                hover:bg-gray-700 transition-all duration-200"
+              data-testid="training-tab-trigger"
+            >
+              <Target className="h-5 w-5" />
+              <span className="hidden sm:inline">Training</span>
             </TabsTrigger>
             <TabsTrigger 
               value="resources" 
@@ -160,6 +172,14 @@ export default function MainGameTabs({
           trainModel={trainModel || (() => {})}
           setActiveTab={setActiveTab}
           handleNavigateToResource={handleNavigateToResource}
+        />
+      </TabsContent>
+      
+      {/* Training Tab - Era Advancement */}
+      <TabsContent value="training" className="mt-0">
+        <TrainingTab 
+          gameState={gameState}
+          onStartTraining={trainModel || (() => {})}
         />
       </TabsContent>
       
