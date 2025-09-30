@@ -106,10 +106,10 @@ export const tutorialContent = {
       highlightTab: "progression"
     },
     3: {
-      title: "Strategic Funding Progression",
-      content: "Notice something brilliant! Your intelligence growth unlocks funding rounds exactly when you need them. Series A ($5,000) unlocks right as you approach expensive training runs.",
-      context: "This mirrors real AI development - startups raise funding rounds (Seed→Series A→Series B) precisely when they need capital for the next breakthrough. The timing isn't random - it's strategic!",
-      action: "Check the Economy tab to see your funding progression",
+      title: "Strategic Funding and Revenue",
+      content: "Important economic lesson! GNT-3 training costs $25,000, plus you'll need to build platforms (API $8K, eventually Chatbot $15K) to generate revenue. Series A ($5,000) covers only part of this - you must generate revenue from early customers.",
+      context: "This mirrors real AI development - startups raise funding rounds (Seed→Series A→Series B) but must quickly build products that generate revenue. Companies like OpenAI had to monetize GPT-3 through APIs to fund GPT-4 development!",
+      action: "Check the Economy tab to see funding and revenue options",
       targetElement: "economy-tab",
       modalStyle: false, 
       icon: "dollar-sign",
@@ -120,18 +120,18 @@ export const tutorialContent = {
   // Phase 4: Advanced Concepts  
   PHASE_4: {
     1: {
-      title: "The Funding-Training Connection",
-      content: "Here's the genius design! Series A funding ($5,000) unlocks exactly when GNT-3 training costs $5,000. Series B ($25,000) arrives just as GNT-4 training needs $25,000. Perfect timing!",
-      context: "Real AI companies raise funding precisely when they need capital for major training runs. This elegant progression mirrors how OpenAI, Anthropic, and DeepMind sequence their funding and research milestones.",
-      action: "Click on Training to see how funding aligns with costs",
+      title: "The AI Economics Model",
+      content: "Here's the economic reality! To reach GNT-3, you need: $25K for training + $8K for API platform = $33K total, but Series A only gives $5K. For GNT-4: $100K training + $15K chatbot platform = $115K, while Series B gives $25K. The gap is filled by customer revenue!",
+      context: "Real AI companies raise funding to kickstart operations, but must quickly monetize through products. OpenAI had to generate millions in API revenue to afford GPT-4's $100M+ training costs. Venture capital alone isn't enough - you need paying customers.",
+      action: "Click on Training to see requirements and costs",
       targetElement: "training-panel", 
       modalStyle: false,
       icon: "target"
     },
     2: {
       title: "Training Runs: The Path to AGI",
-      content: "Now you understand the funding strategy! Training Runs are major computational efforts that advance your AI to the next era, funded by your strategic milestone progression.",
-      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost tens of millions of dollars - hence the need for strategic funding rounds.",
+      content: "Now you understand the economic model! Training Runs are expensive computational efforts that advance your AI. You'll need to balance funding rounds with revenue from customers to afford the escalating costs of each era.",
+      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost over $100 million - requiring both venture funding and product revenue to finance.",
       action: "Explore the training requirements and begin your AGI journey",
       targetElement: "training-panel",
       modalStyle: false,
