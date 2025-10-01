@@ -1,5 +1,5 @@
 import React from "react";
-import { GameStateType, Era, Breakthrough } from "@/lib/gameState";
+import { GameStateType, Era, Breakthrough, getNextEra } from "@/lib/gameState";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -52,19 +52,8 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
   const currentEraBreakthroughs = breakthroughs.filter(b => b.era === currentEra);
   
   // Get breakthroughs for the next era
-  const getNextEra = () => {
-    switch (currentEra) {
-      case Era.GNT2: return Era.GNT3;
-      case Era.GNT3: return Era.GNT4;
-      case Era.GNT4: return Era.GNT5;
-      case Era.GNT5: return Era.GNT6;
-      case Era.GNT6: return Era.GNT7;
-      default: return Era.GNT7;
-    }
-  };
-  
-  const nextEra = getNextEra();
-  const nextEraBreakthroughs = breakthroughs.filter(b => b.era === nextEra);
+  const nextEra = getNextEra(currentEra);
+  const nextEraBreakthroughs = nextEra ? breakthroughs.filter(b => b.era === nextEra) : [];
   
   // Get requirements for the next era
   const getNextEraRequirements = () => {
@@ -226,47 +215,50 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
         </div>
         
         {/* Progress to next era */}
-        <div className="mb-2">
-          <div className="flex justify-between items-center mb-1">
-            <EducationalTooltip
-              content={
-                <div className="space-y-2">
-                  <p className="font-bold">{eraEducationalContent[getEraContentKey(nextEra)].title}</p>
-                  <p>{eraEducationalContent[getEraContentKey(nextEra)].description}</p>
-                  {(nextEra === Era.GNT3 || nextEra === Era.GNT4) && (
-                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                      <span className="font-semibold">Industry impact:</span> {
-                        // Type assertion to safely access earlier era content
-                        (eraEducationalContent[getEraContentKey(nextEra)] as {industryImpact: string}).industryImpact
-                      }
-                    </p>
-                  )}
-                  {(nextEra === Era.GNT5 || nextEra === Era.GNT6 || nextEra === Era.GNT7) && (
-                    <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                      <span className="font-semibold">Potential impact:</span> {
-                        // Type assertion to safely access future era content
-                        (eraEducationalContent[getEraContentKey(nextEra)] as {potentialImpact: string}).potentialImpact
-                      }
-                    </p>
-                  )}
-                </div>
-              }
-              resourceColor="blue-400"
-            >
-              <span className="text-sm">Progress to {nextEra}</span>
-            </EducationalTooltip>
-            <span className="text-sm font-medium">{getNextEraProgress()}%</span>
+        {nextEra && (
+          <div className="mb-2">
+            <div className="flex justify-between items-center mb-1">
+              <EducationalTooltip
+                content={
+                  <div className="space-y-2">
+                    <p className="font-bold">{eraEducationalContent[getEraContentKey(nextEra)].title}</p>
+                    <p>{eraEducationalContent[getEraContentKey(nextEra)].description}</p>
+                    {(nextEra === Era.GNT3 || nextEra === Era.GNT4) && (
+                      <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                        <span className="font-semibold">Industry impact:</span> {
+                          // Type assertion to safely access earlier era content
+                          (eraEducationalContent[getEraContentKey(nextEra)] as {industryImpact: string}).industryImpact
+                        }
+                      </p>
+                    )}
+                    {(nextEra === Era.GNT5 || nextEra === Era.GNT6 || nextEra === Era.GNT7) && (
+                      <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
+                        <span className="font-semibold">Potential impact:</span> {
+                          // Type assertion to safely access future era content
+                          (eraEducationalContent[getEraContentKey(nextEra)] as {potentialImpact: string}).potentialImpact
+                        }
+                      </p>
+                    )}
+                  </div>
+                }
+                resourceColor="blue-400"
+              >
+                <span className="text-sm">Progress to {nextEra}</span>
+              </EducationalTooltip>
+              <span className="text-sm font-medium">{getNextEraProgress()}%</span>
+            </div>
+            <Progress value={getNextEraProgress()} className="h-2" />
           </div>
-          <Progress value={getNextEraProgress()} className="h-2" />
-        </div>
+        )}
       </div>
       
       {/* Next Era Requirements */}
-      <div className="mb-4">
-        <h3 className="text-md font-medium mb-2 flex items-center">
-          <MapPinIcon className="h-4 w-4 mr-1 text-blue-400" />
-          {nextEra} Requirements
-        </h3>
+      {nextEra && (
+        <div className="mb-4">
+          <h3 className="text-md font-medium mb-2 flex items-center">
+            <MapPinIcon className="h-4 w-4 mr-1 text-blue-400" />
+            {nextEra} Requirements
+          </h3>
         
         <div className="bg-gray-700 p-3 rounded-lg">
           <div className="grid grid-cols-2 gap-2 mb-3">
@@ -330,6 +322,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
           </div>
         </div>
       </div>
+      )}
       
       {/* Breakthroughs Section */}
       <div>

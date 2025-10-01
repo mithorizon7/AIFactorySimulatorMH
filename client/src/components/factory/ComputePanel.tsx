@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { ResourceTooltip } from '@/components/ui/educational-tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
-import { GameStateType, Era, TrainingStatus } from '@/lib/gameState';
+import { GameStateType, Era, TrainingStatus, getNextEra } from '@/lib/gameState';
 import { resourceDefinitions, enablingInputs } from '@/lib/educationalContent';
 
 interface ComputePanelProps {
@@ -18,23 +18,11 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
   const { computeCapacity } = gameState;
   const { toast } = useToast();
   
-  // Helper function to get next era
-  const getNextEra = (currentEra: Era): Era => {
-    switch (currentEra) {
-      case Era.GNT2: return Era.GNT3;
-      case Era.GNT3: return Era.GNT4;
-      case Era.GNT4: return Era.GNT5;
-      case Era.GNT5: return Era.GNT6;
-      case Era.GNT6: return Era.GNT7;
-      case Era.GNT7: return Era.GNT7; // Already at max
-    }
-  };
-  
   // Determine the next era that we're working towards
   const nextEra = getNextEra(gameState.currentEra);
   
   // Get the training run data for the next era if it exists
-  const targetTrainingRun = Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra) ? 
+  const targetTrainingRun = (nextEra && Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra)) ? 
     gameState.training.runs[nextEra as keyof typeof gameState.training.runs] : null;
   
   // Get active training run status if any

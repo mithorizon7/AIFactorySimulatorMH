@@ -9,6 +9,19 @@ export enum Era {
   GNT7 = "GNT-7"     // Final Phase (AGI Threshold)
 }
 
+// Helper function to get the next era in progression
+// Returns null if already at final era (GNT-7)
+export function getNextEra(currentEra: Era): Era | null {
+  const eraOrder = [Era.GNT2, Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7];
+  const currentIndex = eraOrder.indexOf(currentEra);
+  return currentIndex < eraOrder.length - 1 ? eraOrder[currentIndex + 1] : null;
+}
+
+// Helper function to check if an era is the final era
+export function isFinalEra(era: Era): boolean {
+  return era === Era.GNT7;
+}
+
 // Training run states
 export enum TrainingStatus {
   AVAILABLE = "available", // Prerequisites met, can start training

@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Sparkles
 } from "lucide-react";
-import { GameStateType, Era, TrainingStatus } from "@/lib/gameState";
+import { GameStateType, Era, TrainingStatus, getNextEra } from "@/lib/gameState";
 
 interface TrainingTabProps {
   gameState: GameStateType;
@@ -24,14 +24,6 @@ interface TrainingTabProps {
 
 export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
   const { training, currentEra, intelligence, levels, dataInputs, algorithmInputs, computeCapacity } = gameState;
-
-  // Determine the next era (returns null if already at final era)
-  const getNextEra = (currentEra: Era): Era | null => {
-    const eraOrder = [Era.GNT2, Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7];
-    const currentIndex = eraOrder.indexOf(currentEra);
-    // Return null if we're at the final era
-    return currentIndex < eraOrder.length - 1 ? eraOrder[currentIndex + 1] : null;
-  };
 
   const nextEra = getNextEra(currentEra);
   const nextTrainingRun = nextEra ? training.runs[nextEra as keyof typeof training.runs] : null;

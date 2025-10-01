@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { initialGameState, GameStateType, Era, GameEvent, TrainingStatus } from "@/lib/gameState";
+import { initialGameState, GameStateType, Era, GameEvent, TrainingStatus, getNextEra } from "@/lib/gameState";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { narrative } from "@/lib/narrativeContent";
@@ -181,20 +181,6 @@ export function useGameEngine() {
     // For now, we rely on manual progression through the TutorialGuide component
   };
 
-
-
-  // Helper function to get the next era
-  const getNextEra = (currentEra: Era): Era => {
-    switch (currentEra) {
-      case Era.GNT2: return Era.GNT3;
-      case Era.GNT3: return Era.GNT4;
-      case Era.GNT4: return Era.GNT5;
-      case Era.GNT5: return Era.GNT6;
-      case Era.GNT6: return Era.GNT7;
-      case Era.GNT7: return Era.GNT7; // Already at max
-    }
-  };
-  
   // startEraTrainingRun - begins a training run for the next era
   const startEraTrainingRun = () => {
     // Determine the target era based on current era (always the next one)
@@ -202,7 +188,7 @@ export function useGameEngine() {
     let nextEra = getNextEra(currentEra);
     
     // Check if already at max era
-    if (currentEra === Era.GNT7 && nextEra === Era.GNT7) {
+    if (nextEra === null) {
       toast({
         title: "Maximum Era Reached",
         description: "You have reached the highest era possible. Focus on reaching AGI by continuing to improve your AI.",
@@ -1889,8 +1875,8 @@ export function useGameEngine() {
             // Find the current active training run
             const activeEra = getNextEra(newState.currentEra);
             
-            // Skip if we're in final era or if the next era doesn't have a training run
-            if (newState.currentEra === Era.GNT7 || !(activeEra in newState.training.runs)) {
+            // Skip if we're in final era or if the next era doesn't exist
+            if (activeEra === null || !(activeEra in newState.training.runs)) {
               newState.training.active = false;
               newState.training.daysRemaining = 0;
               return newState;
@@ -1994,8 +1980,8 @@ export function useGameEngine() {
             if (newState.training.algorithmResearchProgress >= 100) {
               const nextEra = getNextEra(newState.currentEra);
               
-              // Handle special case for GNT-7 (final era) - no further training runs
-              if (newState.currentEra === Era.GNT7) {
+              // Handle special case for final era - no further training runs
+              if (nextEra === null) {
                 // Already at final era, no next training run
                 return newState;
               }
