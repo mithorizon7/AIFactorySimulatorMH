@@ -38,7 +38,7 @@ export const tutorialContent = {
       title: "Invest in Compute Infrastructure", 
       content: "Perfect! Now invest your starting funds to upgrade your Compute Level. This is essential for meeting training prerequisites.",
       context: "Real AI companies spend millions on compute infrastructure. OpenAI spent over $100M on computing resources for GPT-4.",
-      action: "Click the 'Invest $100' button to upgrade compute",
+      action: "Click the 'Invest in Compute Infrastructure' button to upgrade",
       targetElement: "compute-level-upgrade", 
       modalStyle: false,
       icon: "cpu"

@@ -799,7 +799,7 @@ export default function EconomicSection({
               <span className="text-xs bg-gray-700 text-amber-300 px-2 py-1 rounded">{revenue.subscribers.toLocaleString()} Subscribers</span>
             </div>
             <p className="text-xs text-gray-400 mb-2">
-              Launch an advertising campaign to immediately gain 1,000 new subscribers.
+              Launch an advertising campaign to gain new subscribers (scales with your AI's intelligence).
             </p>
             <button 
               className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${

@@ -51,6 +51,7 @@ export default function ResourceDetailPage({
   // Calculate actual upgrade costs
   const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
   const dataLevelCost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
+  const algorithmLevelCost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
   const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
   
   return (
@@ -279,11 +280,11 @@ export default function ResourceDetailPage({
                       that fundamentally change AI capabilities.
                     </p>
                     <Button 
-                      className={`w-full bg-purple-600 hover:bg-purple-700 ${money < 125 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full bg-purple-600 hover:bg-purple-700 ${money < algorithmLevelCost ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={allocateMoneyToAlgorithmArchitectures}
-                      disabled={money < 125}
+                      disabled={money < algorithmLevelCost}
                     >
-                      Invest $125
+                      Invest ${algorithmLevelCost}
                     </Button>
                   </div>
                 </div>
