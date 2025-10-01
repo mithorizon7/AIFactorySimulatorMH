@@ -278,6 +278,30 @@ export default function FactorySection({
 
   const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
 
+  // Cost calculation function that matches the game engine logic
+  const getScaledInvestmentCost = (baseCost: number, currentLevel: number, era: Era): number => {
+    // Base scaling factor increases with era to maintain challenge in advanced gameplay
+    const eraScalingFactor = era === Era.GNT2 ? 1.0 : 
+                            era === Era.GNT3 ? 1.2 : 
+                            era === Era.GNT4 ? 1.5 : 
+                            era === Era.GNT5 ? 2.0 : 
+                            era === Era.GNT6 ? 3.0 : 4.0; // GNT-7 and beyond
+
+    // Exponential scaling: each level costs significantly more
+    const levelScaling = Math.pow(1.4, currentLevel);
+    
+    // Late-game scaling for advanced eras to prevent trivialization  
+    const scaledCost = baseCost * levelScaling * eraScalingFactor;
+    
+    return Math.floor(scaledCost);
+  };
+
+  // Calculate actual upgrade costs
+  const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
+  const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
+  const hardwareCost = getScaledInvestmentCost(150, computeInputs.hardware, gameState.currentEra);
+  const regulationCost = getScaledInvestmentCost(120, computeInputs.regulation, gameState.currentEra);
+
   const getComputeBarWidth = () => {
     return Math.min((production.compute / 10) * 100, 100) + "%";
   };
@@ -440,14 +464,14 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 100 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < computeLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   onClick={allocateMoneyToCompute}
-                  disabled={money < 100}
+                  disabled={money < computeLevelCost}
                   data-tutorial-id="compute-level-upgrade"
                 >
                   <span>Invest in Compute Infrastructure</span>
-                  <span className="font-medium">$100</span>
+                  <span className="font-medium">${computeLevelCost}</span>
                 </button>
               </div>
               
@@ -477,13 +501,13 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 85 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < electricityCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   onClick={allocateMoneyToElectricity}
-                  disabled={money < 85}
+                  disabled={money < electricityCost}
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$85</span>
+                  <span className="font-medium">${electricityCost}</span>
                 </button>
               </div>
               
@@ -513,13 +537,13 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 150 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < hardwareCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   onClick={allocateMoneyToHardware}
-                  disabled={money < 150}
+                  disabled={money < hardwareCost}
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$150</span>
+                  <span className="font-medium">${hardwareCost}</span>
                 </button>
               </div>
               
@@ -548,13 +572,13 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 120 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < regulationCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   onClick={allocateMoneyToRegulations}
-                  disabled={money < 120}
+                  disabled={money < regulationCost}
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$120</span>
+                  <span className="font-medium">${regulationCost}</span>
                 </button>
               </div>
             </div>
