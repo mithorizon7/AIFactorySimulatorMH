@@ -3,6 +3,7 @@ import { initialGameState, GameStateType, Era, GameEvent, TrainingStatus, getNex
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { narrative } from "@/lib/narrativeContent";
+import { applyCappedBonus, addIntelligence, withBonuses, withRevenue, withFlags, updateRuns } from "@/lib/stateHelpers";
 
 export function useGameEngine() {
   const [gameState, setGameState] = useState<GameStateType>(() => {
@@ -140,27 +141,22 @@ export function useGameEngine() {
   };
 
   // Update victory statistics during gameplay
-  const updateVictoryStatistics = (state: GameStateType) => {
-    // Update time elapsed
-    if (state.victoryStats.gameStartTime > 0) {
-      state.victoryStats.totalTimeElapsed = Math.floor((Date.now() - state.victoryStats.gameStartTime) / 1000);
-    }
+  const updateVictoryStatistics = (state: GameStateType): GameStateType => {
+    // Calculate new values
+    const totalTimeElapsed = state.victoryStats.gameStartTime > 0 
+      ? Math.floor((Date.now() - state.victoryStats.gameStartTime) / 1000)
+      : state.victoryStats.totalTimeElapsed;
     
-    // Track peak money
-    state.victoryStats.peakMoney = Math.max(state.victoryStats.peakMoney, state.money);
+    const peakMoney = Math.max(state.victoryStats.peakMoney, state.money);
     
-    // Track total money earned (revenue increase from previous tick)
     const currentRevenue = state.revenue.b2b + state.revenue.b2c + state.revenue.investors;
-    state.victoryStats.totalMoneyEarned += currentRevenue;
+    const totalMoneyEarned = state.victoryStats.totalMoneyEarned + currentRevenue;
     
-    // Track peak subscribers (B2B = developers, B2C = subscribers)
-    state.victoryStats.peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.developers || 0);
-    state.victoryStats.peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.subscribers || 0);
+    const peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.developers || 0);
+    const peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.subscribers || 0);
     
-    // Track breakthroughs unlocked
-    state.victoryStats.breakthroughsUnlocked = state.breakthroughs.filter(b => b.unlocked).length;
+    const breakthroughsUnlocked = state.breakthroughs.filter(b => b.unlocked).length;
     
-    // Track highest era reached
     const eraToNumber = {
       [Era.GNT2]: 1,
       [Era.GNT3]: 2,
@@ -169,18 +165,26 @@ export function useGameEngine() {
       [Era.GNT6]: 5,
       [Era.GNT7]: 6
     };
-    state.victoryStats.erasReached = Math.max(state.victoryStats.erasReached, eraToNumber[state.currentEra] || 1);
+    const erasReached = Math.max(state.victoryStats.erasReached, eraToNumber[state.currentEra] || 1);
     
-    // Update final intelligence (continuously updated)
-    state.victoryStats.finalIntelligence = state.intelligence;
+    const hasAchievedAGI = state.intelligence >= state.agiThreshold || state.victoryStats.hasAchievedAGI;
     
-    // Track strategic decisions/achievements
-    // This could be enhanced later to track specific strategies
-    
-    // Mark AGI achievement
-    if (state.intelligence >= state.agiThreshold) {
-      state.victoryStats.hasAchievedAGI = true;
-    }
+    // Return new state with updated victoryStats
+    return {
+      ...state,
+      victoryStats: {
+        ...state.victoryStats,
+        totalTimeElapsed,
+        peakMoney,
+        totalMoneyEarned,
+        peakB2BSubscribers,
+        peakB2CSubscribers,
+        breakthroughsUnlocked,
+        erasReached,
+        finalIntelligence: state.intelligence,
+        hasAchievedAGI
+      }
+    };
   };
 
   const checkTutorialProgression = (state: GameStateType) => {
@@ -1902,7 +1906,7 @@ export function useGameEngine() {
           newState.daysElapsed += 1;
           
           // Update victory statistics continuously
-          updateVictoryStatistics(newState);
+          newState = updateVictoryStatistics(newState);
           
           // Check and process investment milestones
           checkInvestmentMilestones(newState);
