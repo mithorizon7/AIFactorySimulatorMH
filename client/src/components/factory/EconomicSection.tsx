@@ -33,6 +33,10 @@ export default function EconomicSection({
 }: EconomicSectionProps) {
   const { money, revenue } = gameState;
   
+  // Defense-in-depth: Safe capacity calculation
+  const safeMaxCapacity = Math.max(1, gameState.computeCapacity?.maxCapacity ?? 1);
+  const safeUsageRatio = gameState.computeCapacity.used / safeMaxCapacity;
+  
   // Local state for monthly fee slider
   const [tempMonthlyFee, setTempMonthlyFee] = useState(revenue.monthlyFee);
   
@@ -77,7 +81,7 @@ export default function EconomicSection({
         </h3>
         
         {/* Compute Capacity Warning */}
-        {gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 ? (
+        {safeUsageRatio >= 0.95 ? (
           <div className="mb-4 bg-red-900/30 border border-red-800 rounded-md p-2 text-xs text-red-300 flex items-center">
             <div className="relative flex h-2 w-2 mr-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -85,7 +89,7 @@ export default function EconomicSection({
             </div>
             <p>Critical system overload! Services severely degraded. Revenue reduced by up to 50% and customers are leaving.</p>
           </div>
-        ) : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9 ? (
+        ) : safeUsageRatio >= 0.9 ? (
           <div className="mb-4 bg-amber-900/30 border border-amber-800 rounded-md p-2 text-xs text-amber-300 flex items-center">
             <div className="relative flex h-2 w-2 mr-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -100,13 +104,13 @@ export default function EconomicSection({
           <div className="flex justify-between items-center text-xs mb-2">
             <span className="text-gray-400">Compute Usage:</span>
             <span className={`font-medium ${
-              gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95
+              safeUsageRatio >= 0.95
                 ? 'text-red-400'
-                : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9
+                : safeUsageRatio >= 0.9
                   ? 'text-amber-400'
                   : 'text-blue-400'
             }`}>
-              {gameState.computeCapacity.used} / {gameState.computeCapacity.maxCapacity} units
+              {gameState.computeCapacity.used} / {safeMaxCapacity} units
             </span>
           </div>
           
@@ -578,7 +582,7 @@ export default function EconomicSection({
             
             <div className="flex justify-between text-xs text-gray-400 mb-1">
               <span>Usage Breakdown:</span>
-              <span>{Math.round((gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity) * 100)}% of capacity</span>
+              <span>{Math.round(safeUsageRatio * 100)}% of capacity</span>
             </div>
             
             {/* Progress bar showing allocation */}
@@ -587,7 +591,7 @@ export default function EconomicSection({
               <div 
                 className="bg-blue-500 h-full" 
                 style={{ 
-                  width: `${Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100)}%` 
+                  width: `${Math.round((gameState.computeCapacity.customerUsage || 0) / safeMaxCapacity * 100)}%` 
                 }}
               ></div>
               
@@ -596,7 +600,7 @@ export default function EconomicSection({
                 className="bg-amber-500 h-full" 
                 style={{ 
                   width: `${Math.round(gameState.training.active ? 
-                    (gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) : 0)}%` 
+                    (gameState.training.computeReserved / safeMaxCapacity * 100) : 0)}%` 
                 }}
               ></div>
               
@@ -606,11 +610,11 @@ export default function EconomicSection({
             <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-1"></div>
-                <span className="text-gray-300">Customer Services: {Math.round((gameState.computeCapacity.customerUsage || 0) / gameState.computeCapacity.maxCapacity * 100)}%</span>
+                <span className="text-gray-300">Customer Services: {Math.round((gameState.computeCapacity.customerUsage || 0) / safeMaxCapacity * 100)}%</span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-amber-500 rounded-full mr-1"></div>
-                <span className="text-gray-300">Training Reserved: {Math.round(gameState.training.active ? (gameState.training.computeReserved / gameState.computeCapacity.maxCapacity * 100) : 0)}%</span>
+                <span className="text-gray-300">Training Reserved: {Math.round(gameState.training.active ? (gameState.training.computeReserved / safeMaxCapacity * 100) : 0)}%</span>
               </div>
             </div>
           </div>
