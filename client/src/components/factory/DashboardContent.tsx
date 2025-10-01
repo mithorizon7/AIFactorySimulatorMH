@@ -152,15 +152,17 @@ export default function DashboardContent({
       const avg = metrics.avgResourceLevel;
       const revenue = metrics.totalRevenue;
       
-      if (era === Era.GNT2 || (avg < 6 && revenue < 25000)) return { phase: 'foundation', era: 'startup' };
+      // Check specific era conditions first (most specific to least specific)
       if (era === Era.GNT2 && avg >= 6) return { phase: 'foundation', era: 'growth' };
+      if (era === Era.GNT2) return { phase: 'foundation', era: 'startup' };
       if (era === Era.GNT3) return { phase: 'scaling', era: 'early_scale' };  
       if (era === Era.GNT4) return { phase: 'scaling', era: 'mid_scale' };
       if (era === Era.GNT5) return { phase: 'advanced', era: 'optimization' };
       if (era === Era.GNT6) return { phase: 'advanced', era: 'breakthrough' };
       if (era === Era.GNT7) return { phase: 'advanced', era: 'agi_push' };
       
-      // Fallback based on progress
+      // Fallback based on progress metrics for edge cases
+      if (avg < 6 && revenue < 25000) return { phase: 'foundation', era: 'startup' };
       if (metrics.agiProgress < 0.2) return { phase: 'foundation', era: 'startup' };
       if (metrics.agiProgress < 0.5) return { phase: 'scaling', era: 'early_scale' };
       if (metrics.agiProgress < 0.8) return { phase: 'advanced', era: 'optimization' };

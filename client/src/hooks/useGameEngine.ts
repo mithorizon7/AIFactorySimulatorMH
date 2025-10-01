@@ -1895,15 +1895,30 @@ export function useGameEngine() {
             // Check if the training run is in progress
             // The activeTrainingRun should always exist at this point due to our previous checks
             if (activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
-              // Also update the days remaining on the specific training run
-              activeTrainingRun.daysRemaining -= 1;
+              // Create immutable copy of training runs
+              newState.training = {
+                ...newState.training,
+                runs: { ...newState.training.runs }
+              };
+              
+              // Create immutable copy of the active training run
+              const updatedTrainingRun = {
+                ...activeTrainingRun,
+                daysRemaining: activeTrainingRun.daysRemaining - 1
+              };
+              
+              // Update the runs with the new training run object
+              newState.training.runs[activeEra as keyof typeof newState.training.runs] = updatedTrainingRun as any;
               
               // Check if the training run is complete
               if (newState.training.daysRemaining <= 0) {
-                // Mark the run as complete
-                activeTrainingRun.status = TrainingStatus.COMPLETE;
-                activeTrainingRun.isTrainingReserveActive = false;
-                activeTrainingRun.daysRemaining = 0; // Ensure days remaining is exactly 0
+                // Mark the run as complete with immutable update
+                newState.training.runs[activeEra as keyof typeof newState.training.runs] = {
+                  ...updatedTrainingRun,
+                  status: TrainingStatus.COMPLETE,
+                  isTrainingReserveActive: false,
+                  daysRemaining: 0
+                } as any;
                 
                 // Release the reserved compute
                 newState.computeCapacity.used = Math.max(0, newState.computeCapacity.used - newState.training.computeReserved);
@@ -2007,8 +2022,15 @@ export function useGameEngine() {
                 if (newState.computeInputs.regulation < nextTrainingRun.prerequisites.computeInputs.regulation) allPrereqsMet = false;
                 
                 if (allPrereqsMet) {
-                  // Unlock the training run
-                  nextTrainingRun.status = TrainingStatus.AVAILABLE;
+                  // Unlock the training run with immutable update
+                  newState.training = {
+                    ...newState.training,
+                    runs: { ...newState.training.runs }
+                  };
+                  newState.training.runs[nextEra as keyof typeof newState.training.runs] = {
+                    ...nextTrainingRun,
+                    status: TrainingStatus.AVAILABLE
+                  } as any;
                   
                   // Notify the player
                   toast({

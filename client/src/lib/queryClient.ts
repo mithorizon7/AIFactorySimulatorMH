@@ -142,26 +142,3 @@ export const queryClient = new QueryClient({
     },
   },
 });
-
-// Global error handler for React Query v5 (onError in defaultOptions is deprecated)
-queryClient.setMutationDefaults(['*'], {
-  onError: (error: any) => {
-    // Show user-friendly error toast for mutation failures
-    if (error instanceof FrontendError) {
-      showErrorToast(error, 'Operation Failed');
-    } else {
-      showErrorToast('Operation failed. Please try again.', 'Error');
-    }
-  },
-});
-
-queryClient.setQueryDefaults(['*'], {
-  onError: (error: any) => {
-    // Show user-friendly error toast for query failures
-    if (error instanceof FrontendError) {
-      showErrorToast(error, 'Failed to Load Data');
-    } else {
-      showErrorToast('Unable to load data. Please try again.', 'Connection Error');
-    }
-  },
-});
