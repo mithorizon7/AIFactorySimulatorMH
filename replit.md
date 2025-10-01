@@ -91,6 +91,13 @@ Three main resource factories:
 
 ## Changelog
 
+- October 1, 2025. **PLATFORM UNLOCK VISUAL HIGHLIGHTING COMPLETE**: Implemented comprehensive visual highlighting system to ensure inattentive players notice new platform features (API/Chatbot):
+  1. **Economy Tab Highlighting**: Pulsing green ring + shadow + notification dot on Economy tab when platforms unlock, making it impossible to miss
+  2. **Build Platform Button Highlights**: Individual button highlights with color-coded pulsing rings (blue for API, purple for Chatbot), glowing shadows, and animated notification dots
+  3. **Trigger Logic**: Highlights automatically appear when GNT-3 unlocks API platform or GNT-4 unlocks Chatbot platform, combined with existing Spark notification messages
+  4. **Clear Logic**: Highlights persist until player builds the platform, ensuring they can't miss the feature even if initially inattentive
+  5. **Immutable State Management**: Fixed critical React state management - all narrative flag updates use proper immutable patterns to ensure reliable UI updates and prevent stale state bugs
+  6. **Complete Flow**: Unlock → Tab highlight appears → Player navigates to Economy → Button highlight visible → Player builds platform → All highlights clear
 - September 30, 2025. **TUTORIAL NARRATIVE ACCURACY FIX**: Corrected false educational claims about funding rounds matching training costs. Tutorial previously implied Series A ($5K) covered GNT-3 training, but GNT-3 actually costs $25K plus $8K for API platform ($33K total). Updated Phase 3 Step 3 and Phase 4 Step 1 to show complete economics: GNT-3 requires $33K (training + platform) vs $5K funding; GNT-4 requires $115K vs $25K funding. Tutorial now accurately teaches players must generate customer revenue to fill funding gaps, mirroring real AI companies like OpenAI that needed API revenue to fund GPT-4's $100M+ training costs. This ensures educational content matches actual game balance and provides accurate AI economics lessons.
 - September 30, 2025. **ALWAYS-ACCESSIBLE LEADERBOARD WITH GAME PAUSE COMPLETE**: Implemented motivational leaderboard system accessible anytime with automatic game pause and reset confirmation:
   1. **LeaderboardModal Component**: Created standalone modal displaying top 20 AGI achievers with rank medals (🥇🥈🥉), player stats (intelligence, time, money, users), strategy badges (B2B/B2C/Speed Run), and empty state messaging

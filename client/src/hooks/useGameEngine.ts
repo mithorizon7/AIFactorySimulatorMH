@@ -2476,12 +2476,18 @@ const buildApiPlatform = () => {
   
   if (gameState.money >= buildCost) {
     setGameState(prevState => {
-      const newState = { ...prevState };
+      let newState = { ...prevState };
       newState.money -= buildCost;
       newState.revenue.apiPlatformBuilt = true;
       
-      // Clear highlight flag now that platform is built
-      newState.narrativeFlags.highlightApiPlatform = false;
+      // Clear highlight flag now that platform is built (immutable update)
+      newState = {
+        ...newState,
+        narrativeFlags: {
+          ...newState.narrativeFlags,
+          highlightApiPlatform: false
+        }
+      };
       
       // Check for breakthroughs
       newState.breakthroughs = checkBreakthroughs(newState);
@@ -2508,12 +2514,18 @@ const buildChatbotPlatform = () => {
   
   if (gameState.money >= buildCost) {
     setGameState(prevState => {
-      const newState = { ...prevState };
+      let newState = { ...prevState };
       newState.money -= buildCost;
       newState.revenue.chatbotPlatformBuilt = true;
       
-      // Clear highlight flag now that platform is built
-      newState.narrativeFlags.highlightChatbotPlatform = false;
+      // Clear highlight flag now that platform is built (immutable update)
+      newState = {
+        ...newState,
+        narrativeFlags: {
+          ...newState.narrativeFlags,
+          highlightChatbotPlatform: false
+        }
+      };
       
       // Check for breakthroughs
       newState.breakthroughs = checkBreakthroughs(newState);
