@@ -1640,23 +1640,32 @@ export function useGameEngine() {
     const cost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
     if (gameState.money >= cost) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.computeInputs.money += 1;
-        
-        // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += cost;
-        
-        // Also increase compute level for training prerequisites
-        newState.levels.compute += 1;
-        
-        // Increase compute production based on money input
-        newState.production.compute *= 1.1;
-        
-        // Improve cross-resource bonuses
-        newState.bonuses.computeToData *= 1.05;
-        newState.bonuses.computeToAlgorithm *= 1.05;
-        newState.bonuses.computeToIntelligence *= 1.05;
+        let newState = {
+          ...prevState,
+          money: prevState.money - cost,
+          computeInputs: {
+            ...prevState.computeInputs,
+            money: prevState.computeInputs.money + 1
+          },
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
+          },
+          levels: {
+            ...prevState.levels,
+            compute: prevState.levels.compute + 1
+          },
+          production: {
+            ...prevState.production,
+            compute: prevState.production.compute * 1.1
+          },
+          bonuses: {
+            ...prevState.bonuses,
+            computeToData: prevState.bonuses.computeToData * 1.05,
+            computeToAlgorithm: prevState.bonuses.computeToAlgorithm * 1.05,
+            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.05
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -1681,25 +1690,32 @@ export function useGameEngine() {
     const cost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
     if (gameState.money >= cost) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.dataInputs.quality += 1;
-        
-        // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += cost;
-        
-        // *** ADD THIS LINE ***
-        // This brings the Data resource in line with Compute and Algorithm,
-        // ensuring that investing in data quality also increases the overall data level.
-        newState.levels.data += 1;
-        
-        // Increase data production based on quality improvements
-        newState.production.data *= 1.1;
-        
-        // Improve cross-resource bonuses
-        newState.bonuses.dataToCompute *= 1.05;
-        newState.bonuses.dataToAlgorithm *= 1.05;
-        newState.bonuses.dataToIntelligence *= 1.05;
+        let newState = {
+          ...prevState,
+          money: prevState.money - cost,
+          dataInputs: {
+            ...prevState.dataInputs,
+            quality: prevState.dataInputs.quality + 1
+          },
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
+          },
+          levels: {
+            ...prevState.levels,
+            data: prevState.levels.data + 1
+          },
+          production: {
+            ...prevState.production,
+            data: prevState.production.data * 1.1
+          },
+          bonuses: {
+            ...prevState.bonuses,
+            dataToCompute: prevState.bonuses.dataToCompute * 1.05,
+            dataToAlgorithm: prevState.bonuses.dataToAlgorithm * 1.05,
+            dataToIntelligence: prevState.bonuses.dataToIntelligence * 1.05
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -1725,26 +1741,32 @@ export function useGameEngine() {
     
     if (gameState.money >= cost) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.algorithmInputs.architectures += 1;
-        
-        // Track total investment spending
-        newState.narrativeFlags.totalInvestmentAmount += cost;
-        
-        // Increase algorithm production based on architecture improvements
-        newState.production.algorithm *= 1.15;
-        
-        // Research rate bonus from better engineers
-        // This directly impacts the research progress calculation in the game loop
-        
-        // Also increase algorithm level for training prerequisites
-        newState.levels.algorithm += 1;
-        
-        // Improve cross-resource bonuses
-        newState.bonuses.algorithmToCompute *= 1.05;
-        newState.bonuses.algorithmToData *= 1.05;
-        newState.bonuses.algorithmToIntelligence *= 1.07; // Algorithms have slightly more impact on intelligence
+        let newState = {
+          ...prevState,
+          money: prevState.money - cost,
+          algorithmInputs: {
+            ...prevState.algorithmInputs,
+            architectures: prevState.algorithmInputs.architectures + 1
+          },
+          narrativeFlags: {
+            ...prevState.narrativeFlags,
+            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
+          },
+          production: {
+            ...prevState.production,
+            algorithm: prevState.production.algorithm * 1.15
+          },
+          levels: {
+            ...prevState.levels,
+            algorithm: prevState.levels.algorithm + 1
+          },
+          bonuses: {
+            ...prevState.bonuses,
+            algorithmToCompute: prevState.bonuses.algorithmToCompute * 1.05,
+            algorithmToData: prevState.bonuses.algorithmToData * 1.05,
+            algorithmToIntelligence: prevState.bonuses.algorithmToIntelligence * 1.07
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -1771,14 +1793,18 @@ export function useGameEngine() {
     
     if (gameState.money >= engineerCost) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= engineerCost;
-        
-        // Increment research engineers count
-        newState.algorithmInputs.researchEngineers = (newState.algorithmInputs.researchEngineers || 0) + 1;
-        
-        // Each engineer increases algorithm research rate by 0.5 per day
-        newState.training.algorithmResearchRate += 0.5;
+        let newState = {
+          ...prevState,
+          money: prevState.money - engineerCost,
+          algorithmInputs: {
+            ...prevState.algorithmInputs,
+            researchEngineers: (prevState.algorithmInputs.researchEngineers || 0) + 1
+          },
+          training: {
+            ...prevState.training,
+            algorithmResearchRate: prevState.training.algorithmResearchRate + 0.5
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -2161,17 +2187,24 @@ export function useGameEngine() {
     const cost = getScaledInvestmentCost(85, gameState.computeInputs.electricity, gameState.currentEra);
     if (gameState.money >= cost) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.computeInputs.electricity += 1;
-        
-        // Improve compute production based on better electricity
-        newState.production.compute *= 1.08;
-        
-        // Electricity is foundational, so it has a smaller but broader effect
-        newState.bonuses.computeToData *= 1.03;
-        newState.bonuses.computeToAlgorithm *= 1.03;
-        newState.bonuses.computeToIntelligence *= 1.03;
+        let newState = {
+          ...prevState,
+          money: prevState.money - cost,
+          computeInputs: {
+            ...prevState.computeInputs,
+            electricity: prevState.computeInputs.electricity + 1
+          },
+          production: {
+            ...prevState.production,
+            compute: prevState.production.compute * 1.08
+          },
+          bonuses: {
+            ...prevState.bonuses,
+            computeToData: prevState.bonuses.computeToData * 1.03,
+            computeToAlgorithm: prevState.bonuses.computeToAlgorithm * 1.03,
+            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.03
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -2195,15 +2228,22 @@ export function useGameEngine() {
   const allocateMoneyToHardware = () => {
     if (gameState.money >= 150) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= 150;
-        newState.computeInputs.hardware += 1;
-        
-        // Hardware has a strong effect on compute production
-        newState.production.compute *= 1.2;
-        
-        // Hardware quality has significant impact on intelligence
-        newState.bonuses.computeToIntelligence *= 1.1;
+        let newState = {
+          ...prevState,
+          money: prevState.money - 150,
+          computeInputs: {
+            ...prevState.computeInputs,
+            hardware: prevState.computeInputs.hardware + 1
+          },
+          production: {
+            ...prevState.production,
+            compute: prevState.production.compute * 1.2
+          },
+          bonuses: {
+            ...prevState.bonuses,
+            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.1
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
@@ -2227,15 +2267,22 @@ export function useGameEngine() {
   const allocateMoneyToRegulations = () => {
     if (gameState.money >= 120) {
       setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= 120;
-        newState.computeInputs.regulation += 1;
-        
-        // Regulatory compliance helps remove barriers to compute
-        newState.production.compute *= 1.15;
-        
-        // Regulatory environment affects investor confidence
-        newState.revenue.investors += 200;
+        let newState = {
+          ...prevState,
+          money: prevState.money - 120,
+          computeInputs: {
+            ...prevState.computeInputs,
+            regulation: prevState.computeInputs.regulation + 1
+          },
+          production: {
+            ...prevState.production,
+            compute: prevState.production.compute * 1.15
+          },
+          revenue: {
+            ...prevState.revenue,
+            investors: prevState.revenue.investors + 200
+          }
+        };
         
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
