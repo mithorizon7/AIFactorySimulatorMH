@@ -63,24 +63,34 @@ export function useGameEngine() {
       const newState = { ...prevState };
       
       // Get current phase and step
-      const currentPhase = newState.tutorial.phase;
-      const currentStep = newState.tutorial.step;
+      const currentPhase = prevState.tutorial.phase;
+      const currentStep = prevState.tutorial.step;
       
       // Define phase limits (steps per phase)
       const phaseLimits = { 1: 2, 2: 6, 3: 3, 4: 3 };
       const maxStepForPhase = phaseLimits[currentPhase as keyof typeof phaseLimits] || 1;
       
+      // Create immutable copy of tutorial state
       if (currentStep < maxStepForPhase) {
         // Advance within current phase
-        newState.tutorial.step += 1;
+        newState.tutorial = {
+          ...prevState.tutorial,
+          step: currentStep + 1
+        };
       } else if (currentPhase < 4) {
         // Move to next phase
-        newState.tutorial.phase += 1;
-        newState.tutorial.step = 1;
+        newState.tutorial = {
+          ...prevState.tutorial,
+          phase: currentPhase + 1,
+          step: 1
+        };
       } else {
         // Tutorial is complete
-        newState.tutorial.isCompleted = true;
-        newState.tutorial.isActive = false;
+        newState.tutorial = {
+          ...prevState.tutorial,
+          isCompleted: true,
+          isActive: false
+        };
         
         toast({
           title: "Tutorial Complete!",
@@ -283,7 +293,15 @@ export function useGameEngine() {
           const newState = { ...prevState };
           if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
             const typedEra = nextEra as keyof typeof newState.training.runs;
-            newState.training.runs[typedEra].status = TrainingStatus.AVAILABLE;
+            // Create immutable copy of training state
+            newState.training = {
+              ...prevState.training,
+              runs: { ...prevState.training.runs }
+            };
+            newState.training.runs[typedEra] = {
+              ...prevState.training.runs[typedEra],
+              status: TrainingStatus.AVAILABLE
+            } as any;
           }
           return newState;
         });
@@ -321,25 +339,35 @@ export function useGameEngine() {
     setGameState(prevState => {
       const newState = { ...prevState };
 
-      // *** ADD THIS LINE ***
       // Deduct the monetary cost
       newState.money -= trainingRun.moneyCost;
       
-      // Reserve the compute for training
-      newState.computeCapacity.available -= trainingRun.computeRequired;
-      newState.computeCapacity.used += trainingRun.computeRequired;
+      // Create immutable copy of computeCapacity
+      newState.computeCapacity = {
+        ...prevState.computeCapacity,
+        available: prevState.computeCapacity.available - trainingRun.computeRequired,
+        used: prevState.computeCapacity.used + trainingRun.computeRequired
+      };
       
-      // Update training status
-      newState.training.active = true;
-      newState.training.daysRemaining = trainingRun.daysRequired;
-      newState.training.computeReserved = trainingRun.computeRequired;
+      // Create immutable copy of training state
+      newState.training = {
+        ...prevState.training,
+        active: true,
+        daysRemaining: trainingRun.daysRequired,
+        computeReserved: trainingRun.computeRequired,
+        runs: { ...prevState.training.runs }
+      };
       
       // Update the specific training run if it exists
       if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
         const typedEra = nextEra as keyof typeof newState.training.runs;
-        newState.training.runs[typedEra].status = TrainingStatus.IN_PROGRESS;
-        newState.training.runs[typedEra].daysRemaining = trainingRun.daysRequired;
-        newState.training.runs[typedEra].isTrainingReserveActive = true;
+        const currentRun = prevState.training.runs[typedEra];
+        newState.training.runs[typedEra] = {
+          ...currentRun,
+          status: TrainingStatus.IN_PROGRESS,
+          daysRemaining: trainingRun.daysRequired,
+          isTrainingReserveActive: true
+        } as any;
       }
       
       toast({
@@ -1299,9 +1327,10 @@ export function useGameEngine() {
       const marketDemandFactor = Math.min(2.0, 1 + (newState.revenue.developers / 1000)); // Caps at 2x for 1000+ developers
       
       // Service quality factor: Poor service = must reduce rates
+      const maxCap = Math.max(1, newState.computeCapacity.maxCapacity); // Prevent division by zero
       const serviceQualityFactor = Math.max(0.5, 
-        newState.computeCapacity.used / newState.computeCapacity.maxCapacity < 0.9 ? 1.0 : 
-        newState.computeCapacity.used / newState.computeCapacity.maxCapacity < 0.95 ? 0.8 : 0.6
+        newState.computeCapacity.used / maxCap < 0.9 ? 1.0 : 
+        newState.computeCapacity.used / maxCap < 0.95 ? 0.8 : 0.6
       );
       
       // Developer tools factor: Better tools = can charge premium rates
@@ -1356,7 +1385,8 @@ export function useGameEngine() {
       let serviceQualityRatio = 1.0; // Default: full quality
       
       // Check compute capacity thresholds based on potential usage
-      const usageRatio = (newState.computeCapacity.used + potentialTotalComputeUsage) / newState.computeCapacity.maxCapacity;
+      const maxCap = Math.max(1, newState.computeCapacity.maxCapacity); // Prevent division by zero
+      const usageRatio = (newState.computeCapacity.used + potentialTotalComputeUsage) / maxCap;
       const isApproachingCapacity = usageRatio >= 0.9 && usageRatio < 0.95;
       const isCriticalCapacity = usageRatio >= 0.95;
       
@@ -1395,7 +1425,7 @@ export function useGameEngine() {
       }
       
       // If we don't have enough compute for the potential demand, reduce service quality
-      if (newState.computeCapacity.available < potentialTotalComputeUsage) {
+      if (newState.computeCapacity.available < potentialTotalComputeUsage && potentialTotalComputeUsage > 0) {
         // Calculate how much compute we can actually provide compared to what's needed
         serviceQualityRatio = Math.min(serviceQualityRatio, newState.computeCapacity.available / potentialTotalComputeUsage);
         
@@ -1785,7 +1815,7 @@ export function useGameEngine() {
       (state.bonuses.dataToCompute - 1) + 
       (state.bonuses.algorithmToCompute - 1);
     
-    newState.production.compute = 
+    const newCompute = 
       (state.production.compute * 0.8) + // Base production with mild decay to prevent runaway growth
       computeEnablingInputsBonus * (1 + computeSynergyBonus);
     
@@ -1799,7 +1829,7 @@ export function useGameEngine() {
       (state.bonuses.computeToData - 1) + 
       (state.bonuses.algorithmToData - 1);
     
-    newState.production.data = 
+    const newData = 
       (state.production.data * 0.8) + 
       dataEnablingInputsBonus * (1 + dataSynergyBonus);
     
@@ -1811,9 +1841,16 @@ export function useGameEngine() {
       (state.bonuses.computeToAlgorithm - 1) + 
       (state.bonuses.dataToAlgorithm - 1);
     
-    newState.production.algorithm = 
+    const newAlgorithm = 
       (state.production.algorithm * 0.8) + 
       algoEnablingInputsBonus * (1 + algoSynergyBonus);
+    
+    // Create new production object instead of mutating
+    newState.production = {
+      compute: newCompute,
+      data: newData,
+      algorithm: newAlgorithm
+    };
     
     return newState;
   };
