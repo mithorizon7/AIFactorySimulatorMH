@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, Era } from "@/lib/gameState";
 import { formatCurrency } from "@/lib/utils";
 
 interface ResourceDetailPageProps {
@@ -35,6 +35,23 @@ export default function ResourceDetailPage({
   onClose
 }: ResourceDetailPageProps) {
   const { money, computeInputs, dataInputs, algorithmInputs } = gameState;
+  
+  // Cost calculation function that matches the game engine logic
+  const getScaledInvestmentCost = (baseCost: number, currentLevel: number, era: Era): number => {
+    const eraScalingFactor = era === Era.GNT2 ? 1.0 : 
+                            era === Era.GNT3 ? 1.2 : 
+                            era === Era.GNT4 ? 1.5 : 
+                            era === Era.GNT5 ? 2.0 : 
+                            era === Era.GNT6 ? 3.0 : 4.0;
+    const levelScaling = Math.pow(1.4, currentLevel);
+    const scaledCost = baseCost * levelScaling * eraScalingFactor;
+    return Math.floor(scaledCost);
+  };
+  
+  // Calculate actual upgrade costs
+  const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
+  const dataLevelCost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
+  const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
@@ -80,11 +97,11 @@ export default function ResourceDetailPage({
                       and increased processing capabilities.
                     </p>
                     <Button 
-                      className={`w-full bg-blue-600 hover:bg-blue-700 ${money < 100 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full bg-blue-600 hover:bg-blue-700 ${money < computeLevelCost ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={allocateMoneyToCompute}
-                      disabled={money < 100}
+                      disabled={money < computeLevelCost}
                     >
-                      Invest $100
+                      Invest ${computeLevelCost}
                     </Button>
                   </div>
                   
@@ -101,11 +118,11 @@ export default function ResourceDetailPage({
                       more energy-efficient computing.
                     </p>
                     <Button 
-                      className={`w-full bg-blue-600 hover:bg-blue-700 ${money < 85 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full bg-blue-600 hover:bg-blue-700 ${money < electricityCost ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={allocateMoneyToElectricity}
-                      disabled={money < 85}
+                      disabled={money < electricityCost}
                     >
-                      Invest $85
+                      Invest ${electricityCost}
                     </Button>
                   </div>
                   
@@ -186,11 +203,11 @@ export default function ResourceDetailPage({
                       more accurate and fair AI models.
                     </p>
                     <Button 
-                      className={`w-full bg-green-600 hover:bg-green-700 ${money < 75 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full bg-green-600 hover:bg-green-700 ${money < dataLevelCost ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={allocateMoneyToDataQuality}
-                      disabled={money < 75}
+                      disabled={money < dataLevelCost}
                     >
-                      Invest $75
+                      Invest ${dataLevelCost}
                     </Button>
                   </div>
                   

@@ -298,9 +298,14 @@ export default function FactorySection({
 
   // Calculate actual upgrade costs
   const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
+  const dataLevelCost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
+  const algorithmLevelCost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
   const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
-  const hardwareCost = getScaledInvestmentCost(150, computeInputs.hardware, gameState.currentEra);
-  const regulationCost = getScaledInvestmentCost(120, computeInputs.regulation, gameState.currentEra);
+  
+  // Fixed costs (do not scale with level or era)
+  const hardwareCost = 150;
+  const regulationCost = 120;
+  const engineerCost = 250;
 
   const getComputeBarWidth = () => {
     return Math.min((production.compute / 10) * 100, 100) + "%";
@@ -716,14 +721,14 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 75 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                   }`}
                   onClick={allocateMoneyToDataQuality}
-                  disabled={money < 75}
+                  disabled={money < dataLevelCost}
                   data-tutorial-id="data-quality-upgrade"
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$75</span>
+                  <span className="font-medium">${dataLevelCost}</span>
                 </button>
               </div>
               
@@ -936,28 +941,26 @@ export default function FactorySection({
                 <div className="grid grid-cols-2 gap-2">
                   <button 
                     className={`py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                      money < 125 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                      money < algorithmLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
                     }`}
                     onClick={allocateMoneyToAlgorithmArchitectures}
-                    disabled={money < 125}
+                    disabled={money < algorithmLevelCost}
                     data-tutorial-id="algorithm-architecture-upgrade"
                   >
                     <span>Improve Architectures</span>
-                    <span className="font-medium">${gameState.algorithmInputs.architectures > 0 ? 
-                      Math.floor(125 * (1 + (gameState.algorithmInputs.architectures * 0.1))) : 
-                      125}</span>
+                    <span className="font-medium">${algorithmLevelCost}</span>
                   </button>
                   
                   {hireResearchEngineer && (
                     <button 
                       className={`py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                        money < 175 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                        money < engineerCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
                       }`}
                       onClick={hireResearchEngineer}
-                      disabled={money < 175}
+                      disabled={money < engineerCost}
                     >
                       <span>Hire Engineers</span>
-                      <span className="font-medium">$175</span>
+                      <span className="font-medium">${engineerCost}</span>
                     </button>
                   )}
                 </div>

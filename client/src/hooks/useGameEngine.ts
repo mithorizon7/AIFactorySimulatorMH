@@ -2223,7 +2223,7 @@ export function useGameEngine() {
     } else {
       toast({
         title: "Not enough money",
-        description: "You need at least $85 to improve power infrastructure.",
+        description: `You need at least $${formatCurrency(cost)} to improve power infrastructure.`,
         variant: "destructive",
       });
     }
