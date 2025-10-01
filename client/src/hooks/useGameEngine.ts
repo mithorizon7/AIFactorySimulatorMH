@@ -445,7 +445,11 @@ export function useGameEngine() {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
             if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-              run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% cost reduction
+              // CRITICAL FIX: Create new run object instead of mutating
+              state.training.runs[typedEra] = {
+                ...run,
+                moneyCost: Math.floor(run.moneyCost * 0.90)
+              } as any;
             }
           });
         }
@@ -474,8 +478,12 @@ export function useGameEngine() {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
             if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-              run.computeRequired = Math.floor(run.computeRequired * 0.90); // 10% reduction
-              run.moneyCost = Math.floor(run.moneyCost * 0.90); // 10% reduction
+              // CRITICAL FIX: Create new run object instead of mutating
+              state.training.runs[typedEra] = {
+                ...run,
+                computeRequired: Math.floor(run.computeRequired * 0.90),
+                moneyCost: Math.floor(run.moneyCost * 0.90)
+              } as any;
             }
           });
         }
@@ -526,10 +534,14 @@ export function useGameEngine() {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
             if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
+              // CRITICAL FIX: Create new run object instead of mutating
               // This creates a combined 19% reduction (0.90 * 0.90 = 0.81 if few-shot was already applied)
               // But only if few-shot was unlocked first, otherwise just 10%
-              run.computeRequired = Math.floor(run.computeRequired * 0.90); // Additional 10% reduction
-              run.moneyCost = Math.floor(run.moneyCost * 0.90); // Additional 10% reduction  
+              state.training.runs[typedEra] = {
+                ...run,
+                computeRequired: Math.floor(run.computeRequired * 0.90),
+                moneyCost: Math.floor(run.moneyCost * 0.90)
+              } as any;
             }
           });
         }
@@ -617,8 +629,12 @@ export function useGameEngine() {
             const typedEra = era as keyof typeof state.training.runs;
             const run = state.training.runs[typedEra];
             if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-              run.computeRequired = Math.floor(run.computeRequired * 0.85); // Additional 15% reduction
-              run.moneyCost = Math.floor(run.moneyCost * 0.85); // Additional 15% reduction
+              // CRITICAL FIX: Create new run object instead of mutating
+              state.training.runs[typedEra] = {
+                ...run,
+                computeRequired: Math.floor(run.computeRequired * 0.85),
+                moneyCost: Math.floor(run.moneyCost * 0.85)
+              } as any;
             }
           });
         }
@@ -675,8 +691,12 @@ export function useGameEngine() {
           const typedEra = era as keyof typeof state.training.runs;
           const run = state.training.runs[typedEra];
           if (run.status === TrainingStatus.AVAILABLE || run.status === TrainingStatus.LOCKED) {
-            run.computeRequired = Math.floor(run.computeRequired * 0.70); // 30% reduction
-            run.moneyCost = Math.floor(run.moneyCost * 0.75); // 25% reduction
+            // CRITICAL FIX: Create new run object instead of mutating
+            state.training.runs[typedEra] = {
+              ...run,
+              computeRequired: Math.floor(run.computeRequired * 0.70),
+              moneyCost: Math.floor(run.moneyCost * 0.75)
+            } as any;
           }
         });
         // Improved compute efficiency
@@ -741,7 +761,8 @@ export function useGameEngine() {
     let breakthroughUnlocked = false;
     
     // Find the first unlocked breakthrough (throttling: one per tick maximum)
-    for (const breakthrough of updatedBreakthroughs) {
+    for (let i = 0; i < updatedBreakthroughs.length; i++) {
+      const breakthrough = updatedBreakthroughs[i];
       if (!breakthrough.unlocked && !breakthroughUnlocked) {
         let allRequirementsMet = true;
         
@@ -755,7 +776,8 @@ export function useGameEngine() {
         
         if (allRequirementsMet) {
           breakthroughUnlocked = true;
-          breakthrough.unlocked = true;
+          // CRITICAL FIX: Create new breakthrough object instead of mutating
+          updatedBreakthroughs[i] = { ...breakthrough, unlocked: true };
           
           // Apply specific game effects for this breakthrough (includes intelligence bonus)
           applyBreakthroughEffects(state, breakthrough.id);
