@@ -103,12 +103,12 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
         // Get player ranking
         const rankResponse = await apiRequest('GET', `/api/ranking/${Math.floor(gameState.intelligence)}`);
         const rankData = await rankResponse.json();
-        setRanking(rankData);
+        setRanking(rankData.data ?? rankData);
         
         // Get updated leaderboard
         const leaderboardResponse = await apiRequest('GET', '/api/leaderboard?limit=10');
         const leaderboardData = await leaderboardResponse.json();
-        setLeaderboard(leaderboardData);
+        setLeaderboard(leaderboardData.data ?? leaderboardData);
         
         setHasSubmitted(true);
         setShowLeaderboard(true);

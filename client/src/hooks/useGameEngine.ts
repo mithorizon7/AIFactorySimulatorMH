@@ -20,9 +20,15 @@ export function useGameEngine() {
   });
   const [isRunning, setIsRunning] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(initialGameState.timeElapsed);
+  const timeElapsedRef = useRef(initialGameState.timeElapsed);
   const [advisorMessage, setAdvisorMessage] = useState<any | null>(null);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  // Keep a ref for time-based logic inside the interval loop
+  useEffect(() => {
+    timeElapsedRef.current = timeElapsed;
+  }, [timeElapsed]);
 
   // Format time as MM:SS
   const formattedTime = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
@@ -49,6 +55,7 @@ export function useGameEngine() {
   const resetGame = () => {
     setIsRunning(false);
     setTimeElapsed(initialGameState.timeElapsed);
+    timeElapsedRef.current = initialGameState.timeElapsed;
     setGameState({ ...initialGameState });
     toast({
       title: "Game Reset",
@@ -149,8 +156,7 @@ export function useGameEngine() {
     
     const peakMoney = Math.max(state.victoryStats.peakMoney, state.money);
     
-    const currentRevenue = state.revenue.b2b + state.revenue.b2c + state.revenue.investors;
-    const totalMoneyEarned = state.victoryStats.totalMoneyEarned + currentRevenue;
+    const totalMoneyEarned = state.victoryStats.totalMoneyEarned;
     
     const peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.developers || 0);
     const peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.subscribers || 0);
@@ -975,6 +981,7 @@ export function useGameEngine() {
         
         // Add funding to the player's money
         state.money += milestone.funding;
+        state.victoryStats.totalMoneyEarned += milestone.funding;
         
         // Set the next milestone to check
         state.nextMilestoneId++;
@@ -1011,9 +1018,10 @@ export function useGameEngine() {
   // FAIL-SAFE FUNDING MECHANISM: Prevents players from getting completely stuck
   const checkFailSafeFunding = (state: GameStateType) => {
     // Emergency funding if player is stuck with very low money and hasn't progressed (ONE-TIME ONLY)
-    if (state.money < 50 && timeElapsed > 300 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGrantedEarlyGrant) {
+    if (state.money < 50 && timeElapsedRef.current > 300 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGrantedEarlyGrant) {
       const emergencyFunding = 2000 + Math.floor(state.intelligence * 5);
       state.money += emergencyFunding;
+      state.victoryStats.totalMoneyEarned += emergencyFunding;
       state.narrativeFlags.hasGrantedEarlyGrant = true;
       
       toast({
@@ -1024,7 +1032,7 @@ export function useGameEngine() {
     }
     
     // Major progress boost if player is severely behind pace (ONE-TIME ONLY + BREAKTHROUGH UNLOCK)
-    if (timeElapsed > 1200 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGranted20MinBoost) {
+    if (timeElapsedRef.current > 1200 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGranted20MinBoost) {
       // Mark breakthrough event as used
       state.narrativeFlags.hasGranted20MinBoost = true;
       
@@ -1047,6 +1055,7 @@ export function useGameEngine() {
       
       // Provide funding for investments
       state.money += 3000;
+      state.victoryStats.totalMoneyEarned += 3000;
       
       // CRITICAL: Immediately re-evaluate breakthroughs and era progression
       state.breakthroughs = checkBreakthroughs(state);
@@ -1062,6 +1071,7 @@ export function useGameEngine() {
     if (state.intelligence >= 750 && state.money < 100000 && state.currentEra === Era.GNT6 && !state.narrativeFlags.hasGrantedLateStageFunding) {
       const lateStageFunding = 500000;
       state.money += lateStageFunding;
+      state.victoryStats.totalMoneyEarned += lateStageFunding;
       state.narrativeFlags.hasGrantedLateStageFunding = true;
       
       toast({
@@ -1174,9 +1184,15 @@ export function useGameEngine() {
         state.production.algorithm *= impactModifier;
         break;
         
-      case 'money':
+      case 'money': {
+        const previousMoney = state.money;
         state.money *= impactModifier;
+        const moneyDelta = state.money - previousMoney;
+        if (moneyDelta > 0) {
+          state.victoryStats.totalMoneyEarned += moneyDelta;
+        }
         break;
+      }
         
       case 'regulation':
         state.computeInputs.regulation = Math.max(1, 
@@ -1235,7 +1251,7 @@ export function useGameEngine() {
       const developerToolsEffect = 1 + (newState.revenue.developerToolsLevel * 0.05);
       
       // Base growth rate (starts small and accelerates with intelligence)
-      if (timeElapsed % 5 === 0) { // Update every 5 seconds
+      if (timeElapsedRef.current % 5 === 0) { // Update every 5 seconds
         // Bootstrap initial developers if none yet
         if (newState.revenue.developers === 0) {
           // Initial developers based on intelligence (small number to start)
@@ -1283,7 +1299,7 @@ export function useGameEngine() {
     // Subscriber growth (only if service is available and enabled)
     if (newState.revenue.chatbotAvailable && newState.revenue.chatbotEnabled) {
       // Update subscribers count (every 10 seconds = monthly)
-      if (timeElapsed % 10 === 0 && timeElapsed > 0) {
+      if (timeElapsedRef.current % 10 === 0 && timeElapsedRef.current > 0) {
         // Bootstrap initial subscribers if none yet
         if (newState.revenue.subscribers === 0) {
           // Initial subscribers based on intelligence (small number to start)
@@ -1424,7 +1440,7 @@ export function useGameEngine() {
         serviceQualityRatio = Math.max(0.5, 0.7 - (0.2 * criticalPressure));
         
         // Notify about critical outages
-        if (timeElapsed % 10 === 0) {
+        if (timeElapsedRef.current % 10 === 0) {
           toast({
             title: "CRITICAL SYSTEM OVERLOAD!",
             description: "Your services are experiencing major outages. Expect significant customer loss and revenue impact.",
@@ -1440,7 +1456,7 @@ export function useGameEngine() {
         serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
         
         // Notify about service degradation
-        if (timeElapsed % 10 === 0) {
+        if (timeElapsedRef.current % 10 === 0) {
           toast({
             title: "Compute System Under Pressure",
             description: "Your system is experiencing intermittent outages. Upgrade your compute capacity to avoid customer loss.",
@@ -1456,7 +1472,7 @@ export function useGameEngine() {
         serviceQualityRatio = Math.min(serviceQualityRatio, newState.computeCapacity.available / potentialTotalComputeUsage);
         
         // Show a warning toast when service quality drops severely
-        if (timeElapsed % 10 === 0) {
+        if (timeElapsedRef.current % 10 === 0) {
           toast({
             title: "Critical Compute Shortage!",
             description: "Your services are severely degraded due to compute shortage. Significant customer loss is expected.",
@@ -1466,7 +1482,7 @@ export function useGameEngine() {
         }
         
         // Handle customer loss for severe outages (completely out of compute)
-        if (timeElapsed % 10 === 0) {
+        if (timeElapsedRef.current % 10 === 0) {
           // Max 25% churn for zero compute outages
           const severeChurnRate = 0.25 * (1 - serviceQualityRatio);
           
@@ -1509,7 +1525,7 @@ export function useGameEngine() {
       }
       
       // Additional churn mechanics for high load and critical load scenarios
-      if (timeElapsed % 10 === 0) {
+      if (timeElapsedRef.current % 10 === 0) {
         // Apply customer churn for warning (90-95%) and critical (95%+) load 
         if (isApproachingCapacity || isCriticalCapacity) {
           // Calculate churn rates based on severity
@@ -1615,29 +1631,33 @@ export function useGameEngine() {
     );
     
     // Early-game booster funding (first 2 minutes) - FIXED: prevent duplicate funding
-    if (timeElapsed < 120 && timeElapsed % 30 === 0 && timeElapsed > 0 && 
-        newState.narrativeFlags.lastSeedFundingTime !== timeElapsed) {
+    if (timeElapsedRef.current < 120 && timeElapsedRef.current % 30 === 0 && timeElapsedRef.current > 0 && 
+        newState.narrativeFlags.lastSeedFundingTime !== timeElapsedRef.current) {
       const seedFunding = 2000 + Math.floor(newState.intelligence * 10);
       newState.money += seedFunding;
-      newState.narrativeFlags.lastSeedFundingTime = timeElapsed; // Prevent duplicates
+      newState.victoryStats.totalMoneyEarned += seedFunding;
+      newState.narrativeFlags.lastSeedFundingTime = timeElapsedRef.current; // Prevent duplicates
       toast({
         title: "Seed Funding Received!",
         description: `You've secured $${formatCurrency(seedFunding)} in seed funding to help develop your AI.`,
       });
     }
     // Regular investor funding rounds - FIXED: prevent duplicate funding
-    else if (timeElapsed % 30 === 0 && timeElapsed > 0 && state.intelligence > minIntelligenceForInvestors &&
-             newState.narrativeFlags.lastInvestorFundingTime !== timeElapsed) {
+    else if (timeElapsedRef.current % 30 === 0 && timeElapsedRef.current > 0 && state.intelligence > minIntelligenceForInvestors &&
+             newState.narrativeFlags.lastInvestorFundingTime !== timeElapsedRef.current) {
       // Investor round happens every 30 seconds after reaching intelligence threshold
       newState.money += newState.revenue.investors;
-      newState.narrativeFlags.lastInvestorFundingTime = timeElapsed; // Prevent duplicates
+      newState.victoryStats.totalMoneyEarned += newState.revenue.investors;
+      newState.narrativeFlags.lastInvestorFundingTime = timeElapsedRef.current; // Prevent duplicates
       toast({
         title: "Investor Funding Received!",
         description: `You've secured $${formatCurrency(newState.revenue.investors)} in funding based on your progress!`,
       });
     } else {
       // Regular operational revenue from B2B and B2C
-      newState.money += newState.revenue.b2b + newState.revenue.b2c;
+      const operationalRevenue = newState.revenue.b2b + newState.revenue.b2c;
+      newState.money += operationalRevenue;
+      newState.victoryStats.totalMoneyEarned += operationalRevenue;
     }
     
     return newState;
@@ -1911,8 +1931,10 @@ export function useGameEngine() {
   useEffect(() => {
     if (isRunning) {
       const handleGameTick = () => {
-        // Increment time elapsed
-        setTimeElapsed(prevTime => prevTime + 1);
+        // Increment time elapsed (keep ref in sync for interval-safe logic)
+        const nextTimeElapsed = timeElapsedRef.current + 1;
+        timeElapsedRef.current = nextTimeElapsed;
+        setTimeElapsed(nextTimeElapsed);
 
         setGameState(prevState => {
           // Calculate updated production rates based on enabling inputs and synergies
@@ -1926,9 +1948,6 @@ export function useGameEngine() {
           // Increment game days elapsed (representing time passing)
           // Each real second = 1 in-game day
           newState.daysElapsed += 1;
-          
-          // Update victory statistics continuously
-          newState = updateVictoryStatistics(newState);
           
           // Check and process investment milestones
           checkInvestmentMilestones(newState);
@@ -2142,7 +2161,7 @@ export function useGameEngine() {
           
           // As money is invested in compute and hardware improves, max capacity increases
           // AGGRESSIVE SCALING: Much more aggressive exponential scaling to match 10x training requirements
-          if (timeElapsed % 10 === 0) { // Update max capacity every 10 seconds
+          if (timeElapsedRef.current % 10 === 0) { // Update max capacity every 10 seconds
             const baseCapacity = 2000;
             
             // MUCH MORE AGGRESSIVE exponential scaling based on compute level
@@ -2183,7 +2202,7 @@ export function useGameEngine() {
             (1 + synergyMultiplier);
           
           // Calculate revenue every 5 seconds
-          if (timeElapsed > 0 && timeElapsed % 5 === 0) {
+          if (timeElapsedRef.current > 0 && timeElapsedRef.current % 5 === 0) {
             newState = calculateRevenue(newState);
           }
           
@@ -2191,6 +2210,9 @@ export function useGameEngine() {
           if (newState.daysElapsed % 30 === 0 && Math.random() < 0.20) {
             checkAndTriggerEvents(newState);
           }
+
+          // Update victory statistics after all money changes are applied
+          newState = updateVictoryStatistics(newState);
           
           return newState;
         });
@@ -2680,7 +2702,7 @@ const buildChatbotPlatform = () => {
         newState.revenue.subscribers += subscribersGained;
         
         // Record last campaign time
-        newState.revenue.lastMarketingCampaign = timeElapsed;
+        newState.revenue.lastMarketingCampaign = timeElapsedRef.current;
         
         // Increase cost for next campaign
         newState.revenue.marketingCampaignCost = Math.round(newState.revenue.marketingCampaignCost * 1.5);

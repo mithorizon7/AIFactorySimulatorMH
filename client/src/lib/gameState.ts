@@ -289,7 +289,7 @@ export interface GameStateType {
     gameStartTime: number; // Timestamp when game started
     totalTimeElapsed: number; // Total time in seconds
     peakMoney: number; // Highest money amount achieved
-    totalMoneyEarned: number; // Total money earned throughout game
+    totalMoneyEarned: number; // Total money earned throughout game (all inflows)
     peakB2BSubscribers: number; // Highest B2B subscriber count
     peakB2CSubscribers: number; // Highest B2C subscriber count
     breakthroughsUnlocked: number; // Total breakthroughs achieved
@@ -1211,7 +1211,7 @@ export const initialGameState: GameStateType = {
     gameStartTime: 0, // Timestamp when game started
     totalTimeElapsed: 0, // Total time in seconds
     peakMoney: 0, // Highest money amount achieved
-    totalMoneyEarned: 0, // Total money earned throughout game
+    totalMoneyEarned: 0, // Total money earned throughout game (all inflows)
     peakB2BSubscribers: 0, // Highest B2B subscriber count
     peakB2CSubscribers: 0, // Highest B2C subscriber count
     breakthroughsUnlocked: 0, // Total breakthroughs achieved
