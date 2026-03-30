@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { GameStateType } from '@/lib/gameState';
+import { Era, GameStateType, getTrainingBlockers, getUpcomingTrainingRun } from '@/lib/gameState';
 import { narrative } from '@/lib/narrativeContent';
 
 export interface NarrativeMessage {
@@ -19,14 +19,14 @@ interface UseNarrativeTriggersProps {
   setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
 }
 
-// Helper function to check if training can be started (basic prerequisite check)
-function checkTrainingPrerequisites(gameState: GameStateType): boolean {
-  // Basic checks: has compute capacity, some algorithm research progress, and at least one breakthrough
-  const hasComputeCapacity = gameState.computeCapacity.used < gameState.computeCapacity.maxCapacity;
-  const hasAlgorithmProgress = gameState.training.algorithmResearchProgress > 30; // 30% minimum
-  const hasBreakthrough = gameState.breakthroughs.some(b => b.unlocked);
-  
-  return hasComputeCapacity && hasAlgorithmProgress && hasBreakthrough;
+function hasRealTrainingBlockers(gameState: GameStateType): boolean {
+  const upcomingTrainingRun = getUpcomingTrainingRun(gameState);
+
+  if (!upcomingTrainingRun || gameState.training.active || upcomingTrainingRun.status === 'complete') {
+    return false;
+  }
+
+  return getTrainingBlockers(gameState).length > 0;
 }
 
 // Helper function to check for resource imbalances
@@ -286,7 +286,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
 
     // 13. Chatbot Optimization Advice (running but growth is slow)
     if (gameState.revenue.chatbotEnabled && gameState.revenue.subscribers > 100 && 
-        gameState.revenue.subscriberGrowthRate < 100 && gameState.revenue.chatbotImprovementLevel === 1 && 
+        gameState.revenue.subscriberGrowthRate < 0.03 && gameState.revenue.chatbotImprovementLevel <= 1 && 
         gameState.money > 25000 && !gameState.narrativeFlags.shownChatbotOptimizationAdvice) {
       setGameState(prevState => ({
         ...prevState,
@@ -308,7 +308,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
 
     // 14. Era Advancements
     if (gameState.currentEra !== prevState.currentEra) {
-      const eraKey = `ERA_ADVANCE_${gameState.currentEra}` as keyof typeof narrative;
+      const eraKey = `ERA_ADVANCE_${gameState.currentEra.replace(/-/g, '')}` as keyof typeof narrative;
       if (narrative[eraKey]) {
         onShowMessage({
           id: `era-advance-${gameState.currentEra}`,
@@ -323,27 +323,29 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
     }
 
     // 11. Breakthrough Notifications
-    if (gameState.breakthroughs.length > prevState.breakthroughs.length) {
-      const newBreakthroughs = gameState.breakthroughs.slice(prevState.breakthroughs.length);
-      newBreakthroughs.forEach((breakthrough) => {
-        const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}` as keyof typeof narrative;
-        if (narrative[breakthroughKey]) {
-          onShowMessage({
-            id: `breakthrough-${breakthrough.id}`,
-            title: narrative[breakthroughKey].title,
-            content: narrative[breakthroughKey].content,
-            context: narrative[breakthroughKey].context,
-            timestamp: Date.now(),
-            priority: 'high',
-            category: 'breakthrough'
-          });
-        }
-      });
-    }
+    const newBreakthroughs = gameState.breakthroughs.filter((breakthrough) => {
+      const previousBreakthrough = prevState.breakthroughs.find((candidate) => candidate.id === breakthrough.id);
+      return breakthrough.unlocked && !previousBreakthrough?.unlocked;
+    });
+
+    newBreakthroughs.forEach((breakthrough) => {
+      const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}` as keyof typeof narrative;
+      if (narrative[breakthroughKey]) {
+        onShowMessage({
+          id: `breakthrough-${breakthrough.id}`,
+          title: narrative[breakthroughKey].title,
+          content: narrative[breakthroughKey].content,
+          context: narrative[breakthroughKey].context,
+          timestamp: Date.now(),
+          priority: 'high',
+          category: 'breakthrough'
+        });
+      }
+    });
 
     // 12. Training Strategy Hints
-    const totalRevenue = gameState.revenue.b2b + gameState.revenue.b2c + gameState.revenue.investors;
-    if (gameState.training.active && totalRevenue > 50000) {
+    const operationalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
+    if (gameState.training.active && operationalRevenue > 50000) {
       onShowMessage({
         id: 'training-strategy-hint',
         title: narrative.TRAINING_STRATEGY_HINT.title,
@@ -365,8 +367,8 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
       // Priority order: training-blocked > no-money > no-revenue > no-breakthroughs
       
       // 1. Unable to start training due to prerequisites (highest priority)
-      const canStartTraining = checkTrainingPrerequisites(gameState);
-      if (!canStartTraining && !gameState.training.active && 
+      const trainingBlocked = hasRealTrainingBlockers(gameState);
+      if (trainingBlocked && !gameState.training.active && 
           gameState.intelligence > 150 && !gameState.narrativeFlags.hasSeenStuckTrainingBlocked) {
         setGameState(prevState => ({
           ...prevState,
@@ -389,7 +391,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
         });
       }
       // 2. Stuck with no money and no revenue streams (check for actual revenue vs. enablement)
-      else if (gameState.money < 500 && totalRevenue === 0 && 
+      else if (gameState.money < 500 && operationalRevenue === 0 && 
                !gameState.narrativeFlags.hasSeenStuckNoMoney) {
         setGameState(prevState => ({
           ...prevState,
@@ -412,7 +414,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
         });
       }
       // 3. High intelligence but no revenue generation
-      else if (gameState.intelligence > 500 && totalRevenue === 0 && 
+      else if (gameState.intelligence > 500 && operationalRevenue === 0 && 
                !gameState.narrativeFlags.hasSeenStuckNoRevenue) {
         setGameState(prevState => ({
           ...prevState,
@@ -462,5 +464,4 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
     previousStateRef.current = gameState;
   }, [gameState, onShowMessage, setGameState]);
 }
-
 

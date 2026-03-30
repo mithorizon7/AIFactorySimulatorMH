@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, hasAchievedAgi } from "@/lib/gameState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SparkCharacter } from "@/components/character/SparkCharacter";
@@ -33,7 +33,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { toast } = useToast();
 
-  const isAGIAchieved = gameState.intelligence >= gameState.agiThreshold;
+  const isAGIAchieved = hasAchievedAgi(gameState);
   const unlockedBreakthroughs = gameState.breakthroughs.filter(b => b.unlocked);
   
   // Format time display

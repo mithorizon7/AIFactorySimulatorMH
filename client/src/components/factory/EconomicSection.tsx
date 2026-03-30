@@ -75,7 +75,7 @@ export default function EconomicSection({
           </svg>
           Revenue Statistics
           <ResourceTooltip 
-            content="Your revenue streams from various services. Services automatically activate as you advance through eras." 
+            content="Your revenue streams from productized AI services. Capabilities unlock through completed training runs, then you still choose whether to build and launch each business." 
             resourceColor="blue-400"
           >Learn</ResourceTooltip>
         </h3>
@@ -163,7 +163,7 @@ export default function EconomicSection({
                   </span>
                 ) : (
                   <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
-                    Unlocks in GNT-3 Era
+                    Unlocks after GNT-3 training
                   </span>
                 )}
               </div>
@@ -174,11 +174,11 @@ export default function EconomicSection({
               <div className="text-xs text-gray-300 mt-1 grid grid-cols-2 gap-2">
                 <div className="bg-gray-700/50 p-2 rounded">
                   <span className="text-gray-400">Current rate:</span>
-                  <div className="text-blue-300 font-medium">${formatCurrency(revenue.baseApiRate)}/tick</div>
+                  <div className="text-blue-300 font-medium">${formatCurrency(revenue.baseApiRate)} base rate</div>
                 </div>
                 <div className="bg-gray-700/50 p-2 rounded">
                   <span className="text-gray-400">Growth rate:</span>
-                  <div className="text-blue-300 font-medium">{Math.round(revenue.developerGrowthRate * 100)}%/tick</div>
+                  <div className="text-blue-300 font-medium">{Math.round(revenue.developerGrowthRate * 100)}% every 5 days</div>
                 </div>
               </div>
             )}
@@ -220,7 +220,7 @@ export default function EconomicSection({
                   </span>
                 ) : (
                   <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
-                    Unlocks in GNT-4 Era
+                    Unlocks after GNT-4 training
                   </span>
                 )}
               </div>
@@ -230,12 +230,12 @@ export default function EconomicSection({
             {revenue.chatbotAvailable && (
               <div className="text-xs text-gray-300 mt-1 grid grid-cols-2 gap-2">
                 <div className="bg-gray-700/50 p-2 rounded">
-                  <span className="text-gray-400">Monthly fee:</span>
-                  <div className="text-purple-300 font-medium">${formatCurrency(revenue.monthlyFee)}/month</div>
+                  <span className="text-gray-400">Subscription price:</span>
+                  <div className="text-purple-300 font-medium">${formatCurrency(revenue.monthlyFee)} base price</div>
                 </div>
                 <div className="bg-gray-700/50 p-2 rounded">
                   <span className="text-gray-400">Growth rate:</span>
-                  <div className="text-purple-300 font-medium">{Math.round(revenue.subscriberGrowthRate * 100)}%/tick</div>
+                  <div className="text-purple-300 font-medium">{Math.round(revenue.subscriberGrowthRate * 100)}% every 10 days</div>
                 </div>
               </div>
             )}
@@ -277,7 +277,7 @@ export default function EconomicSection({
               </div>
             </div>
             <div>
-              <span className="text-sm font-medium text-blue-300">${formatCurrency(revenue.b2b)}/tick</span>
+              <span className="text-sm font-medium text-blue-300">${formatCurrency(revenue.b2b)} per day</span>
               {revenue.apiAvailable && (
                 <div className="text-xs text-gray-400 mt-1">
                   Developer Tools Level: {revenue.developerToolsLevel}
@@ -316,12 +316,12 @@ export default function EconomicSection({
             </div>
             <div>
               {revenue.chatbotAvailable ? (
-                <span className="text-sm font-medium text-purple-300">${formatCurrency(revenue.b2c)}/tick</span>
+                <span className="text-sm font-medium text-purple-300">${formatCurrency(revenue.b2c)} per day</span>
               ) : (
-                <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
-                  Unlocks in GNT-4 Era
-                </span>
-              )}
+                  <span className="text-xs text-amber-400 bg-gray-900 px-2 py-1 rounded">
+                    Unlocks after GNT-4 training
+                  </span>
+                )}
               {revenue.chatbotAvailable && (
                 <div className="text-xs text-gray-400 mt-1">
                   Active Subscribers: {revenue.subscribers.toLocaleString()}
@@ -492,7 +492,7 @@ export default function EconomicSection({
               <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
               <span>API Services (B2B)</span>
             </div>
-            <span className="text-blue-400">${formatCurrency(revenue.b2b)}/tick</span>
+            <span className="text-blue-400">${formatCurrency(revenue.b2b)} per day</span>
           </div>
           
           {/* Developer Tools Level */}
@@ -507,7 +507,7 @@ export default function EconomicSection({
               <div className="w-2 h-2 rounded-full bg-purple-400 mr-2"></div>
               <span>Subscriptions (B2C)</span>
             </div>
-            <span className="text-purple-400">${formatCurrency(revenue.b2c)}/tick</span>
+            <span className="text-purple-400">${formatCurrency(revenue.b2c)} per day</span>
           </div>
           
           {/* Subscribers count */}
@@ -657,7 +657,7 @@ export default function EconomicSection({
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400">API Rate:</span>
-                    <span className="text-xs text-blue-300">${formatCurrency(revenue.baseApiRate)}/tick</span>
+                    <span className="text-xs text-blue-300">${formatCurrency(revenue.baseApiRate)} base rate</span>
                   </div>
                   <div className="text-xs text-gray-500 text-center py-2 bg-gray-900/50 rounded border border-gray-700">
                     💡 Auto-optimized based on market demand and developer adoption
@@ -690,12 +690,12 @@ export default function EconomicSection({
                 </div>
               </div>
               
-              {/* Monthly Fee Control */}
+              {/* Subscription Price Control */}
               {revenue.chatbotEnabled && (
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400">Monthly Fee:</span>
-                    <span className="text-xs text-purple-300">${formatCurrency(tempMonthlyFee)}/month</span>
+                    <span className="text-xs text-gray-400">Subscription Price:</span>
+                    <span className="text-xs text-purple-300">${formatCurrency(tempMonthlyFee)} base price</span>
                   </div>
                   <Slider
                     value={[tempMonthlyFee]}

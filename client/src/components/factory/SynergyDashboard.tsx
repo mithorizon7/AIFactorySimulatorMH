@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, hasAchievedAgi, hasCompletedFinalTraining } from "@/lib/gameState";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
@@ -26,7 +26,7 @@ interface SynergyDashboardProps {
 
 export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
   const [activeTab, setActiveTab] = useState<string>("intelligence");
-  const { 
+  const {
     bonuses, 
     intelligence, 
     agiThreshold, 
@@ -38,8 +38,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
     revenue
   } = gameState;
   
-  // Calculate percent progress toward AGI (intelligence threshold)
-  const agiProgress = Math.min(100, Math.round((intelligence / agiThreshold) * 100));
+  const intelligenceProgress = Math.min(100, Math.round((intelligence / agiThreshold) * 100));
+  const finalTrainingComplete = hasCompletedFinalTraining(gameState);
+  const agiAchieved = hasAchievedAgi(gameState);
   
   // Format bonus values as percentages with a + sign
   const formatBonus = (bonus: number) => {
@@ -70,16 +71,23 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         </div>
       </div>
       
-      {/* AGI Progress Bar */}
+      {/* AGI Readiness */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <BrainCircuitIcon className="h-5 w-5 mr-2 text-amber-400" />
-            <span className="text-sm font-medium">Progress to AGI</span>
+            <span className="text-sm font-medium">AGI Readiness</span>
           </div>
-          <span className="text-sm font-medium text-amber-400">{agiProgress}%</span>
+          <span className="text-sm font-medium text-amber-400">
+            {agiAchieved ? "Complete" : `${intelligenceProgress}% threshold`}
+          </span>
         </div>
-        <Progress value={agiProgress} className="h-2 [&>div]:bg-amber-400" />
+        <Progress value={intelligenceProgress} className="h-2 [&>div]:bg-amber-400" />
+        <p className="mt-2 text-xs text-gray-400">
+          {finalTrainingComplete
+            ? `Final GNT-7 training complete. Reach ${agiThreshold.toLocaleString()} intelligence to finish the run.`
+            : "AGI also requires completing the final GNT-7 training run."}
+        </p>
         
         {/* Revenue Streams */}
         <div className="grid grid-cols-3 gap-2 mt-4">
@@ -153,7 +161,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
               <div className="mt-1 text-xs text-gray-400 flex justify-between">
                 <span>Level: {levels.compute}</span>
-                <span>Production: {formatRate(production.compute)}/s</span>
+                <span>Production: {formatRate(production.compute)}/day</span>
               </div>
             </div>
             
@@ -175,7 +183,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
               <div className="mt-1 text-xs text-gray-400 flex justify-between">
                 <span title="Data Level increases with Data Quality upgrades">Level: {levels.data}</span>
-                <span>Production: {formatRate(production.data)}/s</span>
+                <span>Production: {formatRate(production.data)}/day</span>
               </div>
             </div>
             
@@ -197,7 +205,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                 className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
               <div className="mt-1 text-xs text-gray-400 flex justify-between">
                 <span>Level: {levels.algorithm}</span>
-                <span>Production: {formatRate(production.algorithm)}/s</span>
+                <span>Production: {formatRate(production.algorithm)}/day</span>
               </div>
             </div>
           </div>
@@ -212,7 +220,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-blue-400 font-medium text-sm">Production: {formatRate(production.compute)}/s</span>
+                <span className="text-blue-400 font-medium text-sm">Production: {formatRate(production.compute)}/day</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2">
@@ -309,7 +317,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-green-400 font-medium text-sm">Production: {formatRate(production.data)}/s</span>
+                <span className="text-green-400 font-medium text-sm">Production: {formatRate(production.data)}/day</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-1">
@@ -396,7 +404,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-purple-400 font-medium text-sm">Production: {formatRate(production.algorithm)}/s</span>
+                <span className="text-purple-400 font-medium text-sm">Production: {formatRate(production.algorithm)}/day</span>
               </div>
               
               <div className="bg-gray-700 p-2 rounded-md">

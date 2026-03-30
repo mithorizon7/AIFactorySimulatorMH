@@ -15,7 +15,16 @@ import {
   AlertCircle,
   Sparkles
 } from "lucide-react";
-import { GameStateType, Era, TrainingStatus, getNextEra } from "@/lib/gameState";
+import {
+  GameStateType,
+  Era,
+  TrainingStatus,
+  getNextEra,
+  getTrainingBlockers,
+  getTrainingRequirementDetails,
+  hasAchievedAgi,
+} from "@/lib/gameState";
+import { formatCurrency } from "@/lib/utils";
 
 interface TrainingTabProps {
   gameState: GameStateType;
@@ -23,72 +32,49 @@ interface TrainingTabProps {
 }
 
 export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
-  const { training, currentEra, intelligence, levels, dataInputs, algorithmInputs, computeCapacity } = gameState;
+  const { training, currentEra, computeCapacity } = gameState;
 
   const nextEra = getNextEra(currentEra);
   const nextTrainingRun = nextEra ? training.runs[nextEra as keyof typeof training.runs] : null;
-  
-  // Check prerequisites
-  const checkPrerequisites = () => {
-    if (!nextTrainingRun) return { met: false, details: [] };
-    
-    const prereqs = nextTrainingRun.prerequisites;
-    const details = [
-      {
-        label: "Compute Level",
-        current: levels.compute,
-        required: prereqs.compute,
-        met: levels.compute >= prereqs.compute
-      },
-      {
-        label: "Data Quality",
-        current: dataInputs.quality,
-        required: prereqs.data.quality,
-        met: dataInputs.quality >= prereqs.data.quality
-      },
-      {
-        label: "Data Quantity",
-        current: dataInputs.quantity,
-        required: prereqs.data.quantity,
-        met: dataInputs.quantity >= prereqs.data.quantity
-      },
-      {
-        label: "Data Formats",
-        current: dataInputs.formats,
-        required: prereqs.data.formats,
-        met: dataInputs.formats >= prereqs.data.formats
-      },
-      {
-        label: "Algorithm Architectures",
-        current: algorithmInputs.architectures,
-        required: prereqs.algorithm.architectures,
-        met: algorithmInputs.architectures >= prereqs.algorithm.architectures
-      },
-      {
-        label: "Research Progress",
-        current: Math.round(training.algorithmResearchProgress),
-        required: 100,
-        met: training.algorithmResearchProgress >= 100,
-        isPercentage: true
-      }
-    ];
-    
-    return {
-      met: details.every(d => d.met),
-      details
-    };
+  const agiAchieved = hasAchievedAgi(gameState);
+  const requirementDetails = getTrainingRequirementDetails(gameState, nextEra);
+  const prerequisiteDetails = requirementDetails.filter((detail) => detail.type === 'prerequisite');
+  const blockers = getTrainingBlockers(gameState, nextEra);
+  const prerequisitesMet = prerequisiteDetails.every((detail) => detail.met);
+
+  const getPrimaryBlockerText = () => {
+    if (!nextTrainingRun || training.active) {
+      return null;
+    }
+
+    if (blockers.length === 0) {
+      return `Next step: start ${nextTrainingRun.name}. You have the prerequisites, compute reserve, and budget ready.`;
+    }
+
+    const blocker = blockers[0];
+    const suffix = blockers.length > 1 ? ` ${blockers.length - 1} other blocker${blockers.length > 2 ? 's' : ''} remain.` : '';
+
+    if (blocker.type === 'funding') {
+      return `Next step: earn ${formatCurrency(blocker.required - blocker.current)} more to fund ${nextTrainingRun.name}.${suffix}`;
+    }
+
+    if (blocker.type === 'capacity') {
+      return `Next step: add ${(blocker.required - blocker.current).toLocaleString()} more available compute to reserve this training run.${suffix}`;
+    }
+
+    if (blocker.isPercentage) {
+      return `Next step: raise ${blocker.label.toLowerCase()} to ${blocker.required}% (${blocker.required - blocker.current}% short).${suffix}`;
+    }
+
+    return `Next step: raise ${blocker.label.toLowerCase()} to ${blocker.required} (${blocker.required - blocker.current} short).${suffix}`;
   };
 
-  const prerequisites = checkPrerequisites();
-  
   // Determine if training can be started
   const canStartTraining = 
     nextTrainingRun && 
     nextTrainingRun.status === TrainingStatus.AVAILABLE && 
     !training.active &&
-    prerequisites.met &&
-    gameState.money >= nextTrainingRun.moneyCost &&
-    computeCapacity.available >= nextTrainingRun.computeRequired;
+    blockers.length === 0;
 
   // Era progression data
   const eraProgression = [
@@ -98,11 +84,11 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
     { era: Era.GNT5, name: "GNT-5", completed: training.runs[Era.GNT5]?.status === TrainingStatus.COMPLETE },
     { era: Era.GNT6, name: "GNT-6", completed: training.runs[Era.GNT6]?.status === TrainingStatus.COMPLETE },
     { era: Era.GNT7, name: "GNT-7", completed: training.runs[Era.GNT7]?.status === TrainingStatus.COMPLETE || currentEra === Era.GNT7 },
-    { era: "AGI" as any, name: "AGI", completed: intelligence >= 1000 }
+    { era: "AGI" as any, name: "AGI", completed: agiAchieved }
   ];
 
   return (
-    <div className="space-y-6 p-6" data-testid="training-tab">
+    <div className="space-y-6 p-6" data-testid="training-tab" data-tutorial-id="training-panel">
       {/* Hero Card - Start Training CTA */}
       <Card className="relative overflow-hidden bg-gradient-to-br from-purple-900/40 via-indigo-900/40 to-blue-900/40 border-purple-500/50">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
@@ -125,7 +111,7 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
                   : nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED
                   ? "Complete prerequisites to unlock this training run."
                   : currentEra === Era.GNT7 
-                  ? "You've reached the final era. Focus on achieving AGI!"
+                  ? `You've completed the final training ladder. Reach ${gameState.agiThreshold.toLocaleString()} intelligence to achieve AGI.`
                   : "Continue research and resource development to unlock training."}
               </p>
             </div>
@@ -148,14 +134,26 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
                 {!canStartTraining && nextTrainingRun.status === TrainingStatus.AVAILABLE && (
                   <div className="text-sm text-amber-300 flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
-                    {!prerequisites.met ? "Prerequisites not met" :
-                     gameState.money < nextTrainingRun.moneyCost ? "Insufficient funds" :
-                     "Insufficient compute capacity"}
+                    {blockers[0]?.type === 'funding' ? "Insufficient funds" :
+                     blockers[0]?.type === 'capacity' ? "Insufficient compute capacity" :
+                     "Prerequisites not met"}
                   </div>
                 )}
               </div>
             )}
           </div>
+
+          {getPrimaryBlockerText() && !training.active && (
+            <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-900/20 p-4">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" />
+                <div>
+                  <p className="text-sm font-medium text-amber-300">Current Bottleneck</p>
+                  <p className="mt-1 text-sm leading-relaxed text-amber-100">{getPrimaryBlockerText()}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Active Training Progress */}
           {training.active && nextTrainingRun && (
@@ -288,7 +286,7 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
 
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold text-gray-400 mb-3">Prerequisites Status</h4>
-                {prerequisites.details.map((prereq) => (
+                {prerequisiteDetails.map((prereq) => (
                   <div 
                     key={prereq.label} 
                     className="flex items-center justify-between p-2 rounded bg-black/20"
@@ -311,7 +309,7 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
                 ))}
               </div>
 
-              {!prerequisites.met && (
+              {!prerequisitesMet && (
                 <div className="mt-4 p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -329,7 +327,7 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
             <div className="text-center py-8 text-gray-400">
               <Brain className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>You've reached the maximum era.</p>
-              <p className="text-sm mt-1">Focus on achieving AGI!</p>
+              <p className="text-sm mt-1">Final step: complete GNT-7 and cross the AGI intelligence threshold.</p>
             </div>
           )}
         </Card>

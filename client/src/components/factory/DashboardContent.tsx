@@ -1,588 +1,438 @@
-import { GameStateType, Era } from "@/lib/gameState";
+import {
+  canUnlockBreakthrough,
+  Era,
+  GameStateType,
+  TrainingRequirementDetail,
+  getTrainingBlockers,
+  getUpcomingTrainingRun,
+  hasAchievedAgi,
+} from "@/lib/gameState";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { 
-  BrainCog, 
-  Clock, 
-  Target, 
-  AlertTriangle, 
-  ArrowRight, 
-  TrendingUp, 
-  Lightbulb, 
-  Cpu, 
-  Database, 
-  BarChart3, 
-  DollarSign 
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  BrainCog,
+  Clock,
+  Cpu,
+  Database,
+  DollarSign,
+  Lightbulb,
+  Target,
+  TrendingUp,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
 
 interface DashboardContentProps {
   gameState: GameStateType;
   trainModel: () => void;
   setActiveTab: (tab: string) => void;
-  handleNavigateToResource: (resourceType: 'compute' | 'data' | 'algorithm') => void;
+  handleNavigateToResource: (resourceType: "compute" | "data" | "algorithm") => void;
 }
 
-export default function DashboardContent({ 
-  gameState, 
-  trainModel, 
-  setActiveTab, 
-  handleNavigateToResource 
-}: DashboardContentProps) {
-  
-  // State for Priority Actions dialog management
-  const [selectedAction, setSelectedAction] = useState<any | null>(null);
+interface DashboardAction {
+  priority: number;
+  action: string;
+  description: string;
+  educational: string;
+  icon: JSX.Element;
+  color: string;
+  buttonColor: string;
+  urgent?: boolean;
+  strategies: string[];
+  onClick: () => void;
+}
 
-  // Helper function to open Priority Action dialogs with educational content
-  const openPriorityActionDialog = (actionData: any) => {
+export default function DashboardContent({
+  gameState,
+  trainModel,
+  setActiveTab,
+  handleNavigateToResource,
+}: DashboardContentProps) {
+  const [selectedAction, setSelectedAction] = useState<DashboardAction | null>(null);
+
+  const openPriorityActionDialog = (actionData: DashboardAction) => {
     setSelectedAction(actionData);
   };
-  
-  // Calculate time remaining to AGI based on current progress
-  const calculateTimeToAGI = () => {
-    const currentIntelligence = gameState.intelligence;
-    const targetIntelligence = gameState.agiThreshold;
-    const remainingIntelligence = targetIntelligence - currentIntelligence;
-    
-    // Calculate current intelligence growth rate based on resource production and bonuses
-    const baseIntelligenceRate = (
-      gameState.production.compute * gameState.bonuses.computeToIntelligence +
-      gameState.production.data * gameState.bonuses.dataToIntelligence +
-      gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
-    ) || 0;
-    
-    // Convert per-second rate to per-day (approximate)
-    const intelligenceRate = baseIntelligenceRate * 86400; // seconds per day
-    
-    if (intelligenceRate <= 0 || remainingIntelligence <= 0) {
-      return "Complete!";
+
+  const operationalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
+  const capacityUtilization = gameState.computeCapacity.maxCapacity > 0
+    ? gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity
+    : 0;
+  const resourceGaps = (() => {
+    const maxLevel = Math.max(gameState.levels.compute, gameState.levels.data, gameState.levels.algorithm);
+    return {
+      compute: maxLevel - gameState.levels.compute,
+      data: maxLevel - gameState.levels.data,
+      algorithm: maxLevel - gameState.levels.algorithm,
+    };
+  })();
+  const averageResourceLevel = (gameState.levels.compute + gameState.levels.data + gameState.levels.algorithm) / 3;
+  const nextTrainingRun = getUpcomingTrainingRun(gameState);
+  const trainingBlockers = getTrainingBlockers(gameState);
+  const agiAchieved = hasAchievedAgi(gameState);
+  const intelligenceProgress = Math.min(100, Math.round((gameState.intelligence / gameState.agiThreshold) * 100));
+
+  const formatTrainingBlocker = (blocker: TrainingRequirementDetail) => {
+    if (blocker.type === "funding") {
+      return `Earn $${(blocker.required - blocker.current).toLocaleString()} more for the training budget`;
     }
-    
-    const daysRemaining = Math.ceil(remainingIntelligence / intelligenceRate);
-    if (daysRemaining > 999) {
-      return "999+ days";
+
+    if (blocker.type === "capacity") {
+      return `Add ${(blocker.required - blocker.current).toLocaleString()} available compute for the reserve`;
     }
-    return `~${daysRemaining} days`;
+
+    if (blocker.isPercentage) {
+      return `Raise ${blocker.label.toLowerCase()} to ${blocker.required}%`;
+    }
+
+    return `Raise ${blocker.label.toLowerCase()} to ${blocker.required}`;
   };
 
-  // Advanced Intelligent Priority Actions System
+  const nextMilestoneLabel = (() => {
+    if (agiAchieved) {
+      return "AGI achieved";
+    }
+
+    if (gameState.training.active) {
+      return `${gameState.training.daysRemaining} days left in training`;
+    }
+
+    if (nextTrainingRun) {
+      return `Next milestone: ${nextTrainingRun.name}`;
+    }
+
+    return `Reach ${gameState.agiThreshold.toLocaleString()} intelligence`;
+  })();
+
   const getNextActions = () => {
-    const actions = [];
-    
-    // === COMPREHENSIVE GAME STATE ANALYSIS ===
-    const metrics = {
-      // Financial Intelligence
-      totalRevenue: gameState.revenue.b2b + gameState.revenue.b2c,
-      cashPosition: gameState.money,
-      revenueGrowthPotential: gameState.revenue.b2b < 1000000, // Can still scale significantly
-      financialStability: gameState.money > 500000 && (gameState.revenue.b2b + gameState.revenue.b2c) > 50000,
-      
-      // Capacity Intelligence
-      capacityUtilization: gameState.computeCapacity.maxCapacity > 0 ? 
-        gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity : 0,
-      freeCompute: gameState.computeCapacity.maxCapacity - gameState.computeCapacity.used,
-      computeGrowthPotential: gameState.computeCapacity.maxCapacity < 100000, // Can still scale meaningfully
-      
-      // Resource Intelligence
-      resources: {
-        compute: gameState.levels.compute,
-        data: gameState.levels.data,
-        algorithm: gameState.levels.algorithm
-      },
-      avgResourceLevel: (gameState.levels.compute + gameState.levels.data + gameState.levels.algorithm) / 3,
-      resourceGaps: (() => {
-        const levels = [gameState.levels.compute, gameState.levels.data, gameState.levels.algorithm];
-        const max = Math.max(...levels);
-        return {
-          compute: max - gameState.levels.compute,
-          data: max - gameState.levels.data,
-          algorithm: max - gameState.levels.algorithm
-        };
-      })(),
-      
-      // Production Intelligence  
-      intelligenceRate: (
-        gameState.production.compute * gameState.bonuses.computeToIntelligence +
-        gameState.production.data * gameState.bonuses.dataToIntelligence +
-        gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
-      ) * 86400, // per day
-      
-      // Strategic Intelligence
-      currentEra: gameState.currentEra,
-      agiProgress: gameState.intelligence / gameState.agiThreshold,
-      canTrain: gameState.training && !gameState.training.active,
-      daysToAgi: (() => {
-        const rate = (
-          gameState.production.compute * gameState.bonuses.computeToIntelligence +
-          gameState.production.data * gameState.bonuses.dataToIntelligence +
-          gameState.production.algorithm * gameState.bonuses.algorithmToIntelligence
-        ) * 86400;
-        return rate > 0 ? Math.ceil((gameState.agiThreshold - gameState.intelligence) / rate) : 999;
-      })(),
-      
-      // Critical Financial Intelligence
-      netCashFlow: (() => {
-        // Use actual calculated revenue from game state
-        const totalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
-        const totalCosts = (
-          (gameState.computeCapacity?.maxCapacity || 0) * 10 + // Simplified infrastructure costs
-          (gameState.levels?.compute || 0) * 200 + // Simplified operational costs
-          (gameState.levels?.data || 0) * 150 +
-          (gameState.levels?.algorithm || 0) * 100
-        );
-        return totalRevenue - totalCosts;
-      })(),
-      cashRunwayDays: (() => {
-        // Use actual calculated revenue from game state
-        const totalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
-        const totalCosts = (
-          (gameState.computeCapacity?.maxCapacity || 0) * 10 + // Simplified infrastructure costs
-          (gameState.levels?.compute || 0) * 200 + // Simplified operational costs
-          (gameState.levels?.data || 0) * 150 +
-          (gameState.levels?.algorithm || 0) * 100
-        );
-        const netCashFlow = totalRevenue - totalCosts;
-        return netCashFlow >= 0 ? 999 : Math.max(0, Math.floor((gameState.money || 0) / Math.abs(netCashFlow || 1)));
-      })()
-    };
-    
-    // === INTELLIGENT ERA DETECTION ===
-    const eraPhase = (() => {
-      const era = metrics.currentEra;
-      const avg = metrics.avgResourceLevel;
-      const revenue = metrics.totalRevenue;
-      
-      // Check specific era conditions first (most specific to least specific)
-      if (era === Era.GNT2 && avg >= 6) return { phase: 'foundation', era: 'growth' };
-      if (era === Era.GNT2) return { phase: 'foundation', era: 'startup' };
-      if (era === Era.GNT3) return { phase: 'scaling', era: 'early_scale' };  
-      if (era === Era.GNT4) return { phase: 'scaling', era: 'mid_scale' };
-      if (era === Era.GNT5) return { phase: 'advanced', era: 'optimization' };
-      if (era === Era.GNT6) return { phase: 'advanced', era: 'breakthrough' };
-      if (era === Era.GNT7) return { phase: 'advanced', era: 'agi_push' };
-      
-      // Fallback based on progress metrics for edge cases
-      if (avg < 6 && revenue < 25000) return { phase: 'foundation', era: 'startup' };
-      if (metrics.agiProgress < 0.2) return { phase: 'foundation', era: 'startup' };
-      if (metrics.agiProgress < 0.5) return { phase: 'scaling', era: 'early_scale' };
-      if (metrics.agiProgress < 0.8) return { phase: 'advanced', era: 'optimization' };
-      return { phase: 'advanced', era: 'agi_push' };
-    })();
-    
-    // === RISK & OPPORTUNITY ANALYSIS ===
-    const analysis = {
-      // Critical Risks (Priority 0)
-      systemOverload: metrics.capacityUtilization > 0.9,
-      cashCrisis: metrics.cashRunwayDays < 30 && metrics.netCashFlow < 0,
-      revenueCollapse: metrics.totalRevenue < 5000 && gameState.money < 100000,
-      
-      // High Impact Opportunities (Priority 1)
-      trainingReady: metrics.canTrain && metrics.freeCompute > 1000,
-      majorFunding: gameState.investmentMilestones.some(m => 
-        !m.unlocked && gameState.intelligence >= m.requiredIntelligence && gameState.money > 1000000
-      ),
-      breakthroughReady: gameState.breakthroughs.filter(b => 
-        !b.unlocked && 
-        (!b.requiredLevels.compute || metrics.resources.compute >= b.requiredLevels.compute) &&
-        (!b.requiredLevels.data || metrics.resources.data >= b.requiredLevels.data) &&
-        (!b.requiredLevels.algorithm || metrics.resources.algorithm >= b.requiredLevels.algorithm)
-      ).length > 0,
-      
-      // Growth Opportunities (Priority 2)
-      resourceImbalance: Object.entries(metrics.resourceGaps).filter(([,gap]) => gap > 2).length > 0,
-      capacityWaste: metrics.capacityUtilization < 0.4 && metrics.freeCompute > 2000,
-      revenueOptimization: metrics.totalRevenue > 50000 && metrics.netCashFlow > 100000,
-      
-      // Efficiency Improvements (Priority 3)
-      synergyOpportunity: (gameState.bonuses.computeToIntelligence + 
-                          gameState.bonuses.dataToIntelligence + 
-                          gameState.bonuses.algorithmToIntelligence) / 3 < 2,
-      agiAcceleration: metrics.daysToAgi > 50 && metrics.intelligenceRate > 0
-    };
-    
-    // === INTELLIGENT ACTION GENERATION SYSTEM ===
-    
-    // Priority 0: Critical Issues (Always shown first)
-    if (analysis.systemOverload) {
-      actions.unshift({
+    const actions: DashboardAction[] = [];
+
+    if (capacityUtilization > 0.9) {
+      actions.push({
         priority: 0,
-        action: "CRITICAL: System Overload",
-        description: `${Math.round(metrics.capacityUtilization * 100)}% capacity used - performance degrading rapidly`,
-        educational: "High compute usage causes service slowdowns, customer dissatisfaction, and training failures. Immediate expansion needed",
+        action: "Relieve Compute Pressure",
+        description: `${Math.round(capacityUtilization * 100)}% of compute is already committed. Service quality and training headroom are at risk.`,
+        educational: "Compute is a shared bottleneck. When customer load crowds out headroom, commercialization starts competing directly with frontier progress.",
         icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
         color: "border-red-500/50 bg-red-900/30",
         buttonColor: "bg-red-600 hover:bg-red-700",
         urgent: true,
         strategies: ["Expand Compute"],
         onClick: () => openPriorityActionDialog({
-          action: "System Overload Resolution",
-          description: `${Math.round(metrics.capacityUtilization * 100)}% capacity used - performance degrading rapidly`,
-          educational: "High compute usage causes service slowdowns, customer dissatisfaction, and training failures. Immediate capacity expansion prevents revenue loss and maintains AI development momentum.",
+          priority: 0,
+          action: "Relieve Compute Pressure",
+          description: `${Math.round(capacityUtilization * 100)}% of compute is already committed. Service quality and training headroom are at risk.`,
+          educational: "Compute is a shared bottleneck. Expanding it is one of the clearest ways to restore both product reliability and room for the next training run.",
           icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-          strategies: ["Expand Hardware", "Optimize Workloads", "Schedule Training"],
-          dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource('compute'); }
-        })
+          color: "border-red-500/50 bg-red-900/30",
+          buttonColor: "bg-red-600 hover:bg-red-700",
+          urgent: true,
+          strategies: ["Expand Compute"],
+          onClick: () => {},
+        }),
       });
     }
-    
-    if (analysis.cashCrisis) {
-      actions.unshift({
-        priority: 0,
-        action: "URGENT: Cash Flow Issue",
-        description: `${metrics.cashRunwayDays} days of funding left with $${Math.round(Math.abs(metrics.netCashFlow)).toLocaleString()}/day burn rate`,
-        educational: "Negative cash flow means your research will stall. Launch revenue services immediately or seek additional funding to keep operations running",
-        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-        color: "border-red-500/50 bg-red-900/30",
-        buttonColor: "bg-red-600 hover:bg-red-700",
-        urgent: true,
-        strategies: ["Launch Services", "Secure Funding"],
-        onClick: () => openPriorityActionDialog({
-          action: "Cash Flow Emergency",
-          description: `${metrics.cashRunwayDays} days of funding left with $${Math.round(Math.abs(metrics.netCashFlow)).toLocaleString()}/day burn rate`,
-          educational: "Negative cash flow is the #1 killer of AI startups. Without immediate revenue or funding, your research stops, talent leaves, and competitors gain advantage. Act now to secure your company's future.",
-          icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-          strategies: ["Launch API Services", "Secure Emergency Funding", "Cut Operating Costs"],
-          dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
-        })
-      });
-    }
-    
-    if (analysis.revenueCollapse) {
-      actions.unshift({
-        priority: 0,
-        action: "URGENT: Revenue Crisis",
-        description: `$${Math.round(gameState.money).toLocaleString()} funds + $${Math.round(metrics.totalRevenue).toLocaleString()}/day income - operations at risk`,
-        educational: "Without revenue or capital, R&D progress will halt. Launch services immediately or seek investment to continue development",
-        icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-        color: "border-red-500/50 bg-red-900/30",
-        buttonColor: "bg-red-600 hover:bg-red-700",
-        urgent: true,
-        strategies: ["Launch API", "Seek Investment"],
-        onClick: () => openPriorityActionDialog({
-          action: "Revenue Crisis Response",
-          description: "$1,000 funds + $0/day income - operations at risk",
-          educational: "Without revenue or capital, your R&D operations will stall. Early revenue funds research and keeps your AI development timeline on track. Launch services now or seek emergency funding to continue operations.",
-          icon: <AlertTriangle className="h-5 w-5 text-red-400" />,
-          strategies: ["Launch API Service", "Seek Investment", "Cut Costs"],
-          dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
-        })
-      });
-    }
-    
-    // Priority 1: Major Opportunities Based on Era
-    if (analysis.trainingReady && eraPhase.phase !== 'foundation') {
-      const nextEra = metrics.currentEra === 'GNT-2' ? 'GNT-3' : metrics.currentEra === 'GNT-3' ? 'GNT-4' : 
-                     metrics.currentEra === 'GNT-4' ? 'GNT-5' : metrics.currentEra === 'GNT-5' ? 'GNT-6' : 'GNT-7';
-      actions.push({
-        priority: 1,
-        action: `Era Advancement: ${nextEra}`,
-        description: `${Math.round(metrics.freeCompute)} free compute ready for ${nextEra} training run`,
-        educational: `Training to ${nextEra} unlocks new capabilities, better revenue streams, and advances toward AGI. Reserve compute for 30 days`,
-        icon: <BrainCog className="h-5 w-5 text-purple-400" />,
-        color: "border-purple-500/50 bg-purple-900/20",
-        buttonColor: "bg-purple-600 hover:bg-purple-700",
-        strategies: ["View Training"],
-        onClick: () => openPriorityActionDialog({
-          action: `Era Advancement: ${nextEra}`,
-          description: `${Math.round(metrics.freeCompute)} free compute ready for ${nextEra} training run`,
-          educational: `Training to ${nextEra} is a major breakthrough moment that unlocks new AI capabilities, revenue streams, and brings you closer to AGI. This 30-day training run will transform your AI's intelligence and open new possibilities. Visit the Training tab to review prerequisites and start your training run.`,
-          icon: <BrainCog className="h-5 w-5 text-purple-400" />,
-          strategies: ["Open Training Tab", "Review Prerequisites", "Understand Requirements"],
-          dialogAction: () => { setSelectedAction(null); setActiveTab('training'); }
-        })
-      });
-    }
-    
-    if (analysis.breakthroughReady) {
-      const availableBreakthroughs = gameState.breakthroughs.filter(b => 
-        !b.unlocked && 
-        (!b.requiredLevels?.compute || metrics.resources.compute >= b.requiredLevels.compute) &&
-        (!b.requiredLevels?.data || metrics.resources.data >= b.requiredLevels.data) &&
-        (!b.requiredLevels?.algorithm || metrics.resources.algorithm >= b.requiredLevels.algorithm)
-      ).length;
-      
-      actions.push({
-        priority: 1,
-        action: "Research Breakthroughs",
-        description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? 's' : ''} ready to unlock`,
-        educational: "Breakthroughs provide permanent multipliers and unlock advanced capabilities. They're essential for scaling efficiency",
-        icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
-        color: "border-yellow-500/50 bg-yellow-900/20",
-        buttonColor: "bg-yellow-600 hover:bg-yellow-700",
-        strategies: ["Research Advances"],
-        onClick: () => openPriorityActionDialog({
-          action: "Research Breakthroughs",
-          description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? 's' : ''} ready to unlock`,
-          educational: "Breakthroughs provide permanent multipliers that compound over time. They unlock advanced capabilities, improve efficiency, and are essential for competitive advantage. Each breakthrough makes your entire operation more powerful.",
-          icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
-          strategies: ["Unlock Breakthroughs", "Prioritize High-Impact", "Review Research"],
-          dialogAction: () => { setSelectedAction(null); setActiveTab('breakthroughs'); }
-        })
-      });
-    }
-    
-    // Priority 2: Era-Specific Strategic Guidance
-    if (eraPhase.phase === 'foundation') {
-      if (gameState.money < 500000 && metrics.totalRevenue < 25000) {
+
+    if (nextTrainingRun && !gameState.training.active) {
+      if (trainingBlockers.length === 0) {
         actions.push({
+          priority: 1,
+          action: `Start ${nextTrainingRun.name}`,
+          description: "All real prerequisites are met. Your next era advance is ready to run.",
+          educational: "Training runs are the only way to advance eras. If you are ready, delaying the run is a strategic choice, not a hidden requirement issue.",
+          icon: <BrainCog className="h-5 w-5 text-purple-400" />,
+          color: "border-purple-500/50 bg-purple-900/20",
+          buttonColor: "bg-purple-600 hover:bg-purple-700",
+          strategies: ["Open Training"],
+          onClick: () => openPriorityActionDialog({
+            priority: 1,
+            action: `Start ${nextTrainingRun.name}`,
+            description: "All real prerequisites are met. Your next era advance is ready to run.",
+            educational: "Training runs create the big step-changes in capability. Use the Training tab to review the run and launch it when you're comfortable committing the compute reserve.",
+            icon: <BrainCog className="h-5 w-5 text-purple-400" />,
+            color: "border-purple-500/50 bg-purple-900/20",
+            buttonColor: "bg-purple-600 hover:bg-purple-700",
+            strategies: ["Open Training"],
+            onClick: () => {},
+          }),
+        });
+      } else {
+        const primaryBlocker = trainingBlockers[0];
+        actions.push({
+          priority: 1,
+          action: "Clear the Next Training Blocker",
+          description: `${formatTrainingBlocker(primaryBlocker)}${trainingBlockers.length > 1 ? ` • ${trainingBlockers.length - 1} other blocker${trainingBlockers.length > 2 ? "s" : ""}` : ""}`,
+          educational: "The fastest path forward is to remove the first concrete blocker to your next training run. The Training tab shows the exact engine-checked deficits.",
+          icon: <Target className="h-5 w-5 text-amber-400" />,
+          color: "border-amber-500/50 bg-amber-900/20",
+          buttonColor: "bg-amber-600 hover:bg-amber-700",
+          strategies: ["Open Training"],
+          onClick: () => openPriorityActionDialog({
+            priority: 1,
+            action: "Clear the Next Training Blocker",
+            description: `${formatTrainingBlocker(primaryBlocker)}${trainingBlockers.length > 1 ? ` • ${trainingBlockers.length - 1} other blocker${trainingBlockers.length > 2 ? "s" : ""}` : ""}`,
+            educational: "Good frontier teams make blockers legible. The Training tab is your source of truth for which requirement is still preventing the next training leap.",
+            icon: <Target className="h-5 w-5 text-amber-400" />,
+            color: "border-amber-500/50 bg-amber-900/20",
+            buttonColor: "bg-amber-600 hover:bg-amber-700",
+            strategies: ["Open Training"],
+            onClick: () => {},
+          }),
+        });
+      }
+    }
+
+    if (gameState.revenue.apiAvailable && !gameState.revenue.apiPlatformBuilt) {
+      actions.push({
+        priority: 2,
+        action: "Build the API Platform",
+        description: "GNT-3 capability is already unlocked. You still need the platform before developer revenue can start.",
+        educational: "Commercialization matters, but it is downstream of technical capability. Training unlocked the capability; platform work turns it into revenue.",
+        icon: <DollarSign className="h-5 w-5 text-green-400" />,
+        color: "border-green-500/50 bg-green-900/20",
+        buttonColor: "bg-green-600 hover:bg-green-700",
+        strategies: ["Open Economy"],
+        onClick: () => openPriorityActionDialog({
           priority: 2,
-          action: "Establish Revenue Foundation", 
-          description: "Low funds + minimal income - time to monetize your AI capabilities",
-          educational: "Early revenue funds research and keeps operations running smoothly. Both API services and chatbot products generate steady income streams",
+          action: "Build the API Platform",
+          description: "GNT-3 capability is already unlocked. You still need the platform before developer revenue can start.",
+          educational: "This is the first major commercialization move. Building the API platform turns technical progress into cash that can finance later training runs.",
+          icon: <DollarSign className="h-5 w-5 text-green-400" />,
+          color: "border-green-500/50 bg-green-900/20",
+          buttonColor: "bg-green-600 hover:bg-green-700",
+          strategies: ["Open Economy"],
+          onClick: () => {},
+        }),
+      });
+    } else if (gameState.revenue.apiPlatformBuilt && !gameState.revenue.apiEnabled) {
+      actions.push({
+        priority: 2,
+        action: "Launch API Revenue",
+        description: "The API platform is built, but the service is still disabled.",
+        educational: "API revenue is the early business model. It monetizes frontier capability while using compute that could otherwise go to research.",
+        icon: <TrendingUp className="h-5 w-5 text-green-400" />,
+        color: "border-green-500/50 bg-green-900/20",
+        buttonColor: "bg-green-600 hover:bg-green-700",
+        strategies: ["Open Economy"],
+        onClick: () => openPriorityActionDialog({
+          priority: 2,
+          action: "Launch API Revenue",
+          description: "The API platform is built, but the service is still disabled.",
+          educational: "Turning on the API service creates the earliest repeatable revenue stream in the sim. That revenue can finance future training, but it will also consume compute.",
           icon: <TrendingUp className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
           buttonColor: "bg-green-600 hover:bg-green-700",
-          strategies: ["Launch API Service", "Build Chatbot", "Seek Investment"],
-          onClick: () => openPriorityActionDialog({
-            action: "Establish Revenue Foundation",
-            description: "Low funds + minimal income - time to monetize your AI capabilities",
-            educational: "Early revenue is the lifeblood of AI development. It funds research, attracts investors, and provides runway to achieve breakthrough moments. Every dollar of revenue accelerates your path to AGI.",
-            icon: <TrendingUp className="h-5 w-5 text-green-400" />,
-            strategies: ["Launch API Service", "Build Chatbot Product", "Secure Funding"],
-            dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
-          })
-        });
-      }
-      
-      if (analysis.resourceImbalance && metrics.avgResourceLevel < 10) {
-        const biggestGap = Object.entries(metrics.resourceGaps).reduce((max, [name, gap]) => 
-          gap > max.gap ? { name, gap } : max, { name: '', gap: 0 });
-        actions.push({
-          priority: 2, 
-          action: "Balance Resource Development",
-          description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance prevents bottlenecks`,
-          educational: "Balanced early growth is crucial. Resource imbalances create inefficiencies that compound over time and limit scaling",
-          icon: <BarChart3 className="h-5 w-5 text-blue-400" />,
-          color: "border-blue-500/50 bg-blue-900/20",
-          buttonColor: "bg-blue-600 hover:bg-blue-700",
-          strategies: [`Boost ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
-          onClick: () => openPriorityActionDialog({
-            action: "Balance Resource Development",
-            description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance prevents bottlenecks`,
-            educational: "Balanced resource development prevents costly bottlenecks that cripple growth. Resource imbalances create inefficiencies that compound over time, limiting your scaling potential and competitive advantage.",
-            icon: <BarChart3 className="h-5 w-5 text-blue-400" />,
-            strategies: [`Prioritize ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`, "Optimize Balance", "Review Strategy"],
-            dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
-          })
-        });
-      }
-    } else if (eraPhase.phase === 'scaling') {
-      if (analysis.majorFunding) {
-        const nextMilestone = gameState.investmentMilestones.find(m => 
-          !m.unlocked && gameState.intelligence >= m.requiredIntelligence);
-        if (nextMilestone) {
-          actions.push({
-            priority: 2,
-            action: "Major Investment Opportunity",
-            description: `${nextMilestone.name}: $${(nextMilestone.funding / 1000000).toFixed(1)}M funding available`,
-            educational: "Major funding rounds provide capital for aggressive scaling and market dominance. Use wisely for compute or data acquisition",
-            icon: <DollarSign className="h-5 w-5 text-emerald-400" />,
-            color: "border-emerald-500/50 bg-emerald-900/20",
-            buttonColor: "bg-emerald-600 hover:bg-emerald-700",
-            strategies: ["Accept Funding", "Review Terms"],
-            onClick: () => openPriorityActionDialog({
-              action: "Major Investment Opportunity",
-              description: `${nextMilestone.name}: $${(nextMilestone.funding / 1000000).toFixed(1)}M funding available`,
-              educational: "Major funding rounds provide transformational capital for aggressive scaling and market dominance. Use this strategic inflection point to accelerate compute expansion or data acquisition before competitors.",
-              icon: <DollarSign className="h-5 w-5 text-emerald-400" />,
-              strategies: ["Accept Funding", "Negotiate Terms", "Plan Deployment"],
-              dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
-            })
-          });
-        }
-      }
-    } else if (eraPhase.phase === 'advanced') {
-      if (analysis.agiAcceleration) {
-        actions.push({
+          strategies: ["Open Economy"],
+          onClick: () => {},
+        }),
+      });
+    } else if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotPlatformBuilt) {
+      actions.push({
+        priority: 2,
+        action: "Build the Chatbot Platform",
+        description: "GNT-4 capability is ready, but the consumer product infrastructure is not built yet.",
+        educational: "The chatbot route is a later commercialization layer. It tends to ramp slower but compounds into a broader consumer business over time.",
+        icon: <DollarSign className="h-5 w-5 text-purple-400" />,
+        color: "border-purple-500/50 bg-purple-900/20",
+        buttonColor: "bg-purple-600 hover:bg-purple-700",
+        strategies: ["Open Economy"],
+        onClick: () => openPriorityActionDialog({
           priority: 2,
-          action: "Accelerate AGI Timeline",
-          description: `Current pace: ${metrics.daysToAgi} days to AGI - optimize for the final breakthrough`,
-          educational: "Late game is about maximizing intelligence growth through synergies. Focus on breakthrough multipliers and resource optimization",
-          icon: <Target className="h-5 w-5 text-amber-400" />,
-          color: "border-amber-500/50 bg-amber-900/20", 
-          buttonColor: "bg-amber-600 hover:bg-amber-700",
-          strategies: ["Optimize Synergies", "Max Efficiency", "Final Push"],
-          onClick: () => openPriorityActionDialog({
-            action: "Accelerate AGI Timeline",
-            description: `Current pace: ${metrics.daysToAgi} days to AGI - optimize for the final breakthrough`,
-            educational: "You're approaching the ultimate AI milestone - Artificial General Intelligence. The endgame requires maximizing intelligence growth through breakthrough synergies and resource optimization. Every day counts toward this historic achievement.",
-            icon: <Target className="h-5 w-5 text-amber-400" />,
-            strategies: ["Optimize Synergies", "Maximize Efficiency", "Strategic Focus"],
-            dialogAction: () => { setSelectedAction(null); setActiveTab('breakthroughs'); }
-          })
-        });
-      }
+          action: "Build the Chatbot Platform",
+          description: "GNT-4 capability is ready, but the consumer product infrastructure is not built yet.",
+          educational: "Building the chatbot platform converts technical capability into a consumer subscription business. That changes your revenue mix and compute demand profile.",
+          icon: <DollarSign className="h-5 w-5 text-purple-400" />,
+          color: "border-purple-500/50 bg-purple-900/20",
+          buttonColor: "bg-purple-600 hover:bg-purple-700",
+          strategies: ["Open Economy"],
+          onClick: () => {},
+        }),
+      });
+    } else if (operationalRevenue === 0 && gameState.money < (nextTrainingRun?.moneyCost ?? 25000)) {
+      actions.push({
+        priority: 2,
+        action: "Create Revenue Before the Next Leap",
+        description: "You do not yet have enough operating revenue to comfortably finance the next training run.",
+        educational: "Commercial success funds frontier progress. The sim is teaching that venture funding helps, but product revenue carries the long middle of the journey.",
+        icon: <DollarSign className="h-5 w-5 text-green-400" />,
+        color: "border-green-500/50 bg-green-900/20",
+        buttonColor: "bg-green-600 hover:bg-green-700",
+        strategies: ["Open Economy"],
+        onClick: () => openPriorityActionDialog({
+          priority: 2,
+          action: "Create Revenue Before the Next Leap",
+          description: "You do not yet have enough operating revenue to comfortably finance the next training run.",
+          educational: "Revenue and research compete for compute, but revenue is also what keeps the training ladder affordable. Monetization is part of the frontier strategy, not a side system.",
+          icon: <DollarSign className="h-5 w-5 text-green-400" />,
+          color: "border-green-500/50 bg-green-900/20",
+          buttonColor: "bg-green-600 hover:bg-green-700",
+          strategies: ["Open Economy"],
+          onClick: () => {},
+        }),
+      });
     }
-    
-    // Priority 3: Smart Optimization and Fallback Guidance
-    if (actions.length < 3) {
-      // Capacity optimization opportunities
-      if (analysis.capacityWaste) {
-        actions.push({
+
+    const availableBreakthroughs = gameState.breakthroughs.filter((breakthrough) =>
+      canUnlockBreakthrough(gameState, breakthrough)
+    ).length;
+
+    if (availableBreakthroughs > 0) {
+      actions.push({
+        priority: 3,
+        action: "Claim Ready Breakthroughs",
+        description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? "s are" : " is"} ready to unlock from current state.`,
+        educational: "Breakthroughs change the economics and efficiency of the whole factory. If one is ready, it is part of the real state, not a cosmetic milestone.",
+        icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
+        color: "border-yellow-500/50 bg-yellow-900/20",
+        buttonColor: "bg-yellow-600 hover:bg-yellow-700",
+        strategies: ["Open Breakthroughs"],
+        onClick: () => openPriorityActionDialog({
           priority: 3,
-          action: "Optimize Compute Utilization",
-          description: `${Math.round(metrics.capacityUtilization * 100)}% utilization - scale services to use excess capacity`,
-          educational: "Underutilized compute is money wasted. Launch more services or reduce infrastructure to optimize costs and efficiency",
-          icon: <Cpu className="h-5 w-5 text-blue-400" />,
-          color: "border-blue-500/50 bg-blue-900/20",
-          buttonColor: "bg-blue-600 hover:bg-blue-700",
-          strategies: ["Scale Services", "Right-Size Infrastructure"],
-          onClick: () => openPriorityActionDialog({
-            action: "Optimize Compute Utilization",
-            description: `${Math.round(metrics.capacityUtilization * 100)}% utilization - scale services to use excess capacity`,
-            educational: "Underutilized compute represents wasted money and missed revenue opportunities. Every unused compute cycle could be generating income through customer services or advancing research through training runs.",
-            icon: <Cpu className="h-5 w-5 text-blue-400" />,
-            strategies: ["Scale Services", "Right-Size Infrastructure", "Launch Products"],
-            dialogAction: () => { setSelectedAction(null); setActiveTab('economy'); }
-          })
-        });
-      }
-      
-      // Resource gap optimization
-      if (analysis.resourceImbalance) {
-        const biggestGap = Object.entries(metrics.resourceGaps).reduce((max, [name, gap]) => 
-          gap > max.gap ? { name, gap } : max, { name: '', gap: 0 });
-        if (biggestGap.gap > 0) {
-          actions.push({
-            priority: 3,
-            action: "Optimize Resource Balance",
-            description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance improves overall efficiency`,
-            educational: "Resource imbalances create bottlenecks that limit overall system performance. Balanced growth unlocks synergies",
-            icon: biggestGap.name === 'compute' ? <Cpu className="h-5 w-5 text-blue-400" /> :
-                  biggestGap.name === 'data' ? <Database className="h-5 w-5 text-green-400" /> :
-                  <Lightbulb className="h-5 w-5 text-purple-400" />,
-            color: biggestGap.name === 'compute' ? "border-blue-500/50 bg-blue-900/20" :
-                   biggestGap.name === 'data' ? "border-green-500/50 bg-green-900/20" :
-                   "border-purple-500/50 bg-purple-900/20",
-            buttonColor: biggestGap.name === 'compute' ? "bg-blue-600 hover:bg-blue-700" :
-                         biggestGap.name === 'data' ? "bg-green-600 hover:bg-green-700" :
-                         "bg-purple-600 hover:bg-purple-700",
-            strategies: [`Develop ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`],
-            onClick: () => openPriorityActionDialog({
-              action: "Optimize Resource Balance",
-              description: `${biggestGap.name} lagging by ${biggestGap.gap} levels - balance improves overall efficiency`,
-              educational: "Resource imbalances create bottlenecks that limit your entire system's potential. Balanced development unlocks powerful synergies and prevents costly inefficiencies that compound over time.",
-              icon: biggestGap.name === 'compute' ? <Cpu className="h-5 w-5 text-blue-400" /> : biggestGap.name === 'data' ? <Database className="h-5 w-5 text-green-400" /> : <Lightbulb className="h-5 w-5 text-purple-400" />,
-              strategies: [`Prioritize ${biggestGap.name.charAt(0).toUpperCase() + biggestGap.name.slice(1)}`, "Balance Development", "Strategic Focus"],
-              dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); handleNavigateToResource(biggestGap.name as 'compute' | 'data' | 'algorithm'); }
-            })
-          });
-        }
-      }
-      
-      // Revenue optimization opportunities
-      if (analysis.revenueOptimization && metrics.financialStability) {
-        actions.push({
-          priority: 3,
-          action: "Expand Your AI Empire",
-          description: `Strong position: $${Math.round(gameState.money).toLocaleString()} + $${Math.round(metrics.totalRevenue).toLocaleString()}/day - time for strategic expansion`,
-          educational: "Financial strength enables bold moves. Scale infrastructure aggressively, pursue breakthrough research, or launch new services",
-          icon: <TrendingUp className="h-5 w-5 text-emerald-400" />,
-          color: "border-emerald-500/50 bg-emerald-900/20",
-          buttonColor: "bg-emerald-600 hover:bg-emerald-700",
-          strategies: ["Scale Infrastructure", "Research Advances", "Launch Services"],
-          onClick: () => openPriorityActionDialog({
-            action: "Expand Your AI Empire",
-            description: `Strong position: $${Math.round(gameState.money).toLocaleString()} + $${Math.round(metrics.totalRevenue).toLocaleString()}/day - time for strategic expansion`,
-            educational: "Financial strength creates strategic opportunities. Use your competitive advantage to scale infrastructure aggressively, pursue breakthrough research, or launch new revenue streams before competitors catch up.",
-            icon: <TrendingUp className="h-5 w-5 text-emerald-400" />,
-            strategies: ["Scale Infrastructure", "Breakthrough Research", "Launch New Services"],
-            dialogAction: () => { setSelectedAction(null); setActiveTab('resources'); }
-          })
-        });
-      }
+          action: "Claim Ready Breakthroughs",
+          description: `${availableBreakthroughs} breakthrough${availableBreakthroughs > 1 ? "s are" : " is"} ready to unlock from current state.`,
+          educational: "Breakthroughs are real mechanical state changes. Reviewing them helps you understand which combinations of compute, data, and algorithm investment are currently paying off.",
+          icon: <Lightbulb className="h-5 w-5 text-yellow-400" />,
+          color: "border-yellow-500/50 bg-yellow-900/20",
+          buttonColor: "bg-yellow-600 hover:bg-yellow-700",
+          strategies: ["Open Breakthroughs"],
+          onClick: () => {},
+        }),
+      });
     }
-    
-    // === FINAL PRIORITIZATION & CURATION ===
+
+    const biggestGap = Object.entries(resourceGaps).reduce(
+      (max, [name, gap]) => (gap > max.gap ? { name, gap } : max),
+      { name: "compute", gap: 0 }
+    );
+
+    if (biggestGap.gap >= 2 && averageResourceLevel < 10) {
+      actions.push({
+        priority: 3,
+        action: "Rebalance the Three Pillars",
+        description: `${biggestGap.name} is lagging by ${biggestGap.gap} level${biggestGap.gap > 1 ? "s" : ""}.`,
+        educational: "Progress depends on interacting pillars, not one dominant stat. When one pillar falls behind, it becomes the bottleneck for both breakthroughs and training readiness.",
+        icon: biggestGap.name === "compute"
+          ? <Cpu className="h-5 w-5 text-blue-400" />
+          : biggestGap.name === "data"
+          ? <Database className="h-5 w-5 text-green-400" />
+          : <BarChart3 className="h-5 w-5 text-purple-400" />,
+        color: biggestGap.name === "compute"
+          ? "border-blue-500/50 bg-blue-900/20"
+          : biggestGap.name === "data"
+          ? "border-green-500/50 bg-green-900/20"
+          : "border-purple-500/50 bg-purple-900/20",
+        buttonColor: biggestGap.name === "compute"
+          ? "bg-blue-600 hover:bg-blue-700"
+          : biggestGap.name === "data"
+          ? "bg-green-600 hover:bg-green-700"
+          : "bg-purple-600 hover:bg-purple-700",
+        strategies: [`Boost ${biggestGap.name}`],
+        onClick: () => openPriorityActionDialog({
+          priority: 3,
+          action: "Rebalance the Three Pillars",
+          description: `${biggestGap.name} is lagging by ${biggestGap.gap} level${biggestGap.gap > 1 ? "s" : ""}.`,
+          educational: "Balanced growth is what unlocks the strongest synergies in the simulation. Catching the weak pillar up usually produces a cleaner path than over-investing further in the leader.",
+          icon: biggestGap.name === "compute"
+            ? <Cpu className="h-5 w-5 text-blue-400" />
+            : biggestGap.name === "data"
+            ? <Database className="h-5 w-5 text-green-400" />
+            : <BarChart3 className="h-5 w-5 text-purple-400" />,
+          color: "border-gray-700 bg-gray-900/20",
+          buttonColor: biggestGap.name === "compute"
+            ? "bg-blue-600 hover:bg-blue-700"
+            : biggestGap.name === "data"
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-purple-600 hover:bg-purple-700",
+          strategies: [`Boost ${biggestGap.name}`],
+          onClick: () => {},
+        }),
+      });
+    }
+
     return actions
       .sort((a, b) => a.priority - b.priority)
-      .slice(0, 3) // Show max 3 actions to avoid overwhelming
-      .map(action => ({
-        ...action,
-        // Add visual indicators for different action types
-        strategicDepth: action.strategies ? action.strategies.length : 1,
-        hasEducation: !!action.educational
-      }));
+      .slice(0, 3);
   };
+
+  const actions = getNextActions();
 
   return (
     <>
-      {/* TOP: Prominent AGI Progress with Time Remaining */}
       <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-lg border-2 border-amber-500/20 shadow-xl">
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <BrainCog className="text-amber-400 h-8 w-8" />
-            <h1 className="text-2xl font-bold text-amber-400">AGI Development Progress</h1>
+            <h1 className="text-2xl font-bold text-amber-400">AGI Readiness</h1>
             <Clock className="text-gray-400 h-6 w-6" />
           </div>
-          <div className="text-gray-300 text-sm">Mission: Achieve Artificial General Intelligence</div>
+          <div className="text-gray-300 text-sm">
+            Complete GNT-7 training and reach the intelligence threshold to win
+          </div>
         </div>
-        
+
         <div className="flex items-center justify-between mb-4">
           <div className="text-amber-400 text-3xl font-bold">
             <AnimatedNumber value={gameState.intelligence.toFixed(0)} /> / <AnimatedNumber value={gameState.agiThreshold} />
           </div>
           <div className="text-right">
             <div className="text-lg font-semibold text-gray-300">
-              {Math.round((gameState.intelligence / gameState.agiThreshold) * 100)}% Complete
+              {intelligenceProgress}% of threshold
             </div>
             <div className="text-sm text-gray-400 flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              Day {gameState.daysElapsed} • Est. {calculateTimeToAGI()}
+              Day {gameState.daysElapsed} • {nextMilestoneLabel}
+            </div>
+            <div className="text-xs text-gray-500">
+              Final training: {gameState.training.runs[Era.GNT7].status === "complete" ? "complete" : "not complete"}
             </div>
           </div>
         </div>
-        
+
         <div className="w-full bg-gray-700 rounded-full h-6 mb-2">
-          <div 
+          <div
             className="bg-gradient-to-r from-amber-600 to-amber-400 h-6 rounded-full transition-all duration-500 ease-out flex items-center justify-end pr-3"
-            style={{ width: `${Math.max(5, Math.min(100, (gameState.intelligence / gameState.agiThreshold) * 100))}%` }}
+            style={{ width: `${Math.max(5, intelligenceProgress)}%` }}
           >
-            {(gameState.intelligence / gameState.agiThreshold) > 0.05 && (
-              <span className="text-white text-xs font-semibold">AGI</span>
+            {intelligenceProgress > 5 && (
+              <span className="text-white text-xs font-semibold">Threshold</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* MIDDLE: Next Actions Priority Queue */}
       <div className="bg-gray-900 p-5 rounded-lg border border-gray-700">
         <div className="flex items-center gap-2 mb-4">
           <Target className="h-6 w-6 text-emerald-400" />
           <h2 className="text-xl font-semibold text-emerald-400">Priority Actions</h2>
-          <span className="text-xs text-gray-400 ml-2">• Most impactful next steps</span>
+          <span className="text-xs text-gray-400 ml-2">• Derived from real blockers</span>
         </div>
-        
+
         <div className="space-y-3">
-          {getNextActions().map((action, index) => (
-            <div key={index} className={`border rounded-lg p-4 ${action.color} ${action.urgent ? 'animate-pulse' : ''}`}>
+          {actions.map((action, index) => (
+            <div key={index} className={`border rounded-lg p-4 ${action.color} ${action.urgent ? "animate-pulse" : ""}`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
                   {action.icon}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className={`font-semibold ${action.urgent ? 'text-red-300' : 'text-white'}`}>
+                      <h3 className={`font-semibold ${action.urgent ? "text-red-300" : "text-white"}`}>
                         {action.action}
                       </h3>
-                      {action.hasEducation && (
-                        <span className="text-xs bg-amber-600/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-600/30">
-                          Why?
-                        </span>
-                      )}
+                      <span className="text-xs bg-amber-600/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-600/30">
+                        Why?
+                      </span>
                     </div>
                     <p className="text-sm text-gray-300 mb-2">{action.description}</p>
-                    
-                    {action.educational && (
-                      <div className="text-xs text-gray-400 bg-gray-800/50 p-2 rounded border-l-2 border-amber-600/50 mb-2">
-                        💡 {action.educational}
-                      </div>
-                    )}
-                    
-                    {action.strategies && action.strategies.length > 1 && (
+                    <div className="text-xs text-gray-400 bg-gray-800/50 p-2 rounded border-l-2 border-amber-600/50 mb-2">
+                      {action.educational}
+                    </div>
+                    {action.strategies.length > 1 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         <span className="text-xs text-gray-400 mr-1">Options:</span>
-                        {action.strategies.map((strategy, idx) => (
-                          <span key={idx} className="text-xs bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded border border-gray-600/30">
+                        {action.strategies.map((strategy, strategyIndex) => (
+                          <span key={strategyIndex} className="text-xs bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded border border-gray-600/30">
                             {strategy}
                           </span>
                         ))}
@@ -590,12 +440,12 @@ export default function DashboardContent({
                     )}
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={action.onClick}
                   className={`px-4 py-2 rounded-md text-white font-medium transition-colors flex items-center gap-2 shrink-0 ${action.buttonColor}`}
                   data-testid={`action-${index}`}
                 >
-                  {action.strategies && action.strategies.length === 1 ? action.strategies[0] : 'Take Action'}
+                  {action.strategies[0] ?? "Take Action"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
@@ -604,14 +454,13 @@ export default function DashboardContent({
         </div>
       </div>
 
-      {/* BOTTOM: At-a-Glance Resource Status */}
       <div className="bg-gray-900 p-5 rounded-lg border border-gray-700">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="h-6 w-6 text-blue-400" />
           <h2 className="text-xl font-semibold text-blue-400">Resource Overview</h2>
           <span className="text-xs text-gray-400 ml-2">• Quick status check</span>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-gray-800 p-4 rounded-lg border border-blue-900/50" data-testid="compute-overview">
             <div className="flex items-center justify-between mb-2">
@@ -625,16 +474,16 @@ export default function DashboardContent({
               <AnimatedNumber value={gameState.resources.compute.toFixed(0)} />
             </div>
             <div className="text-sm text-gray-400">
-              +<AnimatedNumber value={gameState.production.compute.toFixed(1)} />/sec
+              +<AnimatedNumber value={gameState.production.compute.toFixed(1)} />/day
             </div>
             <div className="mt-2 text-xs">
               <span className="text-gray-400">Capacity: </span>
-              <span className={gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity > 0.9 ? 'text-red-400' : 'text-green-400'}>
+              <span className={capacityUtilization > 0.9 ? "text-red-400" : "text-green-400"}>
                 {gameState.computeCapacity.used}/{gameState.computeCapacity.maxCapacity}
               </span>
             </div>
           </div>
-          
+
           <div className="bg-gray-800 p-4 rounded-lg border border-green-900/50" data-testid="data-overview">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -647,13 +496,13 @@ export default function DashboardContent({
               <AnimatedNumber value={gameState.resources.data.toFixed(0)} />
             </div>
             <div className="text-sm text-gray-400">
-              +<AnimatedNumber value={gameState.production.data.toFixed(1)} />/sec
+              +<AnimatedNumber value={gameState.production.data.toFixed(1)} />/day
             </div>
             <div className="mt-2 text-xs text-gray-400">
               Quality: Lvl {gameState.dataInputs.quality} • Quantity: Lvl {gameState.dataInputs.quantity}
             </div>
           </div>
-          
+
           <div className="bg-gray-800 p-4 rounded-lg border border-purple-900/50" data-testid="algorithm-overview">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -666,15 +515,14 @@ export default function DashboardContent({
               <AnimatedNumber value={gameState.resources.algorithm.toFixed(0)} />
             </div>
             <div className="text-sm text-gray-400">
-              +<AnimatedNumber value={gameState.production.algorithm.toFixed(1)} />/sec
+              +<AnimatedNumber value={gameState.production.algorithm.toFixed(1)} />/day
             </div>
             <div className="mt-2 text-xs text-gray-400">
-              Research: {Math.round(gameState.training?.algorithmResearchProgress || 0)}% complete
+              Research: {Math.round(gameState.training.algorithmResearchProgress || 0)}% complete
             </div>
           </div>
         </div>
-        
-        {/* Quick Financial Status */}
+
         <div className="mt-4 p-3 bg-gray-800 rounded-lg border border-gray-700" data-testid="financial-overview">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -684,13 +532,12 @@ export default function DashboardContent({
               </span>
             </div>
             <div className="text-sm text-gray-400">
-              Revenue: ${((gameState.revenue.b2b + gameState.revenue.b2c) / 1000).toFixed(1)}K/day
+              Revenue: ${((operationalRevenue) / 1000).toFixed(1)}K per day
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Priority Actions Educational Dialog */}
+
       <Dialog open={!!selectedAction} onOpenChange={() => setSelectedAction(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -702,19 +549,19 @@ export default function DashboardContent({
               {selectedAction?.description}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedAction?.educational && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Why This Matters</h4>
               <p className="text-sm text-blue-800 dark:text-blue-200">{selectedAction.educational}</p>
             </div>
           )}
-          
+
           {selectedAction?.strategies && selectedAction.strategies.length > 1 && (
             <div>
               <h4 className="font-medium mb-2">Strategic Options</h4>
               <div className="space-y-2">
-                {selectedAction.strategies.map((strategy: string, index: number) => (
+                {selectedAction.strategies.map((strategy, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                     <Target className="h-4 w-4" />
                     {strategy}
@@ -723,9 +570,9 @@ export default function DashboardContent({
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
-            <button 
+            <button
               onClick={() => setSelectedAction(null)}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
             >
@@ -733,15 +580,48 @@ export default function DashboardContent({
             </button>
             <button
               onClick={() => {
-                if (selectedAction?.dialogAction) {
-                  selectedAction.dialogAction();
-                } else {
-                  setSelectedAction(null);
+                const actionLabel = selectedAction?.action;
+
+                setSelectedAction(null);
+
+                if (actionLabel === "Relieve Compute Pressure") {
+                  setActiveTab("resources");
+                  handleNavigateToResource("compute");
+                  return;
+                }
+
+                if (actionLabel === "Rebalance the Three Pillars") {
+                  setActiveTab("resources");
+                  return;
+                }
+
+                if (actionLabel === `Start ${nextTrainingRun?.name}`) {
+                  setActiveTab("training");
+                  return;
+                }
+
+                if (actionLabel === "Clear the Next Training Blocker") {
+                  setActiveTab("training");
+                  return;
+                }
+
+                if (
+                  actionLabel === "Build the API Platform" ||
+                  actionLabel === "Launch API Revenue" ||
+                  actionLabel === "Build the Chatbot Platform" ||
+                  actionLabel === "Create Revenue Before the Next Leap"
+                ) {
+                  setActiveTab("economy");
+                  return;
+                }
+
+                if (actionLabel === "Claim Ready Breakthroughs") {
+                  setActiveTab("breakthroughs");
                 }
               }}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              {selectedAction?.strategies?.[0] || 'Take Action'}
+              {selectedAction?.strategies?.[0] || "Take Action"}
             </button>
           </DialogFooter>
         </DialogContent>

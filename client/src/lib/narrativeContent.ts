@@ -123,8 +123,8 @@ export const tutorialContent = {
       title: "The AI Economics Model",
       content: "Here's the economic reality! To reach GNT-3, you need: $25K for training + $8K for API platform = $33K total, but Series A only gives $5K. For GNT-4: $100K training + $15K chatbot platform = $115K, while Series B gives $25K. The gap is filled by customer revenue!",
       context: "Real AI companies raise funding to kickstart operations, but must quickly monetize through products. OpenAI had to generate millions in API revenue to afford GPT-4's $100M+ training costs. Venture capital alone isn't enough - you need paying customers.",
-      action: "Click on Training to see requirements and costs",
-      targetElement: "training-panel", 
+      action: "Open the Training tab to inspect the next training run",
+      targetElement: "training-tab-trigger", 
       modalStyle: false,
       icon: "target"
     },
@@ -132,7 +132,7 @@ export const tutorialContent = {
       title: "Training Runs: The Path to AGI",
       content: "Now you understand the economic model! Training Runs are expensive computational efforts that advance your AI. You'll need to balance funding rounds with revenue from customers to afford the escalating costs of each era.",
       context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost over $100 million - requiring both venture funding and product revenue to finance.",
-      action: "Explore the training requirements and begin your AGI journey",
+      action: "Review the training card and blocker list",
       targetElement: "training-panel",
       modalStyle: false,
       icon: "zap"
@@ -299,7 +299,7 @@ export const narrative = {
   API_SERVICE_AVAILABLE: {
     title: "💼 API Services Ready to Launch!",
     content: "Your AI has reached GNT-3 capabilities! **API Services are now unlocked** - enable them in the Economy tab to start generating B2B revenue from companies integrating your AI.",
-    context: "Companies pay premium rates for reliable AI APIs. Start with a competitive rate around $1,500/tick and adjust based on demand."
+    context: "Companies pay premium rates for reliable AI APIs. Start with a competitive pricing base around $1,500 and adjust based on demand."
   },
 
   API_AUTO_ENABLE_SUGGESTION: {
@@ -310,7 +310,7 @@ export const narrative = {
 
   CHATBOT_SERVICE_AVAILABLE: {
     title: "👥 Consumer Chatbot Ready!",
-    content: "GNT-4 unlocked **Chatbot Services**! Enable consumer subscriptions in the Economy tab. Start with $15-20/month - users will pay for reliable, high-quality AI assistance.",
+    content: "GNT-4 unlocked **Chatbot Services**! Enable consumer subscriptions in the Economy tab. Start with a $15-20 subscription price - users will pay for reliable, high-quality AI assistance.",
     context: "ChatGPT Plus and similar services generate massive subscription revenue. Balance price and quality to maximize growth."
   },
 
@@ -442,8 +442,8 @@ export const narrative = {
 
   STUCK_TRAINING_BLOCKED_HINT: {
     title: "Training Prerequisites Help",
-    content: "Training is blocked? You need sufficient compute capacity, algorithm research progress, and breakthrough unlocks. Focus on whichever prerequisite is missing!",
-    context: "Real AI training runs require careful resource planning. Check compute availability, research completeness, and algorithm breakthroughs.",
+    content: "Training is blocked because at least one real requirement is still missing. Check the Training tab for exact deficits in compute, data, research, electricity, hardware, regulation, funding, or available compute.",
+    context: "Real frontier training runs fail on concrete operational blockers, not vague readiness. Good teams make each missing requirement visible before they attempt the run.",
     speaker: "spark"
   },
 
