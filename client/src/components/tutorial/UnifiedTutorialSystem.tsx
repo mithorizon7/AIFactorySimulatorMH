@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GameStateType } from "@/lib/gameState";
@@ -30,6 +30,7 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
   const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [isVisible, setIsVisible] = useState(false);
+  const handledActionKeyRef = useRef<string | null>(null);
 
   // Get current tutorial step from unified content
   const currentPhase = `PHASE_${gameState.tutorial.phase}` as keyof typeof tutorialContent;
@@ -59,9 +60,11 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
       setHighlightStyle({ display: 'none' });
       setTooltipStyle({ display: 'none' });
       setIsVisible(false);
+      handledActionKeyRef.current = null;
       return;
     }
 
+    let cleanupTargetListeners: (() => void) | undefined;
     const timeout = setTimeout(() => {
       const targetElement = document.querySelector(`[data-tutorial-id='${currentStep.targetElement}']`) as HTMLElement;
       
@@ -110,11 +113,39 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
           block: 'center',
           inline: 'center' 
         });
+
+        const actionKey = `${gameState.tutorial.phase}-${gameState.tutorial.step}-${currentStep.targetElement}`;
+        const handleInteraction = () => {
+          if (handledActionKeyRef.current === actionKey) {
+            return;
+          }
+
+          handledActionKeyRef.current = actionKey;
+          window.setTimeout(() => {
+            onNextStep();
+          }, 0);
+        };
+
+        const handleKeydown = (event: KeyboardEvent) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            handleInteraction();
+          }
+        };
+
+        targetElement.addEventListener('click', handleInteraction);
+        targetElement.addEventListener('keydown', handleKeydown);
+        cleanupTargetListeners = () => {
+          targetElement.removeEventListener('click', handleInteraction);
+          targetElement.removeEventListener('keydown', handleKeydown);
+        };
       }
     }, 100);
 
-    return () => clearTimeout(timeout);
-  }, [currentStep]);
+    return () => {
+      clearTimeout(timeout);
+      cleanupTargetListeners?.();
+    };
+  }, [currentStep, gameState.tutorial.phase, gameState.tutorial.step, onNextStep]);
 
   // Handle tab highlighting
   useEffect(() => {
@@ -254,11 +285,11 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
               Step {gameState.tutorial.step} of {Object.keys(tutorialContent[currentPhase] || {}).length}
             </span>
             <Button 
-              onClick={onNextStep}
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+              disabled
+              className="bg-blue-600 text-white text-xs disabled:cursor-default disabled:opacity-70"
             >
-              {currentStep.action || "Continue"}
+              Do the highlighted action
               <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </div>

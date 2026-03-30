@@ -113,6 +113,7 @@ export default function MainGameTabs({
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tutorial-id="dashboard-tab"
+              data-tab="dashboard"
             >
               <BarChart3 className="h-5 w-5 flex-shrink-0" />
               <span>Dashboard</span>
@@ -124,6 +125,8 @@ export default function MainGameTabs({
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-testid="training-tab-trigger"
+              data-tutorial-id="training-tab-trigger"
+              data-tab="training"
             >
               <Target className="h-5 w-5 flex-shrink-0" />
               <span>Training</span>
@@ -134,6 +137,7 @@ export default function MainGameTabs({
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
+              data-tab="resources"
             >
               <Zap className="h-5 w-5 flex-shrink-0" />
               <span>Resources</span>
@@ -146,6 +150,7 @@ export default function MainGameTabs({
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px] relative
                 ${(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) ? 'animate-pulse ring-2 ring-green-400 shadow-lg shadow-green-400/50' : ''}`}
               data-tutorial-id="economy-tab"
+              data-tab="economy"
             >
               <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
@@ -162,6 +167,7 @@ export default function MainGameTabs({
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
+              data-tab="breakthroughs"
             >
               <Lightbulb className="h-5 w-5 flex-shrink-0" />
               <span>Breakthroughs</span>
@@ -173,6 +179,7 @@ export default function MainGameTabs({
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tutorial-id="progression-tab"
+              data-tab="progression"
             >
               <BrainCog className="h-5 w-5 flex-shrink-0" />
               <span>Progression</span>
@@ -249,8 +256,8 @@ export default function MainGameTabs({
           <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
             <h2 className="text-xl font-semibold text-amber-400 mb-4">AI Breakthroughs</h2>
             <p className="text-gray-300 mb-4">
-              Breakthroughs represent significant advancements in AI development. They unlock
-              automatically when you reach certain resource levels, reflecting real-world AI milestones.
+              Breakthroughs represent major AI advances inside the eras you have already reached.
+              Complete training to unlock the era, then meet the real resource requirements to claim the breakthrough.
             </p>
           </div>
           

@@ -48,8 +48,8 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
                     <li>Manage three core resources: Compute, Data, and Algorithms</li>
                     <li>Allocate money strategically to grow your AI capabilities</li>
                     <li>Unlock breakthroughs that mirror real-world AI advancements</li>
-                    <li>Progress through historical AI eras from GNT-2 to AGI</li>
-                    <li>Complete the game by reaching 1000 intelligence as fast as possible</li>
+                    <li>Progress through historical AI eras from GNT-2 through GNT-7</li>
+                    <li>Complete the game by finishing the final training ladder and then crossing the intelligence threshold</li>
                   </ul>
                 </div>
               </div>
@@ -145,8 +145,9 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
                 <div className="bg-gradient-to-r from-amber-950 to-amber-900 p-4 rounded-lg border border-amber-700">
                   <h4 className="font-medium text-amber-300 mb-2">Primary Objective:</h4>
                   <p className="text-gray-200">
-                    Reach <span className="font-bold text-amber-300">1000 Intelligence</span> as quickly as possible by 
-                    strategically managing your resources and making wise investments. Your time will be ranked on the leaderboard!
+                    Complete <span className="font-bold text-amber-300">GNT-7 training</span> and then reach the
+                    <span className="font-bold text-amber-300"> 1000 intelligence threshold</span> as quickly as possible
+                    by strategically managing your resources and making wise investments. Your time will be ranked on the leaderboard!
                   </p>
                 </div>
                 

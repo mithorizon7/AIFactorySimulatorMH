@@ -1,27 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import VictoryScreen from "@/components/victory/VictoryScreen";
 import LeaderboardModal from "@/components/leaderboard/LeaderboardModal";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
-import { Breakthrough } from "@/lib/gameState";
+import { Breakthrough, hasAchievedAgi } from "@/lib/gameState";
 import { apiRequest } from "@/lib/queryClient";
 import "@/components/factory/resourceFlow.css";
 import { GamePauseProvider, useGamePause } from "@/contexts/GamePauseContext";
 
-// New UI Components
-import WelcomeIntroduction from "@/components/factory/WelcomeIntroduction";
 import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
-import ComputePanel from "@/components/factory/ComputePanel";
-import HelpPanel from "@/components/factory/HelpPanel";
 import AdvisorToast from "@/components/factory/AdvisorToast";
 
 // Unified Tutorial System
 import { UnifiedTutorialSystem } from "@/components/tutorial/UnifiedTutorialSystem";
 import { NarrativeNotification } from "@/components/narrative/NarrativeNotification";
 import { useNarrativeTriggers, NarrativeMessage } from "@/hooks/useNarrativeTriggers";
-import { SparkCharacter } from "@/components/character/SparkCharacter";
 
 export default function AIFactory() {
   const { toast } = useToast();
@@ -74,7 +69,6 @@ export default function AIFactory() {
   } = useGameEngine();
 
   // UI state
-  const [showIntroduction, setShowIntroduction] = useState<boolean>(false);
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
@@ -82,6 +76,7 @@ export default function AIFactory() {
   
   // Unified tutorial and narrative system
   const [currentNarrativeMessage, setCurrentNarrativeMessage] = useState<NarrativeMessage | null>(null);
+  const unlockedBreakthroughIdsRef = useRef<number[]>([]);
   
   // Narrative trigger system
   useNarrativeTriggers({
@@ -90,21 +85,6 @@ export default function AIFactory() {
     setGameState
   });
   
-  // Handle WelcomeIntroduction visibility for proper tutorial sequence
-  useEffect(() => {
-    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
-    
-    // Only show WelcomeIntroduction for NEW players after Phase 1 tutorial modals are COMPLETE
-    if (!hasPlayedBefore) {
-      // Show introduction only when we've moved to Phase 2 (Phase 1 fully completed)
-      // This prevents overlap with Phase 1 Step 2 modal
-      if (gameState.tutorial.phase > 1) {
-        setShowIntroduction(true);
-      }
-    }
-    // Returning players go straight to main game interface, no introduction needed
-  }, [gameState.tutorial.phase]);
-
   // Save game state periodically
   useEffect(() => {
     if (!isRunning) return;
@@ -118,23 +98,27 @@ export default function AIFactory() {
 
   // Watch for breakthroughs
   useEffect(() => {
-    const newBreakthrough = gameState.breakthroughs.find(b => 
-      b.unlocked && b.id === gameState.currentGoal.id
+    const previouslyUnlocked = new Set(unlockedBreakthroughIdsRef.current);
+    const newBreakthrough = gameState.breakthroughs.find(
+      (breakthrough) => breakthrough.unlocked && !previouslyUnlocked.has(breakthrough.id)
     );
+    unlockedBreakthroughIdsRef.current = gameState.breakthroughs
+      .filter((breakthrough) => breakthrough.unlocked)
+      .map((breakthrough) => breakthrough.id);
     
     if (newBreakthrough && isRunning) {
       setCurrentBreakthrough(newBreakthrough);
       setShowBreakthroughModal(true);
     }
-  }, [gameState.breakthroughs, gameState.currentGoal.id, isRunning]);
+  }, [gameState.breakthroughs, isRunning]);
 
   // Check for victory condition
   useEffect(() => {
-    if (gameState.intelligence >= gameState.agiThreshold && isRunning) {
+    if (hasAchievedAgi(gameState) && isRunning) {
       pauseGame();
       setShowSummaryModal(true);
     }
-  }, [gameState.intelligence, isRunning, gameState.agiThreshold, pauseGame]);
+  }, [gameState, isRunning, pauseGame]);
 
   // Handler for Spark AI Advisor
   const handleAdvisorClose = () => {
@@ -167,21 +151,6 @@ export default function AIFactory() {
     }
   }
 
-  const handleCloseIntroduction = () => {
-    setShowIntroduction(false);
-    
-    // Mark as played and continue tutorial for new players
-    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
-    if (!hasPlayedBefore) {
-      localStorage.setItem('hasPlayedAIFactory', 'true');
-      
-      // If we're still in Phase 1, advance to Phase 2 to continue tutorial
-      if (gameState.tutorial.isActive && gameState.tutorial.phase === 1) {
-        advanceTutorial(); // This will advance to Phase 2, Step 1
-      }
-    }
-  };
-
   const handleCloseBreakthroughModal = () => {
     setShowBreakthroughModal(false);
     setCurrentBreakthrough(null);
@@ -203,6 +172,9 @@ export default function AIFactory() {
   const handleCloseLeaderboard = () => {
     setShowLeaderboard(false);
   };
+
+  const tutorialOverlayActive = gameState.tutorial.isActive && !gameState.tutorial.isCompleted;
+  const suppressSecondaryMessages = tutorialOverlayActive || showBreakthroughModal || showSummaryModal;
 
   return (
     <GamePauseProvider 
@@ -248,15 +220,6 @@ export default function AIFactory() {
             buildApiPlatform={buildApiPlatform}
             buildChatbotPlatform={buildChatbotPlatform}
           />
-
-          {/* Welcome Introduction Modal */}
-          {showIntroduction && (
-            <WelcomeIntroduction 
-              onClose={handleCloseIntroduction} 
-              currentEra={gameState.currentEra} 
-            />
-          )}
-
           {/* Breakthrough Modal */}
           {showBreakthroughModal && currentBreakthrough && (
             <BreakthroughModal 
@@ -279,29 +242,28 @@ export default function AIFactory() {
             onOpenChange={handleCloseLeaderboard}
           />
 
-          {/* Unified Tutorial System - Suspended during Introduction to prevent overlap */}
-          {!showIntroduction && (
-            <UnifiedTutorialSystem
-              gameState={gameState}
-              onNextStep={advanceTutorial}
-              onSkipTutorial={skipTutorial}
-              onComplete={() => {
-                completeTutorial();
-                startGame();
-              }}
-            />
-          )}
+          <UnifiedTutorialSystem
+            gameState={gameState}
+            onNextStep={advanceTutorial}
+            onSkipTutorial={skipTutorial}
+            onComplete={() => {
+              completeTutorial();
+              startGame();
+            }}
+          />
           
           {/* Dynamic Narrative Notifications */}
-          <NarrativeNotification
-            message={currentNarrativeMessage}
-            onDismiss={() => setCurrentNarrativeMessage(null)}
-          />
+          {!suppressSecondaryMessages && (
+            <NarrativeNotification
+              message={currentNarrativeMessage}
+              onDismiss={() => setCurrentNarrativeMessage(null)}
+            />
+          )}
         </div>
       </div>
 
       {/* Spark AI Advisor is rendered on top of everything */}
-      {advisorMessage && (
+      {!suppressSecondaryMessages && advisorMessage && (
         <AdvisorToast message={advisorMessage} onClose={handleAdvisorClose} />
       )}
     </GamePauseProvider>

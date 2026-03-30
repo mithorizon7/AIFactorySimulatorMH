@@ -1,4 +1,4 @@
-import { GameStateType, Era } from "@/lib/gameState";
+import { GameStateType, Era, getScaledInvestmentCost } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
@@ -278,33 +278,17 @@ export default function FactorySection({
 
   const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
 
-  // Cost calculation function that matches the game engine logic
-  const getScaledInvestmentCost = (baseCost: number, currentLevel: number, era: Era): number => {
-    // Base scaling factor increases with era to maintain challenge in advanced gameplay
-    const eraScalingFactor = era === Era.GNT2 ? 1.0 : 
-                            era === Era.GNT3 ? 1.2 : 
-                            era === Era.GNT4 ? 1.5 : 
-                            era === Era.GNT5 ? 2.0 : 
-                            era === Era.GNT6 ? 3.0 : 4.0; // GNT-7 and beyond
-
-    // Exponential scaling: each level costs significantly more
-    const levelScaling = Math.pow(1.4, currentLevel);
-    
-    // Late-game scaling for advanced eras to prevent trivialization  
-    const scaledCost = baseCost * levelScaling * eraScalingFactor;
-    
-    return Math.floor(scaledCost);
-  };
-
   // Calculate actual upgrade costs
   const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
   const dataLevelCost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
   const algorithmLevelCost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
   const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
+  const hardwareCost = getScaledInvestmentCost(160, computeInputs.hardware, gameState.currentEra);
+  const regulationCost = getScaledInvestmentCost(140, computeInputs.regulation, gameState.currentEra);
+  const dataQuantityCost = getScaledInvestmentCost(120, dataInputs.quantity, gameState.currentEra);
+  const dataFormatsCost = getScaledInvestmentCost(140, dataInputs.formats, gameState.currentEra);
   
   // Fixed costs (do not scale with level or era)
-  const hardwareCost = 150;
-  const regulationCost = 120;
   const engineerCost = 250;
 
   const getComputeBarWidth = () => {
@@ -358,7 +342,7 @@ export default function FactorySection({
                 <span>Production Rate:</span>
                 <span className="text-[#3B82F6]">
                   <AnimatedNumber value={production.compute.toFixed(1)} />
-                  /s
+                  /day
                 </span>
               </div>
               <div className="relative">
@@ -623,7 +607,7 @@ export default function FactorySection({
                 <span>Collection Rate:</span>
                 <span className="text-[#10B981]">
                   <AnimatedNumber value={production.data.toFixed(1)} />
-                  /s
+                  /day
                 </span>
               </div>
               <div className="relative">
@@ -757,13 +741,13 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 60 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataQuantityCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                   }`}
                   onClick={allocateMoneyToDataQuantity}
-                  disabled={money < 60}
+                  disabled={money < dataQuantityCost}
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$60</span>
+                  <span className="font-medium">${dataQuantityCost}</span>
                 </button>
               </div>
               
@@ -792,13 +776,13 @@ export default function FactorySection({
                 </p>
                 <button 
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < 90 ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataFormatsCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                   }`}
                   onClick={allocateMoneyToDataFormats}
-                  disabled={money < 90}
+                  disabled={money < dataFormatsCost}
                 >
                   <span>Invest</span>
-                  <span className="font-medium">$90</span>
+                  <span className="font-medium">${dataFormatsCost}</span>
                 </button>
               </div>
             </div>
@@ -838,7 +822,7 @@ export default function FactorySection({
                 <span>Research Rate:</span>
                 <span className="text-[#8B5CF6]">
                   <AnimatedNumber value={production.algorithm.toFixed(1)} />
-                  /s
+                  /day
                 </span>
               </div>
               <div className="relative">

@@ -1,4 +1,4 @@
-import { GameStateType } from "@/lib/gameState";
+import { GameStateType, getNextBreakthroughGoal, isBreakthroughEraUnlocked } from "@/lib/gameState";
 import { EducationalTooltip } from "@/components/ui/educational-tooltip";
 import { InfoIcon } from "lucide-react";
 
@@ -7,14 +7,9 @@ interface BreakthroughSectionProps {
 }
 
 export default function BreakthroughSection({ gameState }: BreakthroughSectionProps) {
-  const { breakthroughs, currentGoal } = gameState;
+  const { breakthroughs } = gameState;
   
-  const getCurrentBreakthrough = () => {
-    return breakthroughs.find(b => b.id === currentGoal.id);
-  };
-  
-  const calculateGoalProgress = () => {
-    const currentBreakthrough = getCurrentBreakthrough();
+  const calculateGoalProgress = (currentBreakthrough: ReturnType<typeof getNextBreakthroughGoal>) => {
     if (!currentBreakthrough) return 0;
     
     let progress = 0;
@@ -250,8 +245,11 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
     return contents[breakthroughId as keyof typeof contents] || contents[1];
   };
   
-  const currentBreakthrough = getCurrentBreakthrough();
-  const goalProgress = calculateGoalProgress();
+  const currentBreakthrough = getNextBreakthroughGoal(gameState);
+  const goalProgress = calculateGoalProgress(currentBreakthrough);
+  const currentGoalLockedByEra = currentBreakthrough
+    ? !isBreakthroughEraUnlocked(gameState.currentEra, currentBreakthrough)
+    : false;
   
   return (
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
@@ -267,7 +265,9 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse"></div>
-                  <span className="text-sm font-medium">Achieve {currentBreakthrough.name}</span>
+                  <span className="text-sm font-medium">
+                    {currentGoalLockedByEra ? `Reach ${currentBreakthrough.era} to unlock ${currentBreakthrough.name}` : `Achieve ${currentBreakthrough.name}`}
+                  </span>
                 </div>
                 <EducationalTooltip
                   content={
@@ -305,6 +305,11 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
                 </EducationalTooltip>
               </div>
               <p className="text-sm text-gray-300">{currentBreakthrough.description}</p>
+              {currentGoalLockedByEra && currentBreakthrough.era && (
+                <p className="mt-2 text-xs text-amber-300">
+                  This breakthrough becomes eligible after you complete training into {currentBreakthrough.era}.
+                </p>
+              )}
               
               <div className="mt-3">
                 <div className="flex justify-between text-xs text-gray-400 mb-1">
@@ -413,7 +418,9 @@ export default function BreakthroughSection({ gameState }: BreakthroughSectionPr
               </>
             ) : (
               <p className="text-sm text-gray-500 ml-7">
-                Unlock this breakthrough by advancing your AI's capabilities.
+                {breakthrough.era && !isBreakthroughEraUnlocked(gameState.currentEra, breakthrough)
+                  ? `Complete ${breakthrough.era} training to make this breakthrough eligible.`
+                  : "Unlock this breakthrough by advancing your AI's capabilities."}
               </p>
             )}
           </div>

@@ -9,17 +9,43 @@ export enum Era {
   GNT7 = "GNT-7"     // Final Phase (AGI Threshold)
 }
 
+export const ERA_ORDER = [Era.GNT2, Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7];
+
 // Helper function to get the next era in progression
 // Returns null if already at final era (GNT-7)
 export function getNextEra(currentEra: Era): Era | null {
-  const eraOrder = [Era.GNT2, Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7];
-  const currentIndex = eraOrder.indexOf(currentEra);
-  return currentIndex < eraOrder.length - 1 ? eraOrder[currentIndex + 1] : null;
+  const currentIndex = ERA_ORDER.indexOf(currentEra);
+  return currentIndex < ERA_ORDER.length - 1 ? ERA_ORDER[currentIndex + 1] : null;
 }
 
 // Helper function to check if an era is the final era
 export function isFinalEra(era: Era): boolean {
   return era === Era.GNT7;
+}
+
+export function getEraIndex(era: Era): number {
+  return ERA_ORDER.indexOf(era);
+}
+
+export function getScaledInvestmentCost(baseCost: number, currentLevel: number, era: Era): number {
+  const eraScalingFactor = era === Era.GNT2 ? 1.0 :
+                           era === Era.GNT3 ? 1.2 :
+                           era === Era.GNT4 ? 1.5 :
+                           era === Era.GNT5 ? 2.0 :
+                           era === Era.GNT6 ? 3.0 : 4.0;
+
+  const levelScaling = Math.pow(1.4, currentLevel);
+  return Math.floor(baseCost * levelScaling * eraScalingFactor);
+}
+
+export interface TrainingRequirementDetail {
+  key: string;
+  label: string;
+  current: number;
+  required: number;
+  met: boolean;
+  isPercentage?: boolean;
+  type: 'prerequisite' | 'capacity' | 'funding';
 }
 
 // Training run states
@@ -118,6 +144,7 @@ export interface GameStateType {
     maxCapacity: number;   // Maximum possible compute capacity
     freeCompute?: number;  // Compute available for research (not used by customers or training)
     customerUsage?: number; // Compute used specifically by customers (B2B/B2C)
+    breakthroughMultiplier?: number; // Permanent multiplier from hardware breakthroughs
   };
   
   // Enabling Inputs for Compute
@@ -317,6 +344,37 @@ export interface Breakthrough {
   era?: Era; // Optional era association
 }
 
+export function isBreakthroughEraUnlocked(currentEra: Era, breakthrough: Breakthrough): boolean {
+  if (!breakthrough.era) {
+    return true;
+  }
+
+  return getEraIndex(breakthrough.era) <= getEraIndex(currentEra);
+}
+
+export function areBreakthroughRequirementsMet(state: GameStateType, breakthrough: Breakthrough): boolean {
+  return Object.entries(breakthrough.requiredLevels).every(([resource, level]) => {
+    const currentLevel = state.levels[resource as keyof typeof state.levels];
+    return currentLevel >= level;
+  });
+}
+
+export function canUnlockBreakthrough(state: GameStateType, breakthrough: Breakthrough): boolean {
+  return (
+    !breakthrough.unlocked &&
+    isBreakthroughEraUnlocked(state.currentEra, breakthrough) &&
+    areBreakthroughRequirementsMet(state, breakthrough)
+  );
+}
+
+export function getNextBreakthroughGoal(state: GameStateType): Breakthrough | null {
+  const accessibleLockedBreakthrough = state.breakthroughs.find(
+    (breakthrough) => !breakthrough.unlocked && isBreakthroughEraUnlocked(state.currentEra, breakthrough)
+  );
+
+  return accessibleLockedBreakthrough ?? state.breakthroughs.find((breakthrough) => !breakthrough.unlocked) ?? null;
+}
+
 // Training run model - a discrete training operation that advances the AI to the next era
 export interface TrainingRun {
   targetEra: Era; // What era this training run is trying to reach
@@ -356,7 +414,144 @@ export interface TrainingRun {
   realWorldParallel: string; // Educational context
 }
 
-export const initialGameState: GameStateType = {
+export function getTrainingRunForEra(state: GameStateType, era: Era | null) {
+  if (!era || !Object.prototype.hasOwnProperty.call(state.training.runs, era)) {
+    return null;
+  }
+
+  return state.training.runs[era as keyof typeof state.training.runs];
+}
+
+export function getBaseTrainingRunForEra(era: Era | null) {
+  if (!era || !Object.prototype.hasOwnProperty.call(baseInitialGameState.training.runs, era)) {
+    return null;
+  }
+
+  return structuredClone(baseInitialGameState.training.runs[era as keyof typeof baseInitialGameState.training.runs]);
+}
+
+export function getUpcomingTrainingRun(state: GameStateType) {
+  return getTrainingRunForEra(state, getNextEra(state.currentEra));
+}
+
+export function getTrainingRequirementDetails(
+  state: GameStateType,
+  targetEra: Era | null = getNextEra(state.currentEra)
+): TrainingRequirementDetail[] {
+  const trainingRun = getTrainingRunForEra(state, targetEra);
+  if (!trainingRun) {
+    return [];
+  }
+
+  return [
+    {
+      key: 'compute-level',
+      label: 'Compute Level',
+      current: state.levels.compute,
+      required: trainingRun.prerequisites.compute,
+      met: state.levels.compute >= trainingRun.prerequisites.compute,
+      type: 'prerequisite',
+    },
+    {
+      key: 'data-quality',
+      label: 'Data Quality',
+      current: state.dataInputs.quality,
+      required: trainingRun.prerequisites.data.quality,
+      met: state.dataInputs.quality >= trainingRun.prerequisites.data.quality,
+      type: 'prerequisite',
+    },
+    {
+      key: 'data-quantity',
+      label: 'Data Quantity',
+      current: state.dataInputs.quantity,
+      required: trainingRun.prerequisites.data.quantity,
+      met: state.dataInputs.quantity >= trainingRun.prerequisites.data.quantity,
+      type: 'prerequisite',
+    },
+    {
+      key: 'data-formats',
+      label: 'Data Formats',
+      current: state.dataInputs.formats,
+      required: trainingRun.prerequisites.data.formats,
+      met: state.dataInputs.formats >= trainingRun.prerequisites.data.formats,
+      type: 'prerequisite',
+    },
+    {
+      key: 'algorithm-architectures',
+      label: 'Algorithm Architectures',
+      current: state.algorithmInputs.architectures,
+      required: trainingRun.prerequisites.algorithm.architectures,
+      met: state.algorithmInputs.architectures >= trainingRun.prerequisites.algorithm.architectures,
+      type: 'prerequisite',
+    },
+    {
+      key: 'research-progress',
+      label: 'Research Progress',
+      current: Math.round(state.training.algorithmResearchProgress),
+      required: trainingRun.prerequisites.algorithm.researchProgress,
+      met: state.training.algorithmResearchProgress >= trainingRun.prerequisites.algorithm.researchProgress,
+      isPercentage: true,
+      type: 'prerequisite',
+    },
+    {
+      key: 'electricity',
+      label: 'Electricity',
+      current: state.computeInputs.electricity,
+      required: trainingRun.prerequisites.computeInputs.electricity,
+      met: state.computeInputs.electricity >= trainingRun.prerequisites.computeInputs.electricity,
+      type: 'prerequisite',
+    },
+    {
+      key: 'hardware',
+      label: 'Hardware',
+      current: state.computeInputs.hardware,
+      required: trainingRun.prerequisites.computeInputs.hardware,
+      met: state.computeInputs.hardware >= trainingRun.prerequisites.computeInputs.hardware,
+      type: 'prerequisite',
+    },
+    {
+      key: 'regulation',
+      label: 'Regulatory Compliance',
+      current: state.computeInputs.regulation,
+      required: trainingRun.prerequisites.computeInputs.regulation,
+      met: state.computeInputs.regulation >= trainingRun.prerequisites.computeInputs.regulation,
+      type: 'prerequisite',
+    },
+    {
+      key: 'training-funds',
+      label: 'Available Funds',
+      current: Math.floor(state.money),
+      required: trainingRun.moneyCost,
+      met: state.money >= trainingRun.moneyCost,
+      type: 'funding',
+    },
+    {
+      key: 'training-compute',
+      label: 'Available Compute',
+      current: state.computeCapacity.available,
+      required: trainingRun.computeRequired,
+      met: state.computeCapacity.available >= trainingRun.computeRequired,
+      type: 'capacity',
+    },
+  ];
+}
+
+export function getTrainingBlockers(
+  state: GameStateType,
+  targetEra: Era | null = getNextEra(state.currentEra)
+) {
+  return getTrainingRequirementDetails(state, targetEra).filter((detail) => !detail.met);
+}
+
+export function hasCompletedFinalTraining(state: GameStateType): boolean {
+  return state.training.runs[Era.GNT7].status === TrainingStatus.COMPLETE;
+}
+
+export function hasAchievedAgi(state: GameStateType): boolean {
+  return state.currentEra === Era.GNT7 && hasCompletedFinalTraining(state) && state.intelligence >= state.agiThreshold;
+}
+
+const baseInitialGameState: GameStateType = {
   isRunning: false,
   timeElapsed: 0, // Counting up from 0 seconds
   
@@ -593,7 +788,8 @@ export const initialGameState: GameStateType = {
     used: 0,             // No compute used initially
     maxCapacity: 2000,   // Initial maximum capacity
     freeCompute: 1000,   // Initially all compute is free for research
-    customerUsage: 0     // No customers using compute initially
+    customerUsage: 0,    // No customers using compute initially
+    breakthroughMultiplier: 1
   },
   
   // Enabling inputs for Compute
@@ -673,7 +869,7 @@ export const initialGameState: GameStateType = {
     {
       id: 2,
       name: "Series A",
-      requiredIntelligence: 50, // Intelligence threshold for Series A
+      requiredIntelligence: 150, // Intelligence threshold for Series A
       funding: 5000, // $5,000 funding
       unlocked: false,
       era: Era.GNT3,
@@ -683,7 +879,7 @@ export const initialGameState: GameStateType = {
     {
       id: 3,
       name: "Series B",
-      requiredIntelligence: 200, // Intelligence threshold for Series B
+      requiredIntelligence: 350, // Intelligence threshold for Series B
       funding: 25000, // $25,000 funding
       unlocked: false,
       era: Era.GNT4,
@@ -693,7 +889,7 @@ export const initialGameState: GameStateType = {
     {
       id: 4,
       name: "Series C",
-      requiredIntelligence: 500, // Intelligence threshold for Series C
+      requiredIntelligence: 650, // Intelligence threshold for Series C
       funding: 100000, // $100,000 funding
       unlocked: false,
       era: Era.GNT5,
@@ -703,7 +899,7 @@ export const initialGameState: GameStateType = {
     {
       id: 5,
       name: "Series D",
-      requiredIntelligence: 800, // Intelligence threshold for Series D
+      requiredIntelligence: 900, // Intelligence threshold for Series D
       funding: 1000000, // $1,000,000 funding for expensive late-game
       unlocked: false,
       era: Era.GNT6,
@@ -1221,3 +1417,9 @@ export const initialGameState: GameStateType = {
     hasAchievedAGI: false // Whether player reached AGI
   }
 };
+
+export function createInitialGameState(): GameStateType {
+  return structuredClone(baseInitialGameState);
+}
+
+export const initialGameState: GameStateType = createInitialGameState();

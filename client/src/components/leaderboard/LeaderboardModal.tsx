@@ -217,7 +217,7 @@ export default function LeaderboardModal({ open, onOpenChange }: LeaderboardModa
 
           <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
             <p className="text-sm text-gray-300">
-              💡 <strong>Tip:</strong> Achieve AGI (1000 Intelligence) to join the Hall of Fame! 
+              💡 <strong>Tip:</strong> Complete GNT-7 training and reach 1000 intelligence to join the Hall of Fame.
               Balance compute, data, and algorithms to reach the top of the leaderboard.
             </p>
           </div>
