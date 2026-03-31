@@ -199,6 +199,7 @@ export default function AIFactory() {
           {/* Main Game Navigation Tabs - Moved directly under the header */}
           <MainGameTabs 
             gameState={gameState}
+            advanceTutorial={advanceTutorial}
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToData={allocateMoneyToData}
             allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}

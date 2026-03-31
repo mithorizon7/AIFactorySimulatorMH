@@ -25,14 +25,17 @@ import {
   hasAchievedAgi,
 } from "@/lib/gameState";
 import { formatCurrency } from "@/lib/utils";
+import { getTutorialCurrentStep } from "@/lib/narrativeContent";
 
 interface TrainingTabProps {
   gameState: GameStateType;
+  advanceTutorial?: () => void;
   onStartTraining: () => void;
 }
 
-export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
+export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: TrainingTabProps) {
   const { training, currentEra, computeCapacity } = gameState;
+  const currentTutorialStep = getTutorialCurrentStep(gameState.tutorial);
 
   const nextEra = getNextEra(currentEra);
   const nextTrainingRun = nextEra ? training.runs[nextEra as keyof typeof training.runs] : null;
@@ -88,7 +91,20 @@ export function TrainingTab({ gameState, onStartTraining }: TrainingTabProps) {
   ];
 
   return (
-    <div className="space-y-6 p-6" data-testid="training-tab" data-tutorial-id="training-panel">
+    <div
+      className="space-y-6 p-6"
+      data-testid="training-tab"
+      data-tutorial-id="training-panel"
+      onClickCapture={() => {
+        if (
+          gameState.tutorial.isActive &&
+          !gameState.tutorial.isCompleted &&
+          currentTutorialStep?.targetElement === "training-panel"
+        ) {
+          advanceTutorial?.();
+        }
+      }}
+    >
       {/* Hero Card - Start Training CTA */}
       <Card className="relative overflow-hidden bg-gradient-to-br from-purple-900/40 via-indigo-900/40 to-blue-900/40 border-purple-500/50">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />

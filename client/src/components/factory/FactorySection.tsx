@@ -2,6 +2,7 @@ import { GameStateType, Era, getScaledInvestmentCost } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
+import { getTutorialCurrentStep, getTutorialStepAvailability, type TutorialTargetId } from "@/lib/narrativeContent";
 import { formatCurrency } from "@/lib/utils";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users, Brain, FileText, Globe, Lightbulb, PauseCircle } from "lucide-react";
@@ -21,6 +22,7 @@ import { useEffect, useState } from "react";
 
 interface FactorySectionProps {
   gameState: GameStateType;
+  advanceTutorial?: () => void;
   // Advanced allocation functions
   allocateMoneyToCompute: () => void;
   allocateMoneyToElectricity: () => void;
@@ -226,6 +228,7 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
 
 export default function FactorySection({
   gameState,
+  advanceTutorial,
   allocateMoneyToCompute,
   allocateMoneyToElectricity,
   allocateMoneyToHardware,
@@ -236,6 +239,12 @@ export default function FactorySection({
   allocateMoneyToAlgorithmArchitectures,
   hireResearchEngineer,
 }: FactorySectionProps) {
+  const [expandedSections, setExpandedSections] = useState({
+    compute: false,
+    data: false,
+    algorithm: false,
+  });
+
   // Color class definitions moved to component scope to fix undefined variable errors
   const eraColorClasses = {
     foundation: {
@@ -287,6 +296,18 @@ export default function FactorySection({
   const regulationCost = getScaledInvestmentCost(140, computeInputs.regulation, gameState.currentEra);
   const dataQuantityCost = getScaledInvestmentCost(120, dataInputs.quantity, gameState.currentEra);
   const dataFormatsCost = getScaledInvestmentCost(140, dataInputs.formats, gameState.currentEra);
+  const currentTutorialStep = getTutorialCurrentStep(gameState.tutorial);
+  const { expandedAccordion } = getTutorialStepAvailability(currentTutorialStep);
+
+  const completeTutorialTarget = (targetId: TutorialTargetId) => {
+    if (
+      gameState.tutorial.isActive &&
+      !gameState.tutorial.isCompleted &&
+      currentTutorialStep?.targetElement === targetId
+    ) {
+      advanceTutorial?.();
+    }
+  };
   
   // Fixed costs (do not scale with level or era)
   const engineerCost = 250;
@@ -303,6 +324,58 @@ export default function FactorySection({
     return Math.min((production.algorithm / 5) * 100, 100) + "%";
   };
 
+  const handleComputeAccordionToggle = () => {
+    completeTutorialTarget("compute-advanced-toggle");
+  };
+
+  const handleComputeUpgrade = () => {
+    const canAffordUpgrade = money >= computeLevelCost;
+    allocateMoneyToCompute();
+    if (canAffordUpgrade) {
+      completeTutorialTarget("compute-level-upgrade");
+    }
+  };
+
+  const handleDataAccordionToggle = () => {
+    completeTutorialTarget("data-advanced-toggle");
+  };
+
+  const handleDataQualityUpgrade = () => {
+    const canAffordUpgrade = money >= dataLevelCost;
+    allocateMoneyToDataQuality();
+    if (canAffordUpgrade) {
+      completeTutorialTarget("data-quality-upgrade");
+    }
+  };
+
+  const handleAlgorithmAccordionToggle = () => {
+    completeTutorialTarget("algorithm-advanced-toggle");
+  };
+
+  const handleAlgorithmUpgrade = () => {
+    const canAffordUpgrade = money >= algorithmLevelCost;
+    allocateMoneyToAlgorithmArchitectures();
+    if (canAffordUpgrade) {
+      completeTutorialTarget("algorithm-architecture-upgrade");
+    }
+  };
+
+  useEffect(() => {
+    if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted || !expandedAccordion) {
+      return;
+    }
+
+    setExpandedSections((previous) => (
+      previous[expandedAccordion]
+        ? previous
+        : { ...previous, [expandedAccordion]: true }
+    ));
+  }, [
+    gameState.tutorial.isActive,
+    gameState.tutorial.isCompleted,
+    expandedAccordion,
+  ]);
+
   return (
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
       <div className="flex justify-between items-center mb-4">
@@ -311,7 +384,18 @@ export default function FactorySection({
       </div>
       
       {/* Compute Factory */}
-      <Accordion type="single" collapsible className="mb-6">
+      <Accordion
+        type="single"
+        collapsible
+        className="mb-6"
+        value={expandedSections.compute ? "compute" : undefined}
+        onValueChange={(value) => {
+          setExpandedSections((previous) => ({
+            ...previous,
+            compute: value === "compute",
+          }));
+        }}
+      >
         <AccordionItem value="compute" className="border-none">
           <div id="compute-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]" data-tutorial-id="compute-factory-card">
             <div className="flex justify-between items-center mb-2">
@@ -419,6 +503,8 @@ export default function FactorySection({
           
           <AccordionTrigger 
             className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
+            data-tutorial-id="compute-advanced-toggle"
+            onClick={handleComputeAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
@@ -455,7 +541,7 @@ export default function FactorySection({
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
                     money < computeLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
-                  onClick={allocateMoneyToCompute}
+                  onClick={handleComputeUpgrade}
                   disabled={money < computeLevelCost}
                   data-tutorial-id="compute-level-upgrade"
                 >
@@ -576,7 +662,18 @@ export default function FactorySection({
       </Accordion>
       
       {/* Data Factory */}
-      <Accordion type="single" collapsible className="mb-6">
+      <Accordion
+        type="single"
+        collapsible
+        className="mb-6"
+        value={expandedSections.data ? "data" : undefined}
+        onValueChange={(value) => {
+          setExpandedSections((previous) => ({
+            ...previous,
+            data: value === "data",
+          }));
+        }}
+      >
         <AccordionItem value="data" className="border-none">
           <div id="data-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]" data-tutorial-id="data-factory-card">
             <div className="flex justify-between items-center mb-2">
@@ -671,6 +768,8 @@ export default function FactorySection({
           
           <AccordionTrigger 
             className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
+            data-tutorial-id="data-advanced-toggle"
+            onClick={handleDataAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
@@ -707,7 +806,7 @@ export default function FactorySection({
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
                     money < dataLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
                   }`}
-                  onClick={allocateMoneyToDataQuality}
+                  onClick={handleDataQualityUpgrade}
                   disabled={money < dataLevelCost}
                   data-tutorial-id="data-quality-upgrade"
                 >
@@ -791,7 +890,17 @@ export default function FactorySection({
       </Accordion>
       
       {/* Algorithm Lab */}
-      <Accordion type="single" collapsible>
+      <Accordion
+        type="single"
+        collapsible
+        value={expandedSections.algorithm ? "algorithm" : undefined}
+        onValueChange={(value) => {
+          setExpandedSections((previous) => ({
+            ...previous,
+            algorithm: value === "algorithm",
+          }));
+        }}
+      >
         <AccordionItem value="algorithm" className="border-none">
           <div id="algorithm-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]" data-tutorial-id="algorithm-factory-card">
             <div className="flex justify-between items-center mb-2">
@@ -890,6 +999,8 @@ export default function FactorySection({
           
           <AccordionTrigger 
             className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
+            data-tutorial-id="algorithm-advanced-toggle"
+            onClick={handleAlgorithmAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
@@ -927,7 +1038,7 @@ export default function FactorySection({
                     className={`py-1.5 px-3 rounded text-sm flex justify-between items-center ${
                       money < algorithmLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
                     }`}
-                    onClick={allocateMoneyToAlgorithmArchitectures}
+                    onClick={handleAlgorithmUpgrade}
                     disabled={money < algorithmLevelCost}
                     data-tutorial-id="algorithm-architecture-upgrade"
                   >

@@ -1613,7 +1613,7 @@ export function useGameEngine() {
             dataToIntelligence: prevState.bonuses.dataToIntelligence * 1.05
           }
         };
-        
+
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
         
@@ -1664,7 +1664,7 @@ export function useGameEngine() {
             algorithmToIntelligence: prevState.bonuses.algorithmToIntelligence * 1.07
           }
         };
-        
+
         // Check for breakthroughs
         newState.breakthroughs = checkBreakthroughs(newState);
         

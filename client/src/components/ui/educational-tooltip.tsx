@@ -116,7 +116,7 @@ export function EducationalTooltip({
           }
         }}
       >
-        <TooltipTrigger className="cursor-help">
+        <TooltipTrigger asChild className="cursor-help">
           {renderTriggerContent()}
         </TooltipTrigger>
         <TooltipContent 

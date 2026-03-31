@@ -1,12 +1,57 @@
 // UNIFIED TUTORIAL SYSTEM - Single source of truth for all tutorial and narrative content
-export const tutorialContent = {
+export type TutorialTabId = "dashboard" | "training" | "resources" | "economy" | "breakthroughs" | "progression";
+export type TutorialAccordionId = "compute" | "data" | "algorithm";
+export interface TutorialStepAvailability {
+  visibleTab?: TutorialTabId;
+  expandedAccordion?: TutorialAccordionId;
+}
+
+export const tutorialTargetAvailability = {
+  "dashboard-tab": {},
+  "progression-tab": {},
+  "economy-tab": {},
+  "training-tab-trigger": {},
+  "training-panel": { visibleTab: "training" as TutorialTabId },
+  "compute-advanced-toggle": { visibleTab: "resources" as TutorialTabId },
+  "compute-level-upgrade": {
+    visibleTab: "resources" as TutorialTabId,
+    expandedAccordion: "compute" as TutorialAccordionId,
+  },
+  "data-advanced-toggle": { visibleTab: "resources" as TutorialTabId },
+  "data-quality-upgrade": {
+    visibleTab: "resources" as TutorialTabId,
+    expandedAccordion: "data" as TutorialAccordionId,
+  },
+  "algorithm-advanced-toggle": { visibleTab: "resources" as TutorialTabId },
+  "algorithm-architecture-upgrade": {
+    visibleTab: "resources" as TutorialTabId,
+    expandedAccordion: "algorithm" as TutorialAccordionId,
+  },
+} as const satisfies Record<string, TutorialStepAvailability>;
+
+export type TutorialTargetId = keyof typeof tutorialTargetAvailability;
+
+export interface TutorialStepDefinition {
+  title: string;
+  content: string;
+  context: string;
+  action: string;
+  targetElement: TutorialTargetId | null;
+  modalStyle: boolean;
+  icon: string;
+  nextTarget?: TutorialTargetId;
+  highlightTab?: TutorialTabId;
+  speaker?: string;
+}
+
+export const tutorialContent: Record<string, Record<number, TutorialStepDefinition>> = {
   // Phase 1: Welcome & First Steps
   PHASE_1: {
     1: {
       title: "Welcome to AI Factory!",
-      content: "Hello! I'm Spark, your AI advisor. Our goal is to build the world's first AGI! Let's start by creating your first neural network.",
+      content: "Hello! I'm Spark, your AI advisor. Our goal is to build the world's first AGI. Before the simulation starts, I'll walk you through the systems that drive AI progress so your first choices make sense.",
       context: "You're about to create your first neural network! In the real world, this is like the 'Hello, World!' of AI.",
-      action: "Click 'Start Game' to begin your AI journey",
+      action: "Continue to begin the guided tour",
       targetElement: null,
       modalStyle: true,
       icon: "spark"
@@ -28,8 +73,8 @@ export const tutorialContent = {
       title: "Pillar 1: Compute Power",
       content: "This is **Compute** - the raw brainpower of our AI. Think of it as the data centers filled with powerful GPUs that train and run AI models.",
       context: "Companies like Google and NVIDIA build massive data centers! More compute means faster AI training and better performance. GPT-4 required enormous computational resources.",
-      action: "Click on the Compute Factory section to explore",
-      targetElement: "compute-factory-card",
+      action: "Open the advanced Compute controls",
+      targetElement: "compute-advanced-toggle",
       modalStyle: false,
       icon: "cpu",
       nextTarget: "compute-level-upgrade"
@@ -47,8 +92,8 @@ export const tutorialContent = {
       title: "Pillar 2: High-Quality Data",
       content: "Excellent! Next is **Data** - the knowledge our AI learns from. AI learns patterns from massive datasets of text, images, and other information.",
       context: "GPT models were trained on hundreds of billions of words from books, websites, and articles. Quality data is crucial for intelligent AI.",
-      action: "Click on the Data Factory section",
-      targetElement: "data-factory-card",
+      action: "Open the advanced Data controls",
+      targetElement: "data-advanced-toggle",
       modalStyle: false,
       icon: "database",
       nextTarget: "data-quality-upgrade"
@@ -66,8 +111,8 @@ export const tutorialContent = {
       title: "Pillar 3: Smart Algorithms",
       content: "Finally, **Algorithms** - the 'teaching methods' that help AI learn efficiently. These are the breakthrough techniques that make AI possible.",
       context: "Breakthroughs like the Transformer architecture (from 'Attention Is All You Need') revolutionized AI and enabled models like GPT and BERT.",
-      action: "Click on the Algorithm Lab section",
-      targetElement: "algorithm-factory-card", 
+      action: "Open the advanced Algorithm controls",
+      targetElement: "algorithm-advanced-toggle",
       modalStyle: false,
       icon: "cog",
       nextTarget: "algorithm-architecture-upgrade"
@@ -148,6 +193,21 @@ export const tutorialContent = {
     }
   }
 };
+
+export function getTutorialCurrentStep(tutorial: { phase: number; step: number }) {
+  const currentPhase = `PHASE_${tutorial.phase}` as keyof typeof tutorialContent;
+  return tutorialContent[currentPhase]?.[tutorial.step];
+}
+
+export function getTutorialStepAvailability(
+  step?: Pick<TutorialStepDefinition, "targetElement"> | null,
+): TutorialStepAvailability {
+  if (!step?.targetElement) {
+    return {};
+  }
+
+  return tutorialTargetAvailability[step.targetElement] ?? {};
+}
 
 export const narrative = {
   

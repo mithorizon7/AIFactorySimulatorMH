@@ -135,19 +135,27 @@ export class MemStorage implements IStorage {
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
+function requireDatabase() {
+  if (!db) {
+    throw new Error("Database storage requested without DATABASE_URL configured.");
+  }
+
+  return db;
+}
+
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await requireDatabase().select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await requireDatabase().select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
+    const [user] = await requireDatabase()
       .insert(users)
       .values(insertUser)
       .returning();
@@ -155,7 +163,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLatestGameState(): Promise<GameState | undefined> {
-    const [gameState] = await db
+    const [gameState] = await requireDatabase()
       .select()
       .from(gameStates)
       .orderBy(desc(gameStates.createdAt))
@@ -164,7 +172,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async saveGameState(gameState: InsertGameState): Promise<GameState> {
-    const [savedGameState] = await db
+    const [savedGameState] = await requireDatabase()
       .insert(gameStates)
       .values(gameState)
       .returning();
@@ -180,7 +188,7 @@ export class DatabaseStorage implements IStorage {
 
   // Real database implementation for leaderboard
   async saveLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry> {
-    const [savedEntry] = await db
+    const [savedEntry] = await requireDatabase()
       .insert(leaderboard)
       .values({
         ...entry,
@@ -191,7 +199,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLeaderboard(limit: number = 50): Promise<LeaderboardEntry[]> {
-    return await db
+    return await requireDatabase()
       .select()
       .from(leaderboard)
       .orderBy(desc(leaderboard.finalIntelligence), leaderboard.totalTimeElapsed, desc(leaderboard.peakMoney))
@@ -200,12 +208,12 @@ export class DatabaseStorage implements IStorage {
 
   async getPlayerRanking(finalIntelligence: number): Promise<{ rank: number; total: number; percentile: number }> {
     // Get total count
-    const [{ count: total }] = await db
+    const [{ count: total }] = await requireDatabase()
       .select({ count: sql<number>`count(*)::int` })
       .from(leaderboard);
 
     // Get rank (count of players with higher intelligence)
-    const [{ count: playersAhead }] = await db
+    const [{ count: playersAhead }] = await requireDatabase()
       .select({ count: sql<number>`count(*)::int` })
       .from(leaderboard)
       .where(sql`final_intelligence > ${finalIntelligence}`);

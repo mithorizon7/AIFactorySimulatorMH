@@ -5,6 +5,7 @@ import { GameStateType } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
+import { getTutorialCurrentStep, getTutorialStepAvailability, type TutorialTargetId } from "@/lib/narrativeContent";
 
 // Import game components
 import FactorySection from "./FactorySection";
@@ -20,6 +21,7 @@ import { TrainingTab } from "./TrainingTab";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
+  advanceTutorial?: () => void;
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
   allocateMoneyToAlgorithm: () => void;
@@ -49,6 +51,7 @@ interface MainGameTabsProps {
 
 export default function MainGameTabs({
   gameState,
+  advanceTutorial,
   allocateMoneyToCompute,
   allocateMoneyToData,
   allocateMoneyToAlgorithm,
@@ -75,13 +78,27 @@ export default function MainGameTabs({
   trainModel
 }: MainGameTabsProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const currentTutorialStep = getTutorialCurrentStep(gameState.tutorial);
+  const { visibleTab } = getTutorialStepAvailability(currentTutorialStep);
 
-  // Auto-navigate to Resources tab when Phase 2 tutorial starts
-  useEffect(() => {
-    if (gameState.tutorial.isActive && gameState.tutorial.phase === 2 && gameState.tutorial.step === 1) {
-      setActiveTab("resources");
+  const completeTutorialTarget = (targetId: TutorialTargetId) => {
+    if (
+      gameState.tutorial.isActive &&
+      !gameState.tutorial.isCompleted &&
+      currentTutorialStep?.targetElement === targetId
+    ) {
+      advanceTutorial?.();
     }
-  }, [gameState.tutorial.phase, gameState.tutorial.step, gameState.tutorial.isActive]);
+  };
+
+  // Keep the required panel active whenever a tutorial step points inside hidden tab content.
+  useEffect(() => {
+    if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted || !visibleTab) {
+      return;
+    }
+
+    setActiveTab((currentTab) => currentTab === visibleTab ? currentTab : visibleTab);
+  }, [gameState.tutorial.isActive, gameState.tutorial.isCompleted, visibleTab]);
 
   // Function to handle navigation to resource tabs
   const handleNavigateToResource = (resourceType: 'compute' | 'data' | 'algorithm') => {
@@ -114,6 +131,7 @@ export default function MainGameTabs({
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tutorial-id="dashboard-tab"
               data-tab="dashboard"
+              onClick={() => completeTutorialTarget("dashboard-tab")}
             >
               <BarChart3 className="h-5 w-5 flex-shrink-0" />
               <span>Dashboard</span>
@@ -127,6 +145,7 @@ export default function MainGameTabs({
               data-testid="training-tab-trigger"
               data-tutorial-id="training-tab-trigger"
               data-tab="training"
+              onClick={() => completeTutorialTarget("training-tab-trigger")}
             >
               <Target className="h-5 w-5 flex-shrink-0" />
               <span>Training</span>
@@ -151,6 +170,7 @@ export default function MainGameTabs({
                 ${(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) ? 'animate-pulse ring-2 ring-green-400 shadow-lg shadow-green-400/50' : ''}`}
               data-tutorial-id="economy-tab"
               data-tab="economy"
+              onClick={() => completeTutorialTarget("economy-tab")}
             >
               <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
@@ -180,6 +200,7 @@ export default function MainGameTabs({
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tutorial-id="progression-tab"
               data-tab="progression"
+              onClick={() => completeTutorialTarget("progression-tab")}
             >
               <BrainCog className="h-5 w-5 flex-shrink-0" />
               <span>Progression</span>
@@ -202,6 +223,7 @@ export default function MainGameTabs({
       <TabsContent value="training" className="mt-0">
         <TrainingTab 
           gameState={gameState}
+          advanceTutorial={advanceTutorial}
           onStartTraining={trainModel || (() => {})}
         />
       </TabsContent>
@@ -211,6 +233,7 @@ export default function MainGameTabs({
         <div className="grid grid-cols-1 gap-6">
           <FactorySection 
             gameState={gameState}
+            advanceTutorial={advanceTutorial}
             allocateMoneyToCompute={allocateMoneyToCompute}
             allocateMoneyToElectricity={allocateMoneyToElectricity}
             allocateMoneyToHardware={allocateMoneyToHardware}

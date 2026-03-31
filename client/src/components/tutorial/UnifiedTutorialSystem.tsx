@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GameStateType } from "@/lib/gameState";
-import { tutorialContent } from "@/lib/narrativeContent";
+import { getTutorialCurrentStep, tutorialContent, TutorialStepDefinition } from "@/lib/narrativeContent";
 import { ArrowRight, Lightbulb, Cpu, Database, Cog, Target, TrendingUp, DollarSign, Zap, Trophy, Sparkles, X } from "lucide-react";
 import { SparkCharacter } from "@/components/character/SparkCharacter";
 
@@ -13,29 +13,15 @@ interface UnifiedTutorialProps {
   onComplete: () => void;
 }
 
-interface TutorialStep {
-  title: string;
-  content: string;
-  context: string;
-  action: string;
-  targetElement: string | null;
-  modalStyle: boolean;
-  icon: string;
-  nextTarget?: string;
-  highlightTab?: string;
-  speaker?: string;
-}
-
 export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, onComplete }: UnifiedTutorialProps) {
   const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [isVisible, setIsVisible] = useState(false);
-  const handledActionKeyRef = useRef<string | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   // Get current tutorial step from unified content
   const currentPhase = `PHASE_${gameState.tutorial.phase}` as keyof typeof tutorialContent;
-  const stepKey = gameState.tutorial.step as keyof typeof tutorialContent[typeof currentPhase];
-  const currentStep = tutorialContent[currentPhase]?.[stepKey] as TutorialStep | undefined;
+  const currentStep = getTutorialCurrentStep(gameState.tutorial) as TutorialStepDefinition | undefined;
 
   const getIcon = (iconName: string) => {
     const iconProps = { className: "h-6 w-6" };
@@ -54,24 +40,46 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
     }
   };
 
+  const isTargetInteractable = (targetElement: HTMLElement) => {
+    const rect = targetElement.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(targetElement);
+    const isDisabled =
+      targetElement.matches(':disabled') ||
+      targetElement.getAttribute('aria-disabled') === 'true';
+
+    return (
+      rect.width > 0 &&
+      rect.height > 0 &&
+      computedStyle.display !== 'none' &&
+      computedStyle.visibility !== 'hidden' &&
+      !isDisabled
+    );
+  };
+
   // Handle spotlight highlighting for non-modal steps
   useEffect(() => {
+    setHighlightStyle({ display: 'none' });
+    setTooltipStyle({ display: 'none' });
+    setIsVisible(false);
+
     if (!currentStep || currentStep.modalStyle || !currentStep.targetElement) {
-      setHighlightStyle({ display: 'none' });
-      setTooltipStyle({ display: 'none' });
-      setIsVisible(false);
-      handledActionKeyRef.current = null;
       return;
     }
 
+    const targetSelector = `[data-tutorial-id='${currentStep.targetElement}']`;
     let cleanupTargetListeners: (() => void) | undefined;
-    const timeout = setTimeout(() => {
-      const targetElement = document.querySelector(`[data-tutorial-id='${currentStep.targetElement}']`) as HTMLElement;
-      
-      if (targetElement) {
+    let retryTimeout: number | undefined;
+    let animationFrame: number | undefined;
+    let activeTarget: HTMLElement | null = null;
+
+    const positionSpotlight = (targetElement: HTMLElement) => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+
+      animationFrame = window.requestAnimationFrame(() => {
         const rect = targetElement.getBoundingClientRect();
-        
-        // Spotlight effect
+
         setHighlightStyle({
           position: 'fixed',
           left: `${rect.left}px`,
@@ -86,12 +94,11 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
           border: '3px solid #3B82F6',
         });
 
-        // Smart tooltip positioning
         let tooltipLeft = rect.left;
         let tooltipTop = rect.bottom + 20;
 
-        if (tooltipTop + 200 > window.innerHeight) {
-          tooltipTop = rect.top - 200;
+        if (tooltipTop + 220 > window.innerHeight) {
+          tooltipTop = rect.top - 220;
         }
         if (tooltipLeft + 380 > window.innerWidth) {
           tooltipLeft = window.innerWidth - 400;
@@ -106,46 +113,131 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
         });
 
         setIsVisible(true);
+      });
+    };
 
-        // Scroll into view
-        targetElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'center' 
-        });
-
-        const actionKey = `${gameState.tutorial.phase}-${gameState.tutorial.step}-${currentStep.targetElement}`;
-        const handleInteraction = () => {
-          if (handledActionKeyRef.current === actionKey) {
-            return;
-          }
-
-          handledActionKeyRef.current = actionKey;
-          window.setTimeout(() => {
-            onNextStep();
-          }, 0);
-        };
-
-        const handleKeydown = (event: KeyboardEvent) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            handleInteraction();
-          }
-        };
-
-        targetElement.addEventListener('click', handleInteraction);
-        targetElement.addEventListener('keydown', handleKeydown);
-        cleanupTargetListeners = () => {
-          targetElement.removeEventListener('click', handleInteraction);
-          targetElement.removeEventListener('keydown', handleKeydown);
-        };
+    const getTargetElement = () => {
+      const targetElement = document.querySelector(targetSelector) as HTMLElement | null;
+      if (!targetElement || !isTargetInteractable(targetElement)) {
+        return null;
       }
+
+      return targetElement;
+    };
+
+    const bindToTarget = (targetElement: HTMLElement) => {
+      activeTarget = targetElement;
+      targetElement.classList.add('tutorial-active-target');
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      });
+      positionSpotlight(targetElement);
+
+      const handleViewportChange = () => {
+        const currentTarget = getTargetElement();
+        if (currentTarget) {
+          positionSpotlight(currentTarget);
+        }
+      };
+
+      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener('scroll', handleViewportChange, true);
+
+      cleanupTargetListeners = () => {
+        window.removeEventListener('resize', handleViewportChange);
+        window.removeEventListener('scroll', handleViewportChange, true);
+        targetElement.classList.remove('tutorial-active-target');
+      };
+    };
+
+    const resolveTarget = (attemptsRemaining: number) => {
+      const targetElement = document.querySelector(targetSelector) as HTMLElement | null;
+
+      if (!targetElement || !isTargetInteractable(targetElement)) {
+        if (attemptsRemaining <= 0) {
+          setHighlightStyle({ display: 'none' });
+          setTooltipStyle({ display: 'none' });
+          setIsVisible(false);
+          return;
+        }
+
+        retryTimeout = window.setTimeout(() => {
+          resolveTarget(attemptsRemaining - 1);
+        }, 150);
+        return;
+      }
+
+      bindToTarget(targetElement);
+    };
+
+    retryTimeout = window.setTimeout(() => {
+      resolveTarget(20);
     }, 100);
 
     return () => {
-      clearTimeout(timeout);
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
       cleanupTargetListeners?.();
+      activeTarget?.classList.remove('tutorial-active-target');
     };
-  }, [currentStep, gameState.tutorial.phase, gameState.tutorial.step, onNextStep]);
+  }, [currentStep, gameState.tutorial.phase, gameState.tutorial.step]);
+
+  useEffect(() => {
+    if (!currentStep || currentStep.modalStyle || !currentStep.targetElement || !isVisible) {
+      return;
+    }
+
+    const targetElement = document.querySelector(
+      `[data-tutorial-id='${currentStep.targetElement}']`
+    ) as HTMLElement | null;
+
+    if (!targetElement || !tooltipRef.current) {
+      return;
+    }
+
+    const isAllowedNode = (node: EventTarget | null) => (
+      node instanceof Node &&
+      (targetElement.contains(node) || tooltipRef.current?.contains(node) === true)
+    );
+
+    const blockPointerInteraction = (event: Event) => {
+      if (isAllowedNode(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const blockKeyboardInteraction = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      if (isAllowedNode(document.activeElement)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    document.addEventListener('pointerdown', blockPointerInteraction, true);
+    document.addEventListener('click', blockPointerInteraction, true);
+    document.addEventListener('keydown', blockKeyboardInteraction, true);
+
+    return () => {
+      document.removeEventListener('pointerdown', blockPointerInteraction, true);
+      document.removeEventListener('click', blockPointerInteraction, true);
+      document.removeEventListener('keydown', blockKeyboardInteraction, true);
+    };
+  }, [currentStep, isVisible]);
 
   // Handle tab highlighting
   useEffect(() => {
@@ -252,6 +344,7 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
       
       {/* Tutorial tooltip */}
       <div 
+        ref={tooltipRef}
         style={tooltipStyle}
         className="bg-gray-900 border border-gray-600 rounded-lg shadow-2xl max-w-sm z-[1000]"
       >
@@ -272,6 +365,15 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
           <p className="text-gray-300 text-sm mb-3 leading-relaxed">
             {currentStep.content}
           </p>
+
+          <div className="bg-amber-900/20 border border-amber-700/30 rounded p-3 mb-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-amber-300 mb-1">
+              Action
+            </p>
+            <p className="text-sm text-amber-100 leading-relaxed">
+              {currentStep.action}
+            </p>
+          </div>
           
           <div className="bg-blue-900/20 border border-blue-700/30 rounded p-3 mb-3">
             <div className="flex items-start gap-2">
