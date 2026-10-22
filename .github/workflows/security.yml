@@ -16,6 +16,7 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: npm ci --ignore-scripts
+      - run: bash tools/with-node22.sh node tools/check-runtime.mjs
       - run: npm run check
       - run: npm run test:security
       - run: npm run test:tutorial

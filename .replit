@@ -1,5 +1,5 @@
 modules = ["nodejs-22", "web", "postgresql-16"]
-run = "npm run dev"
+run = ["bash", "tools/with-node22.sh", "npm", "run", "dev"]
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 [env]
 HOST = "0.0.0.0"
@@ -10,8 +10,8 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
-build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+build = ["bash", "-c", "bash tools/with-node22.sh npm ci --ignore-scripts && bash tools/with-node22.sh npm run build"]
+run = ["bash", "tools/with-node22.sh", "npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
@@ -37,11 +37,12 @@ author = "agent"
 agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
-task = "packager.installForAll"
+task = "shell.exec"
+args = "bash tools/with-node22.sh npm ci --ignore-scripts"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "bash tools/with-node22.sh npm run dev"
 waitForPort = 5000
 
 [agent]

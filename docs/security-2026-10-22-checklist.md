@@ -24,7 +24,7 @@ Documentation-only updates do not invalidate application tests.
 
 - [x] Q-008 [status:verified] Removed vulnerable build chain and revalidated desktop/mobile tutorial and tab behavior.
 - [ ] Q-009 [status:in_progress] Inspect Replit deployment, checkpoint database, apply migration, and configure the reviewed release.
-- [ ] Q-010 [status:open] Commit/push, run CI, merge to main, deploy and verify the actual service.
+- [ ] Q-010 [status:in_progress] Release committed/pushed in PR #2; branch CI passed 14 security and five browser tests. Replit-specific runtime/build fixes are undergoing final CI before merge/deploy.
 - [x] Q-011 [status:verified] Fixed continuous-play autosave timer and verified successful cookie-owned POST/GET in the browser.
 
 - [x] Q-001 [status:verified] Read request, parent instructions, previous audit results and git status.
@@ -98,3 +98,4 @@ Documentation-only updates do not invalidate application tests.
 - 2026-10-22: User authorized commit/merge/deploy. Replit access restored; automatic Helium development upgrade finished. Production Neon PostgreSQL 16.15 supports validated external TLS. Backup/export approval requested after auto-review blocked that step; no production records copied.
 - 2026-10-22: Tailwind 4 removes all remaining audit findings; standard pg driver supports Helium/Neon; added revision marker and fail-fast schema checks. Final local rerun underway.
 - 2026-10-22: Final local validations pass: 14 security checks, five browser tests (desktop/mobile tutorials, tab containment, continuous autosave), typecheck, build and production smoke. Shared-IP owners have independent leaderboard limits; npm and all 509 OSV pairs report zero findings.
+- 2026-10-22: Branch CI run 39832818165 passed every stage on Node 22.23.4. Replit Node module is only 22.22.0; reviewed a checksum-pinned official-runtime bootstrap and added it to CI/build/start. Build revision reads now disable optional Git index refresh. Fresh precheck found only four explicit dummy database URLs in transport tests, no historical credential matches or unexpected registries (2,156 objects checked).

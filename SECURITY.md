@@ -3,6 +3,11 @@
 Use Node 22.23.4 or a newer patched Node 22 release. `.nvmrc` and the runtime guard
 cover development, builds and production startup. A hosting module selection alone
 does not prove its patch version; inspect the deployed runtime before sign-off.
+Replit currently supplies Node 22.22.0. Its build/start commands therefore use
+`tools/with-node22.sh`, which downloads official Linux Node 22.23.4, verifies a
+hard-pinned SHA-256 for x64 or arm64, and never modifies the system installation.
+The two archive hashes were checked against Node's published release manifest.
+Private audit outputs are excluded from Replit publication by `.replitignore`.
 
 Install with `npm ci --ignore-scripts`. This project uses packaged esbuild binaries;
 the audited macOS build and tests work without dependency lifecycle scripts.
