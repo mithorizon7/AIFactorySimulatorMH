@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
 const base = 'http://127.0.0.1:5017';
+await mkdir('output/security/2026-10-22', { recursive: true, mode: 0o700 });
 const child = spawn(process.execPath, ['dist/index.js'], {
   env: { ...process.env, NODE_ENV: 'production', PUBLIC_HOSTS: '127.0.0.1', HOST: '127.0.0.1', PORT: '5017', DATABASE_URL: '' },
   stdio: 'ignore',
