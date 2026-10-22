@@ -22,7 +22,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
   };
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10">
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-10">
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full p-6">
         {gameState.intelligence >= gameState.agiThreshold ? (
           <div className="text-center mb-6">
@@ -106,7 +106,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
           
           <div className="space-y-4">
             <div className="flex items-start">
-              <div className="w-8 h-8 rounded-full bg-[#3B82F6] bg-opacity-20 flex items-center justify-center shrink-0 mr-3">
+              <div className="w-8 h-8 rounded-full bg-[#3B82F6]/20 flex items-center justify-center shrink-0 mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#3B82F6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -118,7 +118,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
             </div>
             
             <div className="flex items-start">
-              <div className="w-8 h-8 rounded-full bg-[#10B981] bg-opacity-20 flex items-center justify-center shrink-0 mr-3">
+              <div className="w-8 h-8 rounded-full bg-[#10B981]/20 flex items-center justify-center shrink-0 mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                 </svg>
@@ -130,7 +130,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
             </div>
             
             <div className="flex items-start">
-              <div className="w-8 h-8 rounded-full bg-[#8B5CF6] bg-opacity-20 flex items-center justify-center shrink-0 mr-3">
+              <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center shrink-0 mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#8B5CF6]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
@@ -162,7 +162,7 @@ export default function GameSummaryModal({ gameState, onClose, onReset }: GameSu
             </div>
             <div className="mt-4 bg-black/20 border border-yellow-500/20 rounded p-3">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0 text-xl">⚡</div>
+                <div className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0 text-xl">⚡</div>
                 <div>
                   <p className="text-xs font-medium text-yellow-300 mb-1">Message from Spark</p>
                   <p className="text-xs text-yellow-200 leading-relaxed">

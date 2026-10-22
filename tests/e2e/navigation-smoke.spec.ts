@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
     window.sessionStorage.clear();
   });
 
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.getByRole("dialog").getByRole("button", { name: "Skip Tutorial" }).click();
 });
 
@@ -34,4 +34,38 @@ test("core tabs render after skipping the tutorial", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Progression" }).click();
   await expect(page.getByRole("heading", { name: "AI Evolution Timeline" })).toBeVisible();
+});
+
+test('mobile navigation contains every tab without covering content', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByTestId('button-start-game').click();
+  const tabs = page.getByRole('tablist', { name: 'Game sections' });
+  const contained = await tabs.evaluate(list => {
+    const container = list.getBoundingClientRect();
+    return Array.from(list.querySelectorAll('[role="tab"]')).every(tab => {
+      const box = tab.getBoundingClientRect();
+      return box.top >= container.top - 1 && box.bottom <= container.bottom + 1;
+    });
+  });
+  expect(contained).toBe(true);
+  for (const tab of await tabs.getByRole('tab').all()) {
+    await tab.click();
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+  }
+});
+
+test('continuous gameplay saves its latest state without restarting the timer', async ({ page }) => {
+  await page.getByTestId('button-start-game').click();
+  const request = await page.waitForRequest(request =>
+    request.url().endsWith('/api/game-state') && request.method() === 'POST',
+    { timeout: 40_000 },
+  );
+  const response = await request.response();
+  expect(response?.ok()).toBe(true);
+  expect(request.postDataJSON().timeRemaining).toBeGreaterThan(0);
+  const saved = await page.request.get('/api/game-state');
+  expect(saved.ok()).toBe(true);
+  const body = await saved.json();
+  expect(body.data.timeRemaining).toBeGreaterThan(0);
+  expect(body.data.ownerHash).toBeUndefined();
 });

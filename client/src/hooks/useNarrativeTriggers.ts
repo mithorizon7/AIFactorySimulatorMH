@@ -322,28 +322,10 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
       }
     }
 
-    // 11. Breakthrough Notifications
-    const newBreakthroughs = gameState.breakthroughs.filter((breakthrough) => {
-      const previousBreakthrough = prevState.breakthroughs.find((candidate) => candidate.id === breakthrough.id);
-      return breakthrough.unlocked && !previousBreakthrough?.unlocked;
-    });
+    // Breakthrough unlocks are already surfaced by Spark's advisor toast in the game engine.
+    // Duplicating them here creates two simultaneous popups for the same event.
 
-    newBreakthroughs.forEach((breakthrough) => {
-      const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}` as keyof typeof narrative;
-      if (narrative[breakthroughKey]) {
-        onShowMessage({
-          id: `breakthrough-${breakthrough.id}`,
-          title: narrative[breakthroughKey].title,
-          content: narrative[breakthroughKey].content,
-          context: narrative[breakthroughKey].context,
-          timestamp: Date.now(),
-          priority: 'high',
-          category: 'breakthrough'
-        });
-      }
-    });
-
-    // 12. Training Strategy Hints
+    // 11. Training Strategy Hints
     const operationalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
     if (gameState.training.active && operationalRevenue > 50000) {
       onShowMessage({
@@ -357,7 +339,7 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
       });
     }
 
-    // 13. STUCK DETECTION - Contextual guidance when players appear stuck (with cooldown)
+    // 12. STUCK DETECTION - Contextual guidance when players appear stuck (with cooldown)
     
     const now = Date.now();
     const stuckHintCooldown = 120000; // 2 minutes between stuck hints
@@ -464,4 +446,3 @@ export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }:
     previousStateRef.current = gameState;
   }, [gameState, onShowMessage, setGameState]);
 }
-

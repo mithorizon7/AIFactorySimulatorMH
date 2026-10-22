@@ -423,10 +423,10 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             
             {/* Era Labels */}
             <div className="absolute flex justify-between w-full">
-              <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm">
+              <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-xs">
                 {gameState.currentEra}
               </div>
-              <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm border border-gray-700">
+              <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-xs border border-gray-700">
                 <ChevronRightIcon className="h-3 w-3 mr-1" />
                 {nextEra}
               </div>
@@ -435,7 +435,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             {/* Progress Indicator (only shows if in progress) */}
             {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
               <div 
-                className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm z-10"
+                className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-xs font-medium shadow-xs z-10"
                 style={{ 
                   left: `${overallCompletionPercent}%`, 
                   top: '0',
@@ -541,7 +541,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
               {/* Training Education Panel */}
               <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <div className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0">📚</div>
+                  <div className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0">📚</div>
                   <div>
                     <h5 className="text-xs font-medium text-yellow-300 mb-2">What's Happening During Training</h5>
                     <div className="text-xs text-gray-300 space-y-2">
@@ -1001,7 +1001,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                   {canStartTraining && (
                     <div className="mt-3 bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
                       <div className="flex items-start gap-2">
-                        <div className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0">💡</div>
+                        <div className="w-4 h-4 text-blue-400 mt-0.5 shrink-0">💡</div>
                         <div>
                           <h5 className="text-xs font-medium text-blue-300 mb-1">Optimal Timing Advice</h5>
                           <div className="text-xs text-blue-200 space-y-1">

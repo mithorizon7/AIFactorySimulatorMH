@@ -5,18 +5,18 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getLatestGameState(): Promise<GameState | undefined>;
-  saveGameState(gameState: InsertGameState): Promise<GameState>;
+  getLatestGameState(ownerHash: string): Promise<GameState | undefined>;
+  saveGameState(gameState: InsertGameState & { ownerHash: string }): Promise<GameState>;
   getAllBreakthroughs(): Promise<Breakthrough[]>;
   // Leaderboard operations
-  saveLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry>;
+  saveLeaderboardEntry(entry: InsertLeaderboardEntry, ownerHash: string): Promise<LeaderboardEntry>;
   getLeaderboard(limit?: number): Promise<LeaderboardEntry[]>;
   getPlayerRanking(finalIntelligence: number): Promise<{ rank: number; total: number; percentile: number }>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
-  private gameStates: Map<number, GameState>;
+  private gameStates: Map<string, GameState>;
   private breakthroughs: Breakthrough[];
   private leaderboardEntries: LeaderboardEntry[];
   currentId: number;
@@ -51,18 +51,15 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async getLatestGameState(): Promise<GameState | undefined> {
-    const gameStates = Array.from(this.gameStates.values());
-    if (gameStates.length === 0) return undefined;
-    
-    // Sort by createdAt in descending order and return the most recent
-    return gameStates.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    })[0];
+  async getLatestGameState(ownerHash: string): Promise<GameState | undefined> {
+    return this.gameStates.get(ownerHash);
   }
 
-  async saveGameState(gameState: InsertGameState): Promise<GameState> {
-    const id = this.currentGameStateId++;
+  async saveGameState(gameState: InsertGameState & { ownerHash: string }): Promise<GameState> {
+    if (!this.gameStates.has(gameState.ownerHash) && this.gameStates.size >= 10_000) {
+      throw new Error('In-memory save capacity reached');
+    }
+    const id = this.gameStates.get(gameState.ownerHash)?.id ?? this.currentGameStateId++;
     // Ensure required fields are set with default values if not provided
     const normalizedGameState = {
       ...gameState,
@@ -74,7 +71,7 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date().toISOString()
     };
-    this.gameStates.set(id, normalizedGameState);
+    this.gameStates.set(gameState.ownerHash, normalizedGameState);
     return normalizedGameState;
   }
 
@@ -83,15 +80,21 @@ export class MemStorage implements IStorage {
   }
 
   // Leaderboard operations - MemStorage versions with actual persistence
-  async saveLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry> {
+  async saveLeaderboardEntry(entry: InsertLeaderboardEntry, ownerHash: string): Promise<LeaderboardEntry> {
+    const index = this.leaderboardEntries.findIndex(candidate => candidate.ownerHash === ownerHash);
+    if (index < 0 && this.leaderboardEntries.length >= 10_000) {
+      throw new Error('In-memory leaderboard capacity reached');
+    }
     const newEntry: LeaderboardEntry = {
-      id: this.currentId++,
+      id: index < 0 ? this.currentId++ : this.leaderboardEntries[index].id,
+      ownerHash,
       ...entry,
       createdAt: new Date().toISOString()
     };
     
     // Actually store the entry in memory
-    this.leaderboardEntries.push(newEntry);
+    if (index < 0) this.leaderboardEntries.push(newEntry);
+    else this.leaderboardEntries[index] = newEntry;
     return newEntry;
   }
 
@@ -162,19 +165,21 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getLatestGameState(): Promise<GameState | undefined> {
+  async getLatestGameState(ownerHash: string): Promise<GameState | undefined> {
     const [gameState] = await requireDatabase()
       .select()
       .from(gameStates)
+      .where(eq(gameStates.ownerHash, ownerHash))
       .orderBy(desc(gameStates.createdAt))
       .limit(1);
     return gameState || undefined;
   }
 
-  async saveGameState(gameState: InsertGameState): Promise<GameState> {
+  async saveGameState(gameState: InsertGameState & { ownerHash: string }): Promise<GameState> {
     const [savedGameState] = await requireDatabase()
       .insert(gameStates)
       .values(gameState)
+      .onConflictDoUpdate({ target: gameStates.ownerHash, set: gameState })
       .returning();
     return savedGameState;
   }
@@ -187,13 +192,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Real database implementation for leaderboard
-  async saveLeaderboardEntry(entry: InsertLeaderboardEntry): Promise<LeaderboardEntry> {
+  async saveLeaderboardEntry(entry: InsertLeaderboardEntry, ownerHash: string): Promise<LeaderboardEntry> {
     const [savedEntry] = await requireDatabase()
       .insert(leaderboard)
       .values({
         ...entry,
+        ownerHash,
         createdAt: new Date().toISOString()
       })
+      .onConflictDoUpdate({ target: leaderboard.ownerHash, set: { ...entry, createdAt: new Date().toISOString() } })
       .returning();
     return savedEntry;
   }

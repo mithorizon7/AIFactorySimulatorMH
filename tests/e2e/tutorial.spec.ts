@@ -6,7 +6,7 @@ async function openFreshGame(page: Page) {
     window.sessionStorage.clear();
   });
 
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 }
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +19,7 @@ async function expectTutorialStep(page: Page, title: string, stepLabel: string) 
   await expect(page.getByRole("button", { name: "Do the highlighted action" })).toBeVisible();
 }
 
-test("tutorial completes end-to-end and starts the run", async ({ page }) => {
+async function completeTutorial(page: Page) {
   await expect(page.getByRole("dialog", { name: "Welcome to AI Factory!" })).toBeVisible();
   await page.getByRole("dialog").getByRole("button", { name: "Continue" }).click();
 
@@ -75,4 +75,11 @@ test("tutorial completes end-to-end and starts the run", async ({ page }) => {
   await expect.poll(async () => {
     return page.evaluate(() => window.localStorage.getItem("hasPlayedAIFactory"));
   }).toBe("true");
-});
+}
+
+for (const width of [1440, 390]) {
+  test(`tutorial completes end-to-end at ${width}px and starts the run`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1024 });
+    await completeTutorial(page);
+  });
+}

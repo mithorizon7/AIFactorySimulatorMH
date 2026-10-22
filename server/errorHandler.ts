@@ -30,11 +30,8 @@ export class AppError extends Error {
 export function extractRequestContext(req: Request): LogContext {
   return {
     method: req.method,
-    url: req.url,
-    userAgent: req.get('User-Agent'),
-    ip: req.ip || req.connection.remoteAddress,
-    requestId: req.get('X-Request-ID') || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    requestBody: req.method !== 'GET' ? req.body : undefined
+    url: req.route?.path || (req.path.startsWith('/api') ? '/api' : '/'),
+    requestId: logger.generateIncidentId(),
   };
 }
 
@@ -53,13 +50,16 @@ export function asyncHandler(fn: (req: Request, res: Response, next: NextFunctio
 function getErrorResponse(error: any): { statusCode: number; userMessage: string; errorType: string } {
   // Validation errors (Zod)
   if (error instanceof ZodError) {
-    const validationError = fromZodError(error);
     return {
       statusCode: 400,
       userMessage: 'The information provided is invalid. Please check your input and try again.',
       errorType: 'VALIDATION_ERROR'
     };
   }
+
+  if (error.type === 'entity.too.large') return { statusCode: 413, userMessage: 'Request body too large.', errorType: 'BODY_LIMIT' };
+  if (error.type === 'encoding.unsupported') return { statusCode: 415, userMessage: 'Compressed requests are not supported.', errorType: 'ENCODING' };
+  if (error.type === 'entity.parse.failed') return { statusCode: 400, userMessage: 'Invalid JSON.', errorType: 'VALIDATION_ERROR' };
 
   // Application errors with known status codes
   if (error instanceof AppError) {
@@ -159,11 +159,11 @@ export function globalErrorHandler(
 
   // Log based on severity
   if (statusCode >= 500) {
-    logger.error(`Server Error: ${err.message}`, err, logContext);
+    logger.error('Server request failed', err, logContext);
   } else if (statusCode >= 400) {
-    logger.warn(`Client Error: ${err.message}`, logContext);
+    logger.warn('Client request rejected', logContext);
   } else {
-    logger.info(`Request Error: ${err.message}`, logContext);
+    logger.info('Request failed', logContext);
   }
 
   // Send user-friendly error response
@@ -172,14 +172,6 @@ export function globalErrorHandler(
     message: userMessage,
     incidentId,
     timestamp: new Date().toISOString(),
-    // Include additional details for development
-    ...(process.env.NODE_ENV === 'development' && {
-      details: {
-        originalMessage: err.message,
-        errorType,
-        stack: err.stack
-      }
-    })
   });
 }
 
@@ -188,13 +180,13 @@ export function globalErrorHandler(
  */
 export function notFoundHandler(req: Request, res: Response, next: NextFunction): void {
   const error = new AppError(
-    `Route not found: ${req.method} ${req.originalUrl}`,
+    'Route not found',
     404,
     true
   );
   
   const requestContext = extractRequestContext(req);
-  logger.warn(`Route not found: ${req.method} ${req.originalUrl}`, {
+  logger.warn('Route not found', {
     ...requestContext,
     operation: 'not_found',
     errorType: 'NOT_FOUND'
@@ -236,7 +228,7 @@ export async function withBusinessLogicErrorHandling<T>(
     return await operation();
   } catch (error) {
     // If it's already an AppError, just re-throw it
-    if (error instanceof AppError) {
+    if (error instanceof AppError || error instanceof ZodError) {
       throw error;
     }
     
@@ -270,7 +262,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   const requestContext = extractRequestContext(req);
   
   // Log the incoming request
-  logger.info(`Incoming request: ${req.method} ${req.url}`, {
+  logger.info('Incoming request', {
     ...requestContext,
     operation: 'incoming_request'
   });
@@ -282,7 +274,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
     
     logger.logApiRequest(
       req.method,
-      req.url,
+      requestContext.url ?? '/',
       res.statusCode,
       duration,
       {

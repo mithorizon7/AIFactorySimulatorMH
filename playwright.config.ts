@@ -27,6 +27,7 @@ export default defineConfig({
     env: {
       PORT: "5002",
       NODE_ENV: "development",
+      DATABASE_URL: "",
     },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

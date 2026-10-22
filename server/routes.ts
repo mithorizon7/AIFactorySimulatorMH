@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertGameStateSchema, insertLeaderboardSchema } from "@shared/schema";
+import { storage as defaultStorage, type IStorage } from "./storage";
+import { saveGameStateRequestSchema, insertLeaderboardSchema } from "@shared/schema";
+import { saveOwnerHash, leaderboardWriteLimit } from "./security";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -14,14 +15,19 @@ import {
   AppError
 } from "./errorHandler";
 import { logger } from "./logger";
+import { release } from './release';
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, routeStorage: IStorage = defaultStorage): Promise<Server> {
+  const storage = routeStorage;
+  app.get('/api/health', (_req, res) => res.json({ status: 'ok', release }));
   // Get current game state
   app.get("/api/game-state", asyncHandler(async (req, res) => {
     const requestContext = extractRequestContext(req);
+    const ownerHash = saveOwnerHash(req, res, false);
+    if (!ownerHash) throw new AppError('No game state found', 404);
     
     const gameState = await withDatabaseErrorHandling(
-      () => storage.getLatestGameState(),
+      () => storage.getLatestGameState(ownerHash),
       'getLatestGameState',
       {}
     );
@@ -39,7 +45,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       operation: 'get_game_state'
     });
     
-    res.json(createSuccessResponse(gameState, 'Game state retrieved successfully'));
+    const { ownerHash: _ownerHash, ...publicState } = gameState;
+    res.json(createSuccessResponse(publicState, 'Game state retrieved successfully'));
   }));
 
   // Save game state
@@ -48,10 +55,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const gameStateData = await withBusinessLogicErrorHandling(
       async () => {
-        return insertGameStateSchema.parse({
-          ...req.body,
+        return {
+          ...saveGameStateRequestSchema.parse(req.body),
+          userId: null,
+          ownerHash: saveOwnerHash(req, res, true)!,
           createdAt: new Date().toISOString(),
-        });
+        };
       },
       'validateGameStateData',
       req.body
@@ -69,7 +78,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       dataSize: JSON.stringify(gameStateData).length
     });
     
-    res.json(createSuccessResponse(savedGameState, 'Game state saved successfully'));
+    const { ownerHash: _ownerHash, ...publicState } = savedGameState;
+    res.json(createSuccessResponse(publicState, 'Game state saved successfully'));
   }));
 
   // Get all breakthroughs
@@ -92,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Save leaderboard entry
-  app.post("/api/leaderboard", asyncHandler(async (req, res) => {
+  app.post("/api/leaderboard", leaderboardWriteLimit(), asyncHandler(async (req, res) => {
     const requestContext = extractRequestContext(req);
     
     const entryData = await withBusinessLogicErrorHandling(
@@ -102,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
     
     const savedEntry = await withDatabaseErrorHandling(
-      () => storage.saveLeaderboardEntry(entryData),
+      () => storage.saveLeaderboardEntry(entryData, saveOwnerHash(req, res, true)!),
       'saveLeaderboardEntry',
       entryData
     );
@@ -113,7 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       playerScore: entryData.finalIntelligence
     });
     
-    res.json(createSuccessResponse(savedEntry, 'Leaderboard entry saved successfully'));
+    const { ownerHash: _ownerHash, ...publicEntry } = savedEntry;
+    res.json(createSuccessResponse(publicEntry, 'Leaderboard entry saved successfully'));
   }));
 
   // Get leaderboard
@@ -122,10 +133,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const limit = await withBusinessLogicErrorHandling(
       async () => {
-        const limitParam = req.query.limit as string;
-        if (limitParam) {
-          const parsed = parseInt(limitParam);
-          if (isNaN(parsed) || parsed <= 0 || parsed > 1000) {
+        const limitParam = req.query.limit;
+        if (limitParam !== undefined) {
+          const parsed = typeof limitParam === 'string' && /^\d+$/.test(limitParam) ? Number(limitParam) : NaN;
+          if (!Number.isSafeInteger(parsed) || parsed <= 0 || parsed > 1000) {
             throw new AppError('Limit must be a number between 1 and 1000', 400);
           }
           return parsed;
@@ -149,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resultCount: leaderboard.length
     });
     
-    res.json(createSuccessResponse(leaderboard, 'Leaderboard retrieved successfully'));
+    res.json(createSuccessResponse(leaderboard.map(({ ownerHash: _ownerHash, ...entry }) => entry), 'Leaderboard retrieved successfully'));
   }));
 
   // Get player ranking
@@ -158,8 +169,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const intelligence = await withBusinessLogicErrorHandling(
       async () => {
-        const parsed = parseInt(req.params.intelligence);
-        if (isNaN(parsed) || parsed < 0) {
+        const parsed = /^\d+$/.test(req.params.intelligence) ? Number(req.params.intelligence) : NaN;
+        if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 2_147_483_647) {
           throw new AppError('Intelligence must be a valid positive number', 400);
         }
         return parsed;

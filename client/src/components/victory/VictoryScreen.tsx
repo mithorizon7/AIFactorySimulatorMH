@@ -127,7 +127,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="relative p-6 border-b border-gray-700">
@@ -363,7 +363,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
                   <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <div className="w-4 h-4 bg-blue-400 rounded-sm" />
+                        <div className="w-4 h-4 bg-blue-400 rounded-xs" />
                       </div>
                       <h5 className="font-medium text-blue-300">Compute ({gameState.levels.compute}/10)</h5>
                     </div>
@@ -384,7 +384,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
                   <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <div className="w-4 h-4 bg-green-400 rounded-sm" />
+                        <div className="w-4 h-4 bg-green-400 rounded-xs" />
                       </div>
                       <h5 className="font-medium text-green-300">Data ({gameState.levels.data}/10)</h5>
                     </div>
@@ -405,7 +405,7 @@ export default function VictoryScreen({ gameState, onClose, onReset }: VictorySc
                   <div className="p-4 bg-purple-900/20 border border-purple-700/30 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                        <div className="w-4 h-4 bg-purple-400 rounded-sm" />
+                        <div className="w-4 h-4 bg-purple-400 rounded-xs" />
                       </div>
                       <h5 className="font-medium text-purple-300">Algorithms ({gameState.levels.algorithm}/10)</h5>
                     </div>
