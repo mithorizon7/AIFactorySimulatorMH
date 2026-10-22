@@ -23,9 +23,10 @@ Documentation-only updates do not invalidate application tests.
 ## Audit Queue
 
 - [x] Q-008 [status:verified] Removed vulnerable build chain and revalidated desktop/mobile tutorial and tab behavior.
-- [ ] Q-009 [status:in_progress] Inspect Replit deployment, checkpoint database, apply migration, and configure the reviewed release.
-- [ ] Q-010 [status:in_progress] Release committed/pushed in PR #2; branch CI passed 14 security and five browser tests. Replit-specific runtime/build fixes are undergoing final CI before merge/deploy.
+- [ ] Q-009 [status:blocked] Replit cleanly aligned to merged 8d3c130 with patched runtime/build/smoke verified. Production backup/migration remain gated on specific data-copy approval after auto-review rejection.
+- [ ] Q-010 [status:in_progress] PR #2 merged as 8d3c13008d09f86fc9df53877cb3c9449e5fa311 after both final full CI runs passed. Production deployment/verification not performed yet.
 - [x] Q-011 [status:verified] Fixed continuous-play autosave timer and verified successful cookie-owned POST/GET in the browser.
+- [x] Q-012 [status:verified] Committed/pushed application release, passed branch/PR/main CI and merged PR #2; no production deployment claimed.
 
 - [x] Q-001 [status:verified] Read request, parent instructions, previous audit results and git status.
 - [x] Q-002 [status:verified] Complete compromise precheck before project execution; inventory runtime, dependencies and hosting access.
@@ -77,6 +78,10 @@ Documentation-only updates do not invalidate application tests.
   Evidence: 2026-10-22 pass, 11 interactive steps/14 targets checked; five browser tests pass including full desktop/mobile tutorial, mobile tab containment and continuous-play autosave.
 - [x] V-005 [status:verified] Git whitespace/integrity checks.
   Evidence: 2026-10-22 pass, `git diff --check`; pre-existing narrative edit preserved.
+- [x] V-006 [status:verified] Final GitHub branch/PR CI and merge.
+  Evidence: 2026-10-22 pass, runs 39834691893 and 39834697016 completed all stages on head 4cae563a441e80f04cc079e4ea59d628d13589d7; merged PR https://github.com/mithorizon7/AIFactorySimulatorMH/pull/2 at 8d3c13008d09f86fc9df53877cb3c9449e5fa311. Merged-main run 39835186492 also passed. Includes pinned Linux-runtime checksum/bootstrap, 14 security checks, five browser tests and production smoke. An earlier stalled download was cancelled; no checks were skipped.
+- [x] V-007 [status:verified] Replit preparation validations on the reviewed application source.
+  Evidence: 2026-10-22 pass, Replit reports Node 22.23.4/npm 10.9.9 checksum verification, type/security/tutorial/audit/build, all five browser tests and memory-only production smoke. Final clean merged 8d3c130 recheck passed build/runtime/smoke and release marker without -dirty. Existing Nix libraries were used for the test browser; no real database credentials passed to test processes. Real application and test servers remain stopped.
 
 ## Residual Risks
 
@@ -86,6 +91,7 @@ Documentation-only updates do not invalidate application tests.
   Owner: Codex. Evidence: zero-finding full audit and no-exceptions CI gate; final UI regression pending in G-003.
 - [ ] R-003 [status:blocked] Ownership migration and real Neon-backed integration await specific approval for private backup/restore after auto-review blocked production-data copying.
   Owner: User for backup approval; Codex for subsequent migration/integration. Closure: restorable private backup, additive migration and two-browser/database verification. No production data copied yet.
+  Evidence: Read-only production aggregates: zero accounts, one game save, one leaderboard entry, no other application tables. Individual records were not retrieved or displayed; nonempty production data means the backup gate remains explicit.
 - [ ] R-004 [status:open] Machine-wide Node 22.12.0, PostgreSQL 17.9, Chrome 155 and broader device/account inventory outside mutation scope.
   Owner: Device/network administrator. Closure: vendor updates and running-version/trust evidence.
 
@@ -99,3 +105,5 @@ Documentation-only updates do not invalidate application tests.
 - 2026-10-22: Tailwind 4 removes all remaining audit findings; standard pg driver supports Helium/Neon; added revision marker and fail-fast schema checks. Final local rerun underway.
 - 2026-10-22: Final local validations pass: 14 security checks, five browser tests (desktop/mobile tutorials, tab containment, continuous autosave), typecheck, build and production smoke. Shared-IP owners have independent leaderboard limits; npm and all 509 OSV pairs report zero findings.
 - 2026-10-22: Branch CI run 39832818165 passed every stage on Node 22.23.4. Replit Node module is only 22.22.0; reviewed a checksum-pinned official-runtime bootstrap and added it to CI/build/start. Build revision reads now disable optional Git index refresh. Fresh precheck found only four explicit dummy database URLs in transport tests, no historical credential matches or unexpected registries (2,156 objects checked).
+- 2026-10-22: Final code merged after both CI checks passed; local main fast-forwarded cleanly. Replit requested to preserve its temporary configuration commit and synchronize exact merged release. No production backup, migration or deployment claimed.
+- 2026-10-22: Replit confirmed exact clean merged 8d3c130 on release/merged-security-20261022; prior preparation retained on safety/runtime-pre-merged-release-20261022. Build, verified runtime and memory-only smoke pass on the exact release. Aggregate-only production check found 0/1/1 account/save/leaderboard records and no other application tables. Backup permission remains the production gate.

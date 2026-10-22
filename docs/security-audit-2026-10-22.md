@@ -28,6 +28,21 @@ never hidden in startup/build. A build-time Git revision is exposed by `/api/hea
 Production backup/isolated restore was blocked by auto-review pending specific
 approval to copy production records inside the same Replit project. No backup,
 application schema migration or deployment has been performed at this checkpoint.
+The application release has now merged through
+[PR #2](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/2) at
+`8d3c13008d09f86fc9df53877cb3c9449e5fa311`. Both final head CI runs
+[branch](https://github.com/mithorizon7/AIFactorySimulatorMH/actions/runs/39834691893)
+and [PR](https://github.com/mithorizon7/AIFactorySimulatorMH/actions/runs/39834697016)
+passed every stage, including all 14 security and five browser checks and
+production-mode smoke. Merged-main run 39835186492 also passed. Replit independently
+passed those checks on the reviewed application source, then verified the exact
+clean merged 8d3c130 with runtime/build/smoke and matching release marker. The default
+Replit Node 22 module is only 22.22.0, so build/start now use a checksum-pinned
+official Node 22.23.4 Linux runtime without changing the system installation.
+Read-only production aggregates found zero accounts, one save, one leaderboard
+entry and no other application tables. No individual records were retrieved or
+displayed. Because production is not empty, the private-backup approval gate
+remains in force; no production backup, migration or deployment was performed.
 The current queue and verification state are maintained in
 `docs/security-2026-10-22-checklist.md`; the following initial-access observations
 are historical where this continuation explicitly supersedes them.
@@ -36,8 +51,8 @@ are historical where this continuation explicitly supersedes them.
 
 1. Deploy the ownership and server fixes only after applying the additive database
    migration and configuring exact production hosts. The old API exposes the most
-   recent save globally; no live deployment was accessible to establish whether it
-   currently runs that code. Owner: project/deployment administrator.
+   recent save globally; the accessible published app is behind GitHub, but its
+   exact deployed revision is not exposed. Owner: project/deployment administrator.
 2. Replace the deployed Node 20 selection with a verified patched Node 22 runtime.
    Node 22.23.4 was downloaded from nodejs.org, checksum-verified and used locally.
    The existing machine-wide Node 22.12.0 was not altered. Owner: deployment/device administrator.
@@ -68,10 +83,10 @@ evidence of comprehensive security hardening.
 | Repository | Public `mithorizon7/AIFactorySimulatorMH`, local starting HEAD `c372658ea89b1e2c8a640cce345b0d2a1d9f3317`; one pre-existing narrative edit | Current files and reachable local Git history inspected; no history rewriting or publishing |
 | Workspaces / languages | One npm project; TypeScript server/shared code and browser React; no workspace manifests, Python environment, Docker/devcontainer or native application project found | Host/vendor binaries and old build caches beyond accessible records cannot be ruled out |
 | Browser app | React/React DOM 18.3.1, client-side simulator, Vite middleware during development | No RSC package, server functions, real LLM inference, file upload, webhook, shell execution, user-supplied fetch destination or privileged AI tool API found |
-| API / storage | Express 4.22.1; Drizzle ORM 0.39.3 before, 0.45.4 after; Neon serverless 0.10.4; memory fallback without DATABASE_URL | API tested using isolated MemStorage; no database secret or live database access available |
+| API / storage | Express 4.22.1; Drizzle ORM 0.39.3 before, 0.45.4 after; standard pg 8.23.1 replaces Neon-only serverless driver; memory fallback for non-hosted tests | API tested using isolated MemStorage; production schema/TLS inspected read-only. Real hosted production refuses missing DATABASE_URL |
 | Runtime | Machine default Node 22.12.0; Replit declared Node 20; project-local verified Node 22.23.4/npm 10.9.9 used for checks | Host selection now Node 22 with guards; running production patch version unknown |
-| Delivery | `.replit`: Cloud Run deployment target, `npm run build`, `npm run start`, PostgreSQL 16 module; only port 5000 mapping retained | Replit app search returned no matching editable app. GitHub homepage references Replit. No production URL, deployment logs, secret metadata, artifact digests or staging/preview inventory obtained |
-| CI | GitHub API returned zero workflow runs and zero deployment records during review; no previous workflow file | New minimal-permission, SHA-pinned workflow added; it has not run remotely. Runner runtime/native libraries remain provider evidence to obtain |
+| Delivery | Replit app and both production domains identified; Cloud Run/Autoscale target, checksum-pinned Node wrapper, only port 5000 mapping retained | Source release merged; provider inspection completed. Actual live revision/runtime and migrated/deployed ownership still await release execution |
+| CI | Initially no workflows; new minimal-permission, SHA-pinned workflow now passes branch, PR and merged-main checks | Main run 39835186492 passed on merged 8d3c130; runner-host trust/kernel inventory still requires provider evidence |
 | Infrastructure | No Railway/Vercel deployment configuration, workers, scheduled jobs, self-managed GitLab, Oracle or DNS appliances declared | Absence of repository files does not rule out external supporting services; administrator/provider inventory required |
 | Local tools / device | macOS 26.6.2 build 25G83; local PostgreSQL 17.9; Chrome 155.0.8059.85; no Bun, uv, Docker, gitleaks, semgrep or trivy executable located on PATH | OS trust/update status, other installations, actual provider host kernels and managed database revisions unverified |
 | Automation browser | Playwright 1.58.2 -> 1.64.1; matching Chromium 156.0.8078.4 installed under ignored project output | Latest package does not prove browser trust/patch parity with Chrome 156.0.8078.47/.48; production smoke restricts browser requests to loopback |
@@ -99,8 +114,10 @@ This was a focused pattern/IOC check, not a full forensic investigation, entropy
 secret scan, malware sandbox or proof of no compromise. No credible compromise
 evidence was established, so blanket credential revocation is not justified by
 these results. Provider/host history, deleted artifacts, containers, gateway logs
-and cloud audit records remain unavailable. In particular, no access logs covering
-October 17 onward were obtained; their retention cannot be established.
+and cloud audit records remain incomplete. Replit subsequently returned sampled
+deployment logs for October 17-22, apparently capped near 100 entries per daily
+query. Targeted structured error queries found no matches; this is not complete
+security/access-log coverage or proof of no intrusion. Retention remains unverified.
 
 Evidence is in ignored `output/security/2026-10-22/`, under mode-0700 directories.
 No private source or secret values were uploaded to a scanning service. npm/OSV
@@ -186,10 +203,9 @@ The PHP/Node baseline CVEs were absent in this snapshot. This is not proof of no
 exploitation or complete October 22 KEV coverage. [CISA feed](https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json).
 
 OSV batch name/version queries were cross-checked against GitHub/npm advisories.
-The initial patched-graph query covered 569 unique pairs and returned the brace-parser
-advisory. A delta query checked all three changed Playwright packages at 1.64.1
-and returned no advisories, covering the final graph's 568 unique pairs together
-with the initial result. The final lock has 683 package records. Different database
+The final release query covers all 509 unique name/version pairs in the 619-record
+lockfile and returns zero findings. Earlier intermediate-graph scans found the
+brace-parser advisory, which the Tailwind 4 migration subsequently removed. Different database
 refresh times explain why scanner lists
 must be assessed together; neither certifies source or runtime behavior.
 
@@ -215,11 +231,11 @@ permissions, no persisted checkout token and no deployment credentials.
 | npm run audit:security | Passed strict zero-finding gate, rejecting every advisory and scanner/incomplete-output failure |
 | npm run test:tutorial | Passed existing target-availability checks |
 | npm run build | Passed; lottie-web contains eval-capable code and bundle-size warning. CSP does not permit unsafe-eval; checked production flow had no uncaught page errors |
-| npm run test:regression | Both existing navigation and full tutorial browser tests passed. Navigation now waits for DOM then existing UI assertions rather than unrelated remote fonts |
+| npm run test:regression | Five browser tests passed: desktop/mobile full tutorial, core navigation, mobile tab containment and continuous-play autosave. Navigation waits for DOM/UI assertions rather than unrelated remote fonts |
 | Local production smoke | Passed built server boot, assets, CSP, API 404, welcome/start, desktop/mobile captures, no uncaught page errors; no real database credentials used |
 | git diff --check | Passed |
-| Live database migration / provider integration | **Not run.** No authorized connection; local PostgreSQL is older than vendor security fixes and was not started for this audit |
-| Production / CI actual execution | **Unverified.** No remote deployment, credential rotation or CI run performed |
+| Live database migration / provider integration | **Not run.** Actual production database/schema/TLS inspected read-only; production-data backup/restore approval is pending before migration. Unpatched local PostgreSQL was not started |
+| Production / CI actual execution | Branch, PR and merged-main CI passed; Replit source preparation validations passed. **No production deployment or credential rotation performed** |
 
 Compatibility limits: old unowned saves cannot safely be assigned to visitors and
 will be unreachable; cached clients sending userId:null remain accepted, but cannot
