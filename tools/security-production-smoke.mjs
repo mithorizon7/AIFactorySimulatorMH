@@ -7,7 +7,7 @@ import { chromium } from '@playwright/test';
 const base = 'http://127.0.0.1:5017';
 await mkdir('output/security/2026-10-22', { recursive: true, mode: 0o700 });
 const child = spawn(process.execPath, ['dist/index.js'], {
-  env: { ...process.env, NODE_ENV: 'production', PUBLIC_HOSTS: '127.0.0.1', HOST: '127.0.0.1', PORT: '5017', DATABASE_URL: '' },
+  env: { ...process.env, NODE_ENV: 'production', PUBLIC_HOSTS: '127.0.0.1', HOST: '127.0.0.1', PORT: '5017', DATABASE_URL: '', REPL_ID: '' },
   stdio: 'ignore',
 });
 let browser;
