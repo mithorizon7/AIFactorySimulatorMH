@@ -55,21 +55,18 @@ class Logger {
   private log(level: LogLevel, message: string, context?: LogContext, error?: Error): string {
     const incidentId = context?.incidentId || (level === 'ERROR' || level === 'FATAL' ? this.generateIncidentId() : undefined);
     
+    const allowedKeys = new Set(['incidentId', 'operation', 'functionName', 'errorType', 'statusCode', 'method', 'duration', 'resultCount', 'limit', 'requestId', 'responseSize', 'dataSize']);
+    const safeContext = Object.fromEntries(Object.entries(context || {}).filter(([key, value]) => allowedKeys.has(key) && ['string', 'number', 'boolean'].includes(typeof value)));
     const logEntry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
       incidentId,
       context: {
-        ...context,
+        ...safeContext,
         service: this.serviceName,
         environment: this.environment,
         pid: process.pid,
-        // Add stack trace for errors
-        ...(error && { 
-          stackTrace: error.stack,
-          errorCode: error.name 
-        })
       }
     };
 
@@ -77,8 +74,7 @@ class Logger {
     if (error) {
       logEntry.error = {
         name: error.name,
-        message: error.message,
-        stack: error.stack
+        message: 'Error details omitted to protect sensitive data',
       };
     }
 
@@ -141,7 +137,7 @@ class Logger {
    * Log API error with full context
    */
   logApiError(method: string, url: string, error: Error, requestBody?: any, context?: LogContext): string {
-    return this.error(`API Error: ${method} ${url} - ${error.message}`, error, {
+    return this.error('API operation failed', error, {
       ...context,
       operation: 'api_error',
       method,
@@ -155,7 +151,7 @@ class Logger {
    * Log database operation errors
    */
   logDatabaseError(operation: string, error: Error, params?: any, context?: LogContext): string {
-    return this.error(`Database Error: ${operation} - ${error.message}`, error, {
+    return this.error('Database operation failed', error, {
       ...context,
       operation: 'database_operation',
       functionName: operation,
@@ -167,7 +163,7 @@ class Logger {
    * Log business logic errors with context
    */
   logBusinessError(functionName: string, error: Error, functionArgs?: any, context?: LogContext): string {
-    return this.error(`Business Logic Error: ${functionName} - ${error.message}`, error, {
+    return this.error('Business logic operation failed', error, {
       ...context,
       operation: 'business_logic',
       functionName,

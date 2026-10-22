@@ -77,6 +77,10 @@ export default function AIFactory() {
   // Unified tutorial and narrative system
   const [currentNarrativeMessage, setCurrentNarrativeMessage] = useState<NarrativeMessage | null>(null);
   const unlockedBreakthroughIdsRef = useRef<number[]>([]);
+  const saveSnapshotRef = useRef({ gameState, timeElapsed });
+  useEffect(() => {
+    saveSnapshotRef.current = { gameState, timeElapsed };
+  }, [gameState, timeElapsed]);
   
   // Narrative trigger system
   useNarrativeTriggers({
@@ -94,7 +98,7 @@ export default function AIFactory() {
     }, 30000); // Save every 30 seconds
     
     return () => clearInterval(saveInterval);
-  }, [isRunning, gameState]);
+  }, [isRunning]);
 
   // Watch for breakthroughs
   useEffect(() => {
@@ -126,11 +130,11 @@ export default function AIFactory() {
   };
 
   async function saveGameState() {
+    const { gameState, timeElapsed } = saveSnapshotRef.current;
     try {
       await apiRequest("POST", "/api/game-state", {
-        userId: null,
-        intelligence: gameState.intelligence,
-        money: gameState.money,
+        intelligence: Math.max(0, Math.floor(gameState.intelligence)),
+        money: Math.max(0, Math.floor(gameState.money)),
         timeRemaining: timeElapsed,
         resourceCompute: Math.floor(gameState.resources.compute),
         resourceData: Math.floor(gameState.resources.data),
@@ -139,9 +143,9 @@ export default function AIFactory() {
         dataLevel: gameState.levels.data,
         algorithmLevel: gameState.levels.algorithm,
         // Save revenue information
-        revenueB2B: gameState.revenue.b2b,
-        revenueB2C: gameState.revenue.b2c,
-        revenueInvestors: gameState.revenue.investors,
+        revenueB2B: Math.max(0, Math.floor(gameState.revenue.b2b)),
+        revenueB2C: Math.max(0, Math.floor(gameState.revenue.b2c)),
+        revenueInvestors: Math.max(0, Math.floor(gameState.revenue.investors)),
         unlockedBreakthroughs: gameState.breakthroughs
           .filter(b => b.unlocked)
           .map(b => b.id),

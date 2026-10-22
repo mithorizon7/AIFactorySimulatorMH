@@ -162,7 +162,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
           {getPrimaryBlockerText() && !training.active && (
             <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-900/20 p-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
                 <div>
                   <p className="text-sm font-medium text-amber-300">Current Bottleneck</p>
                   <p className="mt-1 text-sm leading-relaxed text-amber-100">{getPrimaryBlockerText()}</p>
@@ -328,7 +328,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
               {!prerequisitesMet && (
                 <div className="mt-4 p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-amber-300">Prerequisites Not Met</p>
                       <p className="text-xs text-amber-200/80 mt-1">
@@ -352,7 +352,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
       {/* Educational Context */}
       <Card className="p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-700/50">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
+          <Sparkles className="h-6 w-6 text-blue-400 shrink-0 mt-1" />
           <div>
             <h3 className="text-lg font-bold text-white mb-2">Why Training Matters</h3>
             <p className="text-gray-300 leading-relaxed">

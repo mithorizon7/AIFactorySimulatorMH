@@ -74,7 +74,7 @@ export default function BreakthroughModal({ breakthrough, onClose }: Breakthroug
   const getTextColor = getBreakthroughTypeColor(breakthrough.type).split(' ')[1];
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
       <div className="bg-gray-900 border-2 border-blue-500 rounded-lg max-w-3xl w-full mx-4 p-6 relative max-h-[90vh] overflow-y-auto">
         <SparkCharacter
           position="corner"

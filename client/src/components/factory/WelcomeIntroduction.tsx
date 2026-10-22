@@ -11,7 +11,7 @@ interface WelcomeIntroductionProps {
 
 export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntroductionProps) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl bg-gray-900 border-gray-800 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-t-lg">
           <CardTitle className="text-3xl flex items-center gap-2">

@@ -502,7 +502,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="compute-advanced-toggle"
             onClick={handleComputeAccordionToggle}
           >
@@ -717,7 +717,7 @@ export default function FactorySection({
             {/* Dynamic Data Factory Educational Content */}
             <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0">📊</div>
+                <div className="w-4 h-4 text-green-400 mt-0.5 shrink-0">📊</div>
                 <div>
                   <h5 className="text-xs font-medium text-green-300 mb-2">Data Development Focus</h5>
                   <div className="text-xs text-gray-300 space-y-2">
@@ -767,7 +767,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="data-advanced-toggle"
             onClick={handleDataAccordionToggle}
           >
@@ -944,7 +944,7 @@ export default function FactorySection({
             {/* Dynamic Algorithm Lab Educational Content */}
             <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0">🧠</div>
+                <div className="w-4 h-4 text-purple-400 mt-0.5 shrink-0">🧠</div>
                 <div>
                   <h5 className="text-xs font-medium text-purple-300 mb-2">Algorithm Research Focus</h5>
                   <div className="text-xs text-gray-300 space-y-2">
@@ -998,7 +998,7 @@ export default function FactorySection({
           </div>
           
           <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="algorithm-advanced-toggle"
             onClick={handleAlgorithmAccordionToggle}
           >

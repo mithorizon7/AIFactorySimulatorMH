@@ -6,3 +6,8 @@ vite.config.ts.*
 *.tar.gz
 .playwright-cli/
 output/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
