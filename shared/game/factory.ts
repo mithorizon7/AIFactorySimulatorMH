@@ -5,6 +5,7 @@ import {
   type RulesetVersion,
 } from "../version";
 import { gameStateSchema, type GameStateV2 } from "./schemas/state";
+import { configureFreshState } from "./rulesets";
 
 export interface FreshGameStateOptions {
   ruleset: RulesetVersion;
@@ -45,57 +46,59 @@ export function createFreshGameState({
   } = legacy;
   const randomSeed = normalizeSeed(seed);
 
-  return gameStateSchema.parse({
-    ...simulation,
-    rulesetVersion: ruleset,
-    snapshotSchemaVersion: SNAPSHOT_VERSION,
-    computeCapacity: {
-      ...simulation.computeCapacity,
-      freeCompute:
-        simulation.computeCapacity.freeCompute ??
-        simulation.computeCapacity.available,
-      customerUsage: simulation.computeCapacity.customerUsage ?? 0,
-      breakthroughMultiplier:
-        simulation.computeCapacity.breakthroughMultiplier ?? 1,
-    },
-    clock: { status: "not_started", activeTick: 0 },
-    random: {
-      algorithm: "xorshift32-v1",
-      seed: randomSeed,
-      state: randomSeed,
-      draws: 0,
-    },
-    facts: {
-      startingMoney: simulation.money,
-      totalSpend: 0,
-      spendByCategory: {
-        compute: 0,
-        data: 0,
-        algorithm: 0,
-        commercial: 0,
-        regulationResilience: 0,
-        training: 0,
+  return configureFreshState(
+    gameStateSchema.parse({
+      ...simulation,
+      rulesetVersion: ruleset,
+      snapshotSchemaVersion: SNAPSHOT_VERSION,
+      computeCapacity: {
+        ...simulation.computeCapacity,
+        freeCompute:
+          simulation.computeCapacity.freeCompute ??
+          simulation.computeCapacity.available,
+        customerUsage: simulation.computeCapacity.customerUsage ?? 0,
+        breakthroughMultiplier:
+          simulation.computeCapacity.breakthroughMultiplier ?? 1,
       },
-      earnedRevenue: 0,
-      externalFunding: 0,
-      emergencyFunding: 0,
-      otherCashAdjustments: 0,
-      peakMoney: simulation.money,
-      peakB2BCustomers: 0,
-      peakB2CCustomers: 0,
-      capacityPressureTicks: 0,
-      capacityShortfallRatioSum: 0,
-      peakCapacityShortfallRatio: 0,
-      emergencyFundingInterventions: 0,
-      emergencyCapacityInterventions: 0,
-    },
-    mechanics: {
-      appliedRecoveryGrantIds: [],
-      appliedBreakthroughEffectIds: [],
-      appliedCommandIds: [],
-      nextEffectSequence: 0,
-      lastSeedFundingTick: null,
-      lastInvestorFundingTick: null,
-    },
-  });
+      clock: { status: "not_started", activeTick: 0 },
+      random: {
+        algorithm: "xorshift32-v1",
+        seed: randomSeed,
+        state: randomSeed,
+        draws: 0,
+      },
+      facts: {
+        startingMoney: simulation.money,
+        totalSpend: 0,
+        spendByCategory: {
+          compute: 0,
+          data: 0,
+          algorithm: 0,
+          commercial: 0,
+          regulationResilience: 0,
+          training: 0,
+        },
+        earnedRevenue: 0,
+        externalFunding: 0,
+        emergencyFunding: 0,
+        otherCashAdjustments: 0,
+        peakMoney: simulation.money,
+        peakB2BCustomers: 0,
+        peakB2CCustomers: 0,
+        capacityPressureTicks: 0,
+        capacityShortfallRatioSum: 0,
+        peakCapacityShortfallRatio: 0,
+        emergencyFundingInterventions: 0,
+        emergencyCapacityInterventions: 0,
+      },
+      mechanics: {
+        appliedRecoveryGrantIds: [],
+        appliedBreakthroughEffectIds: [],
+        appliedCommandIds: [],
+        nextEffectSequence: 0,
+        lastSeedFundingTick: null,
+        lastInvestorFundingTick: null,
+      },
+    }),
+  );
 }
