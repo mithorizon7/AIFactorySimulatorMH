@@ -1,0 +1,1598 @@
+import { Era, ERA_ORDER, getEraIndex, getNextEra, isFinalEra } from "./era";
+
+export { Era, ERA_ORDER, getEraIndex, getNextEra, isFinalEra };
+
+export function getScaledInvestmentCost(
+  baseCost: number,
+  currentLevel: number,
+  era: Era,
+): number {
+  const eraScalingFactor =
+    era === Era.GNT2
+      ? 1.0
+      : era === Era.GNT3
+        ? 1.2
+        : era === Era.GNT4
+          ? 1.5
+          : era === Era.GNT5
+            ? 2.0
+            : era === Era.GNT6
+              ? 3.0
+              : 4.0;
+
+  const levelScaling = Math.pow(1.4, currentLevel);
+  const rawCost = baseCost * levelScaling * eraScalingFactor;
+  if (!Number.isFinite(rawCost) || rawCost > Number.MAX_SAFE_INTEGER) {
+    throw new RangeError("investment cost exceeds the supported numeric range");
+  }
+
+  // Canonicalize values that are microscopically below an integer because of
+  // binary floating point (for example 85 * 1.4). This keeps rules stable
+  // without changing the game's number representation wholesale.
+  return Math.floor(rawCost + Math.max(1, rawCost) * Number.EPSILON * 4);
+}
+
+export interface TrainingRequirementDetail {
+  key: string;
+  label: string;
+  current: number;
+  required: number;
+  met: boolean;
+  isPercentage?: boolean;
+  type: "prerequisite" | "capacity" | "funding";
+}
+
+// Training run states
+export enum TrainingStatus {
+  AVAILABLE = "available", // Prerequisites met, can start training
+  IN_PROGRESS = "in-progress", // Training is actively running
+  COMPLETE = "complete", // Training has finished for this era
+  LOCKED = "locked", // Prerequisites not met for starting training
+}
+
+// Game events that can occur during gameplay
+export interface GameEvent {
+  id: number;
+  title: string;
+  description: string;
+  triggered: boolean;
+  era: Era; // Era during which this event can occur
+  effect: {
+    type:
+      | "compute"
+      | "data"
+      | "algorithm"
+      | "money"
+      | "regulation"
+      | "hardware"
+      | "multiple";
+    impact: "positive" | "negative" | "mixed";
+    magnitude: number; // Percentage or absolute impact
+  };
+  realWorldContext: string; // Educational tie-in
+}
+
+// Investment milestones representing different funding rounds
+export interface InvestmentMilestone {
+  id: number;
+  name: string; // Name of the funding round (e.g., "Seed", "Series A")
+  requiredIntelligence: number; // Intelligence threshold to unlock
+  funding: number; // Amount of money provided
+  unlocked: boolean; // Whether this milestone has been reached
+  era: Era; // Era associated with this milestone
+  description: string; // Description of the milestone
+  realWorldParallel: string; // Educational tie-in
+}
+
+export interface GameStateType {
+  isRunning: boolean;
+  timeElapsed: number;
+  // Compatibility projection of the deterministic simulation clock. New UI
+  // behavior must use this status rather than infer lifecycle from elapsed time.
+  clock: {
+    status: "not_started" | "running" | "paused" | "completed";
+    activeTick: number;
+  };
+
+  // Core Metrics
+  money: number;
+  intelligence: number; // Renamed from smartnessScore to better reflect AGI goal
+
+  // Game Era/Phase Tracking
+  currentEra: Era; // Current game era/phase (GPT-2, GPT-3, etc.)
+  daysElapsed: number; // Game time tracking for events
+
+  // Training Run System - Central to game progression
+  training: {
+    // Currently active training run (if any)
+    active: boolean; // Whether a training run is currently in progress
+    daysRemaining: number; // Days remaining until training completion
+    computeReserved: number; // Compute currently reserved for training
+
+    // Current training progress toward next era
+    algorithmResearchProgress: number; // Progress toward research needed for next training run (0-100)
+    algorithmResearchRate: number; // Current rate of algorithm research progress
+
+    // Per-era training runs
+    runs: {
+      [Era.GNT3]: TrainingRun; // Training run to advance from GNT-2 to GNT-3
+      [Era.GNT4]: TrainingRun; // Training run to advance from GNT-3 to GNT-4
+      [Era.GNT5]: TrainingRun; // Training run to advance from GNT-4 to GNT-5
+      [Era.GNT6]: TrainingRun; // Training run to advance from GNT-5 to GNT-6
+      [Era.GNT7]: TrainingRun; // Training run to advance from GNT-6 to GNT-7
+    };
+  };
+
+  // Primary Resources
+  resources: {
+    compute: number;
+    data: number;
+    algorithm: number;
+  };
+
+  // Resource Production Rates
+  production: {
+    compute: number;
+    data: number;
+    algorithm: number;
+  };
+
+  // Resource Advancement Levels
+  levels: {
+    compute: number;
+    data: number;
+    algorithm: number;
+  };
+
+  // Compute Capacity and Usage Metrics
+  computeCapacity: {
+    available: number; // Total compute capacity available
+    used: number; // Amount of compute currently being used
+    maxCapacity: number; // Maximum possible compute capacity
+    freeCompute?: number; // Compute available for research (not used by customers or training)
+    customerUsage?: number; // Compute used specifically by customers (B2B/B2C)
+    breakthroughMultiplier?: number; // Permanent multiplier from hardware breakthroughs
+  };
+
+  // Enabling Inputs for Compute
+  computeInputs: {
+    money: number; // Investment into compute infrastructure
+    electricity: number; // Power efficiency and availability
+    hardware: number; // Quality of hardware components
+    regulation: number; // Regulatory environment affecting compute access
+  };
+
+  // Enabling Inputs for Data
+  dataInputs: {
+    quality: number; // Quality of collected data
+    quantity: number; // Amount of collected data
+    formats: number; // New data formats (text, image, audio, etc.)
+  };
+
+  // Enabling Inputs for Algorithms
+  algorithmInputs: {
+    architectures: number; // Breakthroughs in model architectures
+    researchEngineers: number; // Research engineers hired to accelerate algorithm research
+  };
+
+  // Revenue Streams
+  revenue: {
+    b2b: number; // API usage by developers
+    b2c: number; // Monthly subscriptions
+    investors: number; // Funding from investors
+
+    // Era-based Revenue Availability
+    apiAvailable: boolean; // Whether API service is available yet (era-gated)
+    chatbotAvailable: boolean; // Whether chatbot service is available yet (era-gated)
+
+    // Platform Development Status
+    apiPlatformBuilt: boolean; // Whether the API platform has been developed (requires investment)
+    apiPlatformCost: number; // Cost to build the API platform
+    chatbotPlatformBuilt: boolean; // Whether the chatbot platform has been developed
+    chatbotPlatformCost: number; // Cost to build the chatbot platform
+
+    // Revenue Service Status
+    apiEnabled: boolean; // Whether the company has activated API service (user choice)
+    chatbotEnabled: boolean; // Whether the company has activated chatbot service (user choice)
+
+    // Developer Growth Metrics (B2B)
+    developers: number; // Number of developers using the API
+    developerGrowthRate: number; // Rate at which new developers join per update
+
+    // B2B Revenue Fields
+    baseApiRate: number; // Base API rate for B2B calculations
+    developerToolsLevel: number; // Level of developer tools (improves B2B revenue)
+    developerToolsCost: number; // Cost to upgrade developer tools level
+
+    // B2C Revenue Fields
+    subscribers: number; // Number of subscribers for B2C calculations
+    subscriberGrowthRate: number; // Rate at which new subscribers join per update
+    monthlyFee: number; // Monthly fee per subscriber
+    chatbotImprovementLevel: number; // Level of chatbot improvements (improves B2C revenue)
+    chatbotImprovementCost: number; // Cost to upgrade chatbot quality level
+
+    // Marketing Campaign Metrics
+    marketingCampaignCost: number; // Cost of running a marketing campaign
+    lastMarketingCampaign: number; // Timestamp of the last marketing campaign
+  };
+
+  // Investment Milestones/Funding Rounds
+  investmentMilestones: InvestmentMilestone[];
+  nextMilestoneId: number; // ID of the next milestone to be reached
+
+  // Bonus Multipliers (cross-resource effects)
+  bonuses: {
+    computeToData: number; // How compute affects data processing
+    computeToAlgorithm: number; // How compute affects algorithm development
+    computeToIntelligence: number; // How compute affects intelligence growth
+
+    dataToCompute: number; // How data quality affects compute efficiency
+    dataToAlgorithm: number; // How data affects algorithm effectiveness
+    dataToIntelligence: number; // How data affects intelligence growth
+
+    algorithmToCompute: number; // How algorithms optimize compute usage
+    algorithmToData: number; // How algorithms improve data utilization
+    algorithmToIntelligence: number; // How algorithms affect intelligence growth
+  };
+
+  // Costs of upgrading primary resources
+  upgradeCosts: {
+    compute: number;
+    data: number;
+    algorithm: number;
+  };
+
+  // AI Breakthroughs
+  breakthroughs: Breakthrough[];
+
+  // Game Events
+  events: GameEvent[];
+
+  // Current Goal
+  currentGoal: {
+    id: number;
+    progress: number;
+  };
+
+  // Narrative warning flags to prevent message spam
+  narrativeFlags: {
+    hasSeenComputeWarning: boolean;
+    hasSeenLowFundsWarning: boolean;
+    hasSeenFirstTraining: boolean;
+    hasSeenFirstRevenue: boolean;
+    hasSeenBalanceAdvice: boolean;
+    hasSeenInvestmentMilestone1M: boolean;
+    hasSeenInvestmentMilestone10M: boolean;
+    totalInvestmentAmount: number; // Track total money spent
+    // Fail-safe funding flags (one-time only)
+    hasGrantedEarlyGrant: boolean;
+    hasGranted20MinBoost: boolean;
+    hasGrantedLateStageFunding: boolean;
+    // Track funding rounds to prevent duplicates
+    lastSeedFundingTime: number;
+    lastInvestorFundingTime: number;
+    // Stuck detection flags for guidance
+    hasSeenStuckNoMoney: boolean;
+    hasSeenStuckNoRevenue: boolean;
+    hasSeenStuckTrainingBlocked: boolean;
+    hasSeenStuckNoBreakthroughs: boolean;
+    // Stuck detection cooldown system
+    lastStuckHintAt: number;
+    lastStuckHintId: string;
+
+    // Service unlock guidance flags
+    shownApiServiceAvailable: boolean;
+    shownChatbotServiceAvailable: boolean;
+    shownApiOptimizationAdvice: boolean;
+    shownChatbotOptimizationAdvice: boolean;
+
+    // Auto-enabling guidance flags
+    apiServiceUnlockedTime: number | null; // Timestamp when API service was unlocked
+    hasOfferedApiAutoEnable: boolean; // Whether we've offered to auto-enable API service
+
+    // Platform unlock visual highlights
+    highlightApiPlatform: boolean; // Whether to show pulsing highlight on API platform button
+    highlightChatbotPlatform: boolean; // Whether to show pulsing highlight on Chatbot platform button
+
+    // Breakthrough effect flags (prevent duplicate applications)
+    fewShotTrainingBonus: boolean; // Whether few-shot learning training cost reduction has been applied
+    selfImprovementTrainingBonus: boolean; // Whether self-improvement training cost reduction has been applied
+    verifiedSelfImprovementBonus: boolean; // Whether verified self-improvement training cost reduction has been applied
+    unsupervisedPretrainingBonus: boolean; // Whether unsupervised pretraining bonus has been applied
+    pocketAiConstraints: boolean; // Whether pocket AI constraints have been applied
+  };
+
+  // Interactive Tutorial System
+  tutorial: {
+    isActive: boolean; // Whether tutorial is currently running
+    phase: number; // Current tutorial phase (1-4)
+    step: number; // Current tutorial step within phase
+    isCompleted: boolean; // Whether tutorial has been completed
+    hasShownWelcome: boolean; // Whether welcome modal has been shown
+    completedActions: string[]; // Track which tutorial actions user has completed
+    currentTarget: string | null; // Current element being highlighted
+  };
+
+  // AGI Victory Threshold
+  agiThreshold: number; // Intelligence score needed to win
+
+  // Victory Statistics for Leaderboard and Summary
+  victoryStats: {
+    gameStartTime: number; // Timestamp when game started
+    totalTimeElapsed: number; // Total time in seconds
+    peakMoney: number; // Highest money amount achieved
+    totalMoneyEarned: number; // Total money earned throughout game (all inflows)
+    peakB2BSubscribers: number; // Highest B2B subscriber count
+    peakB2CSubscribers: number; // Highest B2C subscriber count
+    breakthroughsUnlocked: number; // Total breakthroughs achieved
+    erasReached: number; // Highest era reached (starts at GNT-2 = 1)
+    finalIntelligence: number; // Intelligence at victory
+    strategiesUsed: string[]; // Key strategies player used
+    hasAchievedAGI: boolean; // Whether player reached AGI
+  };
+}
+
+export interface Breakthrough {
+  id: number;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  requiredLevels: {
+    compute?: number;
+    data?: number;
+    algorithm?: number;
+  };
+  type: "compute" | "data" | "algorithm" | "combined";
+  realWorldParallel: string;
+  gameEffect: string; // What actual effect this breakthrough has on gameplay
+  contributingFactors: string; // What combination of compute/data/algorithm led to this breakthrough
+  era?: Era; // Optional era association
+}
+
+export function isBreakthroughEraUnlocked(
+  currentEra: Era,
+  breakthrough: Breakthrough,
+): boolean {
+  if (!breakthrough.era) {
+    return true;
+  }
+
+  return getEraIndex(breakthrough.era) <= getEraIndex(currentEra);
+}
+
+export function areBreakthroughRequirementsMet(
+  state: GameStateType,
+  breakthrough: Breakthrough,
+): boolean {
+  return Object.entries(breakthrough.requiredLevels).every(
+    ([resource, level]) => {
+      const currentLevel = state.levels[resource as keyof typeof state.levels];
+      return currentLevel >= level;
+    },
+  );
+}
+
+export function canUnlockBreakthrough(
+  state: GameStateType,
+  breakthrough: Breakthrough,
+): boolean {
+  return (
+    !breakthrough.unlocked &&
+    isBreakthroughEraUnlocked(state.currentEra, breakthrough) &&
+    areBreakthroughRequirementsMet(state, breakthrough)
+  );
+}
+
+export function getNextBreakthroughGoal(
+  state: GameStateType,
+): Breakthrough | null {
+  const accessibleLockedBreakthrough = state.breakthroughs.find(
+    (breakthrough) =>
+      !breakthrough.unlocked &&
+      isBreakthroughEraUnlocked(state.currentEra, breakthrough),
+  );
+
+  return (
+    accessibleLockedBreakthrough ??
+    state.breakthroughs.find((breakthrough) => !breakthrough.unlocked) ??
+    null
+  );
+}
+
+// Training run model - a discrete training operation that advances the AI to the next era
+export interface TrainingRun {
+  targetEra: Era; // What era this training run is trying to reach
+  status: TrainingStatus; // Current status of the training run
+  daysRequired: number; // How many days the training takes to complete (30 by default)
+  daysRemaining: number; // How many days remain until completion
+  computeRequired: number; // How much compute is required/locked during training
+  moneyCost: number; // Monetary cost required to start this training run
+  computePerCustomer: number; // How much compute each customer uses
+  isTrainingReserveActive: boolean; // Whether compute is currently reserved for this training
+
+  // Completion bonus
+  intelligenceGain: number; // Base intelligence gained on completion
+
+  // Prerequisites for starting the training
+  prerequisites: {
+    compute: number; // Required compute capacity level
+    data: {
+      quality: number; // Required data quality level
+      quantity: number; // Required data quantity level
+      formats: number; // Required data formats level
+    };
+    algorithm: {
+      architectures: number; // Required algorithm architecture level
+      researchProgress: number; // Required research progress (0-100)
+    };
+    computeInputs: {
+      electricity: number; // Required electricity level
+      hardware: number; // Required hardware level
+      regulation: number; // Required regulation level
+    };
+  };
+
+  // Educational content
+  name: string; // Name of this training run
+  description: string; // Description of what this training run accomplishes
+  realWorldParallel: string; // Educational context
+}
+
+export function getTrainingRunForEra(state: GameStateType, era: Era | null) {
+  if (!era || !Object.prototype.hasOwnProperty.call(state.training.runs, era)) {
+    return null;
+  }
+
+  return state.training.runs[era as keyof typeof state.training.runs];
+}
+
+export function getBaseTrainingRunForEra(era: Era | null) {
+  if (
+    !era ||
+    !Object.prototype.hasOwnProperty.call(
+      baseInitialGameState.training.runs,
+      era,
+    )
+  ) {
+    return null;
+  }
+
+  return structuredClone(
+    baseInitialGameState.training.runs[
+      era as keyof typeof baseInitialGameState.training.runs
+    ],
+  );
+}
+
+export function getUpcomingTrainingRun(state: GameStateType) {
+  return getTrainingRunForEra(state, getNextEra(state.currentEra));
+}
+
+export function getTrainingRequirementDetails(
+  state: GameStateType,
+  targetEra: Era | null = getNextEra(state.currentEra),
+): TrainingRequirementDetail[] {
+  const trainingRun = getTrainingRunForEra(state, targetEra);
+  if (!trainingRun) {
+    return [];
+  }
+
+  return [
+    {
+      key: "compute-level",
+      label: "Compute Level",
+      current: state.levels.compute,
+      required: trainingRun.prerequisites.compute,
+      met: state.levels.compute >= trainingRun.prerequisites.compute,
+      type: "prerequisite",
+    },
+    {
+      key: "data-quality",
+      label: "Data Quality",
+      current: state.dataInputs.quality,
+      required: trainingRun.prerequisites.data.quality,
+      met: state.dataInputs.quality >= trainingRun.prerequisites.data.quality,
+      type: "prerequisite",
+    },
+    {
+      key: "data-quantity",
+      label: "Data Quantity",
+      current: state.dataInputs.quantity,
+      required: trainingRun.prerequisites.data.quantity,
+      met: state.dataInputs.quantity >= trainingRun.prerequisites.data.quantity,
+      type: "prerequisite",
+    },
+    {
+      key: "data-formats",
+      label: "Data Formats",
+      current: state.dataInputs.formats,
+      required: trainingRun.prerequisites.data.formats,
+      met: state.dataInputs.formats >= trainingRun.prerequisites.data.formats,
+      type: "prerequisite",
+    },
+    {
+      key: "algorithm-architectures",
+      label: "Algorithm Architectures",
+      current: state.algorithmInputs.architectures,
+      required: trainingRun.prerequisites.algorithm.architectures,
+      met:
+        state.algorithmInputs.architectures >=
+        trainingRun.prerequisites.algorithm.architectures,
+      type: "prerequisite",
+    },
+    {
+      key: "research-progress",
+      label: "Research Progress",
+      current: Math.round(state.training.algorithmResearchProgress),
+      required: trainingRun.prerequisites.algorithm.researchProgress,
+      met:
+        state.training.algorithmResearchProgress >=
+        trainingRun.prerequisites.algorithm.researchProgress,
+      isPercentage: true,
+      type: "prerequisite",
+    },
+    {
+      key: "electricity",
+      label: "Electricity",
+      current: state.computeInputs.electricity,
+      required: trainingRun.prerequisites.computeInputs.electricity,
+      met:
+        state.computeInputs.electricity >=
+        trainingRun.prerequisites.computeInputs.electricity,
+      type: "prerequisite",
+    },
+    {
+      key: "hardware",
+      label: "Hardware",
+      current: state.computeInputs.hardware,
+      required: trainingRun.prerequisites.computeInputs.hardware,
+      met:
+        state.computeInputs.hardware >=
+        trainingRun.prerequisites.computeInputs.hardware,
+      type: "prerequisite",
+    },
+    {
+      key: "regulation",
+      label: "Regulatory Compliance",
+      current: state.computeInputs.regulation,
+      required: trainingRun.prerequisites.computeInputs.regulation,
+      met:
+        state.computeInputs.regulation >=
+        trainingRun.prerequisites.computeInputs.regulation,
+      type: "prerequisite",
+    },
+    {
+      key: "training-funds",
+      label: "Available Funds",
+      current: Math.floor(state.money),
+      required: trainingRun.moneyCost,
+      met: state.money >= trainingRun.moneyCost,
+      type: "funding",
+    },
+    {
+      key: "training-compute",
+      label: "Available Compute",
+      current: state.computeCapacity.available,
+      required: trainingRun.computeRequired,
+      met: state.computeCapacity.available >= trainingRun.computeRequired,
+      type: "capacity",
+    },
+  ];
+}
+
+export function getTrainingBlockers(
+  state: GameStateType,
+  targetEra: Era | null = getNextEra(state.currentEra),
+) {
+  return getTrainingRequirementDetails(state, targetEra).filter(
+    (detail) => !detail.met,
+  );
+}
+
+export function hasCompletedFinalTraining(state: GameStateType): boolean {
+  return state.training.runs[Era.GNT7].status === TrainingStatus.COMPLETE;
+}
+
+export function hasAchievedAgi(state: GameStateType): boolean {
+  return (
+    state.currentEra === Era.GNT7 &&
+    hasCompletedFinalTraining(state) &&
+    state.intelligence >= state.agiThreshold
+  );
+}
+
+const baseInitialGameState: GameStateType = {
+  isRunning: false,
+  timeElapsed: 0, // Counting up from 0 seconds
+  clock: { status: "not_started", activeTick: 0 },
+
+  // Core metrics
+  money: 1000, // Starting capital
+  intelligence: 100, // Intelligence score (AGI progress metric)
+
+  // Game Era/Phase Tracking
+  currentEra: Era.GNT2, // Start in GNT-2 era
+  daysElapsed: 0, // No time elapsed yet
+
+  // Training Run System
+  training: {
+    // Current training run state
+    active: false,
+    daysRemaining: 0,
+    computeReserved: 0,
+
+    // Research progress toward the next training run
+    algorithmResearchProgress: 0, // 0-100 scale
+    algorithmResearchRate: 0.5, // Base rate: 0.5 points per day when not training
+
+    // Per-era training runs
+    runs: {
+      // GNT-3 Training Run (advance from GNT-2 to GNT-3)
+      [Era.GNT3]: {
+        targetEra: Era.GNT3,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30, // 30-day training period
+        daysRemaining: 30,
+        computeRequired: 1000, // Base compute requirement for first era
+        moneyCost: 25000, // Substantial investment required for first major training run
+        computePerCustomer: 5, // Each B2B or B2C customer uses this much compute
+        isTrainingReserveActive: false,
+
+        // Intelligence gain on completion
+        intelligenceGain: 100,
+
+        // Prerequisites
+        prerequisites: {
+          compute: 2, // Required compute capacity level
+          data: {
+            quality: 2,
+            quantity: 2,
+            formats: 1,
+          },
+          algorithm: {
+            architectures: 2,
+            researchProgress: 100, // Need full research progress
+          },
+          computeInputs: {
+            electricity: 2,
+            hardware: 1,
+            regulation: 1,
+          },
+        },
+
+        // Educational content
+        name: "GNT-3 Training Run",
+        description:
+          "Scale up your model to billions of parameters and implement few-shot learning capabilities.",
+        realWorldParallel:
+          "The leap from early LLMs to models with 175 billion parameters represented a quantum leap in capabilities.",
+      },
+
+      // GNT-4 Training Run (advance from GNT-3 to GNT-4)
+      [Era.GNT4]: {
+        targetEra: Era.GNT4,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 10000, // 10x the GNT-3 requirement (1000 → 10,000)
+        moneyCost: 100000, // 4x the GNT-3 cost - significant strategic investment
+        computePerCustomer: 10,
+        isTrainingReserveActive: false,
+
+        intelligenceGain: 200,
+
+        prerequisites: {
+          compute: 4,
+          data: {
+            quality: 3,
+            quantity: 3,
+            formats: 2,
+          },
+          algorithm: {
+            architectures: 3,
+            researchProgress: 100,
+          },
+          computeInputs: {
+            electricity: 3,
+            hardware: 3,
+            regulation: 2,
+          },
+        },
+
+        name: "GNT-4 Training Run",
+        description:
+          "Train a model that can follow instructions and handle multimodal inputs (text and images).",
+        realWorldParallel:
+          "The transition to instruction-tuned models and multimodal systems dramatically improved AI's usefulness.",
+      },
+
+      // GNT-5 Training Run (advance from GNT-4 to GNT-5)
+      [Era.GNT5]: {
+        targetEra: Era.GNT5,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 100000, // 10x the GNT-4 requirement (10,000 → 100,000)
+        moneyCost: 500000, // 5x the GNT-4 cost - major research investment
+        computePerCustomer: 20,
+        isTrainingReserveActive: false,
+
+        intelligenceGain: 300,
+
+        prerequisites: {
+          compute: 6,
+          data: {
+            quality: 5,
+            quantity: 5,
+            formats: 3,
+          },
+          algorithm: {
+            architectures: 5,
+            researchProgress: 100,
+          },
+          computeInputs: {
+            electricity: 4,
+            hardware: 4,
+            regulation: 3,
+          },
+        },
+
+        name: "GNT-5 Training Run",
+        description:
+          "Train a model with enhanced reasoning capabilities and self-improvement potential.",
+        realWorldParallel:
+          "Advanced reasoning and self-improvement capabilities represent the frontier of current AI research.",
+      },
+
+      // GNT-6 Training Run (advance from GNT-5 to GNT-6)
+      [Era.GNT6]: {
+        targetEra: Era.GNT6,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 1000000, // 10x the GNT-5 requirement (100,000 → 1,000,000)
+        moneyCost: 2000000, // 4x the GNT-5 cost - massive enterprise investment
+        computePerCustomer: 40,
+        isTrainingReserveActive: false,
+
+        intelligenceGain: 400,
+
+        prerequisites: {
+          compute: 8,
+          data: {
+            quality: 7,
+            quantity: 7,
+            formats: 5,
+          },
+          algorithm: {
+            architectures: 7,
+            researchProgress: 100,
+          },
+          computeInputs: {
+            electricity: 6,
+            hardware: 6,
+            regulation: 4,
+          },
+        },
+
+        name: "GNT-6 Training Run",
+        description:
+          "Train a model that can use external tools and APIs to solve complex problems.",
+        realWorldParallel:
+          "Advanced tool use represents a crucial step toward systems that can interface effectively with the digital world.",
+      },
+
+      // GNT-7 Training Run (advance from GNT-6 to GNT-7)
+      [Era.GNT7]: {
+        targetEra: Era.GNT7,
+        status: TrainingStatus.LOCKED,
+        daysRequired: 30,
+        daysRemaining: 30,
+        computeRequired: 10000000, // 10x the GNT-6 requirement (1,000,000 → 10,000,000)
+        moneyCost: 10000000, // 5x the GNT-6 cost - ultimate AGI investment
+        computePerCustomer: 80,
+        isTrainingReserveActive: false,
+
+        intelligenceGain: 500,
+
+        prerequisites: {
+          compute: 10,
+          data: {
+            quality: 10,
+            quantity: 10,
+            formats: 7,
+          },
+          algorithm: {
+            architectures: 10,
+            researchProgress: 100,
+          },
+          computeInputs: {
+            electricity: 8,
+            hardware: 8,
+            regulation: 6,
+          },
+        },
+
+        name: "GNT-7 Training Run",
+        description:
+          "The final training run to achieve Artificial General Intelligence with human-level capabilities across domains.",
+        realWorldParallel:
+          "AGI represents the theoretical culmination of AI research - a system with human-level capabilities across virtually all domains.",
+      },
+    },
+  },
+
+  // Primary resources
+  resources: {
+    compute: 10,
+    data: 10,
+    algorithm: 5,
+  },
+
+  // Production rates
+  production: {
+    compute: 1,
+    data: 1,
+    algorithm: 0.5,
+  },
+
+  // Resource levels
+  levels: {
+    compute: 1,
+    data: 1,
+    algorithm: 1,
+  },
+
+  // Compute capacity metrics
+  computeCapacity: {
+    available: 1000, // Initial compute capacity
+    used: 0, // No compute used initially
+    maxCapacity: 2000, // Initial maximum capacity
+    freeCompute: 1000, // Initially all compute is free for research
+    customerUsage: 0, // No customers using compute initially
+    breakthroughMultiplier: 1,
+  },
+
+  // Enabling inputs for Compute
+  computeInputs: {
+    money: 1, // Initial investment level
+    electricity: 1, // Initial power efficiency
+    hardware: 1, // Initial hardware quality
+    regulation: 1, // Initial regulatory environment
+  },
+
+  // Enabling inputs for Data
+  dataInputs: {
+    quality: 1, // Initial data quality
+    quantity: 1, // Initial data quantity
+    formats: 1, // Initial data formats available
+  },
+
+  // Enabling inputs for Algorithms
+  algorithmInputs: {
+    architectures: 1, // Initial architecture sophistication
+    researchEngineers: 0, // Start with no research engineers
+  },
+
+  // Revenue streams
+  revenue: {
+    b2b: 0, // Initial B2B API revenue
+    b2c: 0, // Initial B2C subscription revenue
+    investors: 0, // Initial investor funding
+
+    // Era-based Revenue Availability (initially unavailable)
+    apiAvailable: false, // API service not available until GNT-3 era
+    chatbotAvailable: false, // Chatbot service not available until GNT-4 era
+
+    // Platform Development Status
+    apiPlatformBuilt: false, // API platform not built initially (requires investment)
+    apiPlatformCost: 8000, // Cost to build API platform ($8K - balanced for GNT-3 era)
+    chatbotPlatformBuilt: false, // Chatbot platform not built initially
+    chatbotPlatformCost: 15000, // Cost to build chatbot platform ($15K - balanced for GNT-4 era)
+
+    // Revenue Service Status (user choices, both start disabled)
+    apiEnabled: false, // API service not enabled initially
+    chatbotEnabled: false, // Chatbot service not enabled initially
+
+    // Developer Growth Metrics (B2B)
+    developers: 0, // Start with no developers
+    developerGrowthRate: 0, // Initial growth rate
+
+    // B2B Revenue Fields
+    baseApiRate: 1000, // Base API rate for B2B calculations ($1K/week starting point)
+    developerToolsLevel: 0, // Level of developer tools (improves B2B revenue)
+    developerToolsCost: 5000, // Initial cost to upgrade developer tools level
+
+    // B2C Revenue Fields
+    subscribers: 0, // Start with no subscribers
+    subscriberGrowthRate: 0, // Initial growth rate
+    monthlyFee: 10, // $10 monthly fee per subscriber
+    chatbotImprovementLevel: 0, // Level of chatbot improvements (improves B2C revenue)
+    chatbotImprovementCost: 10000, // Initial cost to upgrade chatbot quality level
+
+    // Marketing Campaign Metrics
+    marketingCampaignCost: 10000, // Initial cost of running a marketing campaign
+    lastMarketingCampaign: 0, // No marketing campaigns run initially
+  },
+
+  // Investment Milestones/Funding Rounds
+  investmentMilestones: [
+    {
+      id: 1,
+      name: "Seed Funding",
+      requiredIntelligence: 0, // Already unlocked at start
+      funding: 1000, // Initial $1,000 (already accounted for in starting money)
+      unlocked: true,
+      era: Era.GNT2,
+      description: "Initial funding to begin AI research and development.",
+      realWorldParallel:
+        "Early AI research labs started with small seed investments to prove basic concepts.",
+    },
+    {
+      id: 2,
+      name: "Series A",
+      requiredIntelligence: 150, // Intelligence threshold for Series A
+      funding: 5000, // $5,000 funding
+      unlocked: false,
+      era: Era.GNT3,
+      description:
+        "First major investment round as your AI shows promising capabilities.",
+      realWorldParallel:
+        "AI companies secure Series A funding when they demonstrate working prototypes with basic capabilities.",
+    },
+    {
+      id: 3,
+      name: "Series B",
+      requiredIntelligence: 350, // Intelligence threshold for Series B
+      funding: 25000, // $25,000 funding
+      unlocked: false,
+      era: Era.GNT4,
+      description:
+        "Major investment as your AI demonstrates commercial potential.",
+      realWorldParallel:
+        "Series B typically comes when AI companies show product-market fit and early revenue streams.",
+    },
+    {
+      id: 4,
+      name: "Series C",
+      requiredIntelligence: 650, // Intelligence threshold for Series C
+      funding: 100000, // $100,000 funding
+      unlocked: false,
+      era: Era.GNT5,
+      description:
+        "Massive investment round as your AI approaches transformative capabilities.",
+      realWorldParallel:
+        "Large AI companies secure hundreds of millions in Series C funding when they demonstrate transformative technology potential.",
+    },
+    {
+      id: 5,
+      name: "Series D",
+      requiredIntelligence: 900, // Intelligence threshold for Series D
+      funding: 1000000, // $1,000,000 funding for expensive late-game
+      unlocked: false,
+      era: Era.GNT6,
+      description:
+        "Unprecedented investment as your AI approaches AGI-level capabilities.",
+      realWorldParallel:
+        "Only the most advanced AI companies reach Series D funding, with valuations exceeding $10 billion as they approach transformative AGI capabilities.",
+    },
+  ],
+  nextMilestoneId: 2, // Next milestone to reach is Series A (id: 2)
+
+  // Cross-resource bonus multipliers (all start at 1.0 = no effect)
+  bonuses: {
+    computeToData: 1.0,
+    computeToAlgorithm: 1.0,
+    computeToIntelligence: 1.0,
+
+    dataToCompute: 1.0,
+    dataToAlgorithm: 1.0,
+    dataToIntelligence: 1.0,
+
+    algorithmToCompute: 1.0,
+    algorithmToData: 1.0,
+    algorithmToIntelligence: 1.0,
+  },
+
+  // Upgrade costs for primary resources
+  upgradeCosts: {
+    compute: 50,
+    data: 40,
+    algorithm: 60,
+  },
+
+  // Narrative warning flags to prevent message spam
+  narrativeFlags: {
+    hasSeenComputeWarning: false,
+    hasSeenLowFundsWarning: false,
+    hasSeenFirstTraining: false,
+    hasSeenFirstRevenue: false,
+    hasSeenBalanceAdvice: false,
+    hasSeenInvestmentMilestone1M: false,
+    hasSeenInvestmentMilestone10M: false,
+    totalInvestmentAmount: 0,
+    // Fail-safe funding flags (one-time only)
+    hasGrantedEarlyGrant: false,
+    hasGranted20MinBoost: false,
+    hasGrantedLateStageFunding: false,
+    // Track funding rounds to prevent duplicates
+    lastSeedFundingTime: -1,
+    lastInvestorFundingTime: -1,
+    // Stuck detection flags for guidance
+    hasSeenStuckNoMoney: false,
+    hasSeenStuckNoRevenue: false,
+    hasSeenStuckTrainingBlocked: false,
+    hasSeenStuckNoBreakthroughs: false,
+    // Stuck detection cooldown system
+    lastStuckHintAt: 0,
+    lastStuckHintId: "",
+
+    // Service unlock guidance flags
+    shownApiServiceAvailable: false,
+    shownChatbotServiceAvailable: false,
+    shownApiOptimizationAdvice: false,
+    shownChatbotOptimizationAdvice: false,
+
+    // Auto-enabling guidance flags
+    apiServiceUnlockedTime: null, // Timestamp when API service was unlocked
+    hasOfferedApiAutoEnable: false, // Whether we've offered to auto-enable API service
+
+    // Platform unlock visual highlights
+    highlightApiPlatform: false, // Whether to show pulsing highlight on API platform button
+    highlightChatbotPlatform: false, // Whether to show pulsing highlight on Chatbot platform button
+
+    // Breakthrough effect flags (prevent duplicate applications)
+    fewShotTrainingBonus: false, // Whether few-shot learning training cost reduction has been applied
+    selfImprovementTrainingBonus: false, // Whether self-improvement training cost reduction has been applied
+    verifiedSelfImprovementBonus: false, // Whether verified self-improvement training cost reduction has been applied
+    unsupervisedPretrainingBonus: false, // Whether unsupervised pretraining bonus has been applied
+    pocketAiConstraints: false, // Whether pocket AI constraints have been applied
+  },
+
+  // Breakthroughs - Organized by AI eras
+  breakthroughs: [
+    // GNT-2 Era Breakthroughs (Early Phase)
+    {
+      id: 1,
+      name: "Transformer Architecture",
+      description:
+        "Your AI now uses attention mechanisms to process sequences more effectively!",
+      unlocked: false,
+      requiredLevels: { algorithm: 2 },
+      type: "algorithm",
+      era: Era.GNT2,
+      realWorldParallel:
+        "The 2017 'Attention Is All You Need' paper introduced transformers, revolutionizing how models handle sequential data like text.",
+      gameEffect:
+        "Improves algorithm efficiency by 15% and enables better sequence processing capabilities",
+      contributingFactors:
+        "Advanced algorithm research (Level 2) unlocks attention mechanisms and transformer architecture",
+    },
+    {
+      id: 2,
+      name: "Unsupervised Pre-training",
+      description:
+        "Your AI can now learn language patterns without explicit supervision!",
+      unlocked: false,
+      requiredLevels: { data: 2 },
+      type: "data",
+      era: Era.GNT2,
+      realWorldParallel:
+        "Early generative models were built on unsupervised pre-training on diverse internet text, allowing them to learn language patterns without labeled examples.",
+      gameEffect:
+        "Increases data quality efficiency by 10% and enables self-supervised learning techniques",
+      contributingFactors:
+        "High-quality data collection (Level 2) enables unsupervised learning from diverse text sources",
+    },
+
+    // GNT-3 Era Breakthroughs (Mid Phase I)
+    {
+      id: 3,
+      name: "Massive Parameter Scaling",
+      description:
+        "Your AI can now scale to billions of parameters, dramatically increasing capabilities!",
+      unlocked: false,
+      requiredLevels: { compute: 3 },
+      type: "compute",
+      era: Era.GNT3,
+      realWorldParallel:
+        "The leap to 175 billion parameters in large language models demonstrated how scale could dramatically improve capabilities.",
+      gameEffect:
+        "Unlocks API services and increases compute-to-intelligence conversion by 15%",
+      contributingFactors:
+        "Massive compute infrastructure (Level 3) enables training of billion-parameter models",
+    },
+    {
+      id: 4,
+      name: "Few-Shot Learning",
+      description:
+        "Your AI can now learn new tasks from just a few examples in its prompt!",
+      unlocked: false,
+      requiredLevels: { algorithm: 3, data: 3 },
+      type: "combined",
+      era: Era.GNT3,
+      realWorldParallel:
+        "Advanced language models demonstrated 'few-shot learning' where the model could perform new tasks given just a few examples in its prompt.",
+      gameEffect:
+        "Improves API efficiency and reduces future training costs by 10%",
+      contributingFactors:
+        "Combination of advanced algorithms (Level 3) and high-quality data (Level 3) enables few-shot learning capabilities",
+    },
+
+    // GNT-4 Era Breakthroughs (Mid Phase II)
+    {
+      id: 5,
+      name: "Instruction Tuning",
+      description:
+        "Your AI can now reliably follow human instructions and better align with user intentions!",
+      unlocked: false,
+      requiredLevels: { algorithm: 4 },
+      type: "algorithm",
+      era: Era.GNT4,
+      realWorldParallel:
+        "Instruction tuning demonstrated how fine-tuning on human instructions dramatically improves model usefulness and safety.",
+      gameEffect:
+        "Unlocks consumer chatbot services and increases subscriber growth rate by 30%",
+      contributingFactors:
+        "Advanced algorithm optimization (Level 4) enables reliable instruction following and human alignment",
+    },
+    {
+      id: 6,
+      name: "Multimodal Integration",
+      description:
+        "Your AI can now process and understand both images and text together!",
+      unlocked: false,
+      requiredLevels: { compute: 4, data: 4 },
+      type: "combined",
+      era: Era.GNT4,
+      realWorldParallel:
+        "Multimodal AI systems can process both text and images simultaneously, opening up new applications and capabilities.",
+      gameEffect:
+        "Unlocks multimodal API capabilities and increases API rate by $300",
+      contributingFactors:
+        "Combination of compute infrastructure (Level 4) and diverse data formats (Level 4) enables multimodal processing",
+    },
+
+    // GNT-5 Era Breakthroughs (Late Phase I - Near Future)
+    {
+      id: 7,
+      name: "Advanced Reasoning",
+      description:
+        "Your AI can now break down complex problems into logical steps for better solutions!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 5 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Future AI systems are expected to have dramatically improved reasoning abilities, approaching human-like problem-solving.",
+      gameEffect:
+        "Unlocks premium enterprise reasoning services and increases API rate by $500",
+      contributingFactors:
+        "Advanced algorithms (Level 5) combined with high-quality data (Level 5) enables sophisticated reasoning capabilities",
+    },
+    {
+      id: 8,
+      name: "Self-Improvement Capabilities",
+      description: "Your AI can now improve its own code and architecture!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6 },
+      type: "algorithm",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Advanced AI systems may eventually help optimize their own code, create more efficient algorithms, and improve their architecture.",
+      gameEffect:
+        "Enables self-improvement bonuses and reduces future training costs by additional 10%",
+      contributingFactors:
+        "Highly advanced algorithm research (Level 6) unlocks recursive self-improvement capabilities",
+    },
+    {
+      id: 11,
+      name: "Continuous Learning & Live Personalization",
+      description:
+        "Your AI can now learn and adapt from every interaction while protecting user privacy!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 5 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Future AI systems will continuously learn from user interactions using federated learning and adapter modules, personalizing without compromising privacy.",
+      gameEffect:
+        "Improves customer retention by 15% and enables adaptive pricing based on usage patterns",
+      contributingFactors:
+        "Combination of advanced algorithms (Level 5) and high-quality data systems (Level 5) enables privacy-preserving continuous learning",
+    },
+
+    // GNT-6 Era Breakthroughs (Late Phase II - Future)
+    {
+      id: 9,
+      name: "Advanced Tool Use",
+      description:
+        "Your AI can effectively use multiple external tools and APIs to solve problems!",
+      unlocked: false,
+      requiredLevels: { algorithm: 7, compute: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel:
+        "Future AI systems will likely have sophisticated abilities to use external tools, APIs, and services to extend their capabilities.",
+      gameEffect:
+        "Unlocks advanced tool-using API capabilities and increases API rate by $800",
+      contributingFactors:
+        "Combination of advanced algorithms (Level 7) and massive compute power (Level 6) enables sophisticated tool usage",
+    },
+    {
+      id: 12,
+      name: "Neuro-Symbolic Reasoning",
+      description:
+        "Your AI can now combine intuitive understanding with formal logic and mathematical proofs!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6, data: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel:
+        "Hybrid AI systems that combine neural networks with symbolic reasoning can provide verified, provable results for critical applications.",
+      gameEffect:
+        "Reduces service defect rates by 60% and unlocks premium verified reasoning services",
+      contributingFactors:
+        "Advanced algorithms (Level 6) combined with structured data systems (Level 6) enables formal verification capabilities",
+    },
+    {
+      id: 13,
+      name: "World Models for Planning",
+      description:
+        "Your AI can now simulate reality to test ideas before taking action in the real world!",
+      unlocked: false,
+      requiredLevels: { compute: 6, data: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel:
+        "AI systems that learn world models can plan and test strategies in simulation before acting, opening applications in robotics and autonomous systems.",
+      gameEffect:
+        "Reduces research experiment time by 40% and unlocks robotics market opportunities",
+      contributingFactors:
+        "Massive compute infrastructure (Level 6) and diverse data sources (Level 6) enable complex world simulation",
+    },
+    {
+      id: 14,
+      name: "Verified Self-Improvement",
+      description:
+        "Your AI can now safely improve itself with mathematical guarantees that changes are beneficial!",
+      unlocked: false,
+      requiredLevels: { algorithm: 7, compute: 6 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel:
+        "Self-improving AI systems with formal verification ensure that each upgrade is provably better, preventing AI systems from degrading themselves.",
+      gameEffect:
+        "Enables compounding 5% efficiency improvements and additional 15% training cost reduction",
+      contributingFactors:
+        "Cutting-edge algorithms (Level 7) and massive compute (Level 6) enable verified recursive self-improvement",
+    },
+
+    // GNT-7 Era Breakthroughs (Final Phase - AGI Threshold)
+    {
+      id: 10,
+      name: "General Problem Solving",
+      description:
+        "Your AI can now solve novel problems across domains without specific training!",
+      unlocked: false,
+      requiredLevels: { algorithm: 8, data: 7, compute: 7 },
+      type: "combined",
+      era: Era.GNT7,
+      realWorldParallel:
+        "True AGI would be capable of solving novel problems across domains without domain-specific training - a key threshold for artificial general intelligence.",
+      gameEffect:
+        "Achieves true AGI capabilities with massive revenue potential and premium AGI API services",
+      contributingFactors:
+        "Perfect combination of cutting-edge algorithms (Level 8), high-quality data (Level 7), and massive compute infrastructure (Level 7) enables general problem solving",
+    },
+    {
+      id: 15,
+      name: "Agentic Autonomy & Orchestration",
+      description:
+        "Your AI can now coordinate teams of specialized AI agents to tackle complex multi-step challenges!",
+      unlocked: false,
+      requiredLevels: { algorithm: 8, compute: 7, data: 7 },
+      type: "combined",
+      era: Era.GNT7,
+      realWorldParallel:
+        "Advanced AI orchestration systems can manage teams of specialized AI agents, each with different capabilities, working together on complex real-world problems.",
+      gameEffect:
+        "Unlocks autonomous workflow systems and premium enterprise orchestration services",
+      contributingFactors:
+        "Perfect integration of advanced algorithms (Level 8), massive compute (Level 7), and comprehensive data (Level 7) enables multi-agent coordination",
+    },
+
+    // Additional Advanced Breakthroughs
+    {
+      id: 16,
+      name: "Chain-of-Thought Reasoning",
+      description:
+        "Your AI now pauses to think step-by-step before answering, dramatically improving accuracy on complex problems!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, compute: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Models like OpenAI's o1 use deliberate reasoning processes, taking time to think through problems step-by-step before providing answers, similar to how humans approach complex math or logic problems.",
+      gameEffect:
+        "Improves API success rate by 12% and reduces error rates by 30%, but increases inference costs by 40%",
+      contributingFactors:
+        "Advanced algorithms (Level 5) combined with sufficient compute power (Level 4) enables deliberate step-by-step reasoning processes",
+    },
+    {
+      id: 17,
+      name: "Reinforcement Learning Training",
+      description:
+        "Your AI can now learn from trial and error, getting better at tasks through practice and feedback!",
+      unlocked: false,
+      requiredLevels: { algorithm: 4, data: 4 },
+      type: "combined",
+      era: Era.GNT4,
+      realWorldParallel:
+        "Modern AI systems use reinforcement learning to improve reasoning abilities through practice, similar to how humans get better at skills through repetition and feedback.",
+      gameEffect:
+        "Improves training success rate by 15% and enables adaptive learning, but increases training time by 25%",
+      contributingFactors:
+        "Advanced algorithms (Level 4) combined with quality feedback data (Level 4) enables trial-and-error learning processes",
+    },
+    {
+      id: 18,
+      name: "Next-Generation Computing Hardware",
+      description:
+        "Your servers now use cutting-edge chips that process AI calculations much faster and more efficiently!",
+      unlocked: false,
+      requiredLevels: { compute: 5 },
+      type: "compute",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Advanced GPU architectures like NVIDIA's Blackwell series provide massive speedups for AI training and inference, making AI development faster and more cost-effective.",
+      gameEffect:
+        "Reduces training costs by 35%, inference costs by 30%, and increases compute capacity by 50%",
+      contributingFactors:
+        "Massive compute infrastructure investment (Level 5) unlocks access to state-of-the-art hardware accelerators",
+    },
+    {
+      id: 19,
+      name: "AI-Generated Training Data",
+      description:
+        "Your AI can now create its own high-quality training examples, extending beyond what's available on the internet!",
+      unlocked: false,
+      requiredLevels: { data: 5, algorithm: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel:
+        "As the internet's text becomes limited, AI systems can generate synthetic training data that's carefully filtered and verified, extending the available knowledge for training.",
+      gameEffect:
+        "Increases data production rate by 60% and improves data quality by 25%, enabling training on specialized domains",
+      contributingFactors:
+        "High-quality data systems (Level 5) combined with advanced algorithms (Level 4) enables controlled synthetic data generation",
+    },
+    {
+      id: 20,
+      name: "AI Team Coordination",
+      description:
+        "Multiple AI assistants can now work together, checking each other's work and solving problems as a team!",
+      unlocked: false,
+      requiredLevels: { algorithm: 6, compute: 5 },
+      type: "combined",
+      era: Era.GNT6,
+      realWorldParallel:
+        "Multi-agent AI systems where different AIs specialize in planning, execution, and verification can achieve much higher success rates on complex tasks through collaboration.",
+      gameEffect:
+        "Improves enterprise task success rate by 20% and reduces service errors by 50%, but increases compute usage by 30%",
+      contributingFactors:
+        "Advanced algorithms (Level 6) and substantial compute resources (Level 5) enable coordination between multiple AI systems",
+    },
+    {
+      id: 21,
+      name: "Pocket-Sized AI",
+      description:
+        "Powerful AI assistants now run directly on phones and laptops, providing instant responses while keeping data private!",
+      unlocked: false,
+      requiredLevels: { algorithm: 5, data: 4 },
+      type: "combined",
+      era: Era.GNT5,
+      realWorldParallel:
+        "Small, efficient AI models can run on consumer devices like smartphones and laptops, providing fast, private AI assistance without sending data to the cloud.",
+      gameEffect:
+        "Reduces cloud costs by 20%, improves response speed by 40%, and increases privacy-focused customer adoption by 25%",
+      contributingFactors:
+        "Efficient algorithms (Level 5) combined with optimized data processing (Level 4) enables powerful AI to run on consumer devices",
+    },
+  ],
+
+  // Game Events
+  events: [
+    {
+      id: 1,
+      title: "Transformer Architecture Breakthrough",
+      description:
+        "Researchers have developed a new architecture called 'transformers' that revolutionizes how AI processes sequences of data!",
+      triggered: false,
+      era: Era.GNT2,
+      effect: {
+        type: "algorithm",
+        impact: "positive",
+        magnitude: 15, // 15% boost to algorithm production
+      },
+      realWorldContext:
+        "In 2017, the paper 'Attention Is All You Need' introduced transformers, which became the foundation for all modern language models.",
+    },
+    {
+      id: 2,
+      title: "Large-Scale Web Scraping Initiative",
+      description:
+        "Your team has developed tools to rapidly collect training data from the web.",
+      triggered: false,
+      era: Era.GNT2,
+      effect: {
+        type: "data",
+        impact: "positive",
+        magnitude: 20, // 20% boost to data production
+      },
+      realWorldContext:
+        "Early generative models were trained on vast amounts of web text, including data from Reddit, Wikipedia, and millions of websites.",
+    },
+    {
+      id: 3,
+      title: "Scaling Laws Discovered",
+      description:
+        "Researchers have discovered mathematical relationships between model size, compute, and performance!",
+      triggered: false,
+      era: Era.GNT3,
+      effect: {
+        type: "multiple",
+        impact: "positive",
+        magnitude: 10, // 10% boost to compute and algorithm production
+      },
+      realWorldContext:
+        "In 2020, researchers published scaling laws showing how AI performance improves predictably with scale.",
+    },
+    {
+      id: 4,
+      title: "GPU Shortage Crisis",
+      description:
+        "A global chip shortage has made high-end GPUs scarce and expensive.",
+      triggered: false,
+      era: Era.GNT3,
+      effect: {
+        type: "compute",
+        impact: "negative",
+        magnitude: 15, // 15% reduction in compute production (reduced from 25% for better balance)
+      },
+      realWorldContext:
+        "From 2020-2022, global chip shortages severely constrained GPU availability for AI research, significantly increasing costs and slowing progress.",
+    },
+    {
+      id: 5,
+      title: "Instruction Tuning Breakthrough",
+      description:
+        "Your team has discovered techniques to make models follow instructions more reliably!",
+      triggered: false,
+      era: Era.GNT4,
+      effect: {
+        type: "algorithm",
+        impact: "positive",
+        magnitude: 30, // 30% boost to algorithm efficiency
+      },
+      realWorldContext:
+        "Instruction tuning allowed AI models to follow human instructions more reliably, greatly improving their usefulness and safety.",
+    },
+    {
+      id: 6,
+      title: "AI Regulation Bill Passes",
+      description:
+        "Government has implemented new regulations affecting AI development and deployment.",
+      triggered: false,
+      era: Era.GNT4,
+      effect: {
+        type: "regulation",
+        impact: "mixed",
+        magnitude: 15, // Initially negative, but can be mitigated with investment
+      },
+      realWorldContext:
+        "Around 2022-2023, many countries began developing AI regulations to manage risks while fostering innovation.",
+    },
+    {
+      id: 7,
+      title: "Multimodal Data Integration",
+      description:
+        "Your team can now process and align multiple types of data: text, images, audio!",
+      triggered: false,
+      era: Era.GNT5,
+      effect: {
+        type: "data",
+        impact: "positive",
+        magnitude: 40, // 40% boost to data effectiveness
+      },
+      realWorldContext:
+        "Multimodal AI models combine different types of data, greatly expanding their capabilities beyond just text.",
+    },
+    {
+      id: 8,
+      title: "Quantum Computing Milestone",
+      description:
+        "Access to early quantum computing resources enables unprecedented parallelization.",
+      triggered: false,
+      era: Era.GNT6,
+      effect: {
+        type: "hardware",
+        impact: "positive",
+        magnitude: 50, // 50% boost to hardware effectiveness
+      },
+      realWorldContext:
+        "While still speculative, quantum computing may eventually provide massive speedups for certain AI workloads.",
+    },
+    {
+      id: 9,
+      title: "Open Source AI Movement",
+      description:
+        "The community has released powerful open-source models, accelerating research and reducing costs!",
+      triggered: false,
+      era: Era.GNT3,
+      effect: {
+        type: "algorithm",
+        impact: "positive",
+        magnitude: 25, // 25% boost to algorithm research
+      },
+      realWorldContext:
+        "Open source models like BERT, T5, and others democratized AI research and enabled rapid innovation.",
+    },
+    {
+      id: 10,
+      title: "Cloud Computing Expansion",
+      description:
+        "Major cloud providers have expanded their AI infrastructure, making compute more accessible!",
+      triggered: false,
+      era: Era.GNT4,
+      effect: {
+        type: "compute",
+        impact: "positive",
+        magnitude: 20, // 20% boost to compute efficiency
+      },
+      realWorldContext:
+        "The expansion of cloud AI services by providers like AWS, Google Cloud, and Azure made powerful compute resources more accessible.",
+    },
+  ],
+
+  // Current goal
+  currentGoal: {
+    id: 1,
+    progress: 0,
+  },
+
+  // Interactive Tutorial System
+  tutorial: {
+    isActive: true, // Start with tutorial active for new players
+    phase: 1, // Start with first phase
+    step: 1, // Start with first step
+    isCompleted: false, // Tutorial not completed yet
+    hasShownWelcome: false, // Welcome modal not shown yet
+    completedActions: [], // Track completed tutorial actions
+    currentTarget: null, // Current highlighted element
+  },
+
+  // AGI victory threshold
+  agiThreshold: 1000, // Intelligence needed to achieve AGI
+
+  // Victory Statistics for Leaderboard and Summary
+  victoryStats: {
+    gameStartTime: 0, // Timestamp when game started
+    totalTimeElapsed: 0, // Total time in seconds
+    peakMoney: 0, // Highest money amount achieved
+    totalMoneyEarned: 0, // Total money earned throughout game (all inflows)
+    peakB2BSubscribers: 0, // Highest B2B subscriber count
+    peakB2CSubscribers: 0, // Highest B2C subscriber count
+    breakthroughsUnlocked: 0, // Total breakthroughs achieved
+    erasReached: 1, // Highest era reached (starts at GNT-2 = 1)
+    finalIntelligence: 0, // Intelligence at victory
+    strategiesUsed: [], // Key strategies player used
+    hasAchievedAGI: false, // Whether player reached AGI
+  },
+};
+
+export function createInitialGameState(): GameStateType {
+  return structuredClone(baseInitialGameState);
+}
+
+export const initialGameState: GameStateType = createInitialGameState();

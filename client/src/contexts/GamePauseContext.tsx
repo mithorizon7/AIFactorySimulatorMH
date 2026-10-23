@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 
 type GamePauseContextType = {
   isPausedForLearning: boolean;
@@ -8,36 +14,56 @@ type GamePauseContextType = {
   resumeGameEngine: () => void;
 };
 
-const GamePauseContext = createContext<GamePauseContextType | undefined>(undefined);
+const GamePauseContext = createContext<GamePauseContextType | undefined>(
+  undefined,
+);
 
-export function GamePauseProvider({ 
-  children, 
-  pauseGame, 
+const optionalGamePauseFallback: GamePauseContextType = {
+  isPausedForLearning: false,
+  pauseForLearning: () => {},
+  resumeFromLearning: () => {},
+  pauseGameEngine: () => {},
+  resumeGameEngine: () => {},
+};
+
+export function GamePauseProvider({
+  children,
+  pauseGame,
   startGame,
-  isRunning
-}: { 
+  isRunning,
+}: {
   children: React.ReactNode;
   pauseGame: () => void;
   startGame: () => void;
   isRunning: boolean;
 }) {
   const [isPausedForLearning, setIsPausedForLearning] = useState(false);
-  
+  const learningPauseRef = useRef(false);
+  const runningRef = useRef(isRunning);
+  const pauseActionRef = useRef(pauseGame);
+  const resumeActionRef = useRef(startGame);
+  runningRef.current = isRunning;
+  pauseActionRef.current = pauseGame;
+  resumeActionRef.current = startGame;
+
   // This will pause the game and track that it was paused for learning
   const pauseForLearning = useCallback(() => {
-    if (isRunning) {
+    if (runningRef.current) {
+      runningRef.current = false;
+      learningPauseRef.current = true;
       setIsPausedForLearning(true);
-      pauseGame();
+      pauseActionRef.current();
     }
-  }, [isRunning, pauseGame]);
-  
+  }, []);
+
   // This will resume the game if it was paused for learning
   const resumeFromLearning = useCallback(() => {
-    if (isPausedForLearning) {
+    if (learningPauseRef.current) {
+      learningPauseRef.current = false;
       setIsPausedForLearning(false);
-      startGame();
+      resumeActionRef.current();
     }
-  }, [isPausedForLearning, startGame]);
+  }, []);
 
   // These methods are for direct control, without tracking learning state
   const pauseGameEngine = useCallback(() => {
@@ -47,15 +73,15 @@ export function GamePauseProvider({
   const resumeGameEngine = useCallback(() => {
     startGame();
   }, [startGame]);
-  
+
   return (
-    <GamePauseContext.Provider 
-      value={{ 
-        isPausedForLearning, 
-        pauseForLearning, 
+    <GamePauseContext.Provider
+      value={{
+        isPausedForLearning,
+        pauseForLearning,
         resumeFromLearning,
         pauseGameEngine,
-        resumeGameEngine
+        resumeGameEngine,
       }}
     >
       {children}
@@ -66,7 +92,11 @@ export function GamePauseProvider({
 export function useGamePause() {
   const context = useContext(GamePauseContext);
   if (context === undefined) {
-    throw new Error('useGamePause must be used within a GamePauseProvider');
+    throw new Error("useGamePause must be used within a GamePauseProvider");
   }
   return context;
+}
+
+export function useOptionalGamePause(): GamePauseContextType {
+  return useContext(GamePauseContext) ?? optionalGamePauseFallback;
 }

@@ -423,10 +423,10 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             
             {/* Era Labels */}
             <div className="absolute flex justify-between w-full">
-              <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-xs">
+              <div className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm">
                 {gameState.currentEra}
               </div>
-              <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-xs border border-gray-700">
+              <div className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-full flex items-center font-medium -translate-y-3 shadow-sm border border-gray-700">
                 <ChevronRightIcon className="h-3 w-3 mr-1" />
                 {nextEra}
               </div>
@@ -435,7 +435,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
             {/* Progress Indicator (only shows if in progress) */}
             {overallCompletionPercent > 0 && overallCompletionPercent < 100 && (
               <div 
-                className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-xs font-medium shadow-xs z-10"
+                className="absolute bg-amber-500 text-black text-xs px-1.5 rounded-sm font-medium shadow-sm z-10"
                 style={{ 
                   left: `${overallCompletionPercent}%`, 
                   top: '0',
@@ -465,14 +465,14 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
               </p>
               <div className="bg-purple-900/30 border border-purple-700/30 rounded-lg p-3 mt-3">
                 <p className="text-xs text-purple-100 mb-2">
-                  <strong>Focus on AGI:</strong> Continue improving your intelligence score to reach the AGI threshold of {gameState.agiThreshold.toLocaleString()} points.
+                  <strong>Finish the scenario:</strong> Continue improving Model Capability to reach the scenario threshold of {gameState.agiThreshold.toLocaleString()} points after GNT-7 training.
                 </p>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-purple-300">Current Intelligence:</span>
+                  <span className="text-purple-300">Current Model Capability:</span>
                   <span className="text-purple-200 font-bold">{Math.floor(gameState.intelligence).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs mt-1">
-                  <span className="text-purple-300">Progress to AGI:</span>
+                  <span className="text-purple-300">Scenario Progress:</span>
                   <span className="text-purple-200 font-bold">
                     {Math.min(100, Math.round((gameState.intelligence / gameState.agiThreshold) * 100))}%
                   </span>
@@ -533,7 +533,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                   </div>
                   <div className="flex items-center text-amber-300">
                     <BrainIcon className="h-4 w-4 mr-1" />
-                    <span>+{targetTrainingRun?.intelligenceGain.toLocaleString()} Intelligence</span>
+                    <span>+{targetTrainingRun?.intelligenceGain.toLocaleString()} Model Capability</span>
                   </div>
                 </div>
               </div>
@@ -541,7 +541,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
               {/* Training Education Panel */}
               <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <div className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0">📚</div>
+                  <div className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0">📚</div>
                   <div>
                     <h5 className="text-xs font-medium text-yellow-300 mb-2">What's Happening During Training</h5>
                     <div className="text-xs text-gray-300 space-y-2">
@@ -932,7 +932,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                           </div>
                           <div className="text-right">
                             <div className="text-xs text-green-300 font-medium">Next Era: {nextEra}</div>
-                            <div className="text-[10px] text-green-400">+{targetTrainingRun?.intelligenceGain} Intelligence</div>
+                            <div className="text-[10px] text-green-400">+{targetTrainingRun?.intelligenceGain} Model Capability</div>
                           </div>
                         </div>
                       </div>
@@ -986,13 +986,13 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                       </div>
                     </div>
                     <div className="bg-gray-800 p-3 rounded border border-gray-700">
-                      <span className="text-xs font-medium text-gray-300">Intelligence Gain</span>
+                      <span className="text-xs font-medium text-gray-300">Model Capability Gain</span>
                       <div className="mt-1 text-lg font-bold text-amber-400 flex items-center">
                         <BrainIcon className="h-4 w-4 mr-1" />
                         +{targetTrainingRun?.intelligenceGain.toLocaleString()}
                       </div>
                       <div className="mt-1 text-xs text-gray-500">
-                        {Math.round((targetTrainingRun?.intelligenceGain || 0) / gameState.agiThreshold * 100)}% toward AGI threshold
+                        {Math.round((targetTrainingRun?.intelligenceGain || 0) / gameState.agiThreshold * 100)}% toward scenario threshold
                       </div>
                     </div>
                   </div>
@@ -1001,7 +1001,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
                   {canStartTraining && (
                     <div className="mt-3 bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
                       <div className="flex items-start gap-2">
-                        <div className="w-4 h-4 text-blue-400 mt-0.5 shrink-0">💡</div>
+                        <div className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0">💡</div>
                         <div>
                           <h5 className="text-xs font-medium text-blue-300 mb-1">Optimal Timing Advice</h5>
                           <div className="text-xs text-blue-200 space-y-1">
@@ -1070,7 +1070,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
               </div>
               <div className="flex justify-center mt-3">
                 <div className="bg-purple-900/40 rounded-lg px-3 py-2 text-center">
-                  <div className="text-xs text-gray-400">Intelligence Gained</div>
+                  <div className="text-xs text-gray-400">Model Capability Gained</div>
                   <div className="text-lg font-bold text-purple-300">+{targetTrainingRun?.intelligenceGain.toLocaleString()}</div>
                 </div>
               </div>
@@ -1082,7 +1082,7 @@ export default function ComputePanel({ gameState, trainModel, onNavigateToResour
         {/* Educational Content */}
         <div className="text-xs text-gray-400 p-3 rounded-lg bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700">
           <p className="mb-2">
-            Training runs are the key mechanism for advancing your AI to new eras. Each successful training unlocks new capabilities, higher revenue potential, and brings you closer to AGI.
+            Training runs advance your model to new eras within this simulation. Each successful training unlocks new capabilities and higher revenue potential. GNT-5 through GNT-7 explore speculative scenarios.
           </p>
           <p>
             The scale of training grows exponentially: each era's training run requires 10× more compute and more advanced infrastructure across all resources.

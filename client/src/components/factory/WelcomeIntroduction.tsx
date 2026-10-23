@@ -11,7 +11,7 @@ interface WelcomeIntroductionProps {
 
 export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntroductionProps) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl bg-gray-900 border-gray-800 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-t-lg">
           <CardTitle className="text-3xl flex items-center gap-2">
@@ -19,7 +19,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
             Welcome to AI Factory
           </CardTitle>
           <CardDescription className="text-gray-200 text-lg">
-            Your journey to build Artificial General Intelligence
+            Explore the tradeoffs of AI development
           </CardDescription>
         </CardHeader>
         
@@ -49,7 +49,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
                     <li>Allocate money strategically to grow your AI capabilities</li>
                     <li>Unlock breakthroughs that mirror real-world AI advancements</li>
                     <li>Progress through historical AI eras from GNT-2 through GNT-7</li>
-                    <li>Complete the game by finishing the final training ladder and then crossing the intelligence threshold</li>
+                    <li>Complete the scenario by finishing the final training ladder and then crossing the model capability threshold</li>
                   </ul>
                 </div>
               </div>
@@ -137,17 +137,17 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
               <div className="space-y-3">
                 <h3 className="text-xl font-semibold text-amber-400">Your Mission</h3>
                 <p className="text-gray-300">
-                  Your goal is to develop Artificial General Intelligence (AGI) - AI capable of 
-                  understanding, learning, and applying knowledge across a wide range of tasks 
-                  at a human level or beyond.
+                  Your goal is to complete a learning scenario about AI development by balancing
+                  compute, data, algorithms, and operating costs. Model Capability is a simulation
+                  measure, not a real-world intelligence benchmark. GNT-5 through GNT-7 are speculative scenarios.
                 </p>
                 
                 <div className="bg-gradient-to-r from-amber-950 to-amber-900 p-4 rounded-lg border border-amber-700">
                   <h4 className="font-medium text-amber-300 mb-2">Primary Objective:</h4>
                   <p className="text-gray-200">
                     Complete <span className="font-bold text-amber-300">GNT-7 training</span> and then reach the
-                    <span className="font-bold text-amber-300"> 1000 intelligence threshold</span> as quickly as possible
-                    by strategically managing your resources and making wise investments. Your time will be ranked on the leaderboard!
+                    <span className="font-bold text-amber-300"> 1000 model capability threshold</span>
+                    by strategically managing your resources and making wise investments. Your completed runs stay private on this device.
                   </p>
                 </div>
                 

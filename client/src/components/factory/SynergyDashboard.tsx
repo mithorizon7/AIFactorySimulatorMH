@@ -76,7 +76,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <BrainCircuitIcon className="h-5 w-5 mr-2 text-amber-400" />
-            <span className="text-sm font-medium">AGI Readiness</span>
+            <span className="text-sm font-medium">Scenario Progress</span>
           </div>
           <span className="text-sm font-medium text-amber-400">
             {agiAchieved ? "Complete" : `${intelligenceProgress}% threshold`}
@@ -85,8 +85,8 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         <Progress value={intelligenceProgress} className="h-2 [&>div]:bg-amber-400" />
         <p className="mt-2 text-xs text-gray-400">
           {finalTrainingComplete
-            ? `Final GNT-7 training complete. Reach ${agiThreshold.toLocaleString()} intelligence to finish the run.`
-            : "AGI also requires completing the final GNT-7 training run."}
+            ? `Final GNT-7 training complete. Reach ${agiThreshold.toLocaleString()} model capability to finish the scenario.`
+            : "Scenario completion also requires the final GNT-7 training run."}
         </p>
         
         {/* Revenue Streams */}
@@ -113,7 +113,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             value="intelligence" 
             className="data-[state=active]:bg-amber-600 text-xs"
           >
-            Intelligence
+            Model Capability
           </TabsTrigger>
           <TabsTrigger 
             value="compute" 
@@ -138,9 +138,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         {/* Intelligence Tab */}
         <TabsContent value="intelligence" className="space-y-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-amber-400">Intelligence Growth</h3>
+            <h3 className="text-lg font-medium mb-3 text-amber-400">Model Capability Growth</h3>
             <p className="text-sm text-gray-300 mb-4">
-              See how each resource contributes to AGI development.
+              See how each resource contributes to simulated Model Capability.
             </p>
             
             {/* Compute to Intelligence */}
@@ -470,10 +470,10 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
           </h3>
         </div>
         <p className="text-xs text-gray-300">
-          {activeTab === "intelligence" && "Balanced investment across all three resources accelerates AGI development. Focus on areas with highest bonuses for optimal progress."}
+          {activeTab === "intelligence" && "Balanced investment across all three resources increases Model Capability in this simulation. Compare bonuses when choosing your next investment."}
           {activeTab === "compute" && "Compute investment affects your ability to process more data and run larger algorithm experiments. Hardware quality has the strongest effect on computation."}
           {activeTab === "data" && "Quality data drives both model performance and algorithmic discovery. Multimodal data formats unlock new AI capabilities and bonuses."}
-          {activeTab === "algorithm" && "Algorithmic breakthroughs optimize both compute usage and data utilization. Advanced architectures like transformers dramatically improve intelligence."}
+          {activeTab === "algorithm" && "Algorithmic breakthroughs change compute usage and data utilization. Architecture upgrades increase Model Capability within the simulation."}
         </p>
       </div>
     </div>

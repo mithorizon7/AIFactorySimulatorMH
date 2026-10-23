@@ -45,7 +45,7 @@ export default function InvestmentMilestones({ gameState }: InvestmentMilestones
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-lg font-medium">Investment Rounds</h3>
         <span className="text-sm text-gray-300">
-          Intelligence: <span className="text-amber-300 font-medium">{intelligence.toFixed(1)}</span>
+          Model Capability: <span className="text-amber-300 font-medium">{intelligence.toFixed(1)}</span>
         </span>
       </div>
       
@@ -76,7 +76,7 @@ export default function InvestmentMilestones({ gameState }: InvestmentMilestones
                   ${formatCurrency(nextMilestone.funding)}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">
-                  Unlocks at {nextMilestone.requiredIntelligence} intelligence
+                  Unlocks at {nextMilestone.requiredIntelligence} model capability
                 </div>
               </div>
             </div>

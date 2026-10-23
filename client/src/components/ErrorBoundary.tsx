@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { logger } from '@/lib/logger';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children?: ReactNode;
@@ -17,7 +17,7 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -27,15 +27,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log the error with context
-    const incidentId = logger.logComponentError('ErrorBoundary', error, {
-      componentStack: errorInfo.componentStack,
-      errorBoundary: this.constructor.name
+    const incidentId = logger.logComponentError("ErrorBoundary", error, {
+      errorBoundary: this.constructor.name,
     });
 
     this.setState({
       error,
       errorInfo,
-      incidentId
+      incidentId,
     });
 
     // Call the optional onError prop
@@ -49,11 +48,16 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleGoHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined, incidentId: undefined });
+    this.setState({
+      hasError: false,
+      error: undefined,
+      errorInfo: undefined,
+      incidentId: undefined,
+    });
   };
 
   public render() {
@@ -70,18 +74,21 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex justify-center mb-4">
               <AlertTriangle className="w-16 h-16 text-red-500" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-white mb-2">
               Oops! Something went wrong
             </h1>
-            
+
             <p className="text-gray-300 mb-6">
-              We encountered an unexpected error. Our team has been notified and is working to fix the issue.
+              We encountered an unexpected error. Try again, or reload the page
+              if the problem continues.
             </p>
 
             {this.state.incidentId && (
               <div className="bg-gray-700 rounded-lg p-3 mb-6">
-                <p className="text-sm text-gray-400 mb-1">Incident ID for support:</p>
+                <p className="text-sm text-gray-400 mb-1">
+                  Incident ID for support:
+                </p>
                 <code className="text-sm text-green-400 font-mono break-all">
                   {this.state.incidentId}
                 </code>
@@ -115,7 +122,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {/* Development mode: show error details */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mt-6 text-left">
                 <summary className="text-sm text-gray-400 cursor-pointer">
                   Technical Details (Development Only)
@@ -127,13 +134,17 @@ export class ErrorBoundary extends Component<Props, State> {
                   {this.state.error.stack && (
                     <div>
                       <strong>Stack:</strong>
-                      <pre className="mt-1 text-xs">{this.state.error.stack}</pre>
+                      <pre className="mt-1 text-xs">
+                        {this.state.error.stack}
+                      </pre>
                     </div>
                   )}
                   {this.state.errorInfo?.componentStack && (
                     <div className="mt-2">
                       <strong>Component Stack:</strong>
-                      <pre className="mt-1 text-xs">{this.state.errorInfo.componentStack}</pre>
+                      <pre className="mt-1 text-xs">
+                        {this.state.errorInfo.componentStack}
+                      </pre>
                     </div>
                   )}
                 </div>

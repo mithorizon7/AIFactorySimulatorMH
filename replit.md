@@ -1,51 +1,58 @@
-# replit.md
+# Replit and deployment notes
 
-## Overview
+This file describes the checked-in application source. It is not evidence of a
+currently running Replit deployment, its environment variables, database
+resources, or served revision.
 
-This project is an educational AI Factory Simulator built with React and Express.js. It aims to teach users about the factors influencing generative AI development through an interactive game. Players manage Compute, Data, and Algorithms to advance through AI eras (GNT-2 to GNT-7), complete training runs, and ultimately achieve artificial general intelligence. The game simulates the business vision and market potential of an AI company, providing insights into the economic realities and technical challenges of AI development.
+## Current application shape
 
-## User Preferences
+- **Client:** React and TypeScript, styled with Tailwind CSS and Radix
+  primitives.
+- **Simulation:** a deterministic, browser-hosted game engine for the GNT-2 to
+  GNT-7 learning scenario.
+- **Server:** a small Node/Express delivery layer for static assets,
+  `/api/healthz`, `/api/readyz`, and `/api/version`.
+- **Legacy API containment:** `/api/game-state`, `/api/leaderboard`, and
+  `/api/ranking/:intelligence` deliberately return JSON `410 Gone`. The client
+  no longer submits global saves or leaderboard claims.
+- **Identity and data:** the checked-in source has no account, session,
+  PostgreSQL, Drizzle, Neon, or server-side game-state implementation. The
+  client stores complete runs and experience state in IndexedDB, with checked
+  snapshots, recovery export, writer leases, and per-metric personal bests.
+  A browser that cannot save displays an actionable storage error; a competing
+  tab remains read-only until explicit takeover.
 
-Preferred communication style: Simple, everyday language.
+## Checked-in Replit configuration
 
-## System Architecture
+`.replit` requests `nodejs-22` and `web`, with one public mapping from local
+port 5000 to port 80. The application defaults to port 5000 and honors the
+platform-provided `PORT` value. The stale PostgreSQL module, JavaScript database
+integration, and unrelated historical port mappings were removed from source
+configuration during the October 22 security remediation.
 
-### UI/UX Decisions
-- **Frontend Framework**: React with TypeScript for a robust and type-safe user interface.
-- **Styling**: Tailwind CSS with a custom theme for a utility-first and consistent design.
-- **UI Components**: Radix UI for accessible, unstyled primitives, ensuring high customizability and accessibility standards.
-- **Animations and Character**: Integration of a Lottie-animated AI advisor character "Spark" for engaging guidance and notifications, enhancing user experience and educational value.
-- **Responsive Design**: Mobile-first approach with responsive grid layouts and always-visible labels for tab navigation, ensuring usability across various devices.
-- **Theming**: Purple gradient styling for the Training tab and yellow styling for the Leaderboard button to ensure key features stand out.
+Source configuration does not delete a provider resource. Before a provider
+owner removes any retained database/integration, they must determine whether it
+contains data that requires export, retention, or incident review.
 
-### Technical Implementations
-- **Game Engine**: A custom React hook (`useGameEngine.ts`) manages core game logic, including resource production, consumption, training runs, revenue generation, and research progression.
-- **Factory System**: Three core factory systems (Compute, Data, Algorithms) represent the pillars of AI advancement, allowing players to invest in and manage infrastructure.
-- **Training Run System**: Discrete events that advance AI eras, requiring specific thresholds of compute, data, and algorithms, with significant scaling requirements for compute between generations.
-- **Tutorial System**: A comprehensive, unified tutorial system combines modal explanations with interactive UI element spotlighting, guiding players through game mechanics and educational content.
-- **State Management**: React hooks are used for state management, with an emphasis on immutable patterns for reliable UI updates.
-- **Backend**: Node.js with Express.js provides a robust API layer.
-- **Database**: PostgreSQL with Drizzle ORM for type-safe data persistence, utilizing Neon Database for serverless deployment.
-- **Session Management**: PostgreSQL-based sessions with `connect-pg-simple` ensure secure user sessions.
+## Secure build and deployment requirements
 
-### Feature Specifications
-- **Cost Consistency**: All UI-displayed costs and messages are dynamically linked to backend logic, ensuring accuracy and preventing player confusion.
-- **Platform Unlocks**: Visual highlighting (pulsing rings, shadows, notification dots) for new platform features (API, Chatbot) to ensure discoverability.
-- **Leaderboard**: An always-accessible leaderboard with game pause functionality to motivate players and showcase achievements, including a detailed reset confirmation.
-- **Dedicated Training Tab**: A centralized "Training" tab with comprehensive information on training runs, prerequisites, and era progression to improve discoverability and guidance.
+1. Use Node **22.23.4 or later approved 22.x**, and npm **10.9.9**. The
+   application refuses to start or build on an older Node 22 runtime.
+2. Install dependencies through `npm ci --ignore-scripts` from the reviewed
+   lockfile.
+3. The checked-in Replit command runs `tools/with-node22.sh` and
+   `tools/build-release.mjs`. It verifies the bootstrap runtime, requires a clean
+   tracked source tree, installs the reviewed lock without lifecycle scripts,
+   and passes the full checked-out Git SHA into `npm run build:release` as both
+   `BUILD_SHA` and `EXPECTED_BUILD_SHA`. Verify the actual provider command before
+   release; stale dashboard settings can override source configuration.
+4. After deployment, record the deployment ID and runtime version, then verify
+   `/api/version` returns the intended full SHA. A null or mismatched SHA fails
+   release verification.
+5. Confirm the HTTPS edge enforces HSTS and that the live retired routes return
+   `410` for both GET and POST. Do not infer either property from this file.
 
-### System Design Choices
-- **Development Environment**: Vite for frontend development with Hot Module Reloading (HMR) and TSX for direct TypeScript server execution.
-- **Production Environment**: ESBuild for server bundling and Vite for optimized frontend builds, ensuring efficient deployment.
-- **Database Migrations**: Drizzle Kit is used for schema management and migrations, maintaining database integrity.
-
-## External Dependencies
-
-- **Neon Database**: Serverless PostgreSQL for production data persistence.
-- **Drizzle ORM**: Type-safe ORM for interacting with PostgreSQL.
-- **Radix UI**: A library of accessible, unstyled React components.
-- **Tailwind CSS**: A utility-first CSS framework for rapid UI development.
-- **React Query**: For server state management and caching.
-- **TypeScript**: Used across both frontend and backend for type safety.
-- **Vite**: A fast build tool for frontend development and bundling.
-- **ESBuild**: A rapid JavaScript bundler used for backend production builds.
+The operational release procedure and evidence requirements are in
+[docs/release-a-runbook.md](docs/release-a-runbook.md). The current security
+scope, findings, and provider-side checklist are in
+[docs/security-audit-2026-10-22.md](docs/security-audit-2026-10-22.md).

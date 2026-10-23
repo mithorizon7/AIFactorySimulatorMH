@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-07-10",
+  "baseCommit": "c372658ea89b1e2c8a640cce345b0d2a1d9f3317",
+  "initialJavaScriptBytes": 1473993,
+  "maximumUnexplainedIncreaseRatio": 0.1,
+  "lcpMilliseconds": 1028,
+  "notes": "Five cold navigations of https://aifactorysimulation.com on 2026-10-22 America/New_York measured 628, 988, 1028, 1040 and 1076 ms. Median 1028 ms. Served revision was unavailable on the baseline deployment; bundle provenance remains c372658. A/B regression fails only when LCP grows by both more than 250 ms and more than 20 percent."
+}

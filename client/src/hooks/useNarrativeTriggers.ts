@@ -1,448 +1,249 @@
-import { useEffect, useRef } from 'react';
-import { Era, GameStateType, getTrainingBlockers, getUpcomingTrainingRun } from '@/lib/gameState';
-import { narrative } from '@/lib/narrativeContent';
+import { useEffect, useRef } from "react";
+import {
+  type GameStateType,
+  getTrainingBlockers,
+  getUpcomingTrainingRun,
+} from "@/lib/gameState";
+import { narrative } from "@/lib/narrativeContent";
+import type { ExperienceStateV1 } from "@shared/experience/schemas";
 
 export interface NarrativeMessage {
+  narrativeKey?: keyof typeof narrative;
   id: string;
   title: string;
   content: string;
   context: string;
   timestamp: number;
-  priority: 'low' | 'normal' | 'high' | 'critical';
-  category: 'tutorial' | 'warning' | 'achievement' | 'advice' | 'breakthrough';
-  speaker?: 'spark' | 'system';
+  priority: "low" | "normal" | "high" | "critical";
+  category: "tutorial" | "warning" | "achievement" | "advice" | "breakthrough";
+  speaker?: "spark" | "system";
 }
 
 interface UseNarrativeTriggersProps {
   gameState: GameStateType;
   onShowMessage: (message: NarrativeMessage) => void;
-  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
+  /** Migration bridge name; records only typed experience/coaching facts. */
+  setGameState?: (observation: {
+    messageId: string;
+    tick: number;
+    isHint: boolean;
+  }) => void;
 }
 
 function hasRealTrainingBlockers(gameState: GameStateType): boolean {
-  const upcomingTrainingRun = getUpcomingTrainingRun(gameState);
-
-  if (!upcomingTrainingRun || gameState.training.active || upcomingTrainingRun.status === 'complete') {
-    return false;
-  }
-
-  return getTrainingBlockers(gameState).length > 0;
+  const upcoming = getUpcomingTrainingRun(gameState);
+  return Boolean(
+    upcoming &&
+    !gameState.training.active &&
+    upcoming.status !== "complete" &&
+    getTrainingBlockers(gameState).length > 0,
+  );
 }
 
-// Helper function to check for resource imbalances
-function checkResourceImbalance(gameState: GameStateType): boolean {
-  const { compute, data, algorithm } = gameState.levels;
-  
-  // Check if any resource is significantly behind others
-  const maxLevel = Math.max(compute, data, algorithm);
-  const minLevel = Math.min(compute, data, algorithm);
-  
-  // If the difference is more than 3 levels, consider it imbalanced
-  return (maxLevel - minLevel) > 3;
+function isResourceImbalanced(gameState: GameStateType): boolean {
+  const levels = Object.values(gameState.levels);
+  return Math.max(...levels) - Math.min(...levels) > 3;
 }
 
-export function useNarrativeTriggers({ gameState, onShowMessage, setGameState }: UseNarrativeTriggersProps) {
+export function useNarrativeTriggers({
+  gameState,
+  onShowMessage,
+  setGameState: recordCoachingMessage,
+}: UseNarrativeTriggersProps) {
   const previousStateRef = useRef<GameStateType | null>(null);
+  const seenIdsRef = useRef(new Set<string>());
+  const lastHintTickRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const prevState = previousStateRef.current;
-    if (!prevState) {
-      previousStateRef.current = gameState;
+    const persistedExperience = (
+      gameState as GameStateType & { experienceState?: ExperienceStateV1 }
+    ).experienceState;
+    if (persistedExperience) {
+      seenIdsRef.current = new Set(persistedExperience.coaching.seenIds);
+      lastHintTickRef.current = persistedExperience.coaching.lastHintTick;
+    }
+    const previous = previousStateRef.current;
+    previousStateRef.current = gameState;
+    if (!previous) return;
+
+    const currentCommandCount = (
+      gameState as GameStateType & {
+        mechanics?: { appliedCommandIds: string[] };
+      }
+    ).mechanics?.appliedCommandIds.length;
+    const previousCommandCount = (
+      previous as GameStateType & {
+        mechanics?: { appliedCommandIds: string[] };
+      }
+    ).mechanics?.appliedCommandIds.length;
+    if (currentCommandCount === 0 && (previousCommandCount ?? 0) > 0) {
+      seenIdsRef.current.clear();
+      lastHintTickRef.current = null;
       return;
     }
 
-    // Check for various conditions and trigger appropriate narrative messages
-
-    // 1. Compute Usage Warnings
-    if (gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity > 0.9 && 
-        !gameState.narrativeFlags.hasSeenComputeWarning) {
-      onShowMessage({
-        id: 'compute-warning-high',
-        title: narrative.COMPUTE_WARNING_HIGH.title,
-        content: narrative.COMPUTE_WARNING_HIGH.content,
-        context: narrative.COMPUTE_WARNING_HIGH.context,
-        timestamp: Date.now(),
-        priority: 'high',
-        category: 'warning'
+    const show = (
+      id: string,
+      narrativeKey: keyof typeof narrative,
+      priority: NarrativeMessage["priority"],
+      category: NarrativeMessage["category"],
+      speaker?: NarrativeMessage["speaker"],
+      isHint = false,
+    ): boolean => {
+      if (seenIdsRef.current.has(id)) return false;
+      const copy = narrative[narrativeKey];
+      if (!copy) return false;
+      seenIdsRef.current.add(id);
+      recordCoachingMessage?.({
+        messageId: id,
+        tick: gameState.timeElapsed,
+        isHint,
       });
-    }
-
-    // 2. Critical Compute Overload
-    if (gameState.computeCapacity.used > gameState.computeCapacity.maxCapacity && 
-        !gameState.narrativeFlags.hasSeenComputeWarning) {
       onShowMessage({
-        id: 'compute-warning-critical',
-        title: narrative.COMPUTE_WARNING_CRITICAL.title,
-        content: narrative.COMPUTE_WARNING_CRITICAL.content,
-        context: narrative.COMPUTE_WARNING_CRITICAL.context,
-        timestamp: Date.now(),
-        priority: 'critical',
-        category: 'warning'
+        narrativeKey,
+        id,
+        title: copy.title,
+        content: copy.content,
+        context: copy.context,
+        timestamp: gameState.timeElapsed,
+        priority,
+        category,
+        ...(speaker ? { speaker } : {}),
       });
+      return true;
+    };
+
+    if (
+      gameState.money < 1_000 &&
+      previous.money >= 1_000 &&
+      show("money-warning-low", "MONEY_WARNING_LOW", "high", "warning")
+    ) {
+      return;
+    }
+    if (
+      gameState.revenue.b2b > 0 &&
+      previous.revenue.b2b === 0 &&
+      show("revenue-first-api", "REVENUE_FIRST_API", "normal", "achievement")
+    ) {
+      return;
+    }
+    if (
+      gameState.revenue.b2c > 0 &&
+      previous.revenue.b2c === 0 &&
+      show(
+        "revenue-first-subscription",
+        "REVENUE_FIRST_SUBSCRIPTION",
+        "normal",
+        "achievement",
+      )
+    ) {
+      return;
+    }
+    if (
+      gameState.revenue.apiAvailable &&
+      !previous.revenue.apiAvailable &&
+      show(
+        "api-service-available",
+        "API_SERVICE_AVAILABLE",
+        "high",
+        "achievement",
+      )
+    ) {
+      return;
+    }
+    if (
+      gameState.revenue.chatbotAvailable &&
+      !previous.revenue.chatbotAvailable &&
+      show(
+        "chatbot-service-available",
+        "CHATBOT_SERVICE_AVAILABLE",
+        "high",
+        "achievement",
+      )
+    ) {
+      return;
+    }
+    if (
+      gameState.narrativeFlags.totalInvestmentAmount >= 10_000_000 &&
+      show(
+        "investment-milestone-10m",
+        "INVESTMENT_MILESTONE_10M",
+        "normal",
+        "achievement",
+      )
+    ) {
+      return;
+    }
+    if (
+      gameState.narrativeFlags.totalInvestmentAmount >= 1_000_000 &&
+      show(
+        "investment-milestone-1m",
+        "INVESTMENT_MILESTONE_1M",
+        "normal",
+        "achievement",
+      )
+    ) {
+      return;
+    }
+    if (
+      isResourceImbalanced(gameState) &&
+      show(
+        "advice-balance-resources",
+        "ADVICE_BALANCE_RESOURCES",
+        "normal",
+        "advice",
+      )
+    ) {
+      return;
     }
 
-    // 3. Low Funds Warning
-    if (gameState.money < 1000 && prevState.money >= 1000 && 
-        !gameState.narrativeFlags.hasSeenLowFundsWarning) {
-      onShowMessage({
-        id: 'money-warning-low',
-        title: narrative.MONEY_WARNING_LOW.title,
-        content: narrative.MONEY_WARNING_LOW.content,
-        context: narrative.MONEY_WARNING_LOW.context,
-        timestamp: Date.now(),
-        priority: 'high',
-        category: 'warning'
-      });
+    const lastHintTick = lastHintTickRef.current;
+    if (lastHintTick !== null && gameState.timeElapsed - lastHintTick < 120) {
+      return;
     }
-
-    // 4. First Training Run Completion with Spark
-    if (prevState.training.active && !gameState.training.active && 
-        !gameState.narrativeFlags.hasSeenFirstTraining) {
-      onShowMessage({
-        id: 'training-first-success',
-        title: narrative.TRAINING_FIRST_SUCCESS.title,
-        content: narrative.TRAINING_FIRST_SUCCESS.content,
-        context: narrative.TRAINING_FIRST_SUCCESS.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'achievement',
-        speaker: 'spark'
-      });
-    }
-
-    // 5. First API Revenue (using B2B revenue as proxy for API)
-    if (gameState.revenue.b2b > 0 && prevState.revenue.b2b === 0 && 
-        !gameState.narrativeFlags.hasSeenFirstRevenue) {
-      onShowMessage({
-        id: 'revenue-first-api',
-        title: narrative.REVENUE_FIRST_API.title,
-        content: narrative.REVENUE_FIRST_API.content,
-        context: narrative.REVENUE_FIRST_API.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'achievement'
-      });
-    }
-
-    // 6. First Subscription Revenue (using B2C revenue as proxy for subscriptions)
-    if (gameState.revenue.b2c > 0 && prevState.revenue.b2c === 0) {
-      onShowMessage({
-        id: 'revenue-first-subscription',
-        title: narrative.REVENUE_FIRST_SUBSCRIPTION.title,
-        content: narrative.REVENUE_FIRST_SUBSCRIPTION.content,
-        context: narrative.REVENUE_FIRST_SUBSCRIPTION.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'achievement'
-      });
-    }
-
-    // 7. Investment Milestones
-    if (gameState.narrativeFlags.totalInvestmentAmount >= 1000000 && 
-        !gameState.narrativeFlags.hasSeenInvestmentMilestone1M) {
-      onShowMessage({
-        id: 'investment-milestone-1m',
-        title: narrative.INVESTMENT_MILESTONE_1M.title,
-        content: narrative.INVESTMENT_MILESTONE_1M.content,
-        context: narrative.INVESTMENT_MILESTONE_1M.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'achievement'
-      });
-    }
-
-    if (gameState.narrativeFlags.totalInvestmentAmount >= 10000000 && 
-        !gameState.narrativeFlags.hasSeenInvestmentMilestone10M) {
-      onShowMessage({
-        id: 'investment-milestone-10m',
-        title: narrative.INVESTMENT_MILESTONE_10M.title,
-        content: narrative.INVESTMENT_MILESTONE_10M.content,
-        context: narrative.INVESTMENT_MILESTONE_10M.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'achievement'
-      });
-    }
-
-    // 8. Resource Balance Advice
-    const resourceImbalance = checkResourceImbalance(gameState);
-    if (resourceImbalance && !gameState.narrativeFlags.hasSeenBalanceAdvice) {
-      onShowMessage({
-        id: 'advice-balance-resources',
-        title: narrative.ADVICE_BALANCE_RESOURCES.title,
-        content: narrative.ADVICE_BALANCE_RESOURCES.content,
-        context: narrative.ADVICE_BALANCE_RESOURCES.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'advice'
-      });
-    }
-
-    // 9. API Service Available (when GNT-3 unlocked but not enabled)
-    if (gameState.revenue.apiAvailable && !gameState.revenue.apiEnabled && 
-        !gameState.narrativeFlags.shownApiServiceAvailable) {
-      setGameState(prevState => ({
-        ...prevState,
-        narrativeFlags: {
-          ...prevState.narrativeFlags,
-          shownApiServiceAvailable: true,
-          highlightApiPlatform: true // Enable visual highlight
-        }
-      }));
-      onShowMessage({
-        id: 'api-service-available',
-        title: narrative.API_SERVICE_AVAILABLE.title,
-        content: narrative.API_SERVICE_AVAILABLE.content,
-        context: narrative.API_SERVICE_AVAILABLE.context,
-        timestamp: Date.now(),
-        priority: 'high',
-        category: 'achievement'
-      });
-    }
-
-    // 10. Auto-Enable API Service Suggestion (after 60 seconds delay)
-    if (gameState.revenue.apiAvailable && 
-        !gameState.revenue.apiEnabled &&
-        gameState.narrativeFlags.apiServiceUnlockedTime &&
-        !gameState.narrativeFlags.hasOfferedApiAutoEnable &&
-        (Date.now() - gameState.narrativeFlags.apiServiceUnlockedTime) > 60000) { // 60 seconds
-      
-      setGameState(prevState => ({
-        ...prevState,
-        narrativeFlags: {
-          ...prevState.narrativeFlags,
-          hasOfferedApiAutoEnable: true
-        }
-      }));
-      onShowMessage({
-        id: 'api-auto-enable-suggestion',
-        title: narrative.API_AUTO_ENABLE_SUGGESTION.title,
-        content: narrative.API_AUTO_ENABLE_SUGGESTION.content,
-        context: narrative.API_AUTO_ENABLE_SUGGESTION.context,
-        timestamp: Date.now(),
-        priority: 'high',
-        category: 'advice'
-      });
-    }
-
-    // 11. Chatbot Service Available (when GNT-4 unlocked but not enabled)  
-    if (gameState.revenue.chatbotAvailable && !gameState.revenue.chatbotEnabled && 
-        !gameState.narrativeFlags.shownChatbotServiceAvailable) {
-      setGameState(prevState => ({
-        ...prevState,
-        narrativeFlags: {
-          ...prevState.narrativeFlags,
-          shownChatbotServiceAvailable: true,
-          highlightChatbotPlatform: true // Enable visual highlight
-        }
-      }));
-      onShowMessage({
-        id: 'chatbot-service-available',
-        title: narrative.CHATBOT_SERVICE_AVAILABLE.title,
-        content: narrative.CHATBOT_SERVICE_AVAILABLE.content,
-        context: narrative.CHATBOT_SERVICE_AVAILABLE.context,
-        timestamp: Date.now(),
-        priority: 'high',
-        category: 'achievement'
-      });
-    }
-
-    // 11. Revenue Focus Advice (fallback for generic revenue guidance)
-    if (gameState.intelligence > 300 && gameState.revenue.b2b === 0 && 
-        gameState.revenue.b2c === 0 && !gameState.revenue.apiAvailable && 
-        !gameState.revenue.chatbotAvailable) {
-      onShowMessage({
-        id: 'advice-revenue-focus',
-        title: narrative.ADVICE_REVENUE_FOCUS.title,
-        content: narrative.ADVICE_REVENUE_FOCUS.content,
-        context: narrative.ADVICE_REVENUE_FOCUS.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'advice'
-      });
-    }
-
-    // 12. API Optimization Advice (running but suboptimal)
-    if (gameState.revenue.apiEnabled && gameState.revenue.b2b > 0 && gameState.revenue.b2b < 5000 &&
-        gameState.revenue.developerToolsLevel === 1 && gameState.money > 50000 && 
-        !gameState.narrativeFlags.shownApiOptimizationAdvice) {
-      setGameState(prevState => ({
-        ...prevState,
-        narrativeFlags: {
-          ...prevState.narrativeFlags,
-          shownApiOptimizationAdvice: true
-        }
-      }));
-      onShowMessage({
-        id: 'api-optimization-advice',
-        title: narrative.API_OPTIMIZATION_ADVICE.title,
-        content: narrative.API_OPTIMIZATION_ADVICE.content,
-        context: narrative.API_OPTIMIZATION_ADVICE.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'advice'
-      });
-    }
-
-    // 13. Chatbot Optimization Advice (running but growth is slow)
-    if (gameState.revenue.chatbotEnabled && gameState.revenue.subscribers > 100 && 
-        gameState.revenue.subscriberGrowthRate < 0.03 && gameState.revenue.chatbotImprovementLevel <= 1 && 
-        gameState.money > 25000 && !gameState.narrativeFlags.shownChatbotOptimizationAdvice) {
-      setGameState(prevState => ({
-        ...prevState,
-        narrativeFlags: {
-          ...prevState.narrativeFlags,
-          shownChatbotOptimizationAdvice: true
-        }
-      }));
-      onShowMessage({
-        id: 'chatbot-optimization-advice',
-        title: narrative.CHATBOT_OPTIMIZATION_ADVICE.title,
-        content: narrative.CHATBOT_OPTIMIZATION_ADVICE.content,
-        context: narrative.CHATBOT_OPTIMIZATION_ADVICE.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'advice'
-      });
-    }
-
-    // 14. Era Advancements
-    if (gameState.currentEra !== prevState.currentEra) {
-      const eraKey = `ERA_ADVANCE_${gameState.currentEra.replace(/-/g, '')}` as keyof typeof narrative;
-      if (narrative[eraKey]) {
-        onShowMessage({
-          id: `era-advance-${gameState.currentEra}`,
-          title: narrative[eraKey].title,
-          content: narrative[eraKey].content,
-          context: narrative[eraKey].context,
-          timestamp: Date.now(),
-          priority: 'high',
-          category: 'achievement'
-        });
-      }
-    }
-
-    // Breakthrough unlocks are already surfaced by Spark's advisor toast in the game engine.
-    // Duplicating them here creates two simultaneous popups for the same event.
-
-    // 11. Training Strategy Hints
     const operationalRevenue = gameState.revenue.b2b + gameState.revenue.b2c;
-    if (gameState.training.active && operationalRevenue > 50000) {
-      onShowMessage({
-        id: 'training-strategy-hint',
-        title: narrative.TRAINING_STRATEGY_HINT.title,
-        content: narrative.TRAINING_STRATEGY_HINT.content,
-        context: narrative.TRAINING_STRATEGY_HINT.context,
-        timestamp: Date.now(),
-        priority: 'normal',
-        category: 'advice'
-      });
+    let hintShown = false;
+    if (gameState.intelligence > 150 && hasRealTrainingBlockers(gameState)) {
+      hintShown = show(
+        "stuck-training-blocked",
+        "STUCK_TRAINING_BLOCKED_HINT",
+        "high",
+        "advice",
+        "spark",
+        true,
+      );
+    } else if (gameState.money < 500 && operationalRevenue === 0) {
+      hintShown = show(
+        "stuck-no-money",
+        "STUCK_NO_MONEY_HINT",
+        "high",
+        "advice",
+        "spark",
+        true,
+      );
+    } else if (gameState.intelligence > 500 && operationalRevenue === 0) {
+      hintShown = show(
+        "stuck-no-revenue",
+        "STUCK_NO_REVENUE_HINT",
+        "high",
+        "advice",
+        "spark",
+        true,
+      );
+    } else if (
+      gameState.intelligence > 200 &&
+      gameState.breakthroughs.every((item) => !item.unlocked) &&
+      gameState.daysElapsed > 5
+    ) {
+      hintShown = show(
+        "stuck-no-breakthroughs",
+        "STUCK_NO_BREAKTHROUGHS_HINT",
+        "high",
+        "advice",
+        "spark",
+        true,
+      );
     }
-
-    // 12. STUCK DETECTION - Contextual guidance when players appear stuck (with cooldown)
-    
-    const now = Date.now();
-    const stuckHintCooldown = 120000; // 2 minutes between stuck hints
-    const canShowStuckHint = now - gameState.narrativeFlags.lastStuckHintAt > stuckHintCooldown;
-
-    if (canShowStuckHint) {
-      // Priority order: training-blocked > no-money > no-revenue > no-breakthroughs
-      
-      // 1. Unable to start training due to prerequisites (highest priority)
-      const trainingBlocked = hasRealTrainingBlockers(gameState);
-      if (trainingBlocked && !gameState.training.active && 
-          gameState.intelligence > 150 && !gameState.narrativeFlags.hasSeenStuckTrainingBlocked) {
-        setGameState(prevState => ({
-          ...prevState,
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            hasSeenStuckTrainingBlocked: true,
-            lastStuckHintAt: now,
-            lastStuckHintId: 'stuck-training-blocked'
-          }
-        }));
-        onShowMessage({
-          id: 'stuck-training-blocked',
-          title: narrative.STUCK_TRAINING_BLOCKED_HINT.title,
-          content: narrative.STUCK_TRAINING_BLOCKED_HINT.content,
-          context: narrative.STUCK_TRAINING_BLOCKED_HINT.context,
-          timestamp: now,
-          priority: 'high',
-          category: 'advice',
-          speaker: 'spark'
-        });
-      }
-      // 2. Stuck with no money and no revenue streams (check for actual revenue vs. enablement)
-      else if (gameState.money < 500 && operationalRevenue === 0 && 
-               !gameState.narrativeFlags.hasSeenStuckNoMoney) {
-        setGameState(prevState => ({
-          ...prevState,
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            hasSeenStuckNoMoney: true,
-            lastStuckHintAt: now,
-            lastStuckHintId: 'stuck-no-money'
-          }
-        }));
-        onShowMessage({
-          id: 'stuck-no-money',
-          title: narrative.STUCK_NO_MONEY_HINT.title,
-          content: narrative.STUCK_NO_MONEY_HINT.content,
-          context: narrative.STUCK_NO_MONEY_HINT.context,
-          timestamp: now,
-          priority: 'high',
-          category: 'advice',
-          speaker: 'spark'
-        });
-      }
-      // 3. High intelligence but no revenue generation
-      else if (gameState.intelligence > 500 && operationalRevenue === 0 && 
-               !gameState.narrativeFlags.hasSeenStuckNoRevenue) {
-        setGameState(prevState => ({
-          ...prevState,
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            hasSeenStuckNoRevenue: true,
-            lastStuckHintAt: now,
-            lastStuckHintId: 'stuck-no-revenue'
-          }
-        }));
-        onShowMessage({
-          id: 'stuck-no-revenue',
-          title: narrative.STUCK_NO_REVENUE_HINT.title,
-          content: narrative.STUCK_NO_REVENUE_HINT.content,
-          context: narrative.STUCK_NO_REVENUE_HINT.context,
-          timestamp: now,
-          priority: 'high',
-          category: 'advice',
-          speaker: 'spark'
-        });
-      }
-      // 4. Long periods without breakthrough progress (lowest priority, with time gate)
-      else if (gameState.intelligence > 200 && gameState.breakthroughs.filter(b => b.unlocked).length === 0 && 
-               gameState.daysElapsed > 5 && !gameState.narrativeFlags.hasSeenStuckNoBreakthroughs) {
-        setGameState(prevState => ({
-          ...prevState,
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            hasSeenStuckNoBreakthroughs: true,
-            lastStuckHintAt: now,
-            lastStuckHintId: 'stuck-no-breakthroughs'
-          }
-        }));
-        onShowMessage({
-          id: 'stuck-no-breakthroughs',
-          title: narrative.STUCK_NO_BREAKTHROUGHS_HINT.title,
-          content: narrative.STUCK_NO_BREAKTHROUGHS_HINT.content,
-          context: narrative.STUCK_NO_BREAKTHROUGHS_HINT.context,
-          timestamp: now,
-          priority: 'high',
-          category: 'advice',
-          speaker: 'spark'
-        });
-      }
-    }
-
-    previousStateRef.current = gameState;
-  }, [gameState, onShowMessage, setGameState]);
+    if (hintShown) lastHintTickRef.current = gameState.timeElapsed;
+  }, [gameState, onShowMessage, recordCoachingMessage]);
 }

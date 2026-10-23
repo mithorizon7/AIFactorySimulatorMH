@@ -92,7 +92,7 @@ export default function DashboardContent({
 
   const nextMilestoneLabel = (() => {
     if (agiAchieved) {
-      return "AGI achieved";
+      return "Scenario complete";
     }
 
     if (gameState.training.active) {
@@ -103,7 +103,7 @@ export default function DashboardContent({
       return `Next milestone: ${nextTrainingRun.name}`;
     }
 
-    return `Reach ${gameState.agiThreshold.toLocaleString()} intelligence`;
+    return `Reach ${gameState.agiThreshold.toLocaleString()} model capability`;
   })();
 
   const getNextActions = () => {
@@ -167,7 +167,7 @@ export default function DashboardContent({
           educational: "The fastest path forward is to remove the first concrete blocker to your next training run. The Training tab shows the exact engine-checked deficits.",
           icon: <Target className="h-5 w-5 text-amber-400" />,
           color: "border-amber-500/50 bg-amber-900/20",
-          buttonColor: "bg-amber-600 hover:bg-amber-700",
+          buttonColor: "bg-amber-700 hover:bg-amber-800",
           strategies: ["Open Training"],
           onClick: () => openPriorityActionDialog({
             priority: 1,
@@ -176,7 +176,7 @@ export default function DashboardContent({
             educational: "Good frontier teams make blockers legible. The Training tab is your source of truth for which requirement is still preventing the next training leap.",
             icon: <Target className="h-5 w-5 text-amber-400" />,
             color: "border-amber-500/50 bg-amber-900/20",
-            buttonColor: "bg-amber-600 hover:bg-amber-700",
+            buttonColor: "bg-amber-700 hover:bg-amber-800",
             strategies: ["Open Training"],
             onClick: () => {},
           }),
@@ -192,7 +192,7 @@ export default function DashboardContent({
         educational: "Commercialization matters, but it is downstream of technical capability. Training unlocked the capability; platform work turns it into revenue.",
         icon: <DollarSign className="h-5 w-5 text-green-400" />,
         color: "border-green-500/50 bg-green-900/20",
-        buttonColor: "bg-green-600 hover:bg-green-700",
+        buttonColor: "bg-green-700 hover:bg-green-800",
         strategies: ["Open Economy"],
         onClick: () => openPriorityActionDialog({
           priority: 2,
@@ -201,7 +201,7 @@ export default function DashboardContent({
           educational: "This is the first major commercialization move. Building the API platform turns technical progress into cash that can finance later training runs.",
           icon: <DollarSign className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
-          buttonColor: "bg-green-600 hover:bg-green-700",
+          buttonColor: "bg-green-700 hover:bg-green-800",
           strategies: ["Open Economy"],
           onClick: () => {},
         }),
@@ -214,7 +214,7 @@ export default function DashboardContent({
         educational: "API revenue is the early business model. It monetizes frontier capability while using compute that could otherwise go to research.",
         icon: <TrendingUp className="h-5 w-5 text-green-400" />,
         color: "border-green-500/50 bg-green-900/20",
-        buttonColor: "bg-green-600 hover:bg-green-700",
+        buttonColor: "bg-green-700 hover:bg-green-800",
         strategies: ["Open Economy"],
         onClick: () => openPriorityActionDialog({
           priority: 2,
@@ -223,7 +223,7 @@ export default function DashboardContent({
           educational: "Turning on the API service creates the earliest repeatable revenue stream in the sim. That revenue can finance future training, but it will also consume compute.",
           icon: <TrendingUp className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
-          buttonColor: "bg-green-600 hover:bg-green-700",
+          buttonColor: "bg-green-700 hover:bg-green-800",
           strategies: ["Open Economy"],
           onClick: () => {},
         }),
@@ -258,7 +258,7 @@ export default function DashboardContent({
         educational: "Commercial success funds frontier progress. The sim is teaching that venture funding helps, but product revenue carries the long middle of the journey.",
         icon: <DollarSign className="h-5 w-5 text-green-400" />,
         color: "border-green-500/50 bg-green-900/20",
-        buttonColor: "bg-green-600 hover:bg-green-700",
+        buttonColor: "bg-green-700 hover:bg-green-800",
         strategies: ["Open Economy"],
         onClick: () => openPriorityActionDialog({
           priority: 2,
@@ -267,7 +267,7 @@ export default function DashboardContent({
           educational: "Revenue and research compete for compute, but revenue is also what keeps the training ladder affordable. Monetization is part of the frontier strategy, not a side system.",
           icon: <DollarSign className="h-5 w-5 text-green-400" />,
           color: "border-green-500/50 bg-green-900/20",
-          buttonColor: "bg-green-600 hover:bg-green-700",
+          buttonColor: "bg-green-700 hover:bg-green-800",
           strategies: ["Open Economy"],
           onClick: () => {},
         }),
@@ -364,11 +364,11 @@ export default function DashboardContent({
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <BrainCog className="text-amber-400 h-8 w-8" />
-            <h1 className="text-2xl font-bold text-amber-400">AGI Readiness</h1>
+            <h1 className="text-2xl font-bold text-amber-400">Scenario Progress</h1>
             <Clock className="text-gray-400 h-6 w-6" />
           </div>
           <div className="text-gray-300 text-sm">
-            Complete GNT-7 training and reach the intelligence threshold to win
+            Complete GNT-7 training and reach the model capability threshold to finish this scenario
           </div>
         </div>
 

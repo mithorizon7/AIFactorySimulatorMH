@@ -21,7 +21,11 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
 
   // Get current tutorial step from unified content
   const currentPhase = `PHASE_${gameState.tutorial.phase}` as keyof typeof tutorialContent;
-  const currentStep = getTutorialCurrentStep(gameState.tutorial) as TutorialStepDefinition | undefined;
+  // Completed/skipped tutorials must also remove spotlight listeners and raised
+  // target stacking, even though this component remains mounted for its hooks.
+  const currentStep = gameState.tutorial.isActive && !gameState.tutorial.isCompleted
+    ? getTutorialCurrentStep(gameState.tutorial) as TutorialStepDefinition | undefined
+    : undefined;
 
   const getIcon = (iconName: string) => {
     const iconProps = { className: "h-6 w-6" };
@@ -377,7 +381,7 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
           
           <div className="bg-blue-900/20 border border-blue-700/30 rounded p-3 mb-3">
             <div className="flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-200 leading-relaxed">{currentStep.context}</p>
             </div>
           </div>

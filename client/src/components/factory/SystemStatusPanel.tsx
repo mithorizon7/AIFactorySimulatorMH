@@ -192,15 +192,15 @@ export default function SystemStatusPanel({ gameState }: SystemStatusPanelProps)
           {/* Legend */}
           <div className="grid grid-cols-3 gap-2 mb-3">
             <div className="flex items-center text-xs">
-              <div className="w-3 h-3 bg-purple-500 rounded-xs mr-1.5"></div>
+              <div className="w-3 h-3 bg-purple-500 rounded-sm mr-1.5"></div>
               <span className="text-purple-400">Customer: {computeCapacity.customerUsage || 0}</span>
             </div>
             <div className="flex items-center text-xs">
-              <div className="w-3 h-3 bg-amber-500 rounded-xs mr-1.5"></div>
+              <div className="w-3 h-3 bg-amber-500 rounded-sm mr-1.5"></div>
               <span className="text-amber-400">Training: {gameState.training.computeReserved || 0}</span>
             </div>
             <div className="flex items-center text-xs">
-              <div className="w-3 h-3 bg-green-500 rounded-xs mr-1.5"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-sm mr-1.5"></div>
               <span className="text-green-400">Research: {computeCapacity.freeCompute || 0}</span>
             </div>
           </div>

@@ -1,7 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
-import { logger, LogContext } from './logger';
-import { ZodError } from 'zod';
-import { fromZodError } from 'zod-validation-error';
+import { Request, Response, NextFunction } from "express";
+import { logger, LogContext } from "./logger";
+import { ZodError } from "zod";
+import { randomUUID } from "crypto";
+
+type RequestWithId = Request & { requestId?: string };
+
+export function getRequestId(req: Request): string {
+  return (req as RequestWithId).requestId ?? "unknown";
+}
+
+export function requestIdMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const incoming = req.get("X-Request-ID");
+  const requestId =
+    incoming && /^[A-Za-z0-9._:-]{1,128}$/.test(incoming)
+      ? incoming
+      : randomUUID();
+  (req as RequestWithId).requestId = requestId;
+  res.setHeader("X-Request-ID", requestId);
+  next();
+}
 
 // Custom application error class
 export class AppError extends Error {
@@ -13,13 +34,13 @@ export class AppError extends Error {
     message: string,
     statusCode = 500,
     isOperational = true,
-    incidentId?: string
+    incidentId?: string,
   ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     this.incidentId = incidentId || logger.generateIncidentId();
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -30,96 +51,141 @@ export class AppError extends Error {
 export function extractRequestContext(req: Request): LogContext {
   return {
     method: req.method,
-    url: req.route?.path || (req.path.startsWith('/api') ? '/api' : '/'),
-    requestId: logger.generateIncidentId(),
+    url: req.path,
+    requestId: getRequestId(req),
   };
 }
 
-/**
- * Async wrapper to catch errors in async route handlers
- */
-export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
+type ErrorLike = {
+  code?: unknown;
+  message?: unknown;
+  status?: unknown;
+  statusCode?: unknown;
+  type?: unknown;
+};
+
+function asErrorLike(error: unknown): ErrorLike {
+  return typeof error === "object" && error !== null ? error : {};
+}
+
+function normalizeError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  return new Error(typeof error === "string" ? error : "Unknown thrown value");
 }
 
 /**
  * Handle different types of errors and return appropriate user-friendly messages
  */
-function getErrorResponse(error: any): { statusCode: number; userMessage: string; errorType: string } {
+function getErrorResponse(error: unknown): {
+  statusCode: number;
+  userMessage: string;
+  errorType: string;
+} {
+  const errorLike = asErrorLike(error);
+  if (errorLike.type === "encoding.unsupported") {
+    return {
+      statusCode: 415,
+      userMessage: "Compressed request bodies are not supported.",
+      errorType: "UNSUPPORTED_CONTENT_ENCODING",
+    };
+  }
+  if (errorLike.type === "entity.parse.failed") {
+    return {
+      statusCode: 400,
+      userMessage: "The request body is not valid JSON.",
+      errorType: "INVALID_JSON",
+    };
+  }
+
+  if (errorLike.type === "entity.too.large" || errorLike.status === 413) {
+    return {
+      statusCode: 413,
+      userMessage: "The request body exceeds the 16 KB limit.",
+      errorType: "PAYLOAD_TOO_LARGE",
+    };
+  }
+
   // Validation errors (Zod)
   if (error instanceof ZodError) {
     return {
       statusCode: 400,
-      userMessage: 'The information provided is invalid. Please check your input and try again.',
-      errorType: 'VALIDATION_ERROR'
+      userMessage:
+        "The information provided is invalid. Please check your input and try again.",
+      errorType: "VALIDATION_ERROR",
     };
   }
-
-  if (error.type === 'entity.too.large') return { statusCode: 413, userMessage: 'Request body too large.', errorType: 'BODY_LIMIT' };
-  if (error.type === 'encoding.unsupported') return { statusCode: 415, userMessage: 'Compressed requests are not supported.', errorType: 'ENCODING' };
-  if (error.type === 'entity.parse.failed') return { statusCode: 400, userMessage: 'Invalid JSON.', errorType: 'VALIDATION_ERROR' };
 
   // Application errors with known status codes
   if (error instanceof AppError) {
     return {
       statusCode: error.statusCode,
       userMessage: error.message,
-      errorType: 'APPLICATION_ERROR'
+      errorType: "APPLICATION_ERROR",
     };
   }
 
   // Database errors
-  if (error.code && (error.code.startsWith('P') || error.code.includes('DATABASE'))) {
+  if (
+    typeof errorLike.code === "string" &&
+    (errorLike.code.startsWith("P") || errorLike.code.includes("DATABASE"))
+  ) {
     return {
       statusCode: 500,
-      userMessage: 'We are experiencing technical difficulties. Please try again in a few moments.',
-      errorType: 'DATABASE_ERROR'
+      userMessage:
+        "We are experiencing technical difficulties. Please try again in a few moments.",
+      errorType: "DATABASE_ERROR",
     };
   }
 
   // Network/timeout errors
-  if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.code === 'ENOTFOUND') {
+  if (
+    errorLike.code === "ECONNREFUSED" ||
+    errorLike.code === "ETIMEDOUT" ||
+    errorLike.code === "ENOTFOUND"
+  ) {
     return {
       statusCode: 503,
-      userMessage: 'Service temporarily unavailable. Please try again later.',
-      errorType: 'NETWORK_ERROR'
+      userMessage: "Service temporarily unavailable. Please try again later.",
+      errorType: "NETWORK_ERROR",
     };
   }
 
   // Permission/authorization errors
-  if (error.statusCode === 401 || error.statusCode === 403) {
+  if (errorLike.statusCode === 401 || errorLike.statusCode === 403) {
     return {
-      statusCode: error.statusCode,
-      userMessage: 'You do not have permission to access this resource.',
-      errorType: 'AUTHORIZATION_ERROR'
+      statusCode: errorLike.statusCode,
+      userMessage: "You do not have permission to access this resource.",
+      errorType: "AUTHORIZATION_ERROR",
     };
   }
 
   // Rate limiting errors
-  if (error.statusCode === 429) {
+  if (errorLike.statusCode === 429) {
     return {
       statusCode: 429,
-      userMessage: 'Too many requests. Please wait a moment and try again.',
-      errorType: 'RATE_LIMIT_ERROR'
+      userMessage: "Too many requests. Please wait a moment and try again.",
+      errorType: "RATE_LIMIT_ERROR",
     };
   }
 
   // File/upload errors
-  if (error.code === 'LIMIT_FILE_SIZE' || error.code === 'LIMIT_UNEXPECTED_FILE') {
+  if (
+    errorLike.code === "LIMIT_FILE_SIZE" ||
+    errorLike.code === "LIMIT_UNEXPECTED_FILE"
+  ) {
     return {
       statusCode: 413,
-      userMessage: 'The file you are trying to upload is too large or in an unsupported format.',
-      errorType: 'FILE_ERROR'
+      userMessage:
+        "The file you are trying to upload is too large or in an unsupported format.",
+      errorType: "FILE_ERROR",
     };
   }
 
   // Default to generic error for unknown errors
   return {
     statusCode: 500,
-    userMessage: 'An unexpected error occurred. Our team has been notified and is working to resolve the issue.',
-    errorType: 'INTERNAL_ERROR'
+    userMessage: "An unexpected error occurred. Please try again.",
+    errorType: "INTERNAL_ERROR",
   };
 }
 
@@ -128,21 +194,27 @@ function getErrorResponse(error: any): { statusCode: number; userMessage: string
  * This should be the last middleware in the chain
  */
 export function globalErrorHandler(
-  err: any,
+  thrown: unknown,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
+  if (res.headersSent) {
+    next(thrown);
+    return;
+  }
+
+  const error = normalizeError(thrown);
   // Extract request context
   const requestContext = extractRequestContext(req);
-  
+
   // Get appropriate error response
-  const { statusCode, userMessage, errorType } = getErrorResponse(err);
-  
+  const { statusCode, userMessage, errorType } = getErrorResponse(thrown);
+
   // Generate incident ID if not already present
   let incidentId: string;
-  if (err instanceof AppError && err.incidentId) {
-    incidentId = err.incidentId;
+  if (thrown instanceof AppError && thrown.incidentId) {
+    incidentId = thrown.incidentId;
   } else {
     incidentId = logger.generateIncidentId();
   }
@@ -151,140 +223,92 @@ export function globalErrorHandler(
   const logContext: LogContext = {
     ...requestContext,
     incidentId,
-    operation: 'error_handler',
-    functionName: 'globalErrorHandler',
+    operation: "error_handler",
+    functionName: "globalErrorHandler",
     errorType,
-    statusCode
+    statusCode,
   };
 
   // Log based on severity
   if (statusCode >= 500) {
-    logger.error('Server request failed', err, logContext);
+    logger.error("Server request failed", new Error(errorType), logContext);
   } else if (statusCode >= 400) {
-    logger.warn('Client request rejected', logContext);
+    logger.warn(`Client request failed: ${errorType}`, logContext);
   } else {
-    logger.info('Request failed', logContext);
+    logger.info(`Request failed: ${errorType}`, logContext);
   }
 
   // Send user-friendly error response
   res.status(statusCode).json({
-    success: false,
-    message: userMessage,
-    incidentId,
-    timestamp: new Date().toISOString(),
+    error: {
+      code: errorType,
+      message: userMessage,
+      ...(req.app.get("env") === "development" && {
+        details: { originalMessage: error.message },
+      }),
+    },
+    meta: { requestId: getRequestId(req), incidentId },
   });
 }
 
 /**
  * Handle 404 Not Found errors
  */
-export function notFoundHandler(req: Request, res: Response, next: NextFunction): void {
+export function notFoundHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const error = new AppError(
-    'Route not found',
+    `Route not found: ${req.method} ${req.path}`,
     404,
-    true
+    true,
   );
-  
+
   const requestContext = extractRequestContext(req);
-  logger.warn('Route not found', {
+  logger.warn(`Route not found: ${req.method} ${req.path}`, {
     ...requestContext,
-    operation: 'not_found',
-    errorType: 'NOT_FOUND'
+    operation: "not_found",
+    errorType: "NOT_FOUND",
   });
-  
+
   next(error);
-}
-
-/**
- * Wrapper for database operations with automatic error handling
- */
-export async function withDatabaseErrorHandling<T>(
-  operation: () => Promise<T>,
-  operationName: string,
-  params?: any
-): Promise<T> {
-  try {
-    return await operation();
-  } catch (error) {
-    const incidentId = logger.logDatabaseError(operationName, error as Error, params);
-    throw new AppError(
-      `Database operation failed: ${operationName}`,
-      500,
-      true,
-      incidentId
-    );
-  }
-}
-
-/**
- * Wrapper for business logic operations with automatic error handling
- */
-export async function withBusinessLogicErrorHandling<T>(
-  operation: () => Promise<T>,
-  functionName: string,
-  functionArgs?: any
-): Promise<T> {
-  try {
-    return await operation();
-  } catch (error) {
-    // If it's already an AppError, just re-throw it
-    if (error instanceof AppError || error instanceof ZodError) {
-      throw error;
-    }
-    
-    const incidentId = logger.logBusinessError(functionName, error as Error, functionArgs);
-    throw new AppError(
-      `Business logic error: ${functionName}`,
-      500,
-      true,
-      incidentId
-    );
-  }
 }
 
 /**
  * Create a standardized success response
  */
-export function createSuccessResponse(data: any, message?: string) {
+export function createSuccessResponse(data: unknown, requestId: string) {
   return {
-    success: true,
-    message: message || 'Operation completed successfully',
     data,
-    timestamp: new Date().toISOString()
+    meta: { requestId },
   };
 }
 
 /**
  * Middleware to log all requests
  */
-export function requestLogger(req: Request, res: Response, next: NextFunction): void {
+export function requestLogger(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const start = Date.now();
   const requestContext = extractRequestContext(req);
-  
+
   // Log the incoming request
-  logger.info('Incoming request', {
+  logger.info(`Incoming request: ${req.method} ${req.path}`, {
     ...requestContext,
-    operation: 'incoming_request'
+    operation: "incoming_request",
   });
-  
-  // Capture response details
-  const originalSend = res.send;
-  res.send = function(body) {
+
+  res.on("finish", () => {
     const duration = Date.now() - start;
-    
-    logger.logApiRequest(
-      req.method,
-      requestContext.url ?? '/',
-      res.statusCode,
-      duration,
-      {
-        ...requestContext,
-        responseSize: body ? body.length : 0
-      }
-    );
-    
-    return originalSend.call(this, body);
-  };
-  
+    logger.logApiRequest(req.method, req.path, res.statusCode, duration, {
+      ...requestContext,
+      responseSize: res.getHeader("Content-Length") ?? null,
+    });
+  });
+
   next();
 }

@@ -87,7 +87,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
     { era: Era.GNT5, name: "GNT-5", completed: training.runs[Era.GNT5]?.status === TrainingStatus.COMPLETE },
     { era: Era.GNT6, name: "GNT-6", completed: training.runs[Era.GNT6]?.status === TrainingStatus.COMPLETE },
     { era: Era.GNT7, name: "GNT-7", completed: training.runs[Era.GNT7]?.status === TrainingStatus.COMPLETE || currentEra === Era.GNT7 },
-    { era: "AGI" as any, name: "AGI", completed: agiAchieved }
+    { era: "AGI" as any, name: "Scenario complete", completed: agiAchieved }
   ];
 
   return (
@@ -127,7 +127,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
                   : nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED
                   ? "Complete prerequisites to unlock this training run."
                   : currentEra === Era.GNT7 
-                  ? `You've completed the final training ladder. Reach ${gameState.agiThreshold.toLocaleString()} intelligence to achieve AGI.`
+                  ? `You've completed the final training ladder. Reach ${gameState.agiThreshold.toLocaleString()} model capability to complete this scenario.`
                   : "Continue research and resource development to unlock training."}
               </p>
             </div>
@@ -162,7 +162,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
           {getPrimaryBlockerText() && !training.active && (
             <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-900/20 p-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" />
                 <div>
                   <p className="text-sm font-medium text-amber-300">Current Bottleneck</p>
                   <p className="mt-1 text-sm leading-relaxed text-amber-100">{getPrimaryBlockerText()}</p>
@@ -293,7 +293,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
                   <span className="text-white font-bold">{nextTrainingRun.daysRequired} days</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300 font-medium">Intelligence Gain</span>
+                  <span className="text-gray-300 font-medium">Model Capability Gain</span>
                   <span className="text-purple-400 font-bold">+{nextTrainingRun.intelligenceGain}</span>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
               {!prerequisitesMet && (
                 <div className="mt-4 p-3 bg-amber-900/20 border border-amber-700/50 rounded-lg">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-amber-300">Prerequisites Not Met</p>
                       <p className="text-xs text-amber-200/80 mt-1">
@@ -343,7 +343,7 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
             <div className="text-center py-8 text-gray-400">
               <Brain className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>You've reached the maximum era.</p>
-              <p className="text-sm mt-1">Final step: complete GNT-7 and cross the AGI intelligence threshold.</p>
+              <p className="text-sm mt-1">Final step: complete GNT-7 and cross the scenario's model capability threshold.</p>
             </div>
           )}
         </Card>
@@ -352,13 +352,13 @@ export function TrainingTab({ gameState, advanceTutorial, onStartTraining }: Tra
       {/* Educational Context */}
       <Card className="p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-700/50">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-6 w-6 text-blue-400 shrink-0 mt-1" />
+          <Sparkles className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
           <div>
             <h3 className="text-lg font-bold text-white mb-2">Why Training Matters</h3>
             <p className="text-gray-300 leading-relaxed">
               Training runs are transformational moments in AI development. Each successful training advances your AI to the next era, 
-              unlocking new capabilities, better revenue streams, and bringing you closer to Artificial General Intelligence. 
-              Training requires dedicating significant compute resources for 30 days, but the intelligence gains and capability 
+              unlocking new capabilities and better revenue streams within this simulation.
+              Training requires dedicating significant compute resources for 30 simulation ticks, but the model capability gains and capability
               improvements make it the most impactful investment you can make in your AI's evolution.
             </p>
           </div>

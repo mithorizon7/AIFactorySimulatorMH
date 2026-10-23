@@ -1,0 +1,70 @@
+name: Release gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6, verified 2026-10-22
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6, verified 2026-10-22
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm run check:runtime
+      - run: npm ci --ignore-scripts
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run check
+      - run: npm run check:csp:dev
+      - run: npm run test:tutorial
+      - run: npm run test:unit
+      - run: npm run test:persistence
+      - run: npm run build
+        env:
+          BUILD_SHA: ${{ github.sha }}
+          EXPECTED_BUILD_SHA: ${{ github.sha }}
+      - run: npm run test:api
+      - run: npm run test:coverage
+      - run: npm run check:bundle
+      - run: npm audit --omit=dev --audit-level=high
+      - name: Block critical full-tree advisories
+        run: npm audit --audit-level=critical
+
+      - name: Cache pinned browser binaries
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4, verified upstream tag
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chromium headless runtime and dependencies
+        run: npm exec -- playwright install --with-deps --only-shell chromium
+
+      - run: npm run test:e2e
+      - run: npm run test:e2e:production
+        env:
+          EXPECTED_BUILD_SHA: ${{ github.sha }}
+
+      - name: Upload browser evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-failure-evidence
+          path: output/playwright
+          if-no-files-found: ignore
+          retention-days: 7

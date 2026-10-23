@@ -381,7 +381,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
       if (type === 'intelligence') {
         return (
           <div className="space-y-2">
-            <p className="font-bold">Intelligence Score: {Math.floor(gameState.intelligence)}</p>
+            <p className="font-bold">Model Capability: {Math.floor(gameState.intelligence)}</p>
             <p>The culmination of your Compute, Data, and Algorithm investments. This is your main goal metric.</p>
             <p className="mt-1">
               <span className="font-semibold">Current Growth:</span> {getProductionRate()}
@@ -390,7 +390,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
               <span className="font-semibold">Real-world parallel:</span> The performance metrics used to evaluate AI systems like accuracy, reasoning ability, and general capabilities.
             </p>
             <p className="text-xs mt-1 text-amber-400">
-              <span className="font-semibold">Goal:</span> Reach {gameState.agiThreshold} to achieve AGI
+              <span className="font-semibold">Goal:</span> Finish GNT-7 training and reach {gameState.agiThreshold} Model Capability to complete this scenario
             </p>
           </div>
         );
@@ -504,7 +504,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
                 dominantBaseline="middle"
                 className="text-[9px] text-amber-200"
               >
-                Intelligence
+                Model Capability
               </text>
               
               <text 
@@ -641,7 +641,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
             top: `${nodePositions.intelligence.y - 38}px`,
           }}
         >
-          Intelligence
+          Model Capability
         </div>
       </>
     );
@@ -657,9 +657,9 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
         
         {/* Help tooltip */}
         <div className="bg-gray-700 p-2 rounded text-xs text-gray-300 max-w-xs">
-          <span className="font-semibold text-amber-400">Goal:</span> Reach {gameState.agiThreshold} Intelligence to achieve AGI
+          <span className="font-semibold text-amber-400">Goal:</span> Finish GNT-7 training and reach {gameState.agiThreshold} Model Capability to complete this scenario
           <div className="mt-1 text-[10px] border-t border-gray-600 pt-1">
-            Resources flow between systems and intelligence. Stronger connections improve production rates.
+            Resources flow between systems and Model Capability. Stronger connections improve simulated production rates.
           </div>
         </div>
       </div>
@@ -800,7 +800,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
               side="top"
             >
               <div className="bg-blue-400/20 px-2 py-1 rounded text-blue-400 cursor-help inline-block">
-                → Intelligence: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
+                → Model Capability: {(gameState.bonuses.computeToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
             </div>
@@ -857,7 +857,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
               side="top"
             >
               <div className="bg-green-400/20 px-2 py-1 rounded text-green-400 cursor-help inline-block">
-                → Intelligence: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
+                → Model Capability: {(gameState.bonuses.dataToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
             </div>
@@ -914,7 +914,7 @@ export default function ResourceFlowVisualization({ gameState }: ResourceFlowVis
               side="top"
             >
               <div className="bg-purple-400/20 px-2 py-1 rounded text-purple-400 cursor-help inline-block">
-                → Intelligence: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
+                → Model Capability: {(gameState.bonuses.algorithmToIntelligence * 100).toFixed(0)}%
               </div>
             </EducationalTooltip>
             </div>

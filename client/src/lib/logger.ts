@@ -1,18 +1,13 @@
 // Frontend logging utility that matches backend structured logging
 
-export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL";
 
 export interface LogContext {
   incidentId?: string;
-  userId?: string;
-  sessionId?: string;
   url?: string;
-  userAgent?: string;
   component?: string;
   operation?: string;
   functionName?: string;
-  functionArgs?: any;
-  stackTrace?: string;
   errorCode?: string;
   [key: string]: any;
 }
@@ -34,7 +29,10 @@ class FrontendLogger {
   private serviceName: string;
   private environment: string;
 
-  constructor(serviceName = 'ai-factory-frontend', environment = import.meta.env.MODE || 'development') {
+  constructor(
+    serviceName = "ai-factory-frontend",
+    environment = import.meta.env.MODE || "development",
+  ) {
     this.serviceName = serviceName;
     this.environment = environment;
   }
@@ -49,119 +47,188 @@ class FrontendLogger {
   /**
    * Core logging method that outputs structured logs
    */
-  private log(level: LogLevel, message: string, context?: LogContext, error?: Error): string {
-    const incidentId = context?.incidentId || (level === 'ERROR' || level === 'FATAL' ? this.generateIncidentId() : undefined);
-    
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error,
+  ): string {
+    const incidentId =
+      context?.incidentId ||
+      (level === "ERROR" || level === "FATAL"
+        ? this.generateIncidentId()
+        : undefined);
+
+    const sanitizedContext = this.sanitizeContext(context);
+    const productionMessage =
+      level === "ERROR" || level === "FATAL" ? "Frontend error" : message;
     const logEntry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
-      message,
+      message: this.environment === "development" ? message : productionMessage,
       incidentId,
       context: {
-        ...context,
+        ...sanitizedContext,
         service: this.serviceName,
         environment: this.environment,
-        url: window.location.href,
-        userAgent: navigator.userAgent,
+        url: window.location.pathname,
         // Add stack trace for errors
-        ...(error && { 
-          stackTrace: error.stack,
-          errorCode: error.name 
-        })
-      }
+        ...(error &&
+          this.environment === "development" && {
+            stackTrace: error.stack,
+            errorCode: error.name,
+          }),
+      },
     };
 
     // Add detailed error information
-    if (error) {
+    if (error && this.environment === "development") {
       logEntry.error = {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       };
     }
 
     // Output structured log (in development, use console methods with styling)
-    if (this.environment === 'development') {
-      const consoleMethod = level === 'ERROR' || level === 'FATAL' ? 'error' : 
-                          level === 'WARN' ? 'warn' : 'log';
+    if (this.environment === "development") {
+      const consoleMethod =
+        level === "ERROR" || level === "FATAL"
+          ? "error"
+          : level === "WARN"
+            ? "warn"
+            : "log";
       console[consoleMethod](`[${level}] ${message}`, logEntry);
     } else {
       // In production, use structured JSON logging
       console.log(JSON.stringify(logEntry));
     }
-    
-    return incidentId || '';
+
+    return incidentId || "";
+  }
+
+  private sanitizeContext(context?: LogContext): LogContext | undefined {
+    if (!context) return undefined;
+    const allowed = new Set([
+      "action",
+      "component",
+      "errorBoundary",
+      "errorCode",
+      "functionName",
+      "incidentId",
+      "method",
+      "operation",
+      "status",
+      "url",
+    ]);
+    return Object.fromEntries(
+      Object.entries(context)
+        .filter(([key]) => allowed.has(key))
+        .map(([key, value]) => [
+          key,
+          key === "url" && typeof value === "string"
+            ? new URL(value, window.location.origin).pathname
+            : value,
+        ]),
+    );
   }
 
   /**
    * Debug level logging
    */
   debug(message: string, context?: LogContext): void {
-    this.log('DEBUG', message, context);
+    this.log("DEBUG", message, context);
   }
 
   /**
    * Info level logging
    */
   info(message: string, context?: LogContext): void {
-    this.log('INFO', message, context);
+    this.log("INFO", message, context);
   }
 
   /**
    * Warning level logging
    */
   warn(message: string, context?: LogContext): void {
-    this.log('WARN', message, context);
+    this.log("WARN", message, context);
   }
 
   /**
    * Error level logging with full context
    */
   error(message: string, error?: Error, context?: LogContext): string {
-    return this.log('ERROR', message, context, error);
+    return this.log("ERROR", message, context, error);
   }
 
   /**
    * Fatal level logging for critical failures
    */
   fatal(message: string, error?: Error, context?: LogContext): string {
-    return this.log('FATAL', message, context, error);
+    return this.log("FATAL", message, context, error);
   }
 
   /**
    * Log API errors with context
    */
-  logApiError(method: string, url: string, status: number, error: Error, requestBody?: any, context?: LogContext): string {
-    return this.error(`API Error: ${method} ${url} ${status} - ${error.message}`, error, {
-      ...context,
-      operation: 'api_error',
-      method,
-      url,
-      status,
-      requestBody
-    });
+  logApiError(
+    method: string,
+    url: string,
+    status: number,
+    error: Error,
+    requestBody?: any,
+    context?: LogContext,
+  ): string {
+    return this.error(
+      `API Error: ${method} ${url} ${status} - ${error.message}`,
+      error,
+      {
+        ...context,
+        operation: "api_error",
+        method,
+        url,
+        status,
+        requestBody,
+      },
+    );
   }
 
   /**
    * Log component errors with context
    */
-  logComponentError(componentName: string, error: Error, context?: LogContext): string {
-    return this.error(`Component Error: ${componentName} - ${error.message}`, error, {
-      ...context,
-      operation: 'component_error',
-      component: componentName
-    });
+  logComponentError(
+    componentName: string,
+    error: Error,
+    context?: LogContext,
+  ): string {
+    return this.error(
+      `Component Error: ${componentName} - ${error.message}`,
+      error,
+      {
+        ...context,
+        operation: "component_error",
+        component: componentName,
+      },
+    );
   }
 
   /**
    * Log user interaction errors
    */
-  logUserInteractionError(action: string, error: Error, context?: LogContext): string {
-    return this.error(`User Interaction Error: ${action} - ${error.message}`, error, {
-      ...context,
-      operation: 'user_interaction_error',
-      action
-    });
+  logUserInteractionError(
+    action: string,
+    error: Error,
+    context?: LogContext,
+  ): string {
+    return this.error(
+      `User Interaction Error: ${action} - ${error.message}`,
+      error,
+      {
+        ...context,
+        operation: "user_interaction_error",
+        action,
+      },
+    );
   }
 
   /**
@@ -170,7 +237,7 @@ class FrontendLogger {
   logNetworkError(error: Error, context?: LogContext): string {
     return this.error(`Network Error: ${error.message}`, error, {
       ...context,
-      operation: 'network_error'
+      operation: "network_error",
     });
   }
 }
@@ -183,15 +250,11 @@ export class FrontendError extends Error {
   public readonly statusCode?: number;
   public readonly incidentId: string;
 
-  constructor(
-    message: string,
-    statusCode?: number,
-    incidentId?: string
-  ) {
+  constructor(message: string, statusCode?: number, incidentId?: string) {
     super(message);
     this.statusCode = statusCode;
     this.incidentId = incidentId || logger.generateIncidentId();
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -200,9 +263,9 @@ export class FrontendError extends Error {
 export function safeStringify(obj: any): string {
   const seen = new Set();
   return JSON.stringify(obj, (key, value) => {
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === "object" && value !== null) {
       if (seen.has(value)) {
-        return '[Circular Reference]';
+        return "[Circular Reference]";
       }
       seen.add(value);
     }

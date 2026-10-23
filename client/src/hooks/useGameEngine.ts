@@ -1,2628 +1,774 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  canUnlockBreakthrough,
-  createInitialGameState,
-  GameStateType,
-  Era,
-  GameEvent,
-  TrainingStatus,
-  getBaseTrainingRunForEra,
-  getNextBreakthroughGoal,
-  getNextEra,
-  getScaledInvestmentCost,
-  getTrainingBlockers,
-  getUpcomingTrainingRun,
-  hasAchievedAgi,
-  initialGameState,
-} from "@/lib/gameState";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/lib/utils";
+import {
+  createInitialGameState,
+  getNextEra,
+  type GameStateType,
+} from "@/lib/gameState";
 import { narrative } from "@/lib/narrativeContent";
+import {
+  EXPERIENCE_SCHEMA_VERSION,
+  applyExperienceCommand,
+  createFreshExperienceState,
+  type ExperienceCommand,
+  type ExperienceStateV1,
+} from "@shared/experience/schemas";
+import { GameSession, type SessionSnapshot } from "@/lib/persistence/session";
+import { createFreshGameState } from "@shared/game/factory";
+import type { GameCommand } from "@shared/game/schemas/commands";
+import type { EngineEffect } from "@shared/game/schemas/effects";
+import type { EngineResult, GameStateV2 } from "@shared/game/schemas/state";
+import type { CompletedRunSummaryV1 } from "@shared/game/schemas/completedRuns";
+import type { PersonalBestRecordV1 } from "@shared/game/schemas/completedRuns";
+import { buildCompletedRunSummary } from "@shared/game/completed-summary";
+import { COMMAND_SCHEMA_VERSION, RULESET_VERSION } from "@shared/version";
+
+const LEGACY_COMPAT_TEMPLATE = createInitialGameState();
+
+type CommandType = GameCommand["type"];
+type CommandPayload<T extends CommandType> = Extract<
+  GameCommand,
+  { type: T }
+>["payload"];
+
+let fallbackIdSequence = 0;
+
+function nextCommandId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  fallbackIdSequence += 1;
+  return `00000000-0000-4000-8000-${fallbackIdSequence
+    .toString(16)
+    .padStart(12, "0")}`;
+}
+
+function createRunSeed(): number {
+  if (typeof globalThis.crypto?.getRandomValues === "function") {
+    return globalThis.crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+  }
+  return 1;
+}
+
+function onboardingAlreadyCompleted(): boolean {
+  try {
+    return (
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("hasPlayedAIFactory") === "true"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function projectCompatibilityState(
+  simulation: GameStateV2,
+  experience: ExperienceStateV1,
+): GameStateType {
+  const applied = new Set(simulation.mechanics.appliedRecoveryGrantIds);
+  const breakthroughEffects = new Set(
+    simulation.mechanics.appliedBreakthroughEffectIds,
+  );
+  return {
+    ...simulation,
+    isRunning: simulation.clock.status === "running",
+    timeElapsed: simulation.clock.activeTick,
+    tutorial: experience.tutorial,
+    narrativeFlags: {
+      ...LEGACY_COMPAT_TEMPLATE.narrativeFlags,
+      totalInvestmentAmount: simulation.facts.totalSpend,
+      hasGrantedEarlyGrant: applied.has("gnt2_continuity_v1"),
+      hasGranted20MinBoost: false,
+      hasGrantedLateStageFunding: applied.has("gnt6_completion_v1"),
+      lastSeedFundingTime: simulation.mechanics.lastSeedFundingTick ?? -1,
+      lastInvestorFundingTime:
+        simulation.mechanics.lastInvestorFundingTick ?? -1,
+      highlightApiPlatform: experience.platformHighlights.api,
+      highlightChatbotPlatform: experience.platformHighlights.chatbot,
+      unsupervisedPretrainingBonus: breakthroughEffects.has(2),
+      fewShotTrainingBonus: breakthroughEffects.has(4),
+      selfImprovementTrainingBonus: breakthroughEffects.has(8),
+      verifiedSelfImprovementBonus: breakthroughEffects.has(14),
+      pocketAiConstraints: breakthroughEffects.has(21),
+    },
+    victoryStats: {
+      ...LEGACY_COMPAT_TEMPLATE.victoryStats,
+      totalTimeElapsed: simulation.clock.activeTick,
+      peakMoney: simulation.facts.peakMoney,
+      totalMoneyEarned:
+        simulation.facts.earnedRevenue + simulation.facts.externalFunding,
+      peakB2BSubscribers: simulation.facts.peakB2BCustomers,
+      peakB2CSubscribers: simulation.facts.peakB2CCustomers,
+      breakthroughsUnlocked: simulation.breakthroughs.filter(
+        (item) => item.unlocked,
+      ).length,
+      erasReached: Math.max(
+        1,
+        ["GNT-2", "GNT-3", "GNT-4", "GNT-5", "GNT-6", "GNT-7"].indexOf(
+          simulation.currentEra,
+        ) + 1,
+      ),
+      finalIntelligence: simulation.intelligence,
+      hasAchievedAGI: simulation.clock.status === "completed",
+    },
+    experienceState: experience,
+  } as GameStateType;
+}
+
+function commandSuccessCopy(type: CommandType): [string, string] | null {
+  const copy: Partial<Record<CommandType, [string, string]>> = {
+    INVEST_COMPUTE: [
+      "Infrastructure Upgraded",
+      "Compute infrastructure and cross-resource efficiency improved.",
+    ],
+    INVEST_ELECTRICITY: [
+      "Power Infrastructure Improved",
+      "Electricity efficiency and compute throughput improved.",
+    ],
+    INVEST_HARDWARE: [
+      "Hardware Quality Upgraded",
+      "More capable accelerators are now available.",
+    ],
+    INVEST_REGULATION: [
+      "Regulatory Resilience Improved",
+      "Compliance capacity and operational resilience improved.",
+    ],
+    INVEST_DATA_QUALITY: [
+      "Data Infrastructure Upgraded",
+      "Training-data quality and data synergies improved.",
+    ],
+    INVEST_DATA_QUANTITY: [
+      "Data Collection Expanded",
+      "The available training corpus is larger.",
+    ],
+    INVEST_DATA_FORMATS: [
+      "Data Formats Expanded",
+      "The system can learn from more modalities.",
+    ],
+    INVEST_ALGORITHM_ARCHITECTURE: [
+      "Algorithm Research Upgraded",
+      "Architecture capability and research efficiency improved.",
+    ],
+    HIRE_RESEARCH_ENGINEER: [
+      "Research Engineer Hired",
+      "Algorithm research will progress faster.",
+    ],
+    BUILD_API_PLATFORM: [
+      "API Platform Built",
+      "The API can now be activated for B2B customers.",
+    ],
+    BUILD_CHATBOT_PLATFORM: [
+      "Chatbot Platform Built",
+      "The chatbot can now be activated for subscribers.",
+    ],
+    UPGRADE_DEVELOPER_TOOLS: [
+      "Developer Tools Improved",
+      "The API developer experience now supports stronger growth.",
+    ],
+    UPGRADE_CHATBOT: [
+      "Chatbot Improved",
+      "Consumer product quality and growth potential improved.",
+    ],
+    RUN_MARKETING_CAMPAIGN: [
+      "Marketing Campaign Launched",
+      "The active chatbot service attracted new subscribers.",
+    ],
+    SET_MONTHLY_FEE: [
+      "Subscription Price Updated",
+      "The new fee will apply to chatbot revenue.",
+    ],
+  };
+  return copy[type] ?? null;
+}
 
 export function useGameEngine() {
-  const MIN_TRAINING_MONEY_MULTIPLIER = 0.65;
-  const MIN_TRAINING_COMPUTE_MULTIPLIER = 0.70;
-
-  const getFreshGameState = () => {
-    const state = createInitialGameState();
-    const hasPlayedBefore = localStorage.getItem('hasPlayedAIFactory');
-
-    if (hasPlayedBefore) {
-      state.tutorial.isActive = false;
-      state.tutorial.isCompleted = true;
-    }
-
-    return state;
-  };
-
-  const [gameState, setGameState] = useState<GameStateType>(() => {
-    return getFreshGameState();
-  });
-  const [isRunning, setIsRunning] = useState(false);
-  const [timeElapsed, setTimeElapsed] = useState(initialGameState.timeElapsed);
-  const timeElapsedRef = useRef(initialGameState.timeElapsed);
-  const [advisorMessage, setAdvisorMessage] = useState<any | null>(null);
-  const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const initialExperience = useRef<ExperienceStateV1 | null>(null);
+  if (!initialExperience.current) {
+    initialExperience.current = createFreshExperienceState(
+      onboardingAlreadyCompleted(),
+    );
+  }
 
-  // Keep a ref for time-based logic inside the interval loop
+  const [simulation, setSimulation] = useState<GameStateV2>(() =>
+    createFreshGameState({ ruleset: RULESET_VERSION, seed: createRunSeed() }),
+  );
+  const [experience, renderExperience] = useState<ExperienceStateV1>(
+    initialExperience.current,
+  );
+  const experienceRef = useRef(experience);
+  const sessionRef = useRef<GameSession | null>(null);
+  const [sessionSnapshot, setSessionSnapshot] =
+    useState<SessionSnapshot | null>(null);
+  const [openingError, setOpeningError] = useState<string | null>(null);
+  const [completionError, setCompletionError] = useState<string | null>(null);
+  const lifecycleTransitionRef = useRef(false);
+  const [isLifecycleTransition, setIsLifecycleTransition] = useState(false);
+  const [controllerTransitioning, setControllerTransitioning] = useState(false);
+  const [personalBests, setPersonalBests] = useState<PersonalBestRecordV1[]>(
+    [],
+  );
+  const completedRunRef = useRef<string | null>(null);
+  const simulationRef = useRef(simulation);
+
   useEffect(() => {
-    timeElapsedRef.current = timeElapsed;
-  }, [timeElapsed]);
-
-  // Format time as MM:SS
-  const formattedTime = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60).toString().padStart(2, '0')}`;
-
-  // Start the game
-  const startGame = () => {
-    // Initialize game start time for statistics tracking
-    setGameState(prevState => ({
-      ...prevState,
-      victoryStats: {
-        ...prevState.victoryStats,
-        gameStartTime: Date.now()
-      }
-    }));
-    setIsRunning(true);
-  };
-
-  // Pause the game
-  const pauseGame = () => {
-    setIsRunning(false);
-  };
-
-  // Reset the game
-  const resetGame = () => {
-    setIsRunning(false);
-    setTimeElapsed(initialGameState.timeElapsed);
-    timeElapsedRef.current = initialGameState.timeElapsed;
-    setGameState(getFreshGameState());
-    toast({
-      title: "Game Reset",
-      description: "All progress has been reset. Ready to start again!",
-    });
-  };
-
-  // Unified Tutorial System Functions
-  const advanceTutorial = () => {
-    setGameState(prevState => {
-      if (!prevState.tutorial.isActive) return prevState;
-      
-      const newState = { ...prevState };
-      
-      // Get current phase and step
-      const currentPhase = prevState.tutorial.phase;
-      const currentStep = prevState.tutorial.step;
-      
-      // Define phase limits (steps per phase)
-      const phaseLimits = { 1: 2, 2: 6, 3: 3, 4: 3 };
-      const maxStepForPhase = phaseLimits[currentPhase as keyof typeof phaseLimits] || 1;
-      
-      // Create immutable copy of tutorial state
-      if (currentStep < maxStepForPhase) {
-        // Advance within current phase
-        newState.tutorial = {
-          ...prevState.tutorial,
-          step: currentStep + 1
-        };
-      } else if (currentPhase < 4) {
-        // Move to next phase
-        newState.tutorial = {
-          ...prevState.tutorial,
-          phase: currentPhase + 1,
-          step: 1
-        };
-      } else {
-        // Tutorial is complete
-        newState.tutorial = {
-          ...prevState.tutorial,
-          isCompleted: true,
-          isActive: false
-        };
-        
-        toast({
-          title: "Tutorial Complete!",
-          description: "You're now ready to build the world's first AGI. Good luck!",
-          duration: 5000,
-        });
-      }
-      
-      return newState;
-    });
-  };
-
-  const skipTutorial = () => {
-    localStorage.setItem('hasPlayedAIFactory', 'true');
-
-    setGameState(prevState => ({
-      ...prevState,
-      tutorial: {
-        isActive: false,
-        phase: 4,
-        step: 2,
-        isCompleted: true,
-        hasShownWelcome: true,
-        completedActions: [],
-        currentTarget: null
-      }
-    }));
-    
-    toast({
-      title: "Tutorial Skipped",
-      description: "You can always restart the game to replay the tutorial.",
-      duration: 3000,
-    });
-  };
-
-  const completeTutorial = () => {
-    localStorage.setItem('hasPlayedAIFactory', 'true');
-
-    setGameState(prevState => ({
-      ...prevState,
-      tutorial: { 
-        isActive: false, 
-        phase: 4,
-        step: 3,
-        isCompleted: true,
-        hasShownWelcome: true,
-        completedActions: [],
-        currentTarget: null
-      }
-    }));
-  };
-
-  // Update victory statistics during gameplay
-  const updateVictoryStatistics = (state: GameStateType): GameStateType => {
-    // Calculate new values
-    const totalTimeElapsed = state.victoryStats.gameStartTime > 0 
-      ? Math.floor((Date.now() - state.victoryStats.gameStartTime) / 1000)
-      : state.victoryStats.totalTimeElapsed;
-    
-    const peakMoney = Math.max(state.victoryStats.peakMoney, state.money);
-    
-    const totalMoneyEarned = state.victoryStats.totalMoneyEarned;
-    
-    const peakB2BSubscribers = Math.max(state.victoryStats.peakB2BSubscribers, state.revenue.developers || 0);
-    const peakB2CSubscribers = Math.max(state.victoryStats.peakB2CSubscribers, state.revenue.subscribers || 0);
-    
-    const breakthroughsUnlocked = state.breakthroughs.filter(b => b.unlocked).length;
-    
-    const eraToNumber = {
-      [Era.GNT2]: 1,
-      [Era.GNT3]: 2,
-      [Era.GNT4]: 3,
-      [Era.GNT5]: 4,
-      [Era.GNT6]: 5,
-      [Era.GNT7]: 6
-    };
-    const erasReached = Math.max(state.victoryStats.erasReached, eraToNumber[state.currentEra] || 1);
-    
-    const hasAchievedAGI = hasAchievedAgi(state) || state.victoryStats.hasAchievedAGI;
-    
-    // Return new state with updated victoryStats
-    return {
-      ...state,
-      victoryStats: {
-        ...state.victoryStats,
-        totalTimeElapsed,
-        peakMoney,
-        totalMoneyEarned,
-        peakB2BSubscribers,
-        peakB2CSubscribers,
-        breakthroughsUnlocked,
-        erasReached,
-        finalIntelligence: state.intelligence,
-        hasAchievedAGI
-      }
-    };
-  };
-
-  const checkTutorialProgression = (state: GameStateType) => {
-    if (!state.tutorial.isActive || state.tutorial.isCompleted) return;
-    
-    // The new interactive tutorial system advances manually through user interactions
-    // This function can be used to trigger automatic advancement in special cases
-    // For now, we rely on manual progression through the TutorialGuide component
-  };
-
-  const calculateMaxComputeCapacity = (state: GameStateType) => {
-    const computeLevelMultiplier = Math.pow(2, Math.max(0, state.levels.compute - 1));
-    const moneyMultiplier = 1 + Math.max(0, state.computeInputs.money - 1) * 0.12;
-    const hardwareMultiplier = 1 + Math.max(0, state.computeInputs.hardware - 1) * 0.15;
-    const electricityMultiplier = 1 + Math.max(0, state.computeInputs.electricity - 1) * 0.10;
-    const breakthroughMultiplier = state.computeCapacity.breakthroughMultiplier ?? 1;
-
-    return Math.floor(
-      2000 *
-      computeLevelMultiplier *
-      moneyMultiplier *
-      hardwareMultiplier *
-      electricityMultiplier *
-      breakthroughMultiplier
-    );
-  };
-
-  const syncComputeCapacity = (state: GameStateType) => {
-    const nextMaxCapacity = calculateMaxComputeCapacity(state);
-    const capacityDelta = nextMaxCapacity - state.computeCapacity.maxCapacity;
-
-    state.computeCapacity.maxCapacity = nextMaxCapacity;
-    state.computeCapacity.available = Math.max(
-      0,
-      Math.min(
-        nextMaxCapacity,
-        state.computeCapacity.available + Math.max(0, capacityDelta)
-      )
-    );
-    state.computeCapacity.used = Math.min(state.computeCapacity.used, nextMaxCapacity);
-  };
-
-  const unlockEraServices = (state: GameStateType, era: Era) => {
-    if (era === Era.GNT3 && !state.revenue.apiAvailable) {
-      state.revenue.apiAvailable = true;
-      state.narrativeFlags.apiServiceUnlockedTime = Date.now();
-      toast({
-        title: "API Service Unlocked",
-        description: "Completing GNT-3 training unlocked your API business. Build the platform in the Economy tab to start selling access.",
-        duration: 5000,
-      });
-    }
-
-    if (era === Era.GNT4 && !state.revenue.chatbotAvailable) {
-      state.revenue.chatbotAvailable = true;
-      toast({
-        title: "Chatbot Service Unlocked",
-        description: "Completing GNT-4 training unlocked your consumer chatbot business. Build the platform in the Economy tab to launch it.",
-        duration: 5000,
-      });
-    }
-  };
-
-  // startEraTrainingRun - begins a training run for the next era
-  const startEraTrainingRun = () => {
-    // Determine the target era based on current era (always the next one)
-    const currentEra = gameState.currentEra;
-    let nextEra = getNextEra(currentEra);
-    
-    // Check if already at max era
-    if (nextEra === null) {
-      toast({
-        title: "Maximum Era Reached",
-        description: "You have reached the highest era possible. Finish the GNT-7 push by crossing the AGI intelligence threshold.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Get the training run for the next era if it exists
-    // Note: For GNT-2 era, there won't be a run in the runs object since we start at GNT-2 and train toward GNT-3
-    const trainingRun = Object.prototype.hasOwnProperty.call(gameState.training.runs, nextEra) ? 
-      gameState.training.runs[nextEra as keyof typeof gameState.training.runs] : null;
-    
-    // If we're already actively training, don't allow starting another run
-    if (gameState.training.active) {
-      toast({
-        title: "Training Already in Progress",
-        description: "Your AI is already undergoing training. Wait for the current training run to complete.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check if this era's training is already complete
-    if (trainingRun && trainingRun.status === TrainingStatus.COMPLETE) {
-      toast({
-        title: "Training Already Complete",
-        description: `You have already completed the training for ${trainingRun.name}.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const missingPrereqs = getTrainingBlockers(gameState, nextEra)
-      .filter((detail) => detail.type === 'prerequisite')
-      .map((detail) => `${detail.label}: ${detail.current}${detail.isPercentage ? '%' : ''}/${detail.required}${detail.isPercentage ? '%' : ''}`);
-    
-    // If training run is locked, check prerequisites
-    if (trainingRun && trainingRun.status === TrainingStatus.LOCKED) {
-      if (missingPrereqs.length > 0) {
-        toast({
-          title: "Cannot Start Training - Missing Prerequisites",
-          description: `You need to meet these requirements: ${missingPrereqs.join(", ")}`,
-          variant: "destructive",
-        });
-        return;
-      } else {
-        // All prerequisites met, change status to AVAILABLE
-        setGameState(prevState => {
-          const newState = { ...prevState };
-          if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
-            const typedEra = nextEra as keyof typeof newState.training.runs;
-            // Create immutable copy of training state
-            newState.training = {
-              ...prevState.training,
-              runs: { ...prevState.training.runs }
-            };
-            newState.training.runs[typedEra] = {
-              ...prevState.training.runs[typedEra],
-              status: TrainingStatus.AVAILABLE
-            } as any;
-          }
-          return newState;
-        });
-        
-        toast({
-          title: "Training Prerequisites Met!",
-          description: `You can now start the ${trainingRun.name} training run.`,
-        });
-        return;
-      }
-    }
-    
-    // Check if player has enough compute capacity available for the training run
-    if (!trainingRun || gameState.computeCapacity.available < trainingRun.computeRequired) {
-      toast({
-        title: "Insufficient Compute Capacity",
-        description: `You need ${trainingRun?.computeRequired.toLocaleString() || "more"} compute capacity available to run this training job. Upgrade your infrastructure.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // *** ADD THIS BLOCK ***
-    // Check for money cost
-    if (!trainingRun || gameState.money < trainingRun.moneyCost) {
-      toast({
-        title: "Insufficient Funds for Training",
-        description: `You need ${formatCurrency(trainingRun?.moneyCost || 0)} to start this training run.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Start the training run
-    setGameState(prevState => {
-      const newState = { ...prevState };
-
-      // Deduct the monetary cost
-      newState.money -= trainingRun.moneyCost;
-      
-      // Create immutable copy of computeCapacity
-      newState.computeCapacity = {
-        ...prevState.computeCapacity,
-        available: prevState.computeCapacity.available - trainingRun.computeRequired,
-        used: prevState.computeCapacity.used + trainingRun.computeRequired
-      };
-      
-      // Create immutable copy of training state
-      newState.training = {
-        ...prevState.training,
-        active: true,
-        daysRemaining: trainingRun.daysRequired,
-        computeReserved: trainingRun.computeRequired,
-        runs: { ...prevState.training.runs }
-      };
-      
-      // Update the specific training run if it exists
-      if (Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
-        const typedEra = nextEra as keyof typeof newState.training.runs;
-        const currentRun = prevState.training.runs[typedEra];
-        newState.training.runs[typedEra] = {
-          ...currentRun,
-          status: TrainingStatus.IN_PROGRESS,
-          daysRemaining: trainingRun.daysRequired,
-          isTrainingReserveActive: true
-        } as any;
-      }
-      
-      toast({
-        title: "Training Started!",
-      description: `Your AI has begun the ${trainingRun.name} training run. It will take ${trainingRun.daysRequired} days to complete.`,
-      });
-      
-      return newState;
-    });
-  };
-  
-  // Legacy trainModel function - now just a wrapper for startEraTrainingRun
-  const trainModel = () => {
-    startEraTrainingRun();
-  };
-
-  // Investment functions
-
-  // Apply specific game effects when a breakthrough is unlocked
-  const applyBreakthroughEffects = (state: GameStateType, breakthroughId: number) => {
-    // Flattened intelligence bonuses to prevent trivializing AGI threshold
-    const intelligenceBonuses = {
-      1: 10,   // Transformer Architecture 
-      2: 15,   // Unsupervised Pre-training
-      3: 20,   // Massive Parameter Scaling
-      4: 25,   // Few-Shot Learning
-      5: 30,   // Instruction Tuning
-      6: 35,   // Multimodal Integration
-      7: 50,   // Advanced Reasoning
-      8: 70,   // Self-Improvement Capabilities
-      9: 80,   // Advanced Tool Use
-      10: 120, // General Problem Solving (AGI)
-      11: 60,  // Continuous Learning & Live Personalization
-      12: 90,  // Neuro-Symbolic Reasoning
-      13: 95,  // World Models for Planning
-      14: 105, // Verified Self-Improvement
-      15: 110, // Agentic Autonomy & Orchestration
-      16: 55,  // Chain-of-Thought Reasoning
-      17: 40,  // Reinforcement Learning Training
-      18: 45,  // Next-Generation Computing Hardware
-      19: 50,  // AI-Generated Training Data
-      20: 85,  // AI Team Coordination
-      21: 55,  // Pocket-Sized AI
-    };
-    
-    state.intelligence += intelligenceBonuses[breakthroughId as keyof typeof intelligenceBonuses] || 15;
-    
-    // Helper function to apply capped bonus multipliers (prevents runaway growth)
-    const applyCappedBonus = (currentBonus: number, multiplier: number, maxCap: number = 2.5): number => {
-      const newBonus = currentBonus * multiplier;
-      return Math.min(newBonus, maxCap);
-    };
-
-    const applyTrainingRunDiscounts = ({
-      computeMultiplier = 1,
-      moneyMultiplier = 1,
-    }: {
-      computeMultiplier?: number;
-      moneyMultiplier?: number;
-    }) => {
-      Object.keys(state.training.runs).forEach((era) => {
-        const typedEra = era as keyof typeof state.training.runs;
-        const run = state.training.runs[typedEra];
-        const baseRun = getBaseTrainingRunForEra(typedEra as Era);
-
-        if (!baseRun || (run.status !== TrainingStatus.AVAILABLE && run.status !== TrainingStatus.LOCKED)) {
+    let disposed = false;
+    let unsubscribe: (() => void) | undefined;
+    let opened: GameSession | undefined;
+    void GameSession.open({
+      onboardingComplete: onboardingAlreadyCompleted(),
+      seed: createRunSeed(),
+    })
+      .then((session) => {
+        opened = session;
+        if (disposed) {
+          session.close();
           return;
         }
-
-        const minMoneyCost = Math.floor(baseRun.moneyCost * MIN_TRAINING_MONEY_MULTIPLIER);
-        const minComputeRequired = Math.floor(baseRun.computeRequired * MIN_TRAINING_COMPUTE_MULTIPLIER);
-
-        state.training.runs[typedEra] = {
-          ...run,
-          computeRequired: Math.max(
-            minComputeRequired,
-            Math.floor(run.computeRequired * computeMultiplier)
-          ),
-          moneyCost: Math.max(
-            minMoneyCost,
-            Math.floor(run.moneyCost * moneyMultiplier)
-          ),
-        } as any;
-      });
-    };
-    
-    switch (breakthroughId) {
-      case 1: // Transformer Architecture (2017)
-        // Foundational efficiency boost to all cross-resource synergies
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.08);
-        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.08);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.12); // Better attention-based processing
-        break;
-        
-      case 2: // Unsupervised Pre-training (2018-2019)
-        // Improves data efficiency and enables self-supervised learning
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.15);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.15);
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.20); // Better learning from raw data
-        // One-time training cost reduction
-        if (!state.narrativeFlags.unsupervisedPretrainingBonus) {
-          state.narrativeFlags.unsupervisedPretrainingBonus = true;
-          applyTrainingRunDiscounts({ moneyMultiplier: 0.90 });
-        }
-        break;
-        
-      case 3: // Massive Parameter Scaling (2019-2020)
-        // Dramatic intelligence improvements from scale
-        if (state.revenue.apiPlatformBuilt) {
-          state.revenue.baseApiRate += 200; // Premium for emergent capabilities
-        }
-        // Major compute-to-intelligence boost from scaling laws
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.25);
-        break;
-        
-      case 4: // Few-Shot Learning (2020)
-        // Improves API efficiency and reduces training costs
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 200; // Premium few-shot API pricing
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.20, 3.0);
-        }
-        // Improve training efficiency
-        if (!state.narrativeFlags.fewShotTrainingBonus) {
-          state.narrativeFlags.fewShotTrainingBonus = true;
-          applyTrainingRunDiscounts({ computeMultiplier: 0.90, moneyMultiplier: 0.90 });
-        }
-        break;
-        
-      case 5: // Instruction Tuning (2021-2022)
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 8; // Instruction following premium
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.30, 3.0);
-        }
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.15);
-        break;
-        
-      case 6: // Multimodal Integration (2022-2023)
-        // Unlocks multimodal capabilities
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 300; // Multimodal API premium
-        }
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 10; // Multimodal consumer features
-        }
-        // Enhanced data processing for multiple modalities
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.20);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.20);
-        break;
-        
-      case 7: // Advanced Reasoning (2024-Future)
-        // Premium enterprise reasoning services (requires platforms)
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 500; // Premium reasoning services
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.40, 3.0); // Capped enterprise adoption
-        }
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.25);
-        break;
-        
-      case 8: // Self-Improvement Capabilities (Future)
-        // AI systems that can improve themselves (significant but capped bonuses)
-        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.20);
-        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.20);
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
-        // Self-improvement reduces future research costs (additional 10% reduction, non-stacking)
-        if (!state.narrativeFlags.selfImprovementTrainingBonus) {
-          state.narrativeFlags.selfImprovementTrainingBonus = true;
-          applyTrainingRunDiscounts({ computeMultiplier: 0.90, moneyMultiplier: 0.90 });
-        }
-        break;
-        
-      case 9: // Advanced Tool Use (Future)
-        // AI systems that can effectively use external tools and APIs
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 800; // Tool-using AI premium (substantial but not excessive)
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.50, 3.0);
-        }
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.40, 3.0);
-        }
-        // Tool use enhances compute efficiency (capped)
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.15);
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.20);
-        break;
-        
-      case 10: // General Problem Solving (AGI Threshold)
-        // True artificial general intelligence capabilities (powerful but controlled)
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 1500; // AGI commands high premium but not infinite
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 2.0, 3.0); // Capped massive adoption
-        }
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 50; // Consumer AGI assistant premium (substantial but reasonable)
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 2.0, 3.0);
-        }
-        // AGI improves all cross-resource efficiencies (capped to prevent runaway)
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.25);
-        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.25);
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.25);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.25);
-        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.25);
-        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.25);
-        // Intelligence bonuses get significant but capped boosts
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.40);
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.40);
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.40);
-        break;
-        
-      case 11: // Continuous Learning & Live Personalization (GNT-5)
-        // Improves customer retention and enables adaptive services
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.15, 3.0); // 15% retention boost
-          state.revenue.monthlyFee += 8; // Personalization premium
-        }
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.12, 3.0); // Adaptive API pricing
-        }
-        // Improves data-to-algorithm efficiency through continuous learning
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.18);
-        break;
-        
-      case 12: // Neuro-Symbolic Reasoning (GNT-6)
-        // Reduces defect rates and unlocks premium verified services
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 600; // Premium for verified reasoning
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.25, 3.0); // Formal verification appeals to enterprises
-        }
-        // Symbolic reasoning enhances algorithm-to-intelligence conversion
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.22);
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.15); // Structured data becomes more valuable
-        break;
-        
-      case 13: // World Models for Planning (GNT-6)
-        // Reduces experiment time and opens new market opportunities
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 450; // Simulation and planning services
-        }
-        // World models require and enhance compute-data synergy
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.20);
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.20);
-        // Planning capabilities boost intelligence efficiency
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.18);
-        break;
-        
-      case 14: // Verified Self-Improvement (GNT-6)
-        // Enables compounding efficiency and additional training cost reduction
-        if (!state.narrativeFlags.verifiedSelfImprovementBonus) {
-          state.narrativeFlags.verifiedSelfImprovementBonus = true;
-          applyTrainingRunDiscounts({ computeMultiplier: 0.85, moneyMultiplier: 0.85 });
-        }
-        // Verified self-improvement enhances all algorithm bonuses
-        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.25);
-        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.25);
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.35);
-        break;
-        
-      case 15: // Agentic Autonomy & Orchestration (GNT-7)
-        // Unlocks autonomous workflow systems and premium enterprise services
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 1200; // Premium enterprise orchestration
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.80, 3.0); // High enterprise demand
-        }
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 30; // Autonomous assistant capabilities
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.60, 3.0);
-        }
-        // Agentic systems enhance cross-resource coordination
-        state.bonuses.computeToData = applyCappedBonus(state.bonuses.computeToData, 1.20);
-        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.20);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.20);
-        // Strong intelligence boosts from orchestration capabilities
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
-        break;
-        
-      case 16: // Chain-of-Thought Reasoning (GNT-5)
-        // Improves API success rate and reduces errors
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 180; // Premium for higher accuracy
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.15, 3.0);
-        }
-        // Chain-of-thought improves algorithm effectiveness
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.20);
-        break;
-        
-      case 17: // Reinforcement Learning Training (GNT-4)
-        // Improves training effectiveness
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 150; // Premium for adaptive learning
-        }
-        // RL enhances algorithm-to-intelligence conversion
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.15); // Better use of feedback data
-        break;
-        
-      case 18: // Next-Generation Computing Hardware (GNT-5)
-        // Major hardware improvements reduce costs and increase efficiency
-        state.computeCapacity.breakthroughMultiplier = (state.computeCapacity.breakthroughMultiplier ?? 1) * 1.50;
-        syncComputeCapacity(state);
-        // Training cost reduction
-        applyTrainingRunDiscounts({ computeMultiplier: 0.70, moneyMultiplier: 0.75 });
-        // Improved compute efficiency
-        state.bonuses.computeToAlgorithm = applyCappedBonus(state.bonuses.computeToAlgorithm, 1.20);
-        state.bonuses.computeToIntelligence = applyCappedBonus(state.bonuses.computeToIntelligence, 1.15);
-        break;
-        
-      case 19: // AI-Generated Training Data (GNT-5)
-        // Dramatically improves data production efficiency and quality
-        state.bonuses.dataToCompute = applyCappedBonus(state.bonuses.dataToCompute, 1.40); // 40% data efficiency increase
-        state.bonuses.dataToAlgorithm = applyCappedBonus(state.bonuses.dataToAlgorithm, 1.35); // Better synthetic data utilization
-        state.bonuses.dataToIntelligence = applyCappedBonus(state.bonuses.dataToIntelligence, 1.25); // Higher quality synthetic data
-        // Enables training on specialized domains
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 160; // Specialized domain capabilities
-        }
-        break;
-        
-      case 20: // AI Team Coordination (GNT-6)
-        // Multiple AI systems working together with higher success rates
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.baseApiRate += 300; // Premium for multi-agent systems
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.25, 3.0);
-        }
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 15; // Better chatbot through coordination
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.20, 3.0);
-        }
-        // Multi-agent systems enhance algorithm coordination
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.30);
-        state.bonuses.algorithmToData = applyCappedBonus(state.bonuses.algorithmToData, 1.25);
-        break;
-        
-      case 21: // Pocket-Sized AI (GNT-5)
-        // Edge AI reduces cloud costs and improves responsiveness
-        if (state.revenue.chatbotPlatformBuilt && state.revenue.chatbotEnabled) {
-          state.revenue.monthlyFee += 12; // Privacy and speed premium
-          state.revenue.subscriberGrowthRate = applyCappedBonus(state.revenue.subscriberGrowthRate, 1.25, 3.0);
-        }
-        if (state.revenue.apiPlatformBuilt && state.revenue.apiEnabled) {
-          state.revenue.developerGrowthRate = applyCappedBonus(state.revenue.developerGrowthRate, 1.18, 3.0);
-        }
-        // Edge AI improves algorithm efficiency
-        state.bonuses.algorithmToIntelligence = applyCappedBonus(state.bonuses.algorithmToIntelligence, 1.18);
-        state.bonuses.algorithmToCompute = applyCappedBonus(state.bonuses.algorithmToCompute, 1.15); // More efficient inference
-        break;
-        
-      default:
-        // Unknown breakthrough - minimal effect
-        break;
-    }
-    
-    toast({
-      title: "Breakthrough Unlocked!",
-      description: "Your AI capabilities have permanently improved. Check your bonuses and revenue rates for lasting enhancements!",
-    });
-  };
-
-  // Check for breakthroughs and trigger era progression when appropriate
-  const checkBreakthroughs = (state: GameStateType) => {
-    const updatedBreakthroughs = [...state.breakthroughs];
-    let breakthroughUnlocked = false;
-    
-    // Find the first unlocked breakthrough (throttling: one per tick maximum)
-    for (let i = 0; i < updatedBreakthroughs.length; i++) {
-      const breakthrough = updatedBreakthroughs[i];
-      if (!breakthrough.unlocked && !breakthroughUnlocked && canUnlockBreakthrough(state, breakthrough)) {
-        breakthroughUnlocked = true;
-        updatedBreakthroughs[i] = { ...breakthrough, unlocked: true };
-
-        // Apply specific game effects for this breakthrough (includes intelligence bonus)
-        applyBreakthroughEffects(state, breakthrough.id);
-
-        // NEW: Trigger Spark's message for breakthroughs
-        const breakthroughKey = `BREAKTHROUGH_${breakthrough.id}`;
-        if (narrative[breakthroughKey as keyof typeof narrative]) {
-          setAdvisorMessage(narrative[breakthroughKey as keyof typeof narrative]);
-        } else {
-          // Fallback for unthemed breakthroughs
-          toast({
-            title: `Breakthrough: ${breakthrough.name}`,
-            description: breakthrough.description,
-          });
-        }
-
-        const previewState = { ...state, breakthroughs: updatedBreakthroughs };
-        const nextBreakthrough = getNextBreakthroughGoal(previewState);
-        if (nextBreakthrough) {
-          state.currentGoal.id = nextBreakthrough.id;
-          state.currentGoal.progress = 0;
-        }
-
-        // Stop after unlocking one breakthrough per tick
-        break;
-      }
-    }
-    
-    return updatedBreakthroughs;
-  };
-  
-  // Advance to the next era and trigger educational content and effects
-  const advanceToNextEra = (state: GameStateType, newEra: Era) => {
-    // Map of historical AI system information for educational content
-    const eraInfo = {
-      [Era.GNT2]: {
-        year: "2019",
-        parameterCount: "1.5 billion",
-        significance: "GNT-2 was a breakthrough in language modeling capabilities and coherent text generation."
-      },
-      [Era.GNT3]: {
-        year: "2020",
-        parameterCount: "175 billion",
-        significance: "GNT-3 demonstrated emergent abilities with few-shot learning and could perform tasks it wasn't explicitly trained on."
-      },
-      [Era.GNT4]: {
-        year: "2023",
-        parameterCount: "Over a trillion",
-        significance: "GNT-4 introduced multimodal capabilities and significantly improved reasoning and instruction following."
-      },
-      [Era.GNT5]: {
-        year: "Near future",
-        parameterCount: "Unknown",
-        significance: "Hypothetical future model with enhanced reasoning and problem-solving capabilities."
-      },
-      [Era.GNT6]: {
-        year: "Future",
-        parameterCount: "Unknown",
-        significance: "Speculative model with advanced tool use and possibly approaching general intelligence."
-      },
-      [Era.GNT7]: {
-        year: "Future",
-        parameterCount: "Unknown",
-        significance: "Theoretical model at the threshold of Artificial General Intelligence."
-      }
-    };
-    
-    // NEW: Trigger Spark's message for era advancement
-    const eraKey = `ERA_ADVANCE_${newEra.replace('-', '')}`;
-    if (narrative[eraKey as keyof typeof narrative]) {
-      setAdvisorMessage(narrative[eraKey as keyof typeof narrative]);
-    } else {
-      // Fallback toast for unthemed eras
-      toast({
-        title: `Era Advanced: ${newEra}`,
-        description: (newEra === Era.GNT2 || newEra === Era.GNT3 || newEra === Era.GNT4) ? 
-          `Your AI has reached the ${newEra} era! Released in ${eraInfo[newEra].year} with ${eraInfo[newEra].parameterCount} parameters. ${eraInfo[newEra].significance}` :
-          `Your AI has reached the theoretical ${newEra} era! ${eraInfo[newEra].significance}`,
-        duration: 5000,
-      });
-    }
-    
-    // Each era has unique bonus effects to represent the technological leap
-    switch (newEra) {
-      case Era.GNT3:
-        // GNT-3 was about massive scaling
-        state.production.compute *= 1.5;
-        state.bonuses.computeToIntelligence *= 1.3;
-        break;
-        
-      case Era.GNT4:
-        // GNT-4 was about multimodal and improved reasoning
-        state.production.algorithm *= 1.5;
-        state.bonuses.algorithmToIntelligence *= 1.4;
-        break;
-        
-      case Era.GNT5:
-        // Hypothetical future advance with better data utilization
-        state.production.data *= 1.6;
-        state.bonuses.dataToIntelligence *= 1.5;
-        break;
-        
-      case Era.GNT6:
-        // Major future leap with dramatic improvements across all dimensions
-        state.production.compute *= 1.7;
-        state.production.data *= 1.7;
-        state.production.algorithm *= 1.7;
-        break;
-        
-      case Era.GNT7:
-        // Final era with path to AGI
-        state.bonuses.computeToIntelligence *= 2.0;
-        state.bonuses.dataToIntelligence *= 2.0;
-        state.bonuses.algorithmToIntelligence *= 2.0;
-        break;
-    }
-
-    unlockEraServices(state, newEra);
-    
-    // Trigger era-specific events
-    checkAndTriggerEvents(state);
-  };
-  
-  // Check for and process investment milestones based on intelligence level
-  const checkInvestmentMilestones = (state: GameStateType) => {
-    // Only check milestones if we have a next milestone to check
-    if (state.nextMilestoneId <= state.investmentMilestones.length) {
-      // Get the next milestone
-      const milestone = state.investmentMilestones.find(m => m.id === state.nextMilestoneId);
-      
-      if (milestone && !milestone.unlocked && state.intelligence >= milestone.requiredIntelligence) {
-        // Unlock the milestone
-        milestone.unlocked = true;
-        
-        // Add funding to the player's money
-        state.money += milestone.funding;
-        state.revenue.investors += milestone.funding;
-        state.victoryStats.totalMoneyEarned += milestone.funding;
-        
-        // Set the next milestone to check
-        state.nextMilestoneId++;
-        
-        // Notify the player
-        toast({
-          title: `Investment Round: ${milestone.name}`,
-          description: `You've reached the intelligence threshold for ${milestone.name}! Investors have contributed $${milestone.funding.toLocaleString()}.\n\nContext: ${milestone.realWorldParallel}`,
-          duration: 7000,
-        });
-      }
-    }
-  };
-
-  // FAIL-SAFE FUNDING MECHANISM: Prevents players from getting completely stuck
-  const checkFailSafeFunding = (state: GameStateType) => {
-    // Emergency funding if player is stuck with very low money and hasn't progressed (ONE-TIME ONLY)
-    if (state.money < 50 && timeElapsedRef.current > 300 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGrantedEarlyGrant) {
-      const emergencyFunding = 2000 + Math.floor(state.intelligence * 5);
-      state.money += emergencyFunding;
-      state.revenue.investors += emergencyFunding;
-      state.victoryStats.totalMoneyEarned += emergencyFunding;
-      state.narrativeFlags.hasGrantedEarlyGrant = true;
-      
-      toast({
-        title: "Emergency Research Grant!",
-        description: `A government research grant has provided $${emergencyFunding.toLocaleString()} to prevent your AI research from stalling.`,
-        duration: 7000,
-      });
-    }
-    
-    // Major progress boost if player is severely behind pace (ONE-TIME ONLY + BREAKTHROUGH UNLOCK)
-    if (timeElapsedRef.current > 600 && state.currentEra === Era.GNT2 && !state.narrativeFlags.hasGranted20MinBoost) {
-      // Mark breakthrough event as used
-      state.narrativeFlags.hasGranted20MinBoost = true;
-      
-      // Provide targeted help: unlock first GNT-2 breakthrough and boost resources to meet prerequisites
-      const firstBreakthrough = state.breakthroughs.find(b => b.era === Era.GNT2 && !b.unlocked);
-      if (firstBreakthrough) {
-        firstBreakthrough.unlocked = true;
-        state.intelligence += 100; // Breakthrough bonus
-      }
-      
-      // Ensure intelligence reaches at least 200 for GNT-3 progression (deterministic)
-      if (state.intelligence < 200) {
-        state.intelligence = 200;
-      }
-      
-      // Boost levels to meet basic GNT-3 training prerequisites
-      state.levels.compute = Math.max(state.levels.compute, 2);
-      state.levels.data = Math.max(state.levels.data, 2);
-      state.levels.algorithm = Math.max(state.levels.algorithm, 2);
-      
-      // Provide funding for investments
-      state.money += 3000;
-      state.revenue.investors += 3000;
-      state.victoryStats.totalMoneyEarned += 3000;
-      
-      // CRITICAL: Immediately re-evaluate breakthroughs and era progression
-      state.breakthroughs = checkBreakthroughs(state);
-      
-      toast({
-        title: "Research Breakthrough Event!",
-        description: "Your persistent effort has paid off! A major breakthrough has unlocked and your research infrastructure has been upgraded to meet progression requirements.",
-        duration: 8000,
-      });
-    }
-    
-    // Late-game funding safety net for expensive final training runs (ONE-TIME ONLY)
-    if (state.intelligence >= 750 && state.money < 100000 && state.currentEra === Era.GNT6 && !state.narrativeFlags.hasGrantedLateStageFunding) {
-      const lateStageFunding = 500000;
-      state.money += lateStageFunding;
-      state.revenue.investors += lateStageFunding;
-      state.victoryStats.totalMoneyEarned += lateStageFunding;
-      state.narrativeFlags.hasGrantedLateStageFunding = true;
-      
-      toast({
-        title: "Strategic Investment Partnership!",
-        description: `A major tech corporation has partnered with you, providing $${lateStageFunding.toLocaleString()} to accelerate your path to AGI.`,
-        duration: 7000,
-      });
-    }
-  };
-
-  // Check for contextual strategic warnings and hints
-  const checkStrategicWarnings = (state: GameStateType) => {
-    // Skip if already showing an advisor message
-    if (advisorMessage) return;
-    
-    const computeUsageRatio = state.computeCapacity.used / state.computeCapacity.maxCapacity;
-    
-    // Critical compute warning
-    if (computeUsageRatio >= 0.95 && !state.narrativeFlags.hasSeenComputeWarning) {
-      setAdvisorMessage(narrative.COMPUTE_WARNING_CRITICAL);
-      state.narrativeFlags.hasSeenComputeWarning = true;
-      return;
-    }
-    
-    // High compute warning
-    if (computeUsageRatio >= 0.9 && !state.narrativeFlags.hasSeenComputeWarning) {
-      setAdvisorMessage(narrative.COMPUTE_WARNING_HIGH);
-      state.narrativeFlags.hasSeenComputeWarning = true;
-      return;
-    }
-    
-    // Low funds warning
-    if (state.money < 100 && !state.narrativeFlags.hasSeenLowFundsWarning) {
-      setAdvisorMessage(narrative.LOW_FUNDS_WARNING);
-      state.narrativeFlags.hasSeenLowFundsWarning = true;
-      return;
-    }
-    
-    // First revenue milestone
-    if ((state.revenue.b2b > 0 || state.revenue.b2c > 0) && !state.narrativeFlags.hasSeenFirstRevenue) {
-      setAdvisorMessage(narrative.FIRST_REVENUE_MILESTONE);
-      state.narrativeFlags.hasSeenFirstRevenue = true;
-      return;
-    }
-    
-    // Investment milestone tracking
-    const totalSpent = state.narrativeFlags.totalInvestmentAmount;
-    if (totalSpent >= 1000000 && !state.narrativeFlags.hasSeenInvestmentMilestone1M) {
-      setAdvisorMessage(narrative.INVESTMENT_MILESTONE_1M);
-      state.narrativeFlags.hasSeenInvestmentMilestone1M = true;
-      return;
-    }
-    
-    if (totalSpent >= 10000000 && !state.narrativeFlags.hasSeenInvestmentMilestone10M) {
-      setAdvisorMessage(narrative.INVESTMENT_MILESTONE_10M);
-      state.narrativeFlags.hasSeenInvestmentMilestone10M = true;
-      return;
-    }
-    
-    // Strategic balance advice (triggered when heavily imbalanced)
-    const maxLevel = Math.max(state.levels.compute, state.levels.data, state.levels.algorithm);
-    const minLevel = Math.min(state.levels.compute, state.levels.data, state.levels.algorithm);
-    if (maxLevel - minLevel >= 3 && !state.narrativeFlags.hasSeenBalanceAdvice) {
-      setAdvisorMessage(narrative.BALANCE_STRATEGY_ADVICE);
-      state.narrativeFlags.hasSeenBalanceAdvice = true;
-      return;
-    }
-  };
-
-  // Check for and trigger events specific to the current era
-  const checkAndTriggerEvents = (state: GameStateType) => {
-    // Process events that match the current era and haven't been triggered yet
-    const currentEraEvents = state.events.filter(
-      event => event.era === state.currentEra && !event.triggered
-    );
-    
-    // For simplicity, trigger the first untriggered event for this era
-    if (currentEraEvents.length > 0) {
-      const event = currentEraEvents[0];
-      event.triggered = true;
-      
-      // Apply event effects
-      applyEventEffect(state, event);
-      
-      // Notify the player
-      toast({
-        title: `Event: ${event.title}`,
-        description: `${event.description}\n\nHistorical Context: ${event.realWorldContext}`,
-        duration: 5000,
-      });
-    }
-  };
-  
-  // Apply the effects of an event to the game state
-  const applyEventEffect = (state: GameStateType, event: GameEvent) => {
-    const { effect } = event;
-    const impactModifier = effect.impact === 'positive' ? 1 + effect.magnitude/100 : 
-                           effect.impact === 'negative' ? 1 - effect.magnitude/100 : 1;
-    
-    switch (effect.type) {
-      case 'compute':
-        state.production.compute *= impactModifier;
-        break;
-        
-      case 'data':
-        state.production.data *= impactModifier;
-        break;
-        
-      case 'algorithm':
-        state.production.algorithm *= impactModifier;
-        break;
-        
-      case 'money': {
-        const previousMoney = state.money;
-        state.money *= impactModifier;
-        const moneyDelta = state.money - previousMoney;
-        if (moneyDelta > 0) {
-          state.victoryStats.totalMoneyEarned += moneyDelta;
-        }
-        break;
-      }
-        
-      case 'regulation':
-        state.computeInputs.regulation = Math.max(1, 
-          state.computeInputs.regulation + (effect.impact === 'positive' ? 1 : -1));
-        break;
-        
-      case 'hardware':
-        state.computeInputs.hardware = Math.max(1, 
-          state.computeInputs.hardware + (effect.impact === 'positive' ? 1 : -1));
-        syncComputeCapacity(state);
-        break;
-        
-      case 'multiple':
-        // For multiple effects, apply a smaller boost to several areas
-        state.production.compute *= Math.sqrt(impactModifier);
-        state.production.data *= Math.sqrt(impactModifier);
-        state.production.algorithm *= Math.sqrt(impactModifier);
-        break;
-    }
-  };
-
-  // Calculate revenue from resources and levels
-  const calculateRevenue = (state: GameStateType) => {
-    const newState = { ...state };
-
-    // ===== Calculate Developer and Subscriber Growth =====
-    
-    // Only calculate if the appropriate services are available and enabled
-    if (newState.revenue.apiAvailable && newState.revenue.apiEnabled) {
-      // Developer growth is primarily driven by intelligence level
-      // Formula models how developers are attracted to more capable AI APIs
-      const intelligenceInfluence = Math.pow(newState.intelligence / 100, 1.2);
-      const developerToolsEffect = 1 + (newState.revenue.developerToolsLevel * 0.05);
-      
-      // Base growth rate (starts small and accelerates with intelligence)
-      if (timeElapsedRef.current % 5 === 0) { // Update every 5 seconds
-        // Bootstrap initial developers if none yet
-        if (newState.revenue.developers === 0) {
-          // Initial developers based on intelligence (small number to start)
-          const initialDevelopers = Math.max(5, Math.floor(newState.intelligence / 20));
-          newState.revenue.developers = initialDevelopers;
-          
-          if (initialDevelopers > 0) {
-            toast({
-              title: "First Developers!",
-              description: `Your API has attracted its first ${initialDevelopers} developers!`,
-            });
-          }
-        } else {
-          // Calculate growth rate for existing developer base
-          const baseGrowthRate = 0.05 * intelligenceInfluence;
-          let adjustedGrowthRate = baseGrowthRate * developerToolsEffect;
-          
-          // MARKET SATURATION: Apply diminishing returns for large developer counts
-          // Simulates market saturation as suggested in economic tuning document
-          const currentDevelopers = newState.revenue.developers;
-          if (currentDevelopers > 10000) {
-            // Beyond 10K developers, growth rate is reduced significantly
-            const saturationFactor = Math.max(0.1, 1 - ((currentDevelopers - 10000) / 50000));
-            adjustedGrowthRate *= saturationFactor;
-          } else if (currentDevelopers > 5000) {
-            // Between 5K-10K, gradual slowdown begins
-            const saturationFactor = 1 - ((currentDevelopers - 5000) / 25000);
-            adjustedGrowthRate *= saturationFactor;
-          }
-          
-          // Cap maximum growth rate to prevent explosive scaling
-          adjustedGrowthRate = Math.min(adjustedGrowthRate, 0.15); // Max 15% per update
-          
-          // Store the growth rate for UI display
-          newState.revenue.developerGrowthRate = adjustedGrowthRate;
-          
-          // Apply growth to developer count
-          newState.revenue.developers = Math.floor(
-            newState.revenue.developers * (1 + adjustedGrowthRate)
-          );
-        }
-      }
-    }
-    
-    // Subscriber growth (only if service is available and enabled)
-    if (newState.revenue.chatbotAvailable && newState.revenue.chatbotEnabled) {
-      // Update subscribers count (every 10 seconds = monthly)
-      if (timeElapsedRef.current % 10 === 0 && timeElapsedRef.current > 0) {
-        // Bootstrap initial subscribers if none yet
-        if (newState.revenue.subscribers === 0) {
-          // Initial subscribers based on intelligence (small number to start)
-          const initialSubscribers = Math.max(50, Math.floor(newState.intelligence / 4));
-          newState.revenue.subscribers = initialSubscribers;
-          
-          toast({
-            title: "First Subscribers!",
-            description: `Your chatbot service has attracted its first ${initialSubscribers} subscribers!`,
-          });
-        } else {
-          // Intelligence & Data Quality impact on subscriber growth
-          const intelligenceImpact = Math.pow(newState.intelligence / 150, 1.3);
-          const dataQualityImpact = newState.dataInputs.quality * 0.1;
-          
-          // Base growth rate (scales with intelligence)
-          const baseGrowthRate = 0.01 + (intelligenceImpact * 0.01);
-          
-          // Chatbot improvement bonus (5% more subscribers per level)
-          const chatbotBonus = newState.revenue.chatbotImprovementLevel * 0.05;
-          
-          // Calculate total subscriber growth rate
-          let totalGrowthRate = baseGrowthRate * (1 + dataQualityImpact) * (1 + chatbotBonus);
-          
-          // MARKET SATURATION: Apply diminishing returns for large subscriber counts
-          // Simulates consumer market saturation as suggested in economic tuning document
-          const currentSubscribers = newState.revenue.subscribers;
-          if (currentSubscribers > 100000) {
-            // Beyond 100K subscribers, growth slows significantly 
-            const saturationFactor = Math.max(0.05, 1 - ((currentSubscribers - 100000) / 500000));
-            totalGrowthRate *= saturationFactor;
-          } else if (currentSubscribers > 50000) {
-            // Between 50K-100K, gradual market saturation begins
-            const saturationFactor = 1 - ((currentSubscribers - 50000) / 250000);
-            totalGrowthRate *= saturationFactor;
-          }
-          
-          // Cap maximum growth rate to prevent explosive scaling
-          totalGrowthRate = Math.min(totalGrowthRate, 0.12); // Max 12% per update
-          
-          // Store the growth rate for UI display
-          newState.revenue.subscriberGrowthRate = totalGrowthRate;
-          
-          // Update subscriber count with growth
-          newState.revenue.subscribers = Math.floor(
-            newState.revenue.subscribers * (1 + totalGrowthRate)
-          );
-        }
-      }
-    }
-    
-    // ===== Calculate B2B Revenue Based on Developers =====
-    
-    // B2B Revenue: Companies paying to use your AI APIs
-    // New formula: B2B Income = Developers × Base API Rate × (1 + Developer Tools Bonus)
-    
-    // Developer tools bonus: 5% per level
-    const developerToolsBonus = newState.revenue.developerToolsLevel * 0.05;
-    
-    // ===== Auto-Optimize API Rate Based on Market Conditions =====
-    if (newState.revenue.apiAvailable) {
-      // Base rate ranges from $500 to $5000
-      const minRate = 500;
-      const maxRate = 5000;
-      
-      // Market demand factor: More developers = higher rates possible
-      const marketDemandFactor = Math.min(2.0, 1 + (newState.revenue.developers / 1000)); // Caps at 2x for 1000+ developers
-      
-      // Service quality factor: Poor service = must reduce rates
-      const maxCap = Math.max(1, newState.computeCapacity.maxCapacity); // Prevent division by zero
-      const serviceQualityFactor = Math.max(0.5, 
-        newState.computeCapacity.used / maxCap < 0.9 ? 1.0 : 
-        newState.computeCapacity.used / maxCap < 0.95 ? 0.8 : 0.6
+        sessionRef.current = session;
+        const sync = () => {
+          const snapshot = session.getSnapshot();
+          simulationRef.current = snapshot.simulation;
+          experienceRef.current = snapshot.experience;
+          setSimulation(snapshot.simulation);
+          renderExperience(snapshot.experience);
+          setSessionSnapshot(snapshot);
+          setControllerTransitioning(session.isTransitioning());
+        };
+        sync();
+        unsubscribe = session.subscribe(sync);
+      })
+      .catch((error: unknown) =>
+        setOpeningError(
+          error instanceof Error
+            ? error.message
+            : "Could not open your saved run.",
+        ),
       );
-      
-      // Developer tools factor: Better tools = can charge premium rates
-      const toolsQualityFactor = 1 + (newState.revenue.developerToolsLevel * 0.1); // 10% per level
-      
-      // Intelligence factor: Smarter AI = higher value
-      const intelligenceFactor = Math.min(2.0, 1 + (newState.intelligence / 500)); // Caps at 2x for 500+ intelligence
-      
-      // Calculate optimal rate
-      const optimalRate = Math.round(
-        minRate * marketDemandFactor * serviceQualityFactor * toolsQualityFactor * intelligenceFactor
-      );
-      
-      // Clamp to valid range and update
-      newState.revenue.baseApiRate = Math.max(minRate, Math.min(maxRate, optimalRate));
-    }
-    
-    // Calculate revenue per developer (scales with API rate and tools)
-    const revenuePerDeveloper = newState.revenue.baseApiRate * (1 + developerToolsBonus);
-    
-    // Calculate base B2B revenue before any penalties
-    const potentialB2bRevenue = Math.floor(
-      newState.revenue.developers * revenuePerDeveloper / 100 // Divide by 100 to scale appropriately
-    );
-    
-    // ===== Calculate B2C Revenue Based on Subscribers =====
-    
-    // B2C Revenue: End-User Subscriptions
-    // Formula: B2C Income = Subscribers × Monthly Fee
-    
-    // Calculate potential B2C revenue before any penalties
-    const potentialB2cRevenue = Math.floor(
-      newState.revenue.subscribers * newState.revenue.monthlyFee
-    );
-    
-    // ===== Apply Compute Usage and Service Quality Penalties =====
-    
-    // Only consume compute if we have active services
-    const hasActiveCustomers = newState.revenue.apiEnabled || 
-                              (newState.revenue.chatbotEnabled && newState.revenue.subscribers > 0);
-    
-    if (hasActiveCustomers) {
-      // Calculate initial compute demand based on potential customer usage
-      const potentialB2bComputeUsage = newState.revenue.apiEnabled ? 
-        Math.ceil((potentialB2bRevenue / 1000) * 5) : 0; // 5 compute per $1000 of B2B revenue
-      
-      const potentialB2cComputeUsage = newState.revenue.subscribers > 0 ? 
-        Math.ceil(newState.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
-      
-      const potentialTotalComputeUsage = potentialB2bComputeUsage + potentialB2cComputeUsage;
-      
-      let serviceQualityRatio = 1.0; // Default: full quality
-      
-      // Check compute capacity thresholds based on potential usage
-      const maxCap = Math.max(1, newState.computeCapacity.maxCapacity); // Prevent division by zero
-      const usageRatio = (newState.computeCapacity.used + potentialTotalComputeUsage) / maxCap;
-      const isApproachingCapacity = usageRatio >= 0.9 && usageRatio < 0.95;
-      const isCriticalCapacity = usageRatio >= 0.95;
-      
-      // Determine service quality degradation based on compute pressure
-      if (isCriticalCapacity) {
-        // Critical situation: 95%+ usage causes severe degradation
-        // Scale from 0.7 (at 95% usage) down to 0.5 (at 100% usage)
-        const criticalPressure = (usageRatio - 0.95) / 0.05; // 0 to 1 as we go from 95% to 100%
-        serviceQualityRatio = Math.max(0.5, 0.7 - (0.2 * criticalPressure));
-        
-        // Notify about critical outages
-        if (timeElapsedRef.current % 10 === 0) {
-          toast({
-            title: "CRITICAL SYSTEM OVERLOAD!",
-            description: "Your services are experiencing major outages. Expect significant customer loss and revenue impact.",
-            variant: "destructive",
-            duration: 4000,
-          });
-        }
-      }
-      else if (isApproachingCapacity) {
-        // High but not critical: 90-95% usage causes moderate degradation
-        // Scale from 1.0 (at 90% usage) down to 0.7 (at 95% usage)
-        const capacityPressure = (usageRatio - 0.9) / 0.05; // 0 to 1 as we go from 90% to 95%
-        serviceQualityRatio = Math.max(0.7, 1 - (0.3 * capacityPressure));
-        
-        // Notify about service degradation
-        if (timeElapsedRef.current % 10 === 0) {
-          toast({
-            title: "Compute System Under Pressure",
-            description: "Your system is experiencing intermittent outages. Upgrade your compute capacity to avoid customer loss.",
-            variant: "destructive",
-            duration: 3000,
-          });
-        }
-      }
-      
-      // If we don't have enough compute for the potential demand, reduce service quality
-      if (newState.computeCapacity.available < potentialTotalComputeUsage && potentialTotalComputeUsage > 0) {
-        // Calculate how much compute we can actually provide compared to what's needed
-        serviceQualityRatio = Math.min(serviceQualityRatio, newState.computeCapacity.available / potentialTotalComputeUsage);
-        
-        // Show a warning toast when service quality drops severely
-        if (timeElapsedRef.current % 10 === 0) {
-          toast({
-            title: "Critical Compute Shortage!",
-            description: "Your services are severely degraded due to compute shortage. Significant customer loss is expected.",
-            variant: "destructive",
-            duration: 3000,
-          });
-        }
-        
-        // Handle customer loss for severe outages (completely out of compute)
-        if (timeElapsedRef.current % 10 === 0) {
-          // Max 25% churn for zero compute outages
-          const severeChurnRate = 0.25 * (1 - serviceQualityRatio);
-          
-          // Apply to subscribers
-          if (newState.revenue.subscribers > 0) {
-            const previousSubscribers = newState.revenue.subscribers;
-            newState.revenue.subscribers = Math.floor(
-              newState.revenue.subscribers * (1 - severeChurnRate)
-            );
-            
-            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
-            if (lostSubscribers > 10) {
-              toast({
-                title: "SEVERE: Mass User Exodus!",
-                description: `${lostSubscribers} subscribers have abandoned your platform due to complete service failure.`,
-                variant: "destructive",
-                duration: 4000,
-              });
-            }
-          }
-          
-          // Also lose some developers (B2B customers)
-          if (newState.revenue.developers > 0) {
-            const previousDevelopers = newState.revenue.developers;
-            newState.revenue.developers = Math.floor(
-              newState.revenue.developers * (1 - severeChurnRate * 0.8) // Developers are slightly more tolerant
-            );
-            
-            const lostDevelopers = previousDevelopers - newState.revenue.developers;
-            if (lostDevelopers > 5) {
-              toast({
-                title: "Developers Abandoning Platform!",
-                description: `${lostDevelopers} developers have stopped using your API due to complete system failure.`,
-                variant: "destructive",
-                duration: 3000,
-              });
-            }
-          }
-        }
-      }
-      
-      // Additional churn mechanics for high load and critical load scenarios
-      if (timeElapsedRef.current % 10 === 0) {
-        // Apply customer churn for warning (90-95%) and critical (95%+) load 
-        if (isApproachingCapacity || isCriticalCapacity) {
-          // Calculate churn rates based on severity
-          const warningChurnRate = isApproachingCapacity ? 0.05 : 0; // 5% monthly churn at warning level
-          const criticalChurnRate = isCriticalCapacity ? 0.15 : 0;   // 15% monthly churn at critical level
-          const totalChurnRate = warningChurnRate + criticalChurnRate;
-          
-          // Apply to subscribers (B2C)
-          if (newState.revenue.subscribers > 0 && totalChurnRate > 0) {
-            const previousSubscribers = newState.revenue.subscribers;
-            newState.revenue.subscribers = Math.floor(
-              newState.revenue.subscribers * (1 - totalChurnRate)
-            );
-            
-            const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
-            if (lostSubscribers > 10) {
-              toast({
-                title: isCriticalCapacity ? "Critical: Subscribers Leaving!" : "Warning: Some Subscribers Leaving",
-                description: `${lostSubscribers} subscribers have left due to ${isCriticalCapacity ? "major" : "intermittent"} service outages.`,
-                variant: "destructive",
-                duration: 3000,
-              });
-            }
-          }
-          
-          // Apply to developers (B2B) - they're slightly more tolerant
-          if (newState.revenue.developers > 0 && totalChurnRate > 0) {
-            const previousDevelopers = newState.revenue.developers;
-            const b2bChurnRate = totalChurnRate * 0.8; // Developers are slightly more tolerant
-            
-            newState.revenue.developers = Math.floor(
-              newState.revenue.developers * (1 - b2bChurnRate)
-            );
-            
-            const lostDevelopers = previousDevelopers - newState.revenue.developers;
-            if (lostDevelopers > 5) {
-              toast({
-                title: isCriticalCapacity ? "Developers Abandoning Platform!" : "Some Developers Leaving",
-                description: `${lostDevelopers} developers have reduced usage due to ${isCriticalCapacity ? "significant" : "minor"} reliability issues.`,
-                variant: "destructive",
-                duration: 3000,
-              });
-            }
-          }
-        }
-      }
-      
-      // Apply service quality ratio to revenue (min 50% of potential revenue)
-      const qualityImpact = 0.5 + (serviceQualityRatio * 0.5);
-      
-      // Set final revenue amounts based on potential and service quality
-      newState.revenue.b2b = Math.floor(potentialB2bRevenue * qualityImpact);
-      newState.revenue.b2c = Math.floor(potentialB2cRevenue * qualityImpact);
-      
-      // ***** FIX: Calculate actual compute usage based on final revenue *****
-      const actualB2bComputeUsage = newState.revenue.apiEnabled ? 
-        Math.ceil((newState.revenue.b2b / 1000) * 5) : 0; // 5 compute per $1000 of actual B2B revenue
-      
-      const actualB2cComputeUsage = newState.revenue.subscribers > 0 ? 
-        Math.ceil(newState.revenue.subscribers * 0.01) : 0; // 0.01 compute per subscriber
-      
-      const actualTotalComputeUsage = actualB2bComputeUsage + actualB2cComputeUsage;
-      
-      // Track customer usage separately for UI display
-      newState.computeCapacity.customerUsage = actualTotalComputeUsage;
-      
-      // Apply actual compute usage
-      if (actualTotalComputeUsage > 0) {
-        if (newState.computeCapacity.available >= actualTotalComputeUsage) {
-          newState.computeCapacity.available -= actualTotalComputeUsage;
-          newState.computeCapacity.used += actualTotalComputeUsage;
-        } else {
-          // Use all available compute
-          const usedAmount = newState.computeCapacity.available;
-          newState.computeCapacity.available = 0;
-          newState.computeCapacity.used += usedAmount;
-        }
-      }
-    } else {
-      // No active customers, so zero revenue and usage
-      newState.revenue.b2b = 0;
-      newState.revenue.b2c = 0;
-      newState.computeCapacity.customerUsage = 0;
-    }
-    
-    // ===== Funding =====
-
-    // Early-game booster funding (first 2 minutes) - one lightweight recurring seed assist only
-    if (timeElapsedRef.current >= 30 && newState.narrativeFlags.lastSeedFundingTime < 0) {
-      const seedFunding = 2000 + Math.floor(newState.intelligence * 10);
-      newState.money += seedFunding;
-      newState.revenue.investors += seedFunding;
-      newState.victoryStats.totalMoneyEarned += seedFunding;
-      newState.narrativeFlags.lastSeedFundingTime = timeElapsedRef.current;
-      toast({
-        title: "Seed Funding Received!",
-        description: `You've secured $${formatCurrency(seedFunding)} in seed funding to help develop your AI.`,
-      });
-    }
-    else {
-      // Regular operational revenue from B2B and B2C
-      const operationalRevenue = newState.revenue.b2b + newState.revenue.b2c;
-      newState.money += operationalRevenue;
-      newState.victoryStats.totalMoneyEarned += operationalRevenue;
-    }
-    
-    return newState;
-  };
-
-  // Money allocation functions
-  const allocateMoneyToCompute = () => {
-    const cost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          computeInputs: {
-            ...prevState.computeInputs,
-            money: prevState.computeInputs.money + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          levels: {
-            ...prevState.levels,
-            compute: prevState.levels.compute + 1
-          },
-          production: {
-            ...prevState.production,
-            compute: prevState.production.compute * 1.1
-          },
-          bonuses: {
-            ...prevState.bonuses,
-            computeToData: prevState.bonuses.computeToData * 1.05,
-            computeToAlgorithm: prevState.bonuses.computeToAlgorithm * 1.05,
-            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.05
-          }
-        };
-        
-        syncComputeCapacity(newState);
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Infrastructure Upgraded",
-        description: `Compute level increased! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(100, gameState.levels.compute + 1, gameState.currentEra))}.`,
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to improve compute infrastructure.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allocateMoneyToData = () => {
-    const cost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          dataInputs: {
-            ...prevState.dataInputs,
-            quality: prevState.dataInputs.quality + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          levels: {
-            ...prevState.levels,
-            data: prevState.levels.data + 1
-          },
-          production: {
-            ...prevState.production,
-            data: prevState.production.data * 1.1
-          },
-          bonuses: {
-            ...prevState.bonuses,
-            dataToCompute: prevState.bonuses.dataToCompute * 1.05,
-            dataToAlgorithm: prevState.bonuses.dataToAlgorithm * 1.05,
-            dataToIntelligence: prevState.bonuses.dataToIntelligence * 1.05
-          }
-        };
-
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Data Infrastructure Upgraded",
-        description: `Data quality improved! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(75, gameState.levels.data + 1, gameState.currentEra))}.`,
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to improve data quality.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allocateMoneyToAlgorithm = () => {
-    const cost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
-    
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          algorithmInputs: {
-            ...prevState.algorithmInputs,
-            architectures: prevState.algorithmInputs.architectures + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          production: {
-            ...prevState.production,
-            algorithm: prevState.production.algorithm * 1.15
-          },
-          levels: {
-            ...prevState.levels,
-            algorithm: prevState.levels.algorithm + 1
-          },
-          bonuses: {
-            ...prevState.bonuses,
-            algorithmToCompute: prevState.bonuses.algorithmToCompute * 1.05,
-            algorithmToData: prevState.bonuses.algorithmToData * 1.05,
-            algorithmToIntelligence: prevState.bonuses.algorithmToIntelligence * 1.07
-          }
-        };
-
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Algorithm Infrastructure Upgraded",
-        description: `Research team enhanced! Next upgrade costs $${formatCurrency(getScaledInvestmentCost(125, gameState.levels.algorithm + 1, gameState.currentEra))}.`,
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to hire better research engineers.`,
-        variant: "destructive",
-      });
-    }
-  };
-  
-  // Function to hire a research engineer
-  const hireResearchEngineer = () => {
-    const engineerCost = 250; // Cost to hire one engineer
-    
-    if (gameState.money >= engineerCost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - engineerCost,
-          algorithmInputs: {
-            ...prevState.algorithmInputs,
-            researchEngineers: (prevState.algorithmInputs.researchEngineers || 0) + 1
-          },
-          training: {
-            ...prevState.training,
-            algorithmResearchRate: prevState.training.algorithmResearchRate + 0.5
-          }
-        };
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Research Engineer Hired",
-        description: "A new engineer has joined your research team! Algorithm research will progress faster.",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need $${engineerCost} to hire a research engineer.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Calculate production rates based on enabling inputs and synergy bonuses
-  const calculateProductionRates = (state: GameStateType) => {
-    const newState = { ...state };
-    
-    // Compute production formula:
-    // Base rate + (enabling inputs bonuses) × (1 + sum of synergy bonuses)
-    const computeEnablingInputsBonus = 
-      0.2 * state.computeInputs.money + 
-      0.15 * state.computeInputs.electricity + 
-      0.3 * state.computeInputs.hardware + 
-      0.1 * state.computeInputs.regulation;
-    
-    const computeSynergyBonus = 
-      (state.bonuses.dataToCompute - 1) + 
-      (state.bonuses.algorithmToCompute - 1);
-    
-    const newCompute = 
-      (state.production.compute * 0.8) + // Base production with mild decay to prevent runaway growth
-      computeEnablingInputsBonus * (1 + computeSynergyBonus);
-    
-    // Data production formula
-    const dataEnablingInputsBonus = 
-      0.25 * state.dataInputs.quality + 
-      0.2 * state.dataInputs.quantity + 
-      0.15 * state.dataInputs.formats;
-    
-    const dataSynergyBonus = 
-      (state.bonuses.computeToData - 1) + 
-      (state.bonuses.algorithmToData - 1);
-    
-    const newData = 
-      (state.production.data * 0.8) + 
-      dataEnablingInputsBonus * (1 + dataSynergyBonus);
-    
-    // Algorithm production formula
-    const algoEnablingInputsBonus = 
-      0.35 * state.algorithmInputs.architectures;
-    
-    const algoSynergyBonus = 
-      (state.bonuses.computeToAlgorithm - 1) + 
-      (state.bonuses.dataToAlgorithm - 1);
-    
-    const newAlgorithm = 
-      (state.production.algorithm * 0.8) + 
-      algoEnablingInputsBonus * (1 + algoSynergyBonus);
-    
-    // Create new production object instead of mutating
-    newState.production = {
-      compute: newCompute,
-      data: newData,
-      algorithm: newAlgorithm
-    };
-    
-    return newState;
-  };
-  
-  // Game loop
-  useEffect(() => {
-    if (isRunning) {
-      const handleGameTick = () => {
-        // Increment time elapsed (keep ref in sync for interval-safe logic)
-        const nextTimeElapsed = timeElapsedRef.current + 1;
-        timeElapsedRef.current = nextTimeElapsed;
-        setTimeElapsed(nextTimeElapsed);
-
-        setGameState(prevState => {
-          // Calculate updated production rates based on enabling inputs and synergies
-          let newState = calculateProductionRates(prevState);
-          
-          // Update resources based on production rates
-          newState.resources.compute += newState.production.compute;
-          newState.resources.data += newState.production.data;
-          newState.resources.algorithm += newState.production.algorithm;
-          
-          // Increment game days elapsed (representing time passing)
-          // Each real second = 1 in-game day
-          newState.daysElapsed += 1;
-          
-          // Check and process investment milestones
-          checkInvestmentMilestones(newState);
-          
-          // FAIL-SAFE MECHANISM: Check for players who might be stuck
-          checkFailSafeFunding(newState);
-          
-          // Check for strategic warnings and contextual hints
-          checkStrategicWarnings(newState);
-          
-          // Check tutorial progression
-          checkTutorialProgression(newState);
-
-          // Keep compute capacity aligned with the actual infrastructure state every tick.
-          syncComputeCapacity(newState);
-          
-          // Update compute capacity availability
-          // Compute capacity recharges slowly over time (3% of max per tick)
-          // Base recharge rate that's affected by the power efficiency level
-          const baseRechargeRate = 0.03;
-          const powerEfficiencyBonus = 1 + (newState.computeInputs.electricity * 0.02); // 2% boost per level
-          const rechargeRate = baseRechargeRate * powerEfficiencyBonus;
-          
-          // Recharge available capacity
-          const rechargeAmount = Math.ceil(newState.computeCapacity.maxCapacity * rechargeRate);
-          newState.computeCapacity.available = Math.min(
-            newState.computeCapacity.maxCapacity,
-            newState.computeCapacity.available + rechargeAmount
-          );
-          
-          // Handle active training runs
-          if (newState.training.active && newState.training.daysRemaining > 0) {
-            // Decrement the days remaining
-            newState.training.daysRemaining -= 1;
-            
-            // Find the current active training run
-            const activeEra = getNextEra(newState.currentEra);
-            
-            // Skip if we're in final era or if the next era doesn't exist
-            if (activeEra === null || !(activeEra in newState.training.runs)) {
-              newState.training.active = false;
-              newState.training.daysRemaining = 0;
-              return newState;
-            }
-            
-            const activeTrainingRun = Object.prototype.hasOwnProperty.call(newState.training.runs, activeEra) ?
-              newState.training.runs[activeEra as keyof typeof newState.training.runs] : undefined;
-            
-            // Skip processing if no active training run exists for this era
-            if (!activeTrainingRun) {
-              newState.training.active = false;
-              newState.training.daysRemaining = 0;
-              return newState;
-            }
-            
-            // Check if the training run is in progress
-            // The activeTrainingRun should always exist at this point due to our previous checks
-            if (activeTrainingRun.status === TrainingStatus.IN_PROGRESS) {
-              // Create immutable copy of training runs
-              newState.training = {
-                ...newState.training,
-                runs: { ...newState.training.runs }
-              };
-              
-              // Create immutable copy of the active training run
-              const updatedTrainingRun = {
-                ...activeTrainingRun,
-                daysRemaining: activeTrainingRun.daysRemaining - 1
-              };
-              
-              // Update the runs with the new training run object
-              newState.training.runs[activeEra as keyof typeof newState.training.runs] = updatedTrainingRun as any;
-              
-              // Check if the training run is complete
-              if (newState.training.daysRemaining <= 0) {
-                // Mark the run as complete with immutable update
-                newState.training.runs[activeEra as keyof typeof newState.training.runs] = {
-                  ...updatedTrainingRun,
-                  status: TrainingStatus.COMPLETE,
-                  isTrainingReserveActive: false,
-                  daysRemaining: 0
-                } as any;
-                
-                // Release the reserved compute
-                newState.computeCapacity.used = Math.max(0, newState.computeCapacity.used - newState.training.computeReserved);
-                newState.training.computeReserved = 0;
-                
-                // Apply intelligence boost
-                newState.intelligence += activeTrainingRun.intelligenceGain;
-                
-                // Reset the active training flag
-                newState.training.active = false;
-                newState.training.daysRemaining = 0; // Ensure global training days is also 0
-                
-                // Advance to the next era
-                newState.currentEra = activeEra;
-                
-                // Apply era-specific bonuses
-                advanceToNextEra(newState, activeEra);
-                
-                // CRITICAL FIX: Reset algorithm research progress for the next era
-                // This ensures each era requires meaningful research investment
-                newState.training.algorithmResearchProgress = 0;
-                
-                // Show completion message
-                toast({
-                  title: `${activeTrainingRun.name} Complete!`,
-                  description: `Your AI has advanced to ${activeEra} era, gaining ${activeTrainingRun.intelligenceGain} intelligence!`,
-                  duration: 8000,
-                });
-              }
-            }
-          } else {
-            // If no active training, progress algorithm research
-            // Free compute (not used by customers or training) directly contributes to research progress
-            
-            // Calculate three-way compute allocation:
-            // 1. Customer Usage - B2B/B2C services (already calculated earlier in the game loop)
-            const customerComputeUsage = newState.computeCapacity.customerUsage || 0;
-            
-            // 2. Training Usage - Reserved for active training runs
-            const trainingComputeUsage = newState.training.computeReserved;
-            
-            // 3. Free Compute - Available for research (total available minus what customers are using)
-            // Compute not being used by customers or training automatically contributes to research
-            const freeCompute = Math.max(0, 
-               newState.computeCapacity.available - customerComputeUsage - trainingComputeUsage
-            );
-            
-            // Store the free compute value for UI display
-            newState.computeCapacity.freeCompute = freeCompute;
-            
-            // Free compute provides a direct boost to research, with diminishing returns
-            // Higher algorithm architectures investment increases efficiency
-            const architectureMultiplier = 1 + (newState.algorithmInputs.architectures * 0.1); // 10% boost per architecture level
-            const computeEfficiency = Math.log10(freeCompute + 1) * 0.5; // Logarithmic scaling for free compute (increased from 0.2 to 0.5)
-            
-            // *** ADD a bonus for hired engineers ***
-            const engineerBonus = (newState.algorithmInputs.researchEngineers || 0) * 0.25; // Each engineer adds a flat 0.25 to the rate
-            
-            // Calculate new research rate:
-            // Base rate + engineer bonus + (compute efficiency * architecture multiplier)
-            newState.training.algorithmResearchRate = Math.max( 
-              0.1, // Minimum base rate even with no compute
-              0.5 + engineerBonus + (computeEfficiency * architectureMultiplier) // Add the engineer bonus here
-            );
-            
-            // Apply the research rate to progress
-            newState.training.algorithmResearchProgress = Math.min(
-              100, // Cap at 100%
-              newState.training.algorithmResearchProgress + newState.training.algorithmResearchRate
-            );
-            
-            // If we've reached 100% research, check if we can unlock the next training run
-            if (newState.training.algorithmResearchProgress >= 100) {
-              const nextEra = getNextEra(newState.currentEra);
-              
-              // Handle special case for final era - no further training runs
-              if (nextEra === null) {
-                // Already at final era, no next training run
-                return newState;
-              }
-              
-              // Skip if next era run doesn't exist
-              if (!Object.prototype.hasOwnProperty.call(newState.training.runs, nextEra)) {
-                return newState;
-              }
-              
-              const nextTrainingRun = newState.training.runs[nextEra as keyof typeof newState.training.runs];
-              
-              if (nextTrainingRun && nextTrainingRun.status === TrainingStatus.LOCKED) {
-                // Check if other prerequisites are met
-                let allPrereqsMet = true;
-                
-                if (newState.levels.compute < nextTrainingRun.prerequisites.compute) allPrereqsMet = false;
-                if (newState.dataInputs.quality < nextTrainingRun.prerequisites.data.quality) allPrereqsMet = false;
-                if (newState.dataInputs.quantity < nextTrainingRun.prerequisites.data.quantity) allPrereqsMet = false;
-                if (newState.dataInputs.formats < nextTrainingRun.prerequisites.data.formats) allPrereqsMet = false;
-                if (newState.algorithmInputs.architectures < nextTrainingRun.prerequisites.algorithm.architectures) allPrereqsMet = false;
-                if (newState.computeInputs.electricity < nextTrainingRun.prerequisites.computeInputs.electricity) allPrereqsMet = false;
-                if (newState.computeInputs.hardware < nextTrainingRun.prerequisites.computeInputs.hardware) allPrereqsMet = false;
-                if (newState.computeInputs.regulation < nextTrainingRun.prerequisites.computeInputs.regulation) allPrereqsMet = false;
-                
-                if (allPrereqsMet) {
-                  // Unlock the training run with immutable update
-                  newState.training = {
-                    ...newState.training,
-                    runs: { ...newState.training.runs }
-                  };
-                  newState.training.runs[nextEra as keyof typeof newState.training.runs] = {
-                    ...nextTrainingRun,
-                    status: TrainingStatus.AVAILABLE
-                  } as any;
-                  
-                  // Notify the player
-                  toast({
-                    title: "Training Unlocked!",
-                    description: `Your AI is ready for the ${nextTrainingRun.name}. Open the Training tab to review blockers and start the run.`,
-                    duration: 5000,
-                  });
-                }
-              }
-            }
-          }
-          
-          // Gradually reduce used compute over time (simulates jobs completing)
-          if (newState.computeCapacity.used > 0 && !newState.training.active) {
-            // Reduce used compute by 1% per tick, but only for non-training compute
-            const computeRecovery = Math.ceil((newState.computeCapacity.used - newState.training.computeReserved) * 0.01);
-            newState.computeCapacity.used = Math.max(newState.training.computeReserved, 
-              newState.computeCapacity.used - computeRecovery);
-          }
-          
-          // Update intelligence based on resource levels and bonuses
-          // This creates a multiplicative effect when resources work together
-          const computeContribution = newState.levels.compute * newState.bonuses.computeToIntelligence;
-          const dataContribution = newState.levels.data * newState.bonuses.dataToIntelligence;
-          const algorithmContribution = newState.levels.algorithm * newState.bonuses.algorithmToIntelligence;
-          
-          // Synergy bonus when all three resources are developed together
-          // The more balanced your development, the stronger the synergy
-          const synergyMultiplier = Math.min(
-            newState.levels.compute, 
-            newState.levels.data, 
-            newState.levels.algorithm
-          ) * 0.05;
-          
-          // Apply a small intelligence increase each tick
-          newState.intelligence += 
-            0.02 * (computeContribution + dataContribution + algorithmContribution) * 
-            (1 + synergyMultiplier);
-          
-          // Calculate revenue every 5 seconds
-          if (timeElapsedRef.current > 0 && timeElapsedRef.current % 5 === 0) {
-            newState = calculateRevenue(newState);
-          }
-          
-          // Random event check (approximately every 30 days/seconds with 20% chance)
-          if (newState.daysElapsed % 30 === 0 && Math.random() < 0.20) {
-            checkAndTriggerEvents(newState);
-          }
-
-          syncComputeCapacity(newState);
-
-          // Update victory statistics after all money changes are applied
-          newState = updateVictoryStatistics(newState);
-          
-          return newState;
-        });
-      };
-
-      gameLoopRef.current = setInterval(handleGameTick, 1000);
-    }
-
     return () => {
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-      }
+      disposed = true;
+      unsubscribe?.();
+      opened?.close();
+      sessionRef.current = null;
     };
-  }, [isRunning]);
+  }, []);
 
-  // AGI achievement is handled by AIFactory.tsx to avoid conflicts
+  const setExperience = useCallback(
+    (
+      update:
+        ExperienceStateV1 | ((state: ExperienceStateV1) => ExperienceStateV1),
+    ) => {
+      const session = sessionRef.current;
+      if (
+        !session ||
+        lifecycleTransitionRef.current ||
+        session.isTransitioning() ||
+        !session.getSnapshot().writable
+      )
+        return;
+      const next =
+        typeof update === "function" ? update(experienceRef.current) : update;
+      experienceRef.current = next;
+      session.setExperience(next);
+    },
+    [],
+  );
 
-  // Additional money allocation functions for enabling inputs
-  const allocateMoneyToElectricity = () => {
-    const cost = getScaledInvestmentCost(85, gameState.computeInputs.electricity, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          computeInputs: {
-            ...prevState.computeInputs,
-            electricity: prevState.computeInputs.electricity + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          production: {
-            ...prevState.production,
-            compute: prevState.production.compute * 1.08
-          },
-          bonuses: {
-            ...prevState.bonuses,
-            computeToData: prevState.bonuses.computeToData * 1.03,
-            computeToAlgorithm: prevState.bonuses.computeToAlgorithm * 1.03,
-            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.03
-          }
-        };
-        
-        syncComputeCapacity(newState);
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Power Infrastructure Improved",
-        description: "Your AI now has more efficient and reliable electricity!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to improve power infrastructure.`,
-        variant: "destructive",
-      });
-    }
-  };
+  const applyExperience = useCallback(
+    (command: ExperienceCommand) => {
+      setExperience((current) => applyExperienceCommand(current, command));
+    },
+    [setExperience],
+  );
+  const queueMessage = useCallback(
+    (messageId: string, priority = 50) =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "QUEUE_MESSAGE",
+        payload: {
+          messageId,
+          priority,
+          availableAtTick: simulationRef.current.clock.activeTick,
+        },
+      }),
+    [applyExperience],
+  );
+  const dismissMessage = useCallback(
+    (messageId: string) =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "DISMISS_MESSAGE",
+        payload: { messageId },
+      }),
+    [applyExperience],
+  );
+  const queuedAdvisorId = experience.queuedMessages.find((message) =>
+    message.messageId.startsWith("advisor:"),
+  )?.messageId;
+  const advisorMessage = queuedAdvisorId
+    ? (narrative[queuedAdvisorId.slice(8) as keyof typeof narrative] ?? null)
+    : null;
 
-  const allocateMoneyToHardware = () => {
-    const cost = getScaledInvestmentCost(160, gameState.computeInputs.hardware, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          computeInputs: {
-            ...prevState.computeInputs,
-            hardware: prevState.computeInputs.hardware + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          production: {
-            ...prevState.production,
-            compute: prevState.production.compute * 1.2
-          },
-          bonuses: {
-            ...prevState.bonuses,
-            computeToIntelligence: prevState.bonuses.computeToIntelligence * 1.1
-          }
-        };
-        
-        syncComputeCapacity(newState);
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Hardware Quality Upgraded",
-        description: "You've acquired more powerful GPUs/TPUs for your AI system!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to upgrade hardware quality.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allocateMoneyToRegulations = () => {
-    const cost = getScaledInvestmentCost(140, gameState.computeInputs.regulation, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        let newState = {
-          ...prevState,
-          money: prevState.money - cost,
-          computeInputs: {
-            ...prevState.computeInputs,
-            regulation: prevState.computeInputs.regulation + 1
-          },
-          narrativeFlags: {
-            ...prevState.narrativeFlags,
-            totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-          },
-          production: {
-            ...prevState.production,
-            compute: prevState.production.compute * 1.15
-          }
-        };
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Regulatory Compliance Improved",
-        description: "Your favorable regulatory position has attracted investor interest!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to improve regulatory compliance.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allocateMoneyToDataQuantity = () => {
-    const cost = getScaledInvestmentCost(120, gameState.dataInputs.quantity, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.dataInputs.quantity += 1;
-        newState.narrativeFlags = {
-          ...prevState.narrativeFlags,
-          totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-        };
-        
-        // More data means higher production
-        newState.production.data *= 1.15;
-        
-        // Quantity has a more modest effect on intelligence than quality
-        newState.bonuses.dataToIntelligence *= 1.03;
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Data Collection Expanded",
-        description: "Your AI now has access to a larger volume of training data!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to expand data collection efforts.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const allocateMoneyToDataFormats = () => {
-    const cost = getScaledInvestmentCost(140, gameState.dataInputs.formats, gameState.currentEra);
-    if (gameState.money >= cost) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= cost;
-        newState.dataInputs.formats += 1;
-        newState.narrativeFlags = {
-          ...prevState.narrativeFlags,
-          totalInvestmentAmount: prevState.narrativeFlags.totalInvestmentAmount + cost
-        };
-        
-        // New data formats have a significant effect on data production
-        newState.production.data *= 1.12;
-        
-        // Multimodal data substantially improves intelligence
-        newState.bonuses.dataToIntelligence *= 1.08;
-        
-        // Format innovation also improves algorithmic efficiency
-        newState.bonuses.dataToAlgorithm *= 1.05;
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Multimodal Data Integration",
-        description: "Your AI can now process new types of data like images, audio, and more!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${formatCurrency(cost)} to integrate new data formats.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Revenue service management functions
-  const toggleApiService = () => {
-    // Check if API platform has been built
-    if (!gameState.revenue.apiPlatformBuilt && !gameState.revenue.apiEnabled) {
-      toast({
-        title: "Platform Required",
-        description: "You must build the API platform first before enabling API services.",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    const session = sessionRef.current;
+    if (
+      !session ||
+      !sessionSnapshot?.writable ||
+      simulation.clock.status !== "completed" ||
+      completedRunRef.current === sessionSnapshot.runId
+    )
       return;
-    }
-    
-    setGameState(prevState => {
-      const newState = { ...prevState };
-      newState.revenue.apiEnabled = !newState.revenue.apiEnabled;
-      
-      // If activating for the first time and intelligence is high enough, suggest setting a higher API rate
-      if (newState.revenue.apiEnabled && newState.intelligence > 200 && newState.revenue.baseApiRate < 1500) {
-        newState.revenue.baseApiRate = 1500; // Higher starting rate for more advanced models
+    const runId = sessionSnapshot.runId;
+    completedRunRef.current = runId;
+    setCompletionError(null);
+    const currentExperience = session.getSnapshot().experience;
+    if (!currentExperience.debrief.available)
+      session.setExperience({
+        ...currentExperience,
+        debrief: { ...currentExperience.debrief, available: true },
+      });
+    void (async () => {
+      await session.flush();
+      const saved = session.getSnapshot();
+      if (
+        saved.runId !== runId ||
+        saved.simulation.clock.status !== "completed"
+      )
+        return;
+      if (!saved.checksum || saved.status === "error")
+        throw new Error(
+          "This completed run is visible, but could not yet be saved to personal history. Keep this tab open and retry saving.",
+        );
+      const history = await session.history();
+      if (!history.completedRuns.some((run) => run.runId === runId)) {
+        await session.complete(
+          buildCompletedRunSummary({
+            simulation: saved.simulation,
+            runId,
+            revision: saved.revision,
+            checksum: saved.checksum,
+            completedAt: new Date().toISOString(),
+          }),
+        );
       }
-      
-      return newState;
+      const updated = await session.history();
+      setPersonalBests(updated.personalBests);
+    })().catch((error: unknown) => {
+      completedRunRef.current = null;
+      setCompletionError(
+        error instanceof Error
+          ? error.message
+          : "Personal history could not be saved.",
+      );
     });
-    
-    toast({
-      title: gameState.revenue.apiEnabled ? "API Service Disabled" : "API Service Enabled",
-      description: gameState.revenue.apiEnabled 
-        ? "You've disabled your API service. B2B revenue will stop." 
-        : "You've enabled your API service. Companies can now use your AI via API.",
-    });
-  };
-  
-  const toggleChatbotService = () => {
-    // Check if chatbot platform has been built
-    if (!gameState.revenue.chatbotPlatformBuilt && !gameState.revenue.chatbotEnabled) {
-      toast({
-        title: "Platform Required",
-        description: "You must build the chatbot platform first before enabling chatbot services.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setGameState(prevState => {
-      const newState = { ...prevState };
-      newState.revenue.chatbotEnabled = !newState.revenue.chatbotEnabled;
-      
-      // If disabling when we have subscribers, warn about potential loss
-      if (!newState.revenue.chatbotEnabled && newState.revenue.subscribers > 100) {
-        toast({
-          title: "Warning: Subscribers at Risk",
-          description: "Disabling the chatbot will prevent new subscriptions and may cause subscriber loss.",
-          variant: "destructive",
+  }, [
+    sessionSnapshot?.runId,
+    sessionSnapshot?.writable,
+    sessionSnapshot?.status,
+    simulation.clock.status,
+  ]);
+
+  const presentEffects = useCallback(
+    (effects: EngineEffect[]) => {
+      for (const effect of effects) {
+        switch (effect.type) {
+          case "COMMAND_REJECTED":
+            toast({
+              title: "Action unavailable",
+              description: effect.reasonId.replaceAll("_", " "),
+              variant: "destructive",
+            });
+            break;
+          case "TRAINING_AVAILABLE":
+            toast({
+              title: "Training Available",
+              description: `${effect.targetEra} prerequisites are complete.`,
+            });
+            break;
+          case "TRAINING_STARTED":
+            toast({
+              title: "Training Started",
+              description: `${effect.targetEra} training is now in progress.`,
+            });
+            break;
+          case "TRAINING_COMPLETED":
+            toast({
+              title: "Training Complete",
+              description: `The system has advanced to ${effect.targetEra}.`,
+              duration: 6_000,
+            });
+            break;
+          case "ERA_ADVANCED": {
+            const key = `ERA_ADVANCE_${effect.era.replace("-", "")}`;
+            const message = narrative[key as keyof typeof narrative];
+            if (message) queueMessage(`advisor:${key}`, 80);
+            break;
+          }
+          case "SERVICE_UNLOCKED":
+            setExperience((current) => ({
+              ...current,
+              platformHighlights: {
+                ...current.platformHighlights,
+                [effect.service]: true,
+              },
+            }));
+            break;
+          case "FUNDING_GRANTED":
+            toast({
+              title: effect.emergency
+                ? "Continuity Funding Granted"
+                : "External Funding Received",
+              description: `$${effect.amount.toLocaleString()} was added to the run.`,
+            });
+            break;
+          case "BREAKTHROUGH_UNLOCKED": {
+            queueMessage(`breakthrough:${effect.breakthroughId}`, 100);
+            break;
+          }
+          case "CAPACITY_WARNING":
+            if (effect.tick % 10 === 0) {
+              toast({
+                title:
+                  effect.severity === "shortfall"
+                    ? "Compute Shortfall"
+                    : "Compute Under Pressure",
+                description:
+                  "Customer demand is approaching or exceeding available capacity.",
+                variant: "destructive",
+              });
+            }
+            break;
+          case "CUSTOMERS_LOST":
+            toast({
+              title: "Customers Lost",
+              description: `${effect.count.toLocaleString()} ${effect.service} customers left.`,
+              variant: "destructive",
+            });
+            break;
+          case "EVENT_TRIGGERED": {
+            const event = simulationRef.current.events.find(
+              (candidate) => candidate.id === effect.eventId,
+            );
+            if (event) {
+              toast({
+                title: `Event: ${event.title}`,
+                description: event.description,
+              });
+            }
+            break;
+          }
+          case "RUN_COMPLETED":
+            break;
+        }
+        applyExperience({
+          experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+          type: "ACKNOWLEDGE_EFFECT",
+          payload: { effectId: effect.id },
         });
       }
-      
-      return newState;
-    });
-    
-    toast({
-      title: gameState.revenue.chatbotEnabled ? "Chatbot Service Disabled" : "Chatbot Service Enabled",
-      description: gameState.revenue.chatbotEnabled 
-        ? "You've disabled your chatbot service. No new subscribers will join." 
-        : "You've enabled your chatbot service. Users can now subscribe to your AI assistant.",
-    });
-  };
-  
-  const setApiRate = (rate: number) => {
-    // Ensure the rate is in valid range
-    const validRate = Math.max(500, Math.min(5000, rate));
-    
-    setGameState(prevState => {
-      const newState = { ...prevState };
-      newState.revenue.baseApiRate = validRate;
-      return newState;
-    });
-    
-    toast({
-      title: "API Rate Updated",
-      description: `Your API base rate is now $${formatCurrency(validRate)}.`,
-    });
-  };
-  
-  const setMonthlyFee = (fee: number) => {
-    // Ensure the fee is in valid range
-    const validFee = Math.max(5, Math.min(25, fee));
-    
-    setGameState(prevState => {
-      const newState = { ...prevState };
-      newState.revenue.monthlyFee = validFee;
-      
-      // If fee increases too much, we may lose some subscribers
-      if (validFee > prevState.revenue.monthlyFee * 1.5 && prevState.revenue.subscribers > 100) {
-        const attritionRate = 0.05; // 5% subscriber loss on significant price increases
-        const previousSubscribers = newState.revenue.subscribers;
-        newState.revenue.subscribers = Math.floor(newState.revenue.subscribers * (1 - attritionRate));
-        
-        const lostSubscribers = previousSubscribers - newState.revenue.subscribers;
-        if (lostSubscribers > 10) {
-          toast({
-            title: "Price Increase Impact",
-            description: `${lostSubscribers} subscribers left due to the significant price increase.`,
-            variant: "destructive",
-          });
+    },
+    [applyExperience, queueMessage, setExperience, toast],
+  );
+
+  const commitResult = useCallback(
+    (result: EngineResult) => {
+      presentEffects(result.effects);
+      return result;
+    },
+    [presentEffects],
+  );
+
+  const issueCommand = useCallback(
+    <T extends CommandType>(type: T, payload: CommandPayload<T>) => {
+      const current = simulationRef.current;
+      const session = sessionRef.current;
+      if (
+        !session ||
+        lifecycleTransitionRef.current ||
+        session.isTransitioning() ||
+        !session.getSnapshot().writable
+      )
+        return;
+      const command = {
+        id: nextCommandId(),
+        tick: current.clock.activeTick,
+        commandSchemaVersion: COMMAND_SCHEMA_VERSION,
+        type,
+        payload,
+      } as Extract<GameCommand, { type: T }>;
+      const result = commitResult(session.apply(command));
+      if (result.acceptedCommandId) {
+        const copy = commandSuccessCopy(type);
+        if (copy) toast({ title: copy[0], description: copy[1] });
+        if (
+          type === "BUILD_API_PLATFORM" ||
+          type === "BUILD_CHATBOT_PLATFORM"
+        ) {
+          const key = type === "BUILD_API_PLATFORM" ? "api" : "chatbot";
+          setExperience((currentExperience) => ({
+            ...currentExperience,
+            platformHighlights: {
+              ...currentExperience.platformHighlights,
+              [key]: false,
+            },
+          }));
         }
       }
-      
-      return newState;
-    });
-    
-    toast({
-      title: "Subscription Price Updated",
-      description: `Your chatbot subscription price is now $${formatCurrency(validFee)}.`,
-    });
-  };
+      return result;
+    },
+    [commitResult, setExperience, toast],
+  );
 
-  // Revenue enhancement functions
-  
-  // Function to improve developer tools (improves B2B revenue)
-  const improveDeveloperTools = () => {
-    // Get current cost from game state
-    const toolUpgradeCost = gameState.revenue.developerToolsCost;
-    
-    if (gameState.money >= toolUpgradeCost) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= toolUpgradeCost;
-        newState.revenue.developerToolsLevel += 1;
-        
-        // Increasing developer tools gives +5% permanent bonus to B2B revenue
-        // This is already handled in the calculateRevenue function
-        
-        // Increase cost for next upgrade
-        newState.revenue.developerToolsCost = Math.round(newState.revenue.developerToolsCost * 2);
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Developer Tools Improved",
-        description: "You've enhanced your API's developer tools, boosting your B2B revenue by 5%!",
-      });
+  useEffect(() => {
+    if (!sessionSnapshot?.writable || simulation.clock.status !== "running")
+      return;
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      const session = sessionRef.current;
+      if (
+        !lifecycleTransitionRef.current &&
+        session &&
+        !session.isTransitioning() &&
+        session.getSnapshot().writable
+      )
+        commitResult(session.tick());
+    }, 1_000);
+    return () => window.clearInterval(interval);
+  }, [commitResult, sessionSnapshot?.writable, simulation.clock.status]);
+
+  useEffect(() => {
+    const suspend = () => {
+      const session = sessionRef.current;
+      if (!session?.getSnapshot().writable) return;
+      if (simulationRef.current.clock.status === "running")
+        issueCommand("PAUSE_RUN", {});
+      void session.flush();
+    };
+    const visibility = () => {
+      if (document.visibilityState === "hidden") suspend();
+    };
+    document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("pagehide", suspend);
+    return () => {
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("pagehide", suspend);
+    };
+  }, [issueCommand]);
+
+  const startGame = useCallback(() => {
+    const status = simulationRef.current.clock.status;
+    if (status === "paused") {
+      issueCommand("RESUME_RUN", {});
     } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${toolUpgradeCost.toLocaleString()} to improve developer tools.`,
-        variant: "destructive",
-      });
+      issueCommand("START_RUN", {});
     }
-  };
-  
-  // Function to improve chatbot capabilities (improves B2C subscriber growth)
-  const improveChatbot = () => {
-    // Get current cost from game state
-    const chatbotUpgradeCost = gameState.revenue.chatbotImprovementCost;
-    
-    if (gameState.money >= chatbotUpgradeCost) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= chatbotUpgradeCost;
-        newState.revenue.chatbotImprovementLevel += 1;
-        
-        // Increasing chatbot capabilities gives +5% permanent bonus to subscriber growth
-        // This is already handled in the calculateRevenue function
-        
-        // Increase cost for next upgrade
-        newState.revenue.chatbotImprovementCost = Math.round(newState.revenue.chatbotImprovementCost * 2.5);
-        
-        // Check for breakthroughs
-        newState.breakthroughs = checkBreakthroughs(newState);
-        
-        return newState;
+  }, [issueCommand]);
+
+  const pauseGame = useCallback(() => {
+    issueCommand("PAUSE_RUN", {});
+  }, [issueCommand]);
+
+  const resetGame = useCallback(() => {
+    const session = sessionRef.current;
+    if (lifecycleTransitionRef.current || session?.isTransitioning()) return;
+    if (
+      !session ||
+      (!session.getSnapshot().writable && !session.getSnapshot().recovery)
+    )
+      return;
+    lifecycleTransitionRef.current = true;
+    setIsLifecycleTransition(true);
+    void session
+      .reset(createRunSeed())
+      .then(() => {
+        toast({
+          title: "New run started",
+          description:
+            "Your previous run is preserved as an abandoned recovery record.",
+        });
+      })
+      .catch((error: unknown) =>
+        toast({
+          title: "Could not start a new run",
+          description: error instanceof Error ? error.message : "Please retry.",
+          variant: "destructive",
+        }),
+      )
+      .finally(() => {
+        lifecycleTransitionRef.current = false;
+        setIsLifecycleTransition(false);
       });
-      
-      toast({
-        title: "Chatbot Capabilities Improved",
-        description: "You've enhanced your AI chatbot, permanently increasing your subscriber growth rate by 5%!",
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${chatbotUpgradeCost.toLocaleString()} to improve chatbot capabilities.`,
-        variant: "destructive",
-      });
+  }, [toast]);
+
+  const advanceTutorial = useCallback(() => {
+    const tutorial = experience.tutorial;
+    applyExperience({
+      experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+      type: "ADVANCE_TUTORIAL",
+      payload: {
+        expectedPhase: tutorial.phase,
+        expectedStep: tutorial.step,
+        ...(tutorial.currentTarget ? { targetId: tutorial.currentTarget } : {}),
+      },
+    });
+  }, [applyExperience, experience.tutorial]);
+
+  const skipTutorial = useCallback(() => {
+    try {
+      window.localStorage.setItem("hasPlayedAIFactory", "true");
+    } catch {
+      /* Session snapshot remains authoritative. */
     }
-  };
+    applyExperience({
+      experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+      type: "SKIP_TUTORIAL",
+      payload: {},
+    });
+  }, [applyExperience]);
 
-// Platform development functions
-
-// Function to build the API platform (required before enabling API service)
-const buildApiPlatform = () => {
-  const buildCost = gameState.revenue.apiPlatformCost;
-  
-  if (gameState.money >= buildCost) {
-    setGameState(prevState => {
-      let newState = { ...prevState };
-      newState.money -= buildCost;
-      newState.revenue.apiPlatformBuilt = true;
-      
-      // Clear highlight flag now that platform is built (immutable update)
-      newState = {
-        ...newState,
-        narrativeFlags: {
-          ...newState.narrativeFlags,
-          highlightApiPlatform: false
-        }
-      };
-      
-      // Check for breakthroughs
-      newState.breakthroughs = checkBreakthroughs(newState);
-      
-      return newState;
-    });
-    
-    toast({
-      title: "API Platform Built!",
-      description: "Your API platform is now ready. You can enable API services to start earning B2B revenue.",
-    });
-  } else {
-    toast({
-      title: "Not enough money",
-      description: `You need at least $${buildCost.toLocaleString()} to build the API platform.`,
-      variant: "destructive",
-    });
-  }
-};
-
-// Function to build the chatbot platform (required before enabling chatbot service)
-const buildChatbotPlatform = () => {
-  const buildCost = gameState.revenue.chatbotPlatformCost;
-  
-  if (gameState.money >= buildCost) {
-    setGameState(prevState => {
-      let newState = { ...prevState };
-      newState.money -= buildCost;
-      newState.revenue.chatbotPlatformBuilt = true;
-      
-      // Clear highlight flag now that platform is built (immutable update)
-      newState = {
-        ...newState,
-        narrativeFlags: {
-          ...newState.narrativeFlags,
-          highlightChatbotPlatform: false
-        }
-      };
-      
-      // Check for breakthroughs
-      newState.breakthroughs = checkBreakthroughs(newState);
-      
-      return newState;
-    });
-    
-    toast({
-      title: "Chatbot Platform Built!",
-      description: "Your chatbot platform is now ready. You can enable chatbot services to start earning B2C revenue.",
-    });
-  } else {
-    toast({
-      title: "Not enough money",
-      description: `You need at least $${buildCost.toLocaleString()} to build the chatbot platform.`,
-      variant: "destructive",
-    });
-  }
-};
-  
-  // Function to run an advertising campaign (instantly adds subscribers)
-  const runAdvertisingCampaign = () => {
-    // Get current cost from game state
-    const adCampaignCost = gameState.revenue.marketingCampaignCost;
-    
-    // Intelligence-based subscriber gain
-    const intelligenceMultiplier = Math.max(1, gameState.intelligence / 200);
-    const subscribersGained = Math.round(1000 * intelligenceMultiplier);
-    
-    if (gameState.money >= adCampaignCost) {
-      setGameState(prevState => {
-        const newState = { ...prevState };
-        newState.money -= adCampaignCost;
-        newState.revenue.subscribers += subscribersGained;
-        
-        // Record last campaign time
-        newState.revenue.lastMarketingCampaign = timeElapsedRef.current;
-        
-        // Increase cost for next campaign
-        newState.revenue.marketingCampaignCost = Math.round(newState.revenue.marketingCampaignCost * 1.5);
-        
-        return newState;
-      });
-      
-      toast({
-        title: "Advertising Campaign Launched",
-        description: `Your campaign was successful! You've gained ${subscribersGained.toLocaleString()} new subscribers immediately.`,
-      });
-    } else {
-      toast({
-        title: "Not enough money",
-        description: `You need at least $${adCampaignCost.toLocaleString()} to launch an advertising campaign.`,
-        variant: "destructive",
-      });
+  const completeTutorial = useCallback(() => {
+    try {
+      window.localStorage.setItem("hasPlayedAIFactory", "true");
+    } catch {
+      /* Session snapshot remains authoritative. */
     }
-  };
+    applyExperience({
+      experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+      type: "COMPLETE_TUTORIAL",
+      payload: {},
+    });
+  }, [applyExperience]);
+
+  const recordNarrativeObservation = useCallback(
+    ({
+      messageId,
+      tick,
+      isHint,
+    }: {
+      messageId: string;
+      tick: number;
+      isHint: boolean;
+    }) => {
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "RECORD_COACHING_MESSAGE",
+        payload: { messageId, tick, isHint },
+      });
+    },
+    [applyExperience],
+  );
+
+  const gameState = useMemo(
+    () => projectCompatibilityState(simulation, experience),
+    [experience, simulation],
+  );
+  const isRunning = simulation.clock.status === "running";
+  const timeElapsed = simulation.clock.activeTick;
+  const formattedTime = `${Math.floor(timeElapsed / 60)}:${(timeElapsed % 60)
+    .toString()
+    .padStart(2, "0")}`;
+
+  const trainModel = useCallback(() => {
+    const targetEra = getNextEra(simulationRef.current.currentEra);
+    if (!targetEra) {
+      toast({
+        title: "Final Era Reached",
+        description: "All training runs are complete.",
+      });
+      return;
+    }
+    issueCommand("START_TRAINING", { targetEra });
+  }, [issueCommand, toast]);
 
   return {
+    sessionSnapshot,
+    isLifecycleTransition: isLifecycleTransition || controllerTransitioning,
+    sessionError:
+      openingError ?? completionError ?? sessionSnapshot?.error ?? null,
+    personalBests,
+    sessionReady: sessionSnapshot !== null,
+    takeoverSession: async () => {
+      if (
+        lifecycleTransitionRef.current ||
+        !sessionRef.current ||
+        sessionRef.current.isTransitioning()
+      )
+        return;
+      lifecycleTransitionRef.current = true;
+      setIsLifecycleTransition(true);
+      try {
+        await sessionRef.current.takeover();
+      } catch (error: unknown) {
+        setOpeningError(
+          error instanceof Error
+            ? error.message
+            : "Could not take over this run.",
+        );
+      } finally {
+        lifecycleTransitionRef.current = false;
+        setIsLifecycleTransition(false);
+      }
+    },
+    retrySave: () => sessionRef.current?.flush(),
+    exportRecovery: () => sessionRef.current?.exportRecovery(),
+    persistCompletion: (summary: CompletedRunSummaryV1) =>
+      sessionRef.current?.complete(summary),
+    loadPersonalHistory: () => sessionRef.current?.history(),
+    setActiveTab: (tab: ExperienceStateV1["lastActiveTab"]) =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "SET_ACTIVE_TAB",
+        payload: { tab },
+      }),
+    markDebriefViewed: () =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "MARK_DEBRIEF_VIEWED",
+        payload: {},
+      }),
     gameState,
-    setGameState,
+    // Temporary prop-name bridge: this is a typed experience recorder, never
+    // an arbitrary React simulation-state setter.
+    setGameState: recordNarrativeObservation,
     isRunning,
     startGame,
     pauseGame,
     resetGame,
-    // Spark AI Advisor
     advisorMessage,
-    setAdvisorMessage,
-
-    // Interactive Tutorial System
+    setAdvisorMessage: () => {
+      if (queuedAdvisorId) dismissMessage(queuedAdvisorId);
+    },
+    queueMessage,
+    dismissMessage,
     advanceTutorial,
     skipTutorial,
     completeTutorial,
-
-    // Train model function
     trainModel,
-    // Basic money allocation
-    allocateMoneyToCompute,
-    allocateMoneyToData,
-    allocateMoneyToAlgorithm,
-    // Detailed compute inputs
-    allocateMoneyToElectricity,
-    allocateMoneyToHardware,
-    allocateMoneyToRegulations,
-    // Detailed data inputs
-    allocateMoneyToDataQuality: allocateMoneyToData, // Reusing existing function for quality
-    allocateMoneyToDataQuantity,
-    allocateMoneyToDataFormats,
-    // Detailed algorithm inputs
-    allocateMoneyToAlgorithmArchitectures: allocateMoneyToAlgorithm, // Reusing existing function for architectures
-    hireResearchEngineer, // Function to hire research engineers for algorithm research
-    // Revenue service controls
-    toggleApiService,
-    toggleChatbotService,
-    setApiRate,
-    setMonthlyFee,
-    // Revenue enhancement functions
-    improveDeveloperTools,
-    improveChatbot,
-    runAdvertisingCampaign,
-    // Platform development functions
-    buildApiPlatform,
-    buildChatbotPlatform,
+    allocateMoneyToCompute: () => issueCommand("INVEST_COMPUTE", {}),
+    allocateMoneyToData: () => issueCommand("INVEST_DATA_QUALITY", {}),
+    allocateMoneyToAlgorithm: () =>
+      issueCommand("INVEST_ALGORITHM_ARCHITECTURE", {}),
+    allocateMoneyToElectricity: () => issueCommand("INVEST_ELECTRICITY", {}),
+    allocateMoneyToHardware: () => issueCommand("INVEST_HARDWARE", {}),
+    allocateMoneyToRegulations: () => issueCommand("INVEST_REGULATION", {}),
+    allocateMoneyToDataQuality: () => issueCommand("INVEST_DATA_QUALITY", {}),
+    allocateMoneyToDataQuantity: () => issueCommand("INVEST_DATA_QUANTITY", {}),
+    allocateMoneyToDataFormats: () => issueCommand("INVEST_DATA_FORMATS", {}),
+    allocateMoneyToAlgorithmArchitectures: () =>
+      issueCommand("INVEST_ALGORITHM_ARCHITECTURE", {}),
+    hireResearchEngineer: () => issueCommand("HIRE_RESEARCH_ENGINEER", {}),
+    toggleApiService: () => issueCommand("TOGGLE_API_SERVICE", {}),
+    toggleChatbotService: () => issueCommand("TOGGLE_CHATBOT_SERVICE", {}),
+    setMonthlyFee: (fee: number) =>
+      issueCommand("SET_MONTHLY_FEE", {
+        fee: Math.max(5, Math.min(25, fee)),
+      }),
+    improveDeveloperTools: () => issueCommand("UPGRADE_DEVELOPER_TOOLS", {}),
+    improveChatbot: () => issueCommand("UPGRADE_CHATBOT", {}),
+    runAdvertisingCampaign: () => issueCommand("RUN_MARKETING_CAMPAIGN", {}),
+    buildApiPlatform: () => issueCommand("BUILD_API_PLATFORM", {}),
+    buildChatbotPlatform: () => issueCommand("BUILD_CHATBOT_PLATFORM", {}),
     timeElapsed,
-    formattedTime
+    formattedTime,
   };
 }
