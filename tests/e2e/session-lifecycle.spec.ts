@@ -144,7 +144,8 @@ test("reset disables commands while a storage transaction is pending", async ({
 
 test("a public-control strategy completes the ladder and persists its factual scorecard", async ({
   page,
-}) => {
+  browserName,
+}, testInfo) => {
   test.setTimeout(300_000);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -180,6 +181,31 @@ test("a public-control strategy completes the ladder and persists its factual sc
     });
   await page.clock.runFor(600);
   let state = await savedState();
+  // Optional qualification reuses this exact public-control strategy and durable
+  // message/reload path; it never injects a simulation state or a second policy.
+  const heapSession =
+    process.env.PERFORMANCE_HEAP === "1" && browserName === "chromium"
+      ? await page.context().newCDPSession(page)
+      : null;
+  const heapSamples: Array<{
+    phase: string;
+    tick: number;
+    era: string;
+    usedBytes: number;
+  }> = [];
+  const sampleHeap = async (phase: string) => {
+    if (!heapSession) return;
+    await heapSession.send("HeapProfiler.collectGarbage");
+    const usage = await heapSession.send("Runtime.getHeapUsage");
+    heapSamples.push({
+      phase,
+      tick: state.clock.activeTick,
+      era: state.currentEra,
+      usedBytes: usage.usedSize,
+    });
+  };
+  await sampleHeap("opening");
+  let nextHeapTick = 300;
   let verifiedPendingMessage = false;
   const dismissBreakthroughs = async () => {
     const toastClose = page.locator('[data-state="open"] [toast-close]');
@@ -332,6 +358,10 @@ test("a public-control strategy completes the ladder and persists its factual sc
     await page.clock.fastForward(1_000);
     await page.clock.fastForward(600);
     state = await savedState();
+    if (heapSession && state.clock.activeTick >= nextHeapTick) {
+      await sampleHeap("public-play");
+      nextHeapTick += 300;
+    }
   }
   expect(state.clock.status).toBe("completed");
   expect(state.clock.activeTick).toBeLessThanOrEqual(1_800);
@@ -353,5 +383,29 @@ test("a public-control strategy completes the ladder and persists its factual sc
   await expect(
     page.getByRole("heading", { name: /Run complete/ }),
   ).toBeHidden();
+  if (heapSession) {
+    for (let sample = 1; sample <= 3; sample++) {
+      await page.clock.runFor(30000);
+      await sampleHeap(`completed-idle-${sample * 30}s`);
+    }
+    const plateau = heapSamples.slice(-3).map((sample) => sample.usedBytes);
+    const evidence = {
+      scope:
+        "Existing public-control full-run canary including durable message reload, summary/bests persistence and completed-run reload",
+      heapSamples,
+      plateauDeltas: [plateau[1] - plateau[0], plateau[2] - plateau[1]],
+      plateauGrowthBytes: plateau[2] - plateau[0],
+      plateauDiagnosticToleranceBytes: 256 * 1024,
+      boundary:
+        "Three GC-controlled post-completion samples are a bounded plateau diagnostic, not proof of absence of all leaks",
+    };
+    await testInfo.attach("public-full-run-heap", {
+      body: JSON.stringify(evidence, null, 2),
+      contentType: "application/json",
+    });
+    expect(evidence.plateauGrowthBytes).toBeLessThanOrEqual(
+      evidence.plateauDiagnosticToleranceBytes,
+    );
+  }
   expect(browserErrors).toEqual([]);
 });

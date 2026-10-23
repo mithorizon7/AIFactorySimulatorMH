@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -40,6 +40,7 @@ export default function GameHeader({
   resetGame,
 }: GameHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const resetButton = useRef<HTMLButtonElement>(null);
 
   const handleResetClick = () => {
     setShowResetConfirm(true);
@@ -55,7 +56,7 @@ export default function GameHeader({
     <>
       <header className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg shadow-lg border border-gray-700 mb-6">
         <div className="p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col flex-wrap lg:flex-row justify-between items-center gap-4">
             {/* Game Title */}
             <div className="flex items-center gap-2">
               <BrainCircuit className="h-8 w-8 text-amber-400" />
@@ -78,7 +79,7 @@ export default function GameHeader({
                   <BrainCircuit className="h-4 w-4 text-amber-400" />
                   Model Capability
                 </div>
-                <div className="text-xl font-bold text-amber-400">
+                <div className="break-words text-xl font-bold text-amber-400">
                   {gameState.intelligence.toFixed(2)} / {gameState.agiThreshold}
                 </div>
               </div>
@@ -89,7 +90,7 @@ export default function GameHeader({
                   <Coins className="h-4 w-4 text-emerald-400" />
                   Budget
                 </div>
-                <div className="text-xl font-bold text-emerald-400">
+                <div className="break-words text-xl font-bold text-emerald-400">
                   {formatCurrency(gameState.money)}
                 </div>
               </div>
@@ -136,6 +137,7 @@ export default function GameHeader({
                 </Button>
               )}
               <Button
+                ref={resetButton}
                 variant="outline"
                 className="flex items-center gap-2 bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700 hover:text-white"
                 onClick={handleResetClick}
@@ -161,7 +163,13 @@ export default function GameHeader({
       </header>
 
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
-        <AlertDialogContent className="bg-gray-800 border-gray-700">
+        <AlertDialogContent
+          className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto bg-gray-800 border-gray-700"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            resetButton.current?.focus();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl text-white">
               Start a Fresh Run?
