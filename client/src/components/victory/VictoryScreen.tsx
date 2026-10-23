@@ -11,15 +11,21 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import type { GameStateV2 } from "@shared/game/schemas/state";
+import type { PersonalBestRecordV1 } from "@shared/game/schemas/completedRuns";
 
 interface VictoryScreenProps {
   gameState: GameStateType;
+  simulation: GameStateV2;
+  personalBests: PersonalBestRecordV1[];
   onClose: () => void;
   onReset: () => void;
 }
 
 export default function VictoryScreen({
   gameState,
+  simulation,
+  personalBests,
   onClose,
   onReset,
 }: VictoryScreenProps) {
@@ -29,6 +35,8 @@ export default function VictoryScreen({
   const unlockedBreakthroughs = gameState.breakthroughs.filter(
     (breakthrough) => breakthrough.unlocked,
   ).length;
+  const facts = simulation.facts;
+  const activeTicks = gameState.clock.activeTick;
 
   return (
     <div
@@ -50,6 +58,61 @@ export default function VictoryScreen({
         </header>
 
         <div className="space-y-6 p-6">
+          <Card className="border-gray-600 bg-gray-700">
+            <CardHeader>
+              <CardTitle className="text-xl">Personal run ledger</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <Fact value={`${activeTicks} seconds`} label="Active time" />
+                <Fact
+                  value={formatCurrency(facts.totalSpend)}
+                  label="Total spend"
+                />
+                <Fact
+                  value={formatCurrency(facts.earnedRevenue)}
+                  label="Earned revenue"
+                />
+                <Fact
+                  value={formatCurrency(facts.externalFunding)}
+                  label="External funding"
+                />
+                <Fact
+                  value={`${facts.capacityPressureTicks} ticks`}
+                  label="Capacity pressure"
+                />
+                <Fact
+                  value={`${facts.emergencyFundingInterventions + facts.emergencyCapacityInterventions}`}
+                  label="Emergency interventions"
+                />
+              </div>
+              <h3 className="mt-6 font-semibold">
+                Technical and operating allocation
+              </h3>
+              <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {Object.entries(facts.spendByCategory).map(
+                  ([category, value]) => (
+                    <div key={category}>
+                      <dt className="text-sm text-gray-300">
+                        {
+                          {
+                            compute: "Compute",
+                            data: "Data",
+                            algorithm: "Algorithms",
+                            commercial: "Commercial",
+                            regulationResilience: "Regulation / resilience",
+                            training: "Training",
+                          }[category]
+                        }
+                      </dt>
+                      <dd>{formatCurrency(value)}</dd>
+                    </div>
+                  ),
+                )}
+              </dl>
+            </CardContent>
+          </Card>
+
           <Card className="border-gray-600 bg-gray-700">
             <CardHeader>
               <CardTitle className="text-xl">Final simulation facts</CardTitle>
@@ -99,11 +162,52 @@ export default function VictoryScreen({
             </CardContent>
           </Card>
 
+          {personalBests.length > 0 && (
+            <Card className="border-gray-600 bg-gray-700">
+              <CardHeader>
+                <CardTitle>Personal bests for this ruleset</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <dl className="grid grid-cols-2 gap-4">
+                  {personalBests
+                    .filter(
+                      (best) =>
+                        best.rulesetVersion === simulation.rulesetVersion,
+                    )
+                    .map((best) => (
+                      <div key={best.metric}>
+                        <dt className="text-sm text-gray-300">
+                          {
+                            {
+                              active_time_seconds: "Fastest active completion",
+                              total_spend: "Lowest total spend",
+                              earned_revenue: "Highest earned revenue",
+                              mean_capacity_shortfall_ratio:
+                                "Lowest mean capacity shortfall",
+                              emergency_interventions:
+                                "Fewest emergency interventions",
+                            }[best.metric]
+                          }
+                        </dt>
+                        <dd>
+                          {best.unit === "currency"
+                            ? formatCurrency(best.value)
+                            : best.unit === "ratio"
+                              ? `${(best.value * 100).toFixed(2)}%`
+                              : `${best.value}${best.unit === "seconds" ? " seconds" : ""}`}
+                        </dd>
+                      </div>
+                    ))}
+                </dl>
+              </CardContent>
+            </Card>
+          )}
+
           <p className="text-sm leading-relaxed text-gray-400">
-            Active time, complete spend and revenue flows, capacity pressure,
-            emergency interventions, allocation, and personal bests appear only
-            when they can be reconstructed from the versioned factual ledger.
-            This run is not assigned a score, rank, or strategy profile.
+            Facts come from this run’s versioned simulation ledger. Capacity
+            pressure describes observed demand, without rating your strategy.
+            Personal results stay in this browser. This run is not assigned a
+            score, global rank, or strategy profile.
           </p>
 
           <div className="flex gap-3 pt-2">

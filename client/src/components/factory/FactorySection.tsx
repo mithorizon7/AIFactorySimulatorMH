@@ -703,6 +703,7 @@ export default function FactorySection({
                       : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToElectricity}
+                  data-game-command="INVEST_ELECTRICITY"
                   disabled={money < electricityCost}
                 >
                   <span>Invest</span>
@@ -741,6 +742,7 @@ export default function FactorySection({
                       : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToHardware}
+                  data-game-command="INVEST_HARDWARE"
                   disabled={money < hardwareCost}
                 >
                   <span>Invest</span>
@@ -778,6 +780,7 @@ export default function FactorySection({
                       : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToRegulations}
+                  data-game-command="INVEST_REGULATION"
                   disabled={money < regulationCost}
                 >
                   <span>Invest</span>
@@ -1037,6 +1040,7 @@ export default function FactorySection({
                       : "bg-green-600 hover:bg-green-700"
                   }`}
                   onClick={allocateMoneyToDataQuantity}
+                  data-game-command="INVEST_DATA_QUANTITY"
                   disabled={money < dataQuantityCost}
                 >
                   <span>Invest</span>
@@ -1080,6 +1084,7 @@ export default function FactorySection({
                       : "bg-green-600 hover:bg-green-700"
                   }`}
                   onClick={allocateMoneyToDataFormats}
+                  data-game-command="INVEST_DATA_FORMATS"
                   disabled={money < dataFormatsCost}
                 >
                   <span>Invest</span>

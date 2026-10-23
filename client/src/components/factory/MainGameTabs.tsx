@@ -1,11 +1,31 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cpu, Database, BrainCog, BarChart3, Zap, Lightbulb, GanttChart, NetworkIcon, Clock, Target, AlertTriangle, CheckCircle2, ArrowRight, TrendingUp } from "lucide-react";
+import {
+  Cpu,
+  Database,
+  BrainCog,
+  BarChart3,
+  Zap,
+  Lightbulb,
+  GanttChart,
+  NetworkIcon,
+  Clock,
+  Target,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowRight,
+  TrendingUp,
+} from "lucide-react";
 import { GameStateType } from "@/lib/gameState";
+import type { GameTab } from "@shared/experience/schemas";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
-import { getTutorialCurrentStep, getTutorialStepAvailability, type TutorialTargetId } from "@/lib/narrativeContent";
+import {
+  getTutorialCurrentStep,
+  getTutorialStepAvailability,
+  type TutorialTargetId,
+} from "@/lib/narrativeContent";
 
 // Import game components
 import FactorySection from "./FactorySection";
@@ -21,6 +41,8 @@ import { TrainingTab } from "./TrainingTab";
 
 interface MainGameTabsProps {
   gameState: GameStateType;
+  activeTab?: GameTab;
+  onActiveTabChange?: (tab: GameTab) => void;
   advanceTutorial?: () => void;
   allocateMoneyToCompute: () => void;
   allocateMoneyToData: () => void;
@@ -51,6 +73,8 @@ interface MainGameTabsProps {
 
 export default function MainGameTabs({
   gameState,
+  activeTab: persistedTab,
+  onActiveTabChange,
   advanceTutorial,
   allocateMoneyToCompute,
   allocateMoneyToData,
@@ -75,9 +99,15 @@ export default function MainGameTabs({
   // Platform development functions
   buildApiPlatform,
   buildChatbotPlatform,
-  trainModel
+  trainModel,
 }: MainGameTabsProps) {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [localActiveTab, setLocalActiveTab] = useState<GameTab>("dashboard");
+  const activeTab = persistedTab ?? localActiveTab;
+  const setActiveTab = (tab: GameTab | ((current: GameTab) => GameTab)) => {
+    const next = typeof tab === "function" ? tab(activeTab) : tab;
+    setLocalActiveTab(next);
+    if (next !== activeTab) onActiveTabChange?.(next);
+  };
   const currentTutorialStep = getTutorialCurrentStep(gameState.tutorial);
   const { visibleTab } = getTutorialStepAvailability(currentTutorialStep);
 
@@ -93,38 +123,54 @@ export default function MainGameTabs({
 
   // Keep the required panel active whenever a tutorial step points inside hidden tab content.
   useEffect(() => {
-    if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted || !visibleTab) {
+    if (
+      !gameState.tutorial.isActive ||
+      gameState.tutorial.isCompleted ||
+      !visibleTab
+    ) {
       return;
     }
 
-    setActiveTab((currentTab) => currentTab === visibleTab ? currentTab : visibleTab);
+    setActiveTab((currentTab) =>
+      currentTab === visibleTab ? currentTab : visibleTab,
+    );
   }, [gameState.tutorial.isActive, gameState.tutorial.isCompleted, visibleTab]);
 
   // Function to handle navigation to resource tabs
-  const handleNavigateToResource = (resourceType: 'compute' | 'data' | 'algorithm') => {
+  const handleNavigateToResource = (
+    resourceType: "compute" | "data" | "algorithm",
+  ) => {
     setActiveTab("resources");
     // Small delay to ensure tab change completes before scrolling
     setTimeout(() => {
       const targetId = `${resourceType}-section`;
       const element = document.getElementById(targetId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
         // Add temporary highlight effect
-        element.classList.add('ring-2', 'ring-amber-400', 'ring-opacity-50');
+        element.classList.add("ring-2", "ring-amber-400", "ring-opacity-50");
         setTimeout(() => {
-          element.classList.remove('ring-2', 'ring-amber-400', 'ring-opacity-50');
+          element.classList.remove(
+            "ring-2",
+            "ring-amber-400",
+            "ring-opacity-50",
+          );
         }, 2000);
       }
     }, 100);
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={(tab) => setActiveTab(tab as GameTab)}
+      className="w-full"
+    >
       <div className="flex justify-center mb-6 relative z-20">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1 relative z-10">
-            <TabsTrigger 
-              value="dashboard" 
+          <TabsList className="grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1 relative z-10">
+            <TabsTrigger
+              value="dashboard"
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
@@ -136,8 +182,8 @@ export default function MainGameTabs({
               <BarChart3 className="h-5 w-5 flex-shrink-0" />
               <span>Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="training" 
+            <TabsTrigger
+              value="training"
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
@@ -150,8 +196,8 @@ export default function MainGameTabs({
               <Target className="h-5 w-5 flex-shrink-0" />
               <span>Training</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="resources" 
+            <TabsTrigger
+              value="resources"
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
@@ -161,28 +207,29 @@ export default function MainGameTabs({
               <Zap className="h-5 w-5 flex-shrink-0" />
               <span>Resources</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="economy" 
+            <TabsTrigger
+              value="economy"
               className={`flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px] relative
-                ${(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) ? 'animate-pulse ring-2 ring-green-400 shadow-lg shadow-green-400/50' : ''}`}
+                ${gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform ? "animate-pulse ring-2 ring-green-400 shadow-lg shadow-green-400/50" : ""}`}
               data-tutorial-id="economy-tab"
               data-tab="economy"
               onClick={() => completeTutorialTarget("economy-tab")}
             >
               <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
-              {(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) && (
+              {(gameState.narrativeFlags.highlightApiPlatform ||
+                gameState.narrativeFlags.highlightChatbotPlatform) && (
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger 
-              value="breakthroughs" 
+            <TabsTrigger
+              value="breakthroughs"
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
@@ -192,8 +239,8 @@ export default function MainGameTabs({
               <Lightbulb className="h-5 w-5 flex-shrink-0" />
               <span>Breakthroughs</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="progression" 
+            <TabsTrigger
+              value="progression"
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
                 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 
                 data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-md
@@ -208,30 +255,30 @@ export default function MainGameTabs({
           </TabsList>
         </div>
       </div>
-      
+
       {/* Dashboard Tab - Clean Command Center */}
       <TabsContent value="dashboard" className="mt-0 space-y-6">
-        <DashboardContent 
+        <DashboardContent
           gameState={gameState}
           trainModel={trainModel || (() => {})}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => setActiveTab(tab as GameTab)}
           handleNavigateToResource={handleNavigateToResource}
         />
       </TabsContent>
-      
+
       {/* Training Tab - Era Advancement */}
       <TabsContent value="training" className="mt-0">
-        <TrainingTab 
+        <TrainingTab
           gameState={gameState}
           advanceTutorial={advanceTutorial}
           onStartTraining={trainModel || (() => {})}
         />
       </TabsContent>
-      
+
       {/* Resources Tab - Detailed resource management */}
       <TabsContent value="resources" className="mt-0">
         <div className="grid grid-cols-1 gap-6">
-          <FactorySection 
+          <FactorySection
             gameState={gameState}
             advanceTutorial={advanceTutorial}
             allocateMoneyToCompute={allocateMoneyToCompute}
@@ -241,10 +288,12 @@ export default function MainGameTabs({
             allocateMoneyToDataQuality={allocateMoneyToDataQuality}
             allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
             allocateMoneyToDataFormats={allocateMoneyToDataFormats}
-            allocateMoneyToAlgorithmArchitectures={allocateMoneyToAlgorithmArchitectures}
+            allocateMoneyToAlgorithmArchitectures={
+              allocateMoneyToAlgorithmArchitectures
+            }
             hireResearchEngineer={hireResearchEngineer}
           />
-          
+
           {/* Resource Synergies - Moved from Dashboard tab */}
           <div className="mt-4">
             <h3 className="text-lg font-medium mb-4 flex items-center">
@@ -255,15 +304,21 @@ export default function MainGameTabs({
           </div>
         </div>
       </TabsContent>
-      
+
       {/* Economy Tab */}
       <TabsContent value="economy" className="mt-0">
         <div className="grid grid-cols-1 gap-6">
-          <EconomicSection 
+          <EconomicSection
             gameState={gameState}
-            toggleApiService={function() { if (toggleApiService) toggleApiService(); }}
-            toggleChatbotService={function() { if (toggleChatbotService) toggleChatbotService(); }}
-            setMonthlyFee={function(fee: number) { if (setMonthlyFee) setMonthlyFee(fee); }}
+            toggleApiService={function () {
+              if (toggleApiService) toggleApiService();
+            }}
+            toggleChatbotService={function () {
+              if (toggleChatbotService) toggleChatbotService();
+            }}
+            setMonthlyFee={function (fee: number) {
+              if (setMonthlyFee) setMonthlyFee(fee);
+            }}
             improveDeveloperTools={improveDeveloperTools}
             improveChatbot={improveChatbot}
             runAdvertisingCampaign={runAdvertisingCampaign}
@@ -272,22 +327,25 @@ export default function MainGameTabs({
           />
         </div>
       </TabsContent>
-      
+
       {/* Breakthroughs Tab */}
       <TabsContent value="breakthroughs" className="mt-0">
         <div className="space-y-6">
           <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-            <h2 className="text-xl font-semibold text-amber-400 mb-4">AI Breakthroughs</h2>
+            <h2 className="text-xl font-semibold text-amber-400 mb-4">
+              AI Breakthroughs
+            </h2>
             <p className="text-gray-300 mb-4">
-              Breakthroughs represent major AI advances inside the eras you have already reached.
-              Complete training to unlock the era, then meet the real resource requirements to claim the breakthrough.
+              Breakthroughs represent major AI advances inside the eras you have
+              already reached. Complete training to unlock the era, then meet
+              the real resource requirements to claim the breakthrough.
             </p>
           </div>
-          
+
           <BreakthroughSection gameState={gameState} />
         </div>
       </TabsContent>
-      
+
       {/* Progression Tab */}
       <TabsContent value="progression" className="mt-0">
         <div className="space-y-6">

@@ -289,6 +289,7 @@ export class GameSession {
     if (this.lifecycleBusy)
       throw new Error("Run lifecycle transition in progress");
     this.lifecycleBusy = true;
+    this.emit();
     try {
       if (!this.repository) throw new Error("Browser storage is unavailable");
       await this.flush();
@@ -311,6 +312,7 @@ export class GameSession {
       await this.flush();
     } finally {
       this.lifecycleBusy = false;
+      this.emit();
     }
   }
   /** Caller confirms abandonment first. A fresh graph and run ID are mandatory. */
@@ -318,6 +320,7 @@ export class GameSession {
     if (this.lifecycleBusy)
       throw new Error("Run lifecycle transition in progress");
     this.lifecycleBusy = true;
+    this.emit();
     try {
       if (!this.repository || !this.lease) {
         if (!this.state.writable) throw new WriterConflictError();
@@ -374,6 +377,7 @@ export class GameSession {
       this.emit();
     } finally {
       this.lifecycleBusy = false;
+      this.emit();
     }
   }
   async complete(summary: CompletedRunSummaryV1) {
@@ -428,6 +432,7 @@ export class GameSession {
   private pageshow = (event: PageTransitionEvent) => {
     if (!event.persisted || !this.repository || this.lifecycleBusy) return;
     this.lifecycleBusy = true;
+    this.emit();
     void (async () => {
       try {
         // A frozen document may have lost its lease; reacquire without stealing
@@ -449,6 +454,7 @@ export class GameSession {
         this.fail(error);
       } finally {
         this.lifecycleBusy = false;
+        this.emit();
       }
     })();
   };

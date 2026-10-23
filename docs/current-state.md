@@ -36,6 +36,8 @@ Release B remains blocked until Release A is deployed and independently verified
 - Leaderboard controls, submissions, and subjective strategy labels have been removed from the client.
 - `/api/healthz`, `/api/readyz`, and `/api/version` expose bounded operational and version truth.
 - Production uses enforced CSP and does not permit inline/eval scripts.
-- The unused database/auth/query/chart stack was removed; application persistence will use IndexedDB.
+- The unused database/auth/query/chart stack was removed; application persistence
+  uses IndexedDB with canonical snapshots, epoch-fenced writers, immutable
+  completed summaries, and recovery/export. Production verification is pending.
 
 The living execution record is [the three-release production checklist](ai-factory-three-release-execution-production-checklist.md).

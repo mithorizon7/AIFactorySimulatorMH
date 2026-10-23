@@ -8,6 +8,7 @@ import { narrative } from "@/lib/narrativeContent";
 import type { ExperienceStateV1 } from "@shared/experience/schemas";
 
 export interface NarrativeMessage {
+  narrativeKey?: keyof typeof narrative;
   id: string;
   title: string;
   content: string;
@@ -99,6 +100,7 @@ export function useNarrativeTriggers({
         isHint,
       });
       onShowMessage({
+        narrativeKey,
         id,
         title: copy.title,
         content: copy.content,

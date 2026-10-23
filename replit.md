@@ -17,9 +17,10 @@ resources, or served revision.
   no longer submits global saves or leaderboard claims.
 - **Identity and data:** the checked-in source has no account, session,
   PostgreSQL, Drizzle, Neon, or server-side game-state implementation. The
-  current client only stores its tutorial-start marker in browser local storage;
-  durable IndexedDB run persistence remains a Release A implementation item,
-  not a claim made by this source today.
+  client stores complete runs and experience state in IndexedDB, with checked
+  snapshots, recovery export, writer leases, and per-metric personal bests.
+  A browser that cannot save displays an actionable storage error; a competing
+  tab remains read-only until explicit takeover.
 
 ## Checked-in Replit configuration
 
