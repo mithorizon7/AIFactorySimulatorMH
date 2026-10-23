@@ -1,6 +1,16 @@
 import type { EngineEffect } from "@shared/game/schemas/effects";
 import type { GameStateV2 } from "@shared/game/schemas/state";
 
+export const CUSTOMER_LOSS_MESSAGE =
+  "The simulation recorded customers leaving this service. Pricing and capacity can both affect customer counts; this notice does not identify which caused this change. Review recent decisions and current demand before choosing a response.";
+
+export function trainingPrerequisiteNotice(targetEra: string) {
+  return {
+    title: `${targetEra} research prerequisites reached`,
+    text: "This historical milestone records that research and resource prerequisites were reached. Training still needs a cash budget and available compute. The current objective shows engine-checked blockers and choices; this queued milestone may remain visible after training has already started.",
+  };
+}
+
 export function commandReasonLabel(
   reason: string | null | undefined,
 ): string | null {

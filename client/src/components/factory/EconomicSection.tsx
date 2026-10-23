@@ -2,7 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { inspectCommand } from "@shared/game/engine";
 import type { GameStateV2 } from "@shared/game/schemas/state";
-import type { GameCommandIntent } from "@shared/game/schemas/commands";
+import {
+  gameCommandSchema,
+  type GameCommandIntent,
+} from "@shared/game/schemas/commands";
+
+const monthlyFeePayloadSchema = gameCommandSchema.options.find(
+  (command) => command.shape.type.value === "SET_MONTHLY_FEE",
+)!.shape.payload;
 
 export default function EconomicSection({
   simulation,
@@ -11,7 +18,14 @@ export default function EconomicSection({
   simulation: GameStateV2;
   onCommand: (intent: GameCommandIntent) => void;
 }) {
-  const [fee, setFee] = useState(simulation.revenue.monthlyFee);
+  const [feeDraft, setFeeDraft] = useState(() =>
+    String(
+      monthlyFeePayloadSchema.safeParse({ fee: simulation.revenue.monthlyFee })
+        .success
+        ? simulation.revenue.monthlyFee
+        : 25,
+    ),
+  );
   const revenue = simulation.revenue;
   const commands: {
     title: string;
@@ -67,11 +81,20 @@ export default function EconomicSection({
       ],
     },
   ];
-  const priceIntent: GameCommandIntent = {
-    type: "SET_MONTHLY_FEE",
-    payload: { fee },
-  };
-  const priceInspection = inspectCommand(simulation, priceIntent);
+  const fee = feeDraft.trim() === "" ? null : Number(feeDraft);
+  const validFeeDraft = monthlyFeePayloadSchema.safeParse({ fee }).success;
+  const priceIntent: GameCommandIntent | null =
+    validFeeDraft && fee !== null
+      ? { type: "SET_MONTHLY_FEE", payload: { fee } }
+      : null;
+  // inspectCommand intentionally throws for malformed intents. Draft input is
+  // checked against the canonical payload schema before inspection or dispatch.
+  const priceInspection = priceIntent
+    ? inspectCommand(simulation, priceIntent)
+    : null;
+  const currentFeeOutsideEditRange = !monthlyFeePayloadSchema.safeParse({
+    fee: revenue.monthlyFee,
+  }).success;
   return (
     <section className="space-y-5">
       <div className="rounded-lg border border-gray-700 bg-gray-900 p-5">
@@ -137,9 +160,11 @@ export default function EconomicSection({
       <section className="rounded-lg border border-gray-700 bg-gray-900 p-5">
         <h3 className="text-lg font-semibold text-teal-200">Chatbot pricing</h3>
         <p className="mt-2 text-sm text-gray-300">
-          In this simulation, price changes revenue and demand. Current fee: $
-          {revenue.monthlyFee}. Compare the outcome with your capacity and
-          training reserve.
+          In this simulation, price changes revenue and demand.{" "}
+          <span data-testid="current-monthly-fee">
+            Current fee: ${revenue.monthlyFee}
+          </span>
+          . Compare the outcome with your capacity and training reserve.
         </p>
         <label
           htmlFor="chatbot-price"
@@ -153,24 +178,42 @@ export default function EconomicSection({
             type="number"
             min={5}
             max={25}
-            step={1}
-            value={fee}
-            onChange={(event) => setFee(Number(event.target.value))}
+            step="any"
+            value={feeDraft}
+            onChange={(event) => setFeeDraft(event.target.value)}
+            aria-invalid={!validFeeDraft}
+            aria-describedby="chatbot-price-help chatbot-price-validation"
             className="min-h-11 w-24 rounded border border-gray-600 bg-gray-800 px-3 text-white"
           />
           <Button
-            disabled={!priceInspection.enabled || fee === revenue.monthlyFee}
-            onClick={() => onCommand(priceIntent)}
+            disabled={!priceInspection?.enabled || fee === revenue.monthlyFee}
+            onClick={() => {
+              if (priceIntent && priceInspection?.enabled)
+                onCommand(priceIntent);
+            }}
             className="min-h-11 bg-teal-800 text-white hover:bg-teal-700"
           >
             Apply monthly fee
           </Button>
         </div>
-        {!priceInspection.enabled && (
-          <p className="mt-2 text-sm text-amber-200">
-            {priceInspection.reason?.replaceAll("_", " ")}
-          </p>
-        )}
+        <p id="chatbot-price-help" className="mt-2 text-sm text-gray-300">
+          New price commands accept any finite amount from $5 to $25, including
+          decimals.{" "}
+          {currentFeeOutsideEditRange
+            ? "Your current price includes a simulation boost outside this editable range. The editable draft does not change that price unless you apply it."
+            : "Editing the draft does not change the current price until you apply it."}
+        </p>
+        <p
+          id="chatbot-price-validation"
+          className="mt-2 text-sm text-amber-200"
+          role="status"
+        >
+          {!validFeeDraft
+            ? "Enter a price from $5 to $25. Decimals are allowed."
+            : !priceInspection?.enabled
+              ? priceInspection?.reason?.replaceAll("_", " ")
+              : ""}
+        </p>
       </section>
     </section>
   );

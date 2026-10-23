@@ -52,7 +52,7 @@ export default function JourneyPanel({
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-white">
-                  {era} · {learning.title}
+                  {learning.title}
                 </h3>
                 <span
                   className={`rounded px-2 py-1 text-xs ${current ? "bg-amber-950 text-amber-200" : "bg-gray-800 text-gray-300"}`}

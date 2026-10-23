@@ -17,27 +17,7 @@ interface MainGameTabsProps {
   onCommand: (intent: GameCommandIntent) => void;
   activeTab?: GameTab;
   onActiveTabChange?: (tab: GameTab) => void;
-  advanceTutorial?: () => void;
-  allocateMoneyToCompute: () => void;
-  allocateMoneyToData: () => void;
-  allocateMoneyToAlgorithm: () => void;
-  allocateMoneyToElectricity: () => void;
-  allocateMoneyToHardware: () => void;
-  allocateMoneyToRegulations: () => void;
-  allocateMoneyToDataQuality: () => void;
-  allocateMoneyToDataQuantity: () => void;
-  allocateMoneyToDataFormats: () => void;
-  allocateMoneyToAlgorithmArchitectures: () => void;
-  hireResearchEngineer: () => void;
-  toggleApiService: () => void;
-  toggleChatbotService: () => void;
-  setMonthlyFee: (fee: number) => void;
-  improveDeveloperTools?: () => void;
-  improveChatbot?: () => void;
-  runAdvertisingCampaign?: () => void;
-  buildApiPlatform?: () => void;
-  buildChatbotPlatform?: () => void;
-  trainModel?: () => void;
+  trainModel: () => void;
 }
 
 export default function MainGameTabs(props: MainGameTabsProps) {
@@ -94,7 +74,7 @@ export default function MainGameTabs(props: MainGameTabsProps) {
         <TrainingTab
           gameState={props.gameState}
           simulation={props.simulation}
-          onStartTraining={props.trainModel ?? (() => {})}
+          onStartTraining={props.trainModel}
         />
       </TabsContent>
       <TabsContent value="resources" className="mt-0 space-y-5">

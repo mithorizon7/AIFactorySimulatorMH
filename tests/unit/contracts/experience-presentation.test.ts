@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  CUSTOMER_LOSS_MESSAGE,
   commandReasonLabel,
   messageForEffect,
+  trainingPrerequisiteNotice,
 } from "../../../client/src/lib/experiencePresentation";
 import { createFreshGameState } from "../../../shared/game/factory";
 import { Era } from "../../../shared/game/domain/era";
 import { RULESET_VERSION } from "../../../shared/version";
+import { inspectCommand } from "../../../shared/game/engine";
 import {
   applyExperienceCommand,
   createFreshExperienceState,
@@ -15,6 +18,43 @@ import {
 const simulation = createFreshGameState({ seed: 17, ruleset: RULESET_VERSION });
 
 describe("one durable presentation queue", () => {
+  it("keeps prerequisite milestones historical when funding is missing or the notice is stale", () => {
+    const missingFunding = createFreshGameState({
+      seed: 42,
+      ruleset: "release-a.1",
+    });
+    expect(
+      inspectCommand(missingFunding, {
+        type: "START_TRAINING",
+        payload: { targetEra: Era.GNT3 },
+      }).enabled,
+    ).toBe(false);
+    const effect = {
+      id: "ready-without-funds",
+      type: "TRAINING_AVAILABLE" as const,
+      tick: 37,
+      targetEra: Era.GNT3,
+    };
+    const queued = messageForEffect(effect, missingFunding);
+    const copy = trainingPrerequisiteNotice(Era.GNT3);
+    expect(copy.title).toContain("prerequisites reached");
+    expect(copy.text).toContain(
+      "still needs a cash budget and available compute",
+    );
+    expect(copy.text).toContain("after training has already started");
+    expect(copy.text).not.toContain("requirements are met");
+    expect(copy.title).not.toContain("training is ready");
+    const started = structuredClone(missingFunding);
+    started.training.active = true;
+    expect(messageForEffect(effect, started)).toEqual(queued);
+  });
+  it("does not infer the cause of customer loss from a cause-free effect", () => {
+    expect(CUSTOMER_LOSS_MESSAGE).toContain("Pricing and capacity");
+    expect(CUSTOMER_LOSS_MESSAGE).toContain("does not identify which caused");
+    expect(CUSTOMER_LOSS_MESSAGE).not.toContain(
+      "leaving during service capacity pressure",
+    );
+  });
   it("explains research caps without presenting a useless purchase as progress", () => {
     expect(commandReasonLabel("research_rate_currently_capped")).toContain(
       "no immediate effect",

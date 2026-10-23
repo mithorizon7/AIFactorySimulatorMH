@@ -64,7 +64,7 @@ test("one welcome leads to real contextual investment without locking navigation
 
 test("contextual goal choices complete first training within the 6–8 minute target", async ({
   page,
-}) => {
+}, testInfo) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -96,6 +96,14 @@ test("contextual goal choices complete first training within the 6–8 minute ta
   expect(state.currentEra).toBe("GNT-3");
   expect(state.clock.activeTick).toBeLessThanOrEqual(480);
   expect(state.clock.activeTick).toBeGreaterThanOrEqual(360);
+  await testInfo.attach("first-training-timing", {
+    body: JSON.stringify({
+      ruleset: state.rulesetVersion,
+      firstInvestmentTick: firstSpendTick,
+      firstTrainingCompletionTick: state.clock.activeTick,
+    }),
+    contentType: "application/json",
+  });
   await expect(page.getByTestId("run-goal")).not.toContainText(
     "learn by doing",
   );

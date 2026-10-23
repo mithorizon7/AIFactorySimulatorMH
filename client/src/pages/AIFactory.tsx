@@ -34,40 +34,10 @@ export default function AIFactory() {
     startGame,
     pauseGame,
     resetGame,
-    // Spark AI Advisor
     dismissMessage,
-    // Interactive Tutorial System
-    advanceTutorial,
     skipTutorial,
     completeTutorial,
-    // Train model function
     trainModel,
-    // Basic money allocation
-    allocateMoneyToCompute,
-    allocateMoneyToData,
-    allocateMoneyToAlgorithm,
-    // Detailed compute inputs
-    allocateMoneyToElectricity,
-    allocateMoneyToHardware,
-    allocateMoneyToRegulations,
-    // Detailed data inputs
-    allocateMoneyToDataQuality,
-    allocateMoneyToDataQuantity,
-    allocateMoneyToDataFormats,
-    // Detailed algorithm inputs
-    allocateMoneyToAlgorithmArchitectures,
-    hireResearchEngineer,
-    // Revenue service controls
-    toggleApiService,
-    toggleChatbotService,
-    setMonthlyFee,
-    // Revenue enhancement functions
-    improveDeveloperTools,
-    improveChatbot,
-    runAdvertisingCampaign,
-    // Platform development functions
-    buildApiPlatform,
-    buildChatbotPlatform,
     formattedTime,
   } = useGameEngine();
 
@@ -261,29 +231,7 @@ export default function AIFactory() {
               onCommand={dispatchIntent}
               activeTab={sessionSnapshot?.experience.lastActiveTab}
               onActiveTabChange={setActiveTab}
-              advanceTutorial={advanceTutorial}
-              allocateMoneyToCompute={allocateMoneyToCompute}
-              allocateMoneyToData={allocateMoneyToData}
-              allocateMoneyToAlgorithm={allocateMoneyToAlgorithm}
-              allocateMoneyToElectricity={allocateMoneyToElectricity}
-              allocateMoneyToHardware={allocateMoneyToHardware}
-              allocateMoneyToRegulations={allocateMoneyToRegulations}
-              allocateMoneyToDataQuality={allocateMoneyToDataQuality}
-              allocateMoneyToDataQuantity={allocateMoneyToDataQuantity}
-              allocateMoneyToDataFormats={allocateMoneyToDataFormats}
-              allocateMoneyToAlgorithmArchitectures={
-                allocateMoneyToAlgorithmArchitectures
-              }
-              hireResearchEngineer={hireResearchEngineer}
-              toggleApiService={toggleApiService}
-              toggleChatbotService={toggleChatbotService}
               trainModel={trainModel}
-              setMonthlyFee={setMonthlyFee}
-              improveDeveloperTools={improveDeveloperTools}
-              improveChatbot={improveChatbot}
-              runAdvertisingCampaign={runAdvertisingCampaign}
-              buildApiPlatform={buildApiPlatform}
-              buildChatbotPlatform={buildChatbotPlatform}
             />
           </fieldset>
           {hasAchievedAgi(gameState) && (

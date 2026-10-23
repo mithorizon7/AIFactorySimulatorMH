@@ -5,6 +5,10 @@ import { narrative } from "@/lib/narrativeContent";
 import { breakthroughLearning, eraLearning } from "@/lib/learningContent";
 import { Button } from "@/components/ui/button";
 import LearningClaim from "./LearningClaim";
+import {
+  CUSTOMER_LOSS_MESSAGE,
+  trainingPrerequisiteNotice,
+} from "@/lib/experiencePresentation";
 
 export default function SparkMessageQueue({
   experience,
@@ -50,9 +54,7 @@ export default function SparkMessageQueue({
     reflection = learning?.reflection;
     claim = learning?.lesson;
   } else if (type === "training-ready") {
-    title = `${key} training is ready`;
-    text =
-      "The engine-checked requirements are met. Start from the objective card or review Training before committing the budget and compute reserve.";
+    ({ title, text } = trainingPrerequisiteNotice(key));
   } else if (type === "training-started") {
     title = `${key} training started`;
     text =
@@ -67,8 +69,7 @@ export default function SparkMessageQueue({
       "Demand exceeded available compute. Consider expanding capacity, improving efficiency, or disabling a service to free training headroom. Check the visible choices; high utilization alone is not a failure.";
   } else if (type === "customers") {
     title = "Service customers left";
-    text =
-      "The lab recorded customers leaving during service capacity pressure. Review actual shortfall and available recovery choices before expanding demand.";
+    text = CUSTOMER_LOSS_MESSAGE;
   } else if (type === "event") {
     const event = simulation.events.find((item) => item.id === Number(key));
     title = event ? `Simulation event · ${event.title}` : "Simulation event";

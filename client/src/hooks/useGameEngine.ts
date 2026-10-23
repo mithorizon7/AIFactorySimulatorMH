@@ -528,15 +528,9 @@ export function useGameEngine() {
 
   const trainModel = useCallback(() => {
     const targetEra = getNextEra(simulationRef.current.currentEra);
-    if (!targetEra) {
-      toast({
-        title: "Final Era Reached",
-        description: "All training runs are complete.",
-      });
-      return;
-    }
+    if (!targetEra) return;
     issueCommand("START_TRAINING", { targetEra });
-  }, [issueCommand, toast]);
+  }, [issueCommand]);
 
   return {
     sessionSnapshot,

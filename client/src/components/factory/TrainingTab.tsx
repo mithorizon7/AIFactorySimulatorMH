@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
   getTrainingRequirementDetails,
-  getUpcomingTrainingRun,
   type GameStateType,
 } from "@/lib/gameState";
 import { getRunGuidance } from "@shared/game/guidance";
@@ -20,7 +19,6 @@ export function TrainingTab({
   onStartTraining: () => void;
 }) {
   const guidance = getRunGuidance(simulation);
-  const nextRun = getUpcomingTrainingRun(gameState);
   const requirements = getTrainingRequirementDetails(
     gameState,
     guidance.training.targetEra,
@@ -28,9 +26,9 @@ export function TrainingTab({
   const learning =
     eraLearning[guidance.training.targetEra ?? simulation.currentEra];
   const progress =
-    nextRun && gameState.training.active
-      ? ((nextRun.daysRequired - gameState.training.daysRemaining) /
-          nextRun.daysRequired) *
+    guidance.training.durationTicks && gameState.training.active
+      ? ((guidance.training.durationTicks - gameState.training.daysRemaining) /
+          guidance.training.durationTicks) *
         100
       : 0;
   return (
@@ -93,8 +91,8 @@ export function TrainingTab({
               {guidance.training.cost?.toLocaleString() ?? "—"} · available
               compute required:{" "}
               {guidance.training.computeRequired?.toLocaleString() ?? "—"}
-              {nextRun
-                ? ` · duration: ${nextRun.daysRequired} simulation ticks`
+              {guidance.training.durationTicks !== null
+                ? ` · duration: ${guidance.training.durationTicks} simulation ticks`
                 : ""}
             </p>
             <dl className="mt-4 space-y-2">
