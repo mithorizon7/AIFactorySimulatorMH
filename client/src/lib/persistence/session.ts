@@ -174,6 +174,7 @@ export class GameSession {
     }
   }
   getSnapshot = (): SessionSnapshot => this.state;
+  isTransitioning = (): boolean => this.lifecycleBusy;
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => {
