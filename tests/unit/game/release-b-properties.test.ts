@@ -47,7 +47,11 @@ it("qualifies B immutability, ledger/capacity invariants, pause, command rejecti
   const checkpoints: GameStateV2[] = [agent.state()];
   let era = Era.GNT2;
   while (agent.state().clock.status === "running") {
+    if (agent.state().clock.activeTick >= 2400)
+      throw new Error("Checkpoint strategy exceeded its completion bound");
+    const previousTick = agent.state().clock.activeTick;
     const next = agent.step();
+    expect(next.clock.activeTick).toBeGreaterThan(previousTick);
     if (next.currentEra !== era) {
       era = next.currentEra;
       checkpoints.push(next);
@@ -55,7 +59,11 @@ it("qualifies B immutability, ledger/capacity invariants, pause, command rejecti
   }
   // Explicit pre/post recovery states supplement the ordinary era checkpoints.
   const poor = releaseBStrategy(19, "adaptive", { poorOpening: true });
-  while (poor.state().clock.activeTick < 119) poor.step();
+  while (poor.state().clock.activeTick < 119) {
+    const previousTick = poor.state().clock.activeTick;
+    poor.step();
+    expect(poor.state().clock.activeTick).toBeGreaterThan(previousTick);
+  }
   checkpoints.push(poor.state());
   poor.step();
   checkpoints.push(poor.state());
@@ -149,12 +157,18 @@ it("replays a complete B commercial/recovery run and resumes at a mid-command sn
   const split = Math.floor(agent.accepted.length / 2);
   for (let index = 0; index < agent.accepted.length; index++) {
     const command = agent.accepted[index];
-    while (state.clock.activeTick < command.tick)
-      state = advanceGameOneTick(state).state;
+    while (state.clock.activeTick < command.tick) {
+      const next = advanceGameOneTick(state).state;
+      expect(next.clock.activeTick).toBeGreaterThan(state.clock.activeTick);
+      state = next;
+    }
     state = applyGameCommand(state, command).state;
     if (index === split) state = JSON.parse(JSON.stringify(state));
   }
-  while (state.clock.activeTick < expected.clock.activeTick)
-    state = advanceGameOneTick(state).state;
+  while (state.clock.activeTick < expected.clock.activeTick) {
+    const next = advanceGameOneTick(state).state;
+    expect(next.clock.activeTick).toBeGreaterThan(state.clock.activeTick);
+    state = next;
+  }
   expect(state).toEqual(expected);
 });

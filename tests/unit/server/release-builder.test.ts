@@ -32,6 +32,7 @@ async function fixture(commit = true) {
   await mkdir(binaries);
   const git = (...args: string[]) => {
     const result = spawnSync("git", args, {
+      timeout: 10_000,
       cwd: repository,
       encoding: "utf8",
       env: {
@@ -70,6 +71,7 @@ if (args[0] === process.env.RELEASE_TEST_FAIL_STAGE) process.exit(9);
     delete environment.BUILD_SHA;
     delete environment.EXPECTED_BUILD_SHA;
     const result = spawnSync(process.execPath, [wrapper], {
+      timeout: 20_000,
       cwd: repository,
       encoding: "utf8",
       env: {
