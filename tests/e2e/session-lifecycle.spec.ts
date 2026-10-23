@@ -208,9 +208,18 @@ test("a public-control strategy completes the ladder and persists its factual sc
     while (await dismissAdvisor.isVisible()) {
       await dismissAdvisor.click();
     }
-    const resume = page.getByTestId("button-start-game");
-    if ((await resume.isVisible()) && (await resume.isEnabled()))
-      await resume.click();
+    // Dismissing an advisor can itself resume the run. Observe either valid
+    // control on each retry rather than waiting on a start button React has
+    // legitimately replaced between isVisible() and click().
+    await expect(async () => {
+      if (await page.getByTestId("button-pause-game").isVisible()) return;
+      const resume = page.getByTestId("button-start-game");
+      if (await resume.isDisabled({ timeout: 500 })) {
+        await expect(resume).toHaveText("Run Complete");
+        return;
+      }
+      await resume.click({ timeout: 500 });
+    }).toPass({ timeout: 10_000 });
   };
   for (
     let iteration = 0;
