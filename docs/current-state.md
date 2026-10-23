@@ -1,8 +1,8 @@
 # Current State
 
-Release A is deployed and independently verified as of 2026-10-23. Both
+Release B is deployed and independently verified as of 2026-10-23. Both
 https://aifactorysimulation.com and https://ai-factory-mithorizon.replit.app serve
-`8902ed9062b71afc9dc47cdc8b7207bb64aa6496` on Node 22.23.4, ruleset `release-a.1`.
+`fadcea8391a31163c004682d83ea76035404b115` on Node 22.23.4, ruleset `release-b.1`.
 The preserved execution record distinguishes historical source snapshots,
 subsequent non-runtime Git maintenance, provider builds and served revisions.
 
@@ -32,9 +32,9 @@ See [the security audit and local remediation record](security-audit-2026-10-22.
 2. **Release B — Better Game:** strategic era dilemmas, balance simulator, onboarding/Journey redesign, factual debrief and claim governance. Normative scoring/profiles remain gated and omitted.
 3. **Release C — Validated Pilot:** accessibility completion, privacy-separated telemetry/research, formative playtests, performance, monitoring, and deployment evidence.
 
-Release A's external stop gate passed. Release B is implemented and locally
-verified, with Git/provider delivery still pending; Release C
-remains blocked until B meets the same independently verified production gate.
+Release A and B external stop gates passed, including fresh-context production
+verification. Release C technical readiness is now in progress, not deployed or
+human-validated. Its source starts from tag `release-b-2026-10-23`.
 Existing A runs retain A rules; B will not silently reinterpret their saves.
 Unvalidated normative scores and named strategy profiles remain omitted, with
 independent algorithm/classifier versions explicitly null.

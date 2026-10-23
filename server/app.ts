@@ -1,5 +1,7 @@
 import express, { type Express } from "express";
 import helmet from "helmet";
+import { randomBytes } from "node:crypto";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { registerRoutes } from "./routes";
 import {
   globalErrorHandler,
@@ -36,11 +38,15 @@ export function createContentSecurityPolicy(
         ...(isDevelopment ? [viteReactRefreshHash] : []),
       ],
       scriptSrcAttr: ["'none'"],
-      // Temporary Release A exception for Radix/react-remove-scroll dialog scroll locking.
-      // Owner: Release C accessibility/security lane. Expiry: Release C production
-      // sign-off; any extension requires a recorded security/accessibility review.
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      styleSrcAttr: ["'unsafe-inline'"],
+      // Only trusted generated style tags receive this unpredictable per-response
+      // nonce. Inline style attributes remain blocked; CSSOM property updates
+      // by trusted React/motion code do not authorize arbitrary HTML attributes.
+      styleSrc: [
+        "'self'",
+        (_req: IncomingMessage, res: ServerResponse) =>
+          `'nonce-${(res as express.Response).locals.cspNonce}'`,
+      ],
+      styleSrcAttr: ["'none'"],
       imgSrc: ["'self'", "data:", "blob:"],
       fontSrc: ["'self'", "data:"],
       connectSrc: [
@@ -65,6 +71,10 @@ export function createApiApp(dependencies: AppDependencies = {}): Express {
   app.set("env", environment);
   app.disable("x-powered-by");
   app.use(requestIdMiddleware);
+  app.use((_req, res, next) => {
+    res.locals.cspNonce = randomBytes(24).toString("base64");
+    next();
+  });
   app.use(
     helmet({
       contentSecurityPolicy: createContentSecurityPolicy(environment),

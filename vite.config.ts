@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  html: { cspNonce: "__AI_FACTORY_REQUEST_NONCE__" },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),

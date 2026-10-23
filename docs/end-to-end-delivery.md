@@ -45,7 +45,7 @@ Participant evidence is a separate gate and cannot be synthesized.
 - [x] B2 Onboarding/Journey/debrief and educational claim labels implemented locally.
 - [x] B3 Simulator-backed factual debrief implemented locally; normative scores/profiles
       remain omitted until calibration and actual learner-comprehension evidence pass.
-- [ ] B4 Release regression gates passed, merged, deployed and verified.
+- [x] B4 Release regression gates passed, merged, deployed and independently verified.
 - [ ] C1 Accessibility and performance completion verified.
 - [ ] C2 Optional telemetry isolated from core readiness; separate consented study boundary.
 - [ ] C3 Synthetic startup/save/resume/completion monitoring and rollback verified.
@@ -99,6 +99,43 @@ alone owns shared contracts, delivery and production.
 Release C remains gated on independently verified Release B production evidence.
 Provider host/kernel/trust-store attestation, historical log coverage and actual
 backup/PITR policy remain unverified; local application tests do not close them.
+
+## Release B closure — 2026-10-23
+
+Both existing origins independently serve
+`fadcea8391a31163c004682d83ea76035404b115`, ruleset `release-b.1`, Node22.23.4,
+snapshot/command versions1 and null migration/score/profile versions. Tag
+`release-b-2026-10-23` is pushed. PR18 merged after required CI39911334623 passed;
+the accepted candidate and merge have identical Git trees.
+
+Replit immutable successful build: `9d419612-9132-4285-827c-4971c2d6c89f`.
+Success logged `2026-10-23T06:49:09Z`; its successful record was updated at
+`06:49:10.660Z`. The separate post-publish checkpoint has no source-tree changes.
+
+- Complete local behavioral coverage451/451; statements94.11%, branches89.56%.
+- Local development and production-mode browsers19/19 each.
+- Actual public-origin full browser suite19/19, zero skipped/flaky/errors,
+  including complete GNT-2→GNT-7 play and durable factual summary/bests.
+- Fresh verifier8/8 critical browser checks per origin, plus actual Chromium
+  shutdown/restart on each with exact simulation/experience retention and
+  playable explicit takeover/resume. No open P1/P2 in the exercised B scope.
+- Both origins' exact SHA, static bytes, health/readiness, retired routes,
+  CSP/HSTS, keyboard/axe and save/recovery checks pass.
+- JS1,261,639 bytes, gzip294.23 kB. Five cold public LCP samples732,760,848,920,1088 ms;
+  median848 versus A656. The +192 ms change passes the agreed rule requiring
+  both >250 ms and >20%; do not call it a measured performance improvement.
+- Exact-merge main CI39912618225 attempt2 passed all gates, job completed
+  `2026-10-23T07:22:35Z`. Attempt1 stalled and required cancellation; GitHub
+  exposed no job log. Available metadata is retained, cause unconfirmed.
+- Exact source archive and checksum, bounded reports/screenshots and runtime
+  SBOM are retained privately. Public evidence-bundle upload was blocked by
+  the safety reviewer pending explicit disclosure authorization; no workaround
+  publication occurred. The public source tag/PR/CI and live acceptance remain
+  independently available.
+
+Release C technical work may now begin from the verified B tag. Participant
+evidence, full accessibility/performance qualification and C data operations
+have not been claimed by B. A remains retained as the prior accepted rollback.
 
 ## Rollback procedure
 

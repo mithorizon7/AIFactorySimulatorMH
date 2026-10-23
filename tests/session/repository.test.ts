@@ -59,6 +59,61 @@ async function corrupt(
 }
 
 describe("canonical IndexedDB durability and ownership", () => {
+  it("opens only the known additive v2 layout without downgrading or changing telemetry records", async () => {
+    const { repository, factory } = await fixture();
+    const lease = await repository.acquireWriter("before-upgrade");
+    const saved = await repository.save(payload(), lease);
+    repository.close();
+    const upgrading = factory.open("ai-factory", 2);
+    upgrading.onupgradeneeded = () => {
+      const store = upgrading.result.createObjectStore("telemetryOutbox", {
+        keyPath: "event.eventId",
+      });
+      store.createIndex("queuedAt", "queuedAt");
+      store.createIndex("nextAttemptAt", "nextAttemptAt");
+      store.put({
+        event: { eventId: "untouched" },
+        queuedAt: 1,
+        nextAttemptAt: 2,
+      });
+    };
+    const upgraded = await new Promise<IDBDatabase>((resolve, reject) => {
+      upgrading.onsuccess = () => resolve(upgrading.result);
+      upgrading.onerror = () => reject(upgrading.error);
+    });
+    upgraded.close();
+    const reopened = await GameRepository.open({
+      factory,
+      now: () => 1_000_000,
+    });
+    expect(await reopened.loadActive()).toMatchObject({
+      kind: "ready",
+      snapshot: { checksum: saved.checksum, revision: 0, runId },
+    });
+    const fenced = await reopened.acquireWriter("after-upgrade", true);
+    await reopened.save(payload(1), fenced);
+    reopened.close();
+    const exported = (await GameRepository.exportUnsupportedDatabase({
+      factory,
+    })) as {
+      databaseVersion: number;
+      stores: Record<string, { value: unknown }[]>;
+    };
+    expect(exported.databaseVersion).toBe(2);
+    expect(exported.stores.telemetryOutbox[0].value).toEqual({
+      event: { eventId: "untouched" },
+      queuedAt: 1,
+      nextAttemptAt: 2,
+    });
+    const futureOpening = factory.open("ai-factory", 3);
+    const future = await new Promise<IDBDatabase>((resolve) => {
+      futureOpening.onsuccess = () => resolve(futureOpening.result);
+    });
+    future.close();
+    await expect(GameRepository.open({ factory })).rejects.toMatchObject({
+      name: "VersionError",
+    });
+  });
   it("keeps at most five abandoned full runs and prunes them after thirty days", async () => {
     const { repository, advance } = await fixture();
     const session = await GameSession.open({
