@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -40,6 +40,7 @@ export default function GameHeader({
   resetGame,
 }: GameHeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const resetButton = useRef<HTMLButtonElement>(null);
 
   const handleResetClick = () => {
     setShowResetConfirm(true);
@@ -136,6 +137,7 @@ export default function GameHeader({
                 </Button>
               )}
               <Button
+                ref={resetButton}
                 variant="outline"
                 className="flex items-center gap-2 bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700 hover:text-white"
                 onClick={handleResetClick}
@@ -161,7 +163,13 @@ export default function GameHeader({
       </header>
 
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
-        <AlertDialogContent className="bg-gray-800 border-gray-700">
+        <AlertDialogContent
+          className="bg-gray-800 border-gray-700"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            resetButton.current?.focus();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl text-white">
               Start a Fresh Run?

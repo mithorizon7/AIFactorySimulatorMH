@@ -73,13 +73,21 @@ test("critical keyboard flow remains usable without console, CSP, or retired-API
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("button-start-game")).toContainText("Resume");
 
-  await page.getByTestId("button-reset-game").focus();
+  const resetButton = page.getByTestId("button-reset-game");
+  await resetButton.focus();
   await page.keyboard.press("Enter");
   const resetDialog = page.getByRole("alertdialog");
   await expect(resetDialog).toBeVisible();
   await resetDialog.getByRole("button", { name: "Cancel" }).focus();
   await page.keyboard.press("Enter");
   await expect(resetDialog).toBeHidden();
+  await expect(resetButton).toBeFocused();
+
+  await page.keyboard.press("Enter");
+  await expect(resetDialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(resetDialog).toBeHidden();
+  await expect(resetButton).toBeFocused();
 
   guard.assertClean();
 });
