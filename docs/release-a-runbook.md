@@ -77,3 +77,13 @@ They do not prove the platform will skip all pre-steps: inspect actual publish
 logs. The release wrapper still requires an entirely clean source tree and runs
 its own lockfile install without lifecycle scripts. Dirty filenames are included
 in failure diagnostics; no file contents or environment values are printed.
+
+The second attempt proved that Replit still ran automatic `npm install` and
+changed `package-lock.json` in the build context. The reviewed `.npmrc` therefore
+also sets `save=false`: ordinary installs read the lockfile but cannot rewrite
+it or the manifest. `ignore-scripts=true` remains enabled. Intentional dependency
+changes must explicitly use `--save` (or edit the manifest and regenerate the
+lockfile with saving explicitly enabled), review the diff, and rerun gates.
+Do not use `package-lock=false`, which would stop reading the reviewed lockfile.
+The release wrapper still uses frozen `npm ci --ignore-scripts`; actual provider
+logs and a clean wrapper build are required to confirm pre-step compatibility.
