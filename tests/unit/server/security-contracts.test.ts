@@ -4,12 +4,13 @@ import { createServer as createHttpServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { NextFunction, Request, Response } from "express";
+import express from "express";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer as createViteServer } from "vite";
 import { createContentSecurityPolicy } from "../../../server/app";
 import { isCommitSha, readBuildMetadata } from "../../../server/buildMetadata";
 import { globalErrorHandler } from "../../../server/errorHandler";
-import { log } from "../../../server/vite";
+import { log, setupVite } from "../../../server/vite";
 import viteConfig from "../../../vite.config";
 
 const temporaryDirectories: string[] = [];
@@ -24,6 +25,23 @@ afterEach(async () => {
 });
 
 describe("security and artifact contracts", () => {
+  it("development transform diagnostics cannot terminate the process", async () => {
+    const httpServer = createHttpServer();
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => {
+      throw new Error("Unexpected request-triggered process exit");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const vite = await setupVite(express(), httpServer);
+    try {
+      expect(() =>
+        vite.config.logger.error("ordinary transform failure"),
+      ).not.toThrow();
+      expect(exit).not.toHaveBeenCalled();
+    } finally {
+      await vite.close();
+    }
+  });
+
   it("production policy has no development script or WebSocket exceptions", () => {
     const policy = JSON.stringify(createContentSecurityPolicy("production"));
     expect(policy).not.toContain("sha256-");

@@ -32,21 +32,16 @@ export async function setupVite(app: Express, server: Server) {
     hmr: { server },
     allowedHosts: ["127.0.0.1", "localhost", ...configuredHosts],
     // Vite 8 otherwise changes this default when it detects an agent process.
-    // Browser failures are asserted by Playwright; they must not be forwarded
-    // into the fatal Vite configuration-error logger.
+    // Browser failures are asserted by Playwright instead of forwarded to logs.
     forwardConsole: false,
   };
 
   const vite = await createViteServer({
     ...viteConfig,
     configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
-      },
-    },
+    // Request/transform errors must not terminate the public development server.
+    // Actual startup failures propagate to the startup-only failure handler.
+    customLogger: viteLogger,
     server: serverOptions,
     appType: "custom",
   });
@@ -76,6 +71,7 @@ export async function setupVite(app: Express, server: Server) {
       next(e);
     }
   });
+  return vite;
 }
 
 export function serveStatic(app: Express) {
