@@ -7,6 +7,10 @@ import {
   type AppDependencies,
 } from "../../server/app";
 import { serveStatic } from "../../server/vite";
+import type {
+  MigrationAttestation,
+  TelemetrySink,
+} from "../../shared/telemetry/contracts";
 
 function app(dependencies: AppDependencies = {}) {
   const instance = createApiApp({ environment: "production", ...dependencies });
@@ -25,6 +29,39 @@ function productionStaticApp() {
 }
 
 describe("Release A API containment", () => {
+  it.each(["unverified", "verified", "mismatch"] as const)(
+    "keeps core readiness available during degraded telemetry with %s migration evidence",
+    async (state) => {
+      const attestation: MigrationAttestation = {
+        state,
+        version: state === "unverified" ? null : "observed-migration",
+        checksum: state === "unverified" ? null : "a".repeat(64),
+      };
+      const sink: TelemetrySink = {
+        status: () => "degraded",
+        migrationVersion: () => attestation.version,
+        migrationAttestation: () => attestation,
+        accept: async () => {
+          throw new Error("Synthetic telemetry outage");
+        },
+        close: async () => {},
+      };
+      const instance = app({
+        rulesetLoaded: true,
+        telemetry: sink,
+        migrationVersion: "must-not-be-used-as-fallback",
+      });
+      const ready = await request(instance).get("/api/readyz");
+      expect(ready.status).toBe(200);
+      expect(ready.body.data).toMatchObject({
+        status: "ready",
+        telemetry: "degraded",
+      });
+      const version = await request(instance).get("/api/version");
+      expect(version.body.data.migrationVersion).toBe(attestation.version);
+      expect(version.body.data.migrationAttestation).toEqual(attestation);
+    },
+  );
   afterEach(() => {
     vi.restoreAllMocks();
   });

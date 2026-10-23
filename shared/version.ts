@@ -14,6 +14,8 @@ export const SNAPSHOT_VERSION = 1;
 export const COMMAND_SCHEMA_VERSION = 1;
 export const COMPLETED_RUN_SUMMARY_SCHEMA_VERSION = 1;
 export const PERSONAL_BEST_SCHEMA_VERSION = 1;
+export const PERSISTENCE_DATABASE_VERSION = 1;
+export const TELEMETRY_SCHEMA_VERSION = 1;
 
 export interface VersionInfo {
   buildSha: string | null;
@@ -22,6 +24,8 @@ export interface VersionInfo {
   commandSchemaVersion: number;
   completedRunSummarySchemaVersion: number;
   personalBestSchemaVersion: number;
+  persistenceDatabaseVersion: number;
+  telemetrySchemaVersion: number;
   scoreAlgorithmVersion: string | null;
   profileClassifierVersion: string | null;
   migrationVersion: string | null;
@@ -38,6 +42,8 @@ export function getVersionInfo(
     commandSchemaVersion: COMMAND_SCHEMA_VERSION,
     completedRunSummarySchemaVersion: COMPLETED_RUN_SUMMARY_SCHEMA_VERSION,
     personalBestSchemaVersion: PERSONAL_BEST_SCHEMA_VERSION,
+    persistenceDatabaseVersion: PERSISTENCE_DATABASE_VERSION,
+    telemetrySchemaVersion: TELEMETRY_SCHEMA_VERSION,
     scoreAlgorithmVersion: null,
     profileClassifierVersion: null,
     migrationVersion,

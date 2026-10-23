@@ -59,6 +59,54 @@ async function corrupt(
 }
 
 describe("canonical IndexedDB durability and ownership", () => {
+  it.each([
+    "extra-store",
+    "wrong-key",
+    "missing-index",
+    "extra-index",
+    "unique-index",
+    "multientry-index",
+  ])(
+    "rejects malformed additive v2 %s without changing its records",
+    async (variant) => {
+      const { repository, factory } = await fixture();
+      repository.close();
+      const upgrading = factory.open("ai-factory", 2);
+      upgrading.onupgradeneeded = () => {
+        const db = upgrading.result;
+        const store = db.createObjectStore("telemetryOutbox", {
+          keyPath: variant === "wrong-key" ? "wrong" : "event.eventId",
+        });
+        if (variant !== "missing-index")
+          store.createIndex("queuedAt", "queuedAt", {
+            unique: variant === "unique-index",
+            multiEntry: variant === "multientry-index",
+          });
+        store.createIndex("nextAttemptAt", "nextAttemptAt");
+        if (variant === "extra-index") store.createIndex("unknown", "unknown");
+        if (variant === "extra-store") db.createObjectStore("unknown");
+        store.put({
+          event: { eventId: "preserved" },
+          wrong: "preserved",
+          queuedAt: 1,
+          nextAttemptAt: 2,
+        });
+      };
+      const db = await new Promise<IDBDatabase>((resolve) => {
+        upgrading.onsuccess = () => resolve(upgrading.result);
+      });
+      db.close();
+      const before = await GameRepository.exportUnsupportedDatabase({
+        factory,
+      });
+      await expect(GameRepository.open({ factory })).rejects.toMatchObject({
+        name: "VersionError",
+      });
+      expect(
+        await GameRepository.exportUnsupportedDatabase({ factory }),
+      ).toEqual(before);
+    },
+  );
   it("opens only the known additive v2 layout without downgrading or changing telemetry records", async () => {
     const { repository, factory } = await fixture();
     const lease = await repository.acquireWriter("before-upgrade");

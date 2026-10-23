@@ -1,7 +1,10 @@
 import { z } from "zod";
-import { SUPPORTED_RULESET_VERSIONS } from "../version";
+import {
+  SUPPORTED_RULESET_VERSIONS,
+  TELEMETRY_SCHEMA_VERSION,
+} from "../version";
 
-export const TELEMETRY_SCHEMA_VERSION = 1;
+export { TELEMETRY_SCHEMA_VERSION } from "../version";
 export const TELEMETRY_MIGRATION_VERSION = "c001-telemetry-research";
 export const OUTBOX_DATABASE_VERSION = 2;
 export const OUTBOX_STORE = "telemetryOutbox";

@@ -26,3 +26,31 @@ operations after their shared contracts are committed. C cannot claim full
 technical readiness while a mandatory technical gate is unverified. External
 participant/custodian consent and inaccessible provider capabilities are explicit
 gaps, never simulated results.
+
+## Local foundation evidence — not Release C closure
+
+- `a0106dd` defines closed event/payload unions, bounded outbox records, and
+  exact inspected PostgreSQL/Drizzle dependencies. Installation ignored
+  lifecycle scripts; no existing package version/integrity changed; audit0.
+- `1e461dc` is the separately deliverable compatibility checkpoint in
+  [PR19](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/19). It still
+  creates browser schema1 but recognizes only the exact known additive schema2.
+  Unknown/malformed future layouts remain untouched and exportable. Its strict
+  style CSP uses192-bit request nonces rather than an inline-style exception.
+- Additive SQL and explicit operator commands are implemented, not applied to
+  production. Four actual disposable PostgreSQL16.15 tests passed: migration
+  checksum/idempotency, analytics isolation, closed/insert-only study access,
+  active-study readers, retention dry runs/confirmation and withdrawal.
+  All rows were synthetic, in a new private socket-only test cluster.
+- Pilot materials, count-based evidence templates and the privacy-safe canary
+  are implemented. Local canary startup/save/reload/resume/full completion2/2
+  passed; policy tests22/22 passed. The deployed schedule and notification path
+  are not yet activated or verified.
+- Migration attestation distinguishes an actual mismatch from a cold-start
+  database outage. Degraded telemetry keeps core readiness200; unknown schema
+  evidence cannot close initial technical qualification.
+
+Accessibility/performance and telemetry implementation lanes remain isolated
+until their exact source and evidence are integrated and independently checked.
+Production remains accepted B until a later checkpoint is explicitly merged,
+deployed and verified. No participant collection is authorized or enabled.

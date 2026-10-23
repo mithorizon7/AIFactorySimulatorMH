@@ -9,12 +9,14 @@ import {
   requestIdMiddleware,
   requestLogger,
 } from "./errorHandler";
+import type { TelemetrySink } from "@shared/telemetry/contracts";
 
 export interface AppDependencies {
   environment?: "development" | "test" | "production";
   buildSha?: string | null;
   migrationVersion?: string | null;
   rulesetLoaded?: boolean;
+  telemetry?: TelemetrySink;
 }
 
 const viteReactRefreshHash =
@@ -106,6 +108,7 @@ export function createApiApp(dependencies: AppDependencies = {}): Express {
     buildSha: dependencies.buildSha ?? null,
     migrationVersion: dependencies.migrationVersion ?? null,
     rulesetLoaded: dependencies.rulesetLoaded ?? false,
+    telemetry: dependencies.telemetry,
   });
   app.use("/api", notFoundHandler);
   return app;

@@ -19,13 +19,14 @@ import {
   isSupportedRuleset,
   SNAPSHOT_VERSION,
   COMMAND_SCHEMA_VERSION,
+  PERSISTENCE_DATABASE_VERSION,
 } from "@shared/version";
 
 export const DATABASE_NAME = "ai-factory";
 // Compatibility checkpoint: create v1, but safely read/write the exact known
 // additive v2 layout. The C activation commit changes creation to v2 only after
 // this rollback-compatible core is preserved as an immutable artifact.
-export const GAME_DATABASE_VERSION = 1;
+export const GAME_DATABASE_VERSION = PERSISTENCE_DATABASE_VERSION;
 export const LEASE_DURATION_MS = 60_000;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const payloadSchema = z
