@@ -45,13 +45,14 @@ test("core tabs render after skipping the tutorial", async ({ page }) => {
     page.getByRole("heading", { name: "Financial Dashboard" }),
   ).toBeVisible();
 
-  await page.getByRole("tab", { name: "Breakthroughs" }).click();
+  await page.getByRole("tab", { name: "Journey" }).click();
   await expect(
-    page.getByRole("heading", { name: "AI Breakthroughs" }).first(),
+    page.getByRole("heading", { name: "Your AI lab journey" }),
   ).toBeVisible();
-
-  await page.getByRole("tab", { name: "Progression" }).click();
   await expect(
-    page.getByRole("heading", { name: "AI Evolution Timeline" }),
-  ).toBeVisible();
+    page.getByRole("tab", { name: "Breakthroughs", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("tab", { name: "Progression", exact: true }),
+  ).toHaveCount(0);
 });

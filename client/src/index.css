@@ -55,23 +55,44 @@
 }
 
 @keyframes pulse-compute {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
-  50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
 }
 
 @keyframes pulse-data {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-  50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
 }
 
 @keyframes pulse-algorithm {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
-  50% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+  }
 }
 
-.pulse-compute { animation: pulse-compute 2s infinite; }
-.pulse-data { animation: pulse-data 2s infinite; }
-.pulse-algorithm { animation: pulse-algorithm 2s infinite; }
+.pulse-compute {
+  animation: pulse-compute 2s infinite;
+}
+.pulse-data {
+  animation: pulse-data 2s infinite;
+}
+.pulse-algorithm {
+  animation: pulse-algorithm 2s infinite;
+}
 
 .tooltip {
   position: relative;
@@ -102,7 +123,8 @@
 
 /* Tutorial CSS animations */
 @keyframes tutorialPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -117,9 +139,18 @@
 }
 
 @keyframes pop-effect {
-  0% { transform: scale(1); color: inherit; }
-  50% { transform: scale(1.25); color: hsl(var(--primary)); }
-  100% { transform: scale(1); color: inherit; }
+  0% {
+    transform: scale(1);
+    color: inherit;
+  }
+  50% {
+    transform: scale(1.25);
+    color: hsl(var(--primary));
+  }
+  100% {
+    transform: scale(1);
+    color: inherit;
+  }
 }
 
 .animate-pop {
@@ -138,9 +169,13 @@
 
 /* Tutorial System Styles */
 .tutorial-highlight-tab {
-  background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+  background: linear-gradient(
+    45deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(99, 102, 241, 0.2)
+  );
   animation: highlight-pulse 2s infinite;
-  border: 2px solid #3B82F6 !important;
+  border: 2px solid #3b82f6 !important;
   border-radius: 8px !important;
 }
 
@@ -150,12 +185,13 @@
 }
 
 @keyframes highlight-pulse {
-  0%, 100% { 
-    border-color: #3B82F6; 
+  0%,
+  100% {
+    border-color: #3b82f6;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
-  50% { 
-    border-color: #60A5FA; 
+  50% {
+    border-color: #60a5fa;
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
   }
 }
@@ -173,5 +209,17 @@
   to {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+/* Calm learning UI: honor the system's reduced-motion preference everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

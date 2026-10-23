@@ -82,8 +82,8 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             {agiAchieved ? "Complete" : `${intelligenceProgress}% threshold`}
           </span>
         </div>
-        <Progress value={intelligenceProgress} className="h-2 [&>div]:bg-amber-400" />
-        <p className="mt-2 text-xs text-gray-400">
+        <Progress aria-label="Model Capability threshold progress" value={intelligenceProgress} className="h-2 [&>div]:bg-amber-400" />
+        <p className="mt-2 text-xs text-gray-300">
           {finalTrainingComplete
             ? `Final GNT-7 training complete. Reach ${agiThreshold.toLocaleString()} model capability to finish the scenario.`
             : "Scenario completion also requires the final GNT-7 training run."}
@@ -92,15 +92,15 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
         {/* Revenue Streams */}
         <div className="grid grid-cols-3 gap-2 mt-4">
           <div className="bg-gray-700 p-2 rounded-md">
-            <div className="text-xs text-gray-400">B2B Revenue</div>
+            <div className="text-xs text-gray-300">B2B Revenue</div>
             <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2b)} /></div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
-            <div className="text-xs text-gray-400">B2C Revenue</div>
+            <div className="text-xs text-gray-300">B2C Revenue</div>
             <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2c)} /></div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
-            <div className="text-xs text-gray-400">Investor Interest</div>
+            <div className="text-xs text-gray-300">Investor Interest</div>
             <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.investors)} /></div>
           </div>
         </div>
@@ -108,28 +108,28 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
       
       {/* Synergy Navigation */}
       <Tabs defaultValue="intelligence" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-5">
+        <TabsList className="grid grid-cols-4 mb-5 bg-gray-900 [&_[role=tab]]:text-gray-100">
           <TabsTrigger 
             value="intelligence" 
-            className="data-[state=active]:bg-amber-600 text-xs"
+            className="data-[state=active]:bg-amber-800 text-xs"
           >
             Model Capability
           </TabsTrigger>
           <TabsTrigger 
             value="compute" 
-            className="data-[state=active]:bg-blue-600 text-xs"
+            className="data-[state=active]:bg-blue-800 text-xs"
           >
             Compute
           </TabsTrigger>
           <TabsTrigger 
             value="data" 
-            className="data-[state=active]:bg-green-600 text-xs"
+            className="data-[state=active]:bg-green-800 text-xs"
           >
             Data
           </TabsTrigger>
           <TabsTrigger 
             value="algorithm" 
-            className="data-[state=active]:bg-purple-600 text-xs"
+            className="data-[state=active]:bg-purple-800 text-xs"
           >
             Algorithm
           </TabsTrigger>
@@ -157,9 +157,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.computeToIntelligence - 1) * 100))} 
+              <Progress aria-label="Compute contribution to Model Capability" value={Math.min(100, Math.round((bonuses.computeToIntelligence - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
-              <div className="mt-1 text-xs text-gray-400 flex justify-between">
+              <div className="mt-1 text-xs text-gray-300 flex justify-between">
                 <span>Level: {levels.compute}</span>
                 <span>Production: {formatRate(production.compute)}/day</span>
               </div>
@@ -179,9 +179,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.dataToIntelligence - 1) * 100))} 
+              <Progress aria-label="Data contribution to Model Capability" value={Math.min(100, Math.round((bonuses.dataToIntelligence - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
-              <div className="mt-1 text-xs text-gray-400 flex justify-between">
+              <div className="mt-1 text-xs text-gray-300 flex justify-between">
                 <span title="Data Level increases with Data Quality upgrades">Level: {levels.data}</span>
                 <span>Production: {formatRate(production.data)}/day</span>
               </div>
@@ -201,9 +201,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.algorithmToIntelligence - 1) * 100))} 
+              <Progress aria-label="Algorithm contribution to Model Capability" value={Math.min(100, Math.round((bonuses.algorithmToIntelligence - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
-              <div className="mt-1 text-xs text-gray-400 flex justify-between">
+              <div className="mt-1 text-xs text-gray-300 flex justify-between">
                 <span>Level: {levels.algorithm}</span>
                 <span>Production: {formatRate(production.algorithm)}/day</span>
               </div>
@@ -229,7 +229,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <ServerIcon className="h-3 w-3 mr-1 text-blue-400" />
                     <span>Infrastructure</span>
                   </div>
-                  <Progress value={Math.min(100, computeInputs.money * 10)} 
+                  <Progress aria-label="Infrastructure input level" value={Math.min(100, computeInputs.money * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
                   <div className="text-right text-xs mt-1">Level {computeInputs.money}</div>
                 </div>
@@ -239,7 +239,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <ZapIcon className="h-3 w-3 mr-1 text-yellow-400" />
                     <span>Electricity</span>
                   </div>
-                  <Progress value={Math.min(100, computeInputs.electricity * 10)} 
+                  <Progress aria-label="Electricity input level" value={Math.min(100, computeInputs.electricity * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-yellow-400" />
                   <div className="text-right text-xs mt-1">Level {computeInputs.electricity}</div>
                 </div>
@@ -249,7 +249,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <CpuIcon className="h-3 w-3 mr-1 text-red-400" />
                     <span>Hardware</span>
                   </div>
-                  <Progress value={Math.min(100, computeInputs.hardware * 10)} 
+                  <Progress aria-label="Hardware input level" value={Math.min(100, computeInputs.hardware * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-red-400" />
                   <div className="text-right text-xs mt-1">Level {computeInputs.hardware}</div>
                 </div>
@@ -259,7 +259,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <ShieldIcon className="h-3 w-3 mr-1 text-indigo-400" />
                     <span>Regulation</span>
                   </div>
-                  <Progress value={Math.min(100, computeInputs.regulation * 10)} 
+                  <Progress aria-label="Regulation input level" value={Math.min(100, computeInputs.regulation * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-indigo-400" />
                   <div className="text-right text-xs mt-1">Level {computeInputs.regulation}</div>
                 </div>
@@ -279,9 +279,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.computeToData - 1) * 100))} 
+              <Progress aria-label="Compute to data bonus" value={Math.min(100, Math.round((bonuses.computeToData - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 Faster compute enables better data processing capabilities
               </p>
             </div>
@@ -299,9 +299,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.computeToAlgorithm - 1) * 100))} 
+              <Progress aria-label="Compute to algorithm bonus" value={Math.min(100, Math.round((bonuses.computeToAlgorithm - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 More compute allows experimentation with larger models
               </p>
             </div>
@@ -326,7 +326,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <BarChart4Icon className="h-3 w-3 mr-1 text-green-400" />
                     <span>Quality</span>
                   </div>
-                  <Progress value={Math.min(100, dataInputs.quality * 10)} 
+                  <Progress aria-label="Data quality input level" value={Math.min(100, dataInputs.quality * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
                   <div className="text-right text-xs mt-1">Level {dataInputs.quality}</div>
                 </div>
@@ -336,7 +336,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                     <DatabaseIcon className="h-3 w-3 mr-1 text-teal-400" />
                     <span>Quantity</span>
                   </div>
-                  <Progress value={Math.min(100, dataInputs.quantity * 10)} 
+                  <Progress aria-label="Data quantity input level" value={Math.min(100, dataInputs.quantity * 10)}
                     className="h-1.5 bg-gray-600 [&>div]:bg-teal-400" />
                   <div className="text-right text-xs mt-1">Level {dataInputs.quantity}</div>
                 </div>
@@ -347,7 +347,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   <LayersIcon className="h-3 w-3 mr-1 text-emerald-400" />
                   <span>Data Formats</span>
                 </div>
-                <Progress value={Math.min(100, dataInputs.formats * 10)} 
+                <Progress aria-label="Data formats input level" value={Math.min(100, dataInputs.formats * 10)}
                   className="h-1.5 bg-gray-600 [&>div]:bg-emerald-400" />
                 <div className="text-right text-xs mt-1">Level {dataInputs.formats}</div>
               </div>
@@ -366,9 +366,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.dataToCompute - 1) * 100))} 
+              <Progress aria-label="Data to compute bonus" value={Math.min(100, Math.round((bonuses.dataToCompute - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 Better data helps optimize compute usage and training efficiency
               </p>
             </div>
@@ -386,9 +386,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.dataToAlgorithm - 1) * 100))} 
+              <Progress aria-label="Data to algorithm bonus" value={Math.min(100, Math.round((bonuses.dataToAlgorithm - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 Rich, diverse data drives algorithmic innovation and testing
               </p>
             </div>
@@ -412,7 +412,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   <CodeXmlIcon className="h-3 w-3 mr-1 text-purple-400" />
                   <span>Model Architectures</span>
                 </div>
-                <Progress value={Math.min(100, algorithmInputs.architectures * 10)} 
+                <Progress aria-label="Architecture input level" value={Math.min(100, algorithmInputs.architectures * 10)}
                   className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
                 <div className="text-right text-xs mt-1">Level {algorithmInputs.architectures}</div>
               </div>
@@ -431,9 +431,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.algorithmToCompute - 1) * 100))} 
+              <Progress aria-label="Algorithm to compute bonus" value={Math.min(100, Math.round((bonuses.algorithmToCompute - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 Better algorithms optimize compute usage and efficiency
               </p>
             </div>
@@ -451,9 +451,9 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress value={Math.min(100, Math.round((bonuses.algorithmToData - 1) * 100))} 
+              <Progress aria-label="Algorithm to data bonus" value={Math.min(100, Math.round((bonuses.algorithmToData - 1) * 100))}
                 className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-300 mt-2">
                 Advanced algorithms improve data extraction and utilization
               </p>
             </div>

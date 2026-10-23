@@ -71,7 +71,7 @@ export default function GameHeader({
             </div>
 
             {/* Primary Metrics */}
-            <div className="flex gap-4">
+            <div className="grid min-w-0 w-full grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:w-auto sm:grid-cols-3 sm:gap-4">
               {/* Intelligence */}
               <div className="bg-gray-800 px-4 py-2 rounded-lg border border-amber-900/30">
                 <div className="flex items-center gap-1 text-sm text-gray-300">
@@ -95,7 +95,7 @@ export default function GameHeader({
               </div>
 
               {/* Timer */}
-              <div className="bg-gray-800 px-4 py-2 rounded-lg border border-blue-900/30">
+              <div className="bg-gray-800 px-4 py-2 rounded-lg border border-blue-900/30 min-[380px]:col-span-2 sm:col-span-1">
                 <div className="flex items-center gap-1 text-sm text-gray-300">
                   <Clock className="h-4 w-4 text-blue-400" />
                   Time Elapsed
@@ -140,6 +140,7 @@ export default function GameHeader({
                 className="flex items-center gap-2 bg-gray-800 text-gray-200 border-gray-600 hover:bg-gray-700 hover:text-white"
                 onClick={handleResetClick}
                 data-testid="button-reset-game"
+                aria-label="Reset"
               >
                 <RefreshCw className="h-5 w-5" />
                 <span className="hidden sm:inline">Reset</span>
@@ -168,7 +169,8 @@ export default function GameHeader({
             <AlertDialogDescription asChild>
               <div className="text-sm text-gray-300">
                 <p>
-                  This resets the active run to its starting state, including:
+                  This starts a separate new run. The current run is preserved
+                  as an abandoned save for 30 days, including:
                 </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>
@@ -180,7 +182,7 @@ export default function GameHeader({
                   <li>Money and revenue ({formatCurrency(gameState.money)})</li>
                 </ul>
                 <p className="mt-3 font-medium text-amber-400">
-                  This creates a new active run.
+                  Personal bests and completed-run summaries are preserved.
                 </p>
               </div>
             </AlertDialogDescription>

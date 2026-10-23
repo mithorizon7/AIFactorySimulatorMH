@@ -1,31 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import BreakthroughModal from "@/components/factory/BreakthroughModal";
+import { useEffect, useRef, useState } from "react";
 import VictoryScreen from "@/components/victory/VictoryScreen";
-import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
-import { Breakthrough, hasAchievedAgi } from "@/lib/gameState";
+import { Era, hasAchievedAgi } from "@/lib/gameState";
 import "@/components/factory/resourceFlow.css";
-import { GamePauseProvider, useGamePause } from "@/contexts/GamePauseContext";
+import { GamePauseProvider } from "@/contexts/GamePauseContext";
 
 import GameHeader from "@/components/factory/GameHeader";
 import MainGameTabs from "@/components/factory/MainGameTabs";
-import AdvisorToast from "@/components/factory/AdvisorToast";
+import SparkMessageQueue from "@/components/factory/SparkMessageQueue";
+import RunGoal from "@/components/factory/RunGoal";
 
 // Unified Tutorial System
 import { UnifiedTutorialSystem } from "@/components/tutorial/UnifiedTutorialSystem";
-import { NarrativeNotification } from "@/components/narrative/NarrativeNotification";
-import {
-  useNarrativeTriggers,
-  NarrativeMessage,
-} from "@/hooks/useNarrativeTriggers";
 import { Button } from "@/components/ui/button";
-import { narrative } from "@/lib/narrativeContent";
 
 export default function AIFactory() {
-  const { toast } = useToast();
-
   const {
     gameState,
+    simulation,
+    dispatchIntent,
+    dismissWelcome,
     sessionSnapshot,
     isLifecycleTransition,
     sessionReady,
@@ -36,15 +30,11 @@ export default function AIFactory() {
     exportRecovery,
     setActiveTab,
     markDebriefViewed,
-    setGameState,
     isRunning,
     startGame,
     pauseGame,
     resetGame,
     // Spark AI Advisor
-    advisorMessage,
-    setAdvisorMessage,
-    queueMessage,
     dismissMessage,
     // Interactive Tutorial System
     advanceTutorial,
@@ -81,53 +71,29 @@ export default function AIFactory() {
     formattedTime,
   } = useGameEngine();
 
-  // UI state
-  const pendingBreakthrough = sessionSnapshot?.experience.queuedMessages.find(
-    (message) => message.messageId.startsWith("breakthrough:"),
-  );
-  const currentBreakthrough = pendingBreakthrough
-    ? gameState.breakthroughs.find(
-        (item) => item.id === Number(pendingBreakthrough.messageId.slice(13)),
-      )
-    : null;
-  const showBreakthroughModal = Boolean(
-    currentBreakthrough &&
-    sessionSnapshot?.writable &&
-    (!gameState.tutorial.isActive || gameState.tutorial.isCompleted),
-  );
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
-
-  // Unified tutorial and narrative system
-  const pendingNarrative = sessionSnapshot?.experience.queuedMessages.find(
-    (message) => message.messageId.startsWith("narrative:"),
-  );
-  const narrativeCopy = pendingNarrative
-    ? narrative[pendingNarrative.messageId.slice(10) as keyof typeof narrative]
-    : null;
-  const currentNarrativeMessage: NarrativeMessage | null =
-    pendingNarrative && narrativeCopy
-      ? {
-          ...narrativeCopy,
-          id: pendingNarrative.messageId,
-          priority: "normal",
-          category: "advice",
-          timestamp: pendingNarrative.availableAtTick,
-        }
-      : null;
   const completionPresentedRef = useRef(false);
 
-  // Narrative trigger system
-  useNarrativeTriggers({
-    gameState,
-    onShowMessage: useCallback(
-      (message: NarrativeMessage) => {
-        if (message.narrativeKey)
-          queueMessage(`narrative:${message.narrativeKey}`, 50);
-      },
-      [queueMessage],
-    ),
-    setGameState,
-  });
+  // Practice completion follows actual training, not a tab or tutorial click.
+  useEffect(() => {
+    if (
+      sessionReady &&
+      sessionSnapshot?.writable &&
+      simulation.clock.status !== "completed" &&
+      gameState.currentEra !== Era.GNT2 &&
+      gameState.tutorial.isActive &&
+      !gameState.tutorial.isCompleted
+    )
+      completeTutorial();
+  }, [
+    sessionReady,
+    sessionSnapshot?.writable,
+    simulation.clock.status,
+    gameState.currentEra,
+    gameState.tutorial.isActive,
+    gameState.tutorial.isCompleted,
+    completeTutorial,
+  ]);
 
   // Check for victory condition
   useEffect(() => {
@@ -144,15 +110,6 @@ export default function AIFactory() {
     }
   }, [gameState, sessionReady, sessionSnapshot?.experience.debrief.viewed]);
 
-  // Handler for Spark AI Advisor
-  const handleAdvisorClose = () => {
-    setAdvisorMessage();
-  };
-
-  const handleCloseBreakthroughModal = () => {
-    if (pendingBreakthrough) dismissMessage(pendingBreakthrough.messageId);
-  };
-
   const handleCloseSummaryModal = () => {
     markDebriefViewed();
     setShowSummaryModal(false);
@@ -162,11 +119,6 @@ export default function AIFactory() {
     resetGame();
     setShowSummaryModal(false);
   };
-
-  const tutorialOverlayActive =
-    gameState.tutorial.isActive && !gameState.tutorial.isCompleted;
-  const suppressSecondaryMessages =
-    tutorialOverlayActive || showBreakthroughModal || showSummaryModal;
 
   const downloadRecovery = async () => {
     const data = await exportRecovery();
@@ -283,9 +235,30 @@ export default function AIFactory() {
               resetGame={resetGame}
             />
 
+            <RunGoal
+              simulation={simulation}
+              practice={
+                gameState.tutorial.isActive && !gameState.tutorial.isCompleted
+              }
+              onCommand={dispatchIntent}
+              onNavigate={setActiveTab}
+              onSkipPractice={skipTutorial}
+            />
+
+            {!showSummaryModal && sessionSnapshot && (
+              <SparkMessageQueue
+                experience={sessionSnapshot.experience}
+                simulation={simulation}
+                writable={sessionSnapshot.writable}
+                onDismiss={dismissMessage}
+              />
+            )}
+
             {/* Main Game Navigation Tabs - Moved directly under the header */}
             <MainGameTabs
               gameState={gameState}
+              simulation={simulation}
+              onCommand={dispatchIntent}
               activeTab={sessionSnapshot?.experience.lastActiveTab}
               onActiveTabChange={setActiveTab}
               advanceTutorial={advanceTutorial}
@@ -313,14 +286,15 @@ export default function AIFactory() {
               buildChatbotPlatform={buildChatbotPlatform}
             />
           </fieldset>
-          {/* Breakthrough Modal */}
-          {showBreakthroughModal && currentBreakthrough && (
-            <BreakthroughModal
-              breakthrough={currentBreakthrough}
-              onClose={handleCloseBreakthroughModal}
-            />
+          {hasAchievedAgi(gameState) && (
+            <Button
+              id="review-run-summary"
+              onClick={() => setShowSummaryModal(true)}
+              className="mt-4 min-h-11 bg-teal-800 text-white hover:bg-teal-700"
+            >
+              Review run summary
+            </Button>
           )}
-
           {showSummaryModal && (
             <VictoryScreen
               gameState={gameState}
@@ -334,32 +308,12 @@ export default function AIFactory() {
           {sessionSnapshot?.writable && !isLifecycleTransition && (
             <UnifiedTutorialSystem
               gameState={gameState}
-              onNextStep={advanceTutorial}
+              onDismissWelcome={dismissWelcome}
               onSkipTutorial={skipTutorial}
-              onComplete={() => {
-                completeTutorial();
-                startGame();
-              }}
-            />
-          )}
-
-          {/* Dynamic Narrative Notifications */}
-          {!suppressSecondaryMessages && (
-            <NarrativeNotification
-              message={currentNarrativeMessage}
-              onDismiss={() => {
-                if (pendingNarrative)
-                  dismissMessage(pendingNarrative.messageId);
-              }}
             />
           )}
         </div>
       </div>
-
-      {/* Spark AI Advisor is rendered on top of everything */}
-      {!suppressSecondaryMessages && advisorMessage && (
-        <AdvisorToast message={advisorMessage} onClose={handleAdvisorClose} />
-      )}
     </GamePauseProvider>
   );
 }
