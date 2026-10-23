@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -8,6 +8,7 @@ import {
   type TelemetrySink,
 } from "../../shared/telemetry/contracts";
 import { TELEMETRY_MIGRATION_CHECKSUM } from "../../server/telemetry/migration-contract";
+import { applyAdditiveMigration } from "../../server/telemetry/migration";
 import { operatorConnectionConfiguration } from "../../server/telemetry/operator-connection";
 import { createTelemetrySink } from "../../server/telemetry/sink";
 
@@ -36,6 +37,7 @@ const createdRoles: string[] = [];
 const directGrantRoles: string[] = [];
 const insertedEventIds: string[] = [];
 const poolErrors: Error[] = [];
+const rolePasswords = new Map<string, string>();
 let legacyRelation: string | undefined;
 let legacyTable: string | undefined;
 
@@ -49,14 +51,28 @@ function generatedRole(prefix: string): string {
   const role = `${prefix}_${randomUUID().replaceAll("-", "")}`;
   if (role.length > 63) throw new Error("Generated role name was too long");
   createdRoles.push(role);
+  const password = randomBytes(32).toString("base64url");
+  if (!/^[A-Za-z0-9_-]{43}$/.test(password))
+    throw new Error("Generated role password was invalid");
+  rolePasswords.set(role, password);
   return role;
 }
 
+function generatedPasswordLiteral(role: string): string {
+  const password = rolePasswords.get(role);
+  if (!password) throw new Error("Missing generated role password");
+  // base64url has no quote characters; keep credentials out of test output and
+  // never derive them from the environment or a checked-in fixture.
+  return `'${password}'`;
+}
+
 function roleConfiguration(role: string): pg.ClientConfig {
+  const password = rolePasswords.get(role);
+  if (!password) throw new Error("Missing generated role password");
   return {
     ...qualificationConnection,
     user: role,
-    password: "",
+    password,
     connectionTimeoutMillis: 3_000,
     statement_timeout: 5_000,
     application_name: "aifactory-telemetry-sink-qualification",
@@ -66,7 +82,7 @@ function roleConfiguration(role: string): pg.ClientConfig {
 async function createAnalyticsRuntime(prefix: string): Promise<string> {
   const role = generatedRole(prefix);
   await admin.query(
-    `CREATE ROLE ${quotedIdentifier(role)} LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS IN ROLE aifactory_analytics`,
+    `CREATE ROLE ${quotedIdentifier(role)} LOGIN PASSWORD ${generatedPasswordLiteral(role)} INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS IN ROLE aifactory_analytics`,
   );
   return role;
 }
@@ -74,7 +90,7 @@ async function createAnalyticsRuntime(prefix: string): Promise<string> {
 async function createUnprivilegedLogin(prefix: string): Promise<string> {
   const role = generatedRole(prefix);
   await admin.query(
-    `CREATE ROLE ${quotedIdentifier(role)} LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`,
+    `CREATE ROLE ${quotedIdentifier(role)} LOGIN PASSWORD ${generatedPasswordLiteral(role)} INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`,
   );
   return role;
 }
@@ -157,6 +173,11 @@ async function createLegacyFixture(): Promise<string> {
 
 beforeAll(async () => {
   await admin.connect();
+  const applied = await applyAdditiveMigration(admin, true);
+  expect(applied).toMatchObject({
+    version: TELEMETRY_MIGRATION_VERSION,
+    checksum: TELEMETRY_MIGRATION_CHECKSUM,
+  });
   const migration = await admin.query<{ checksum: string }>(
     "SELECT checksum FROM analytics.schema_migrations WHERE version = $1",
     [TELEMETRY_MIGRATION_VERSION],
