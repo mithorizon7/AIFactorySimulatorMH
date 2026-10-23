@@ -82,6 +82,42 @@ describe("production canary safety and evidence policy", () => {
     ).toBe(false);
   });
 
+  it("never verifies a non-null migration from its matching legacy marker alone", () => {
+    const configuration = readCanaryConfiguration({
+      ...base,
+      EXPECTED_MIGRATION_VERSION: "c001-telemetry-research",
+      EXPECTED_MIGRATION_CHECKSUM: "f".repeat(64),
+    });
+    const evidence = migrationEvidence(configuration, {
+      migrationVersion: "c001-telemetry-research",
+    });
+    expect(evidence).toEqual({
+      state: "legacy",
+      matches: true,
+      verified: false,
+    });
+    const core = verifyCoreResponses(
+      configuration,
+      { data: { status: "ok" } },
+      { data: { status: "ready", rulesetLoaded: true } },
+      { data: { ...configuration } },
+      { buildSha: configuration.buildSha },
+    );
+    expect(core).toEqual(healthyCore);
+    expect(classifyCanary(core, "passed", "ready", evidence.verified)).toEqual({
+      status: "migration_unverified",
+      exitCode: 0,
+      rollback: "none",
+    });
+    expect(
+      migrationEvidence(configuration, { migrationVersion: "wrong-nonnull" }),
+    ).toEqual({
+      state: "legacy",
+      matches: false,
+      verified: false,
+    });
+  });
+
   it("distinguishes cold-start DB uncertainty from a proven migration mismatch", () => {
     const configuration = readCanaryConfiguration({
       ...base,

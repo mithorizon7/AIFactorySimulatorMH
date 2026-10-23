@@ -32,7 +32,11 @@ when telemetry is degraded. Cold-start database outage may leave attestation
 synthetic core tests, warn about unknown migration proof, and do not roll back
 independently or close migration/release sign-off. `not_configured` with a
 non-null expected migration is also unknown, not proven mismatch. Old accepted
-B/compat APIs without attestation retain exact legacy migrationVersion matching.
+B/compat APIs without attestation retain exact legacy migrationVersion matching,
+but only expected/returned `null` is verified without checksum attestation. A
+matching non-null legacy marker remains `migration_unverified`, with no C
+migration/release sign-off: matching a version string cannot prove the SQL
+checksum. A different reported legacy marker still fails identity matching.
 Only the allowlisted attestation state and verification boolean are reported,
 never remote attestation version/checksum or error contents.
 

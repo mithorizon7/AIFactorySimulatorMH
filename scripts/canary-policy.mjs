@@ -43,7 +43,13 @@ export function migrationEvidence(configuration, data) {
   const attestation = data?.migrationAttestation;
   if (attestation === undefined) {
     const matches = data?.migrationVersion === configuration.migrationVersion;
-    return { state: "legacy", matches, verified: matches };
+    // Only accepted B's null marker needs no SQL checksum proof. A matching
+    // non-null legacy marker cannot attest the independently expected checksum.
+    return {
+      state: "legacy",
+      matches,
+      verified: matches && configuration.migrationVersion === null,
+    };
   }
   const state = [
     "not_configured",
