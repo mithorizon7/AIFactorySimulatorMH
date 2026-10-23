@@ -52,6 +52,11 @@ export const gameCommandSchema = z.discriminatedUnion("type", [
 
 export type GameCommand = z.infer<typeof gameCommandSchema>;
 export type GameCommandType = GameCommand["type"];
+type Intent<T> = T extends GameCommand
+  ? Omit<T, "id" | "tick" | "commandSchemaVersion">
+  : never;
+/** Typed presentation intent; session supplies identity and canonical tick. */
+export type GameCommandIntent = Intent<GameCommand>;
 
 export function parseGameCommand(input: unknown): GameCommand {
   return gameCommandSchema.parse(input);

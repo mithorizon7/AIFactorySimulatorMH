@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SparkCharacter } from "@/components/character/SparkCharacter";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Era, GameStateType, TrainingStatus } from "@/lib/gameState";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -39,25 +44,71 @@ export default function VictoryScreen({
   const activeTicks = gameState.clock.activeTick;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/75 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="run-complete-title"
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-gray-800">
+      <DialogContent
+        className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-4xl overflow-y-auto rounded-lg border-gray-700 bg-gray-800 p-0 text-white"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          document.getElementById("review-run-summary")?.focus();
+        }}
+      >
         <header className="relative border-b border-gray-700 p-6 text-center">
-          <h1 id="run-complete-title" className="text-3xl font-bold text-white">
+          <DialogTitle
+            id="run-complete-title"
+            className="pr-5 text-2xl font-bold text-white sm:text-3xl"
+          >
             Run complete — {Era.GNT7} scenario
-          </h1>
-          <p className="mt-2 text-gray-300">
+          </DialogTitle>
+          <DialogDescription className="mt-2 text-gray-300">
             This is a speculative learning scenario, not a claim that real-world
             AGI has been achieved.
-          </p>
-          <SparkCharacter position="corner" size="small" />
+          </DialogDescription>
         </header>
 
         <div className="space-y-6 p-6">
+          <Card className="border-teal-800 bg-gray-900">
+            <CardHeader>
+              <CardTitle className="text-xl text-teal-200">
+                Decisions behind this run
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm leading-relaxed text-gray-200">
+              <p>
+                You allocated ${formatCurrency(facts.spendByCategory.compute)}{" "}
+                to compute, ${formatCurrency(facts.spendByCategory.data)} to
+                data, and ${formatCurrency(facts.spendByCategory.algorithm)} to
+                research. Your commercial spending was $
+                {formatCurrency(facts.spendByCategory.commercial)}; governance
+                and resilience received $
+                {formatCurrency(facts.spendByCategory.regulationResilience)}.
+              </p>
+              <p>
+                The lab earned ${formatCurrency(facts.earnedRevenue)} from
+                services and received ${formatCurrency(facts.externalFunding)}{" "}
+                in external funding. These are separate sources of cash, not
+                interchangeable measures of performance.
+              </p>
+              <p>
+                Observed capacity pressure lasted {facts.capacityPressureTicks}{" "}
+                ticks, with a peak shortfall of{" "}
+                {(facts.peakCapacityShortfallRatio * 100).toFixed(1)}%. The run
+                used {facts.emergencyFundingInterventions} emergency funding and{" "}
+                {facts.emergencyCapacityInterventions} capacity interventions.
+                Utilization alone is not rated as a mistake.
+              </p>
+              <p className="border-l-2 border-teal-500 pl-3 text-teal-100">
+                Replay question: which investment or service decision would you
+                change to preserve training headroom, and what would you expect
+                to give up? Compare the resulting ledger rather than treating
+                this run as a recommended real-world strategy.
+              </p>
+            </CardContent>
+          </Card>
           <Card className="border-gray-600 bg-gray-700">
             <CardHeader>
               <CardTitle className="text-xl">Personal run ledger</CardTitle>
@@ -228,8 +279,8 @@ export default function VictoryScreen({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

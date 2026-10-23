@@ -63,7 +63,7 @@ See [current state](docs/current-state.md), [architecture](docs/architecture.md)
 For a deployed artifact, verify core readiness, served SHA/version, and retired APIs with:
 
 ```bash
-BASE_URL=https://example.invalid EXPECTED_BUILD_SHA=<full-commit-sha> npm run release:verify
+BASE_URL=https://example.invalid EXPECTED_BUILD_SHA=<full-commit-sha> EXPECTED_RULESET_VERSION=release-b.1 npm run release:verify
 ```
 
 Build a release artifact with a non-null, full commit SHA:

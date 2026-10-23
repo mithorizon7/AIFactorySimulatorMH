@@ -5,7 +5,10 @@ import { createFreshGameState } from "@shared/game/factory";
 import { normalizeGameState } from "@shared/game/normalize";
 import type { GameCommand } from "@shared/game/schemas/commands";
 import { gameStateSchema, type GameStateV2 } from "@shared/game/schemas/state";
-import { COMMAND_SCHEMA_VERSION, RULESET_VERSION } from "@shared/version";
+import {
+  COMMAND_SCHEMA_VERSION,
+  LEGACY_RULESET_VERSION,
+} from "@shared/version";
 
 type CommandType = GameCommand["type"];
 type CommandPayload<T extends CommandType> = Extract<
@@ -39,7 +42,7 @@ export function issue<T extends CommandType>(
 
 export function fresh(seed = 1): GameStateV2 {
   resetCommandSequence();
-  return createFreshGameState({ ruleset: RULESET_VERSION, seed });
+  return createFreshGameState({ ruleset: LEGACY_RULESET_VERSION, seed });
 }
 
 export function withCash(input: GameStateV2, amount: number): GameStateV2 {

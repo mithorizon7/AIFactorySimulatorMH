@@ -7,6 +7,7 @@ export const gameTabSchema = z.enum([
   "training",
   "resources",
   "economy",
+  "journey",
   "breakthroughs",
   "progression",
 ]);
@@ -16,6 +17,13 @@ const commandBase = {
 };
 
 export const experienceCommandSchema = z.discriminatedUnion("type", [
+  z
+    .object({
+      ...commandBase,
+      type: z.literal("DISMISS_WELCOME"),
+      payload: z.object({}).strict(),
+    })
+    .strict(),
   z
     .object({
       ...commandBase,
@@ -194,6 +202,9 @@ export function applyExperienceCommand(
   const state = structuredClone(input);
 
   switch (command.type) {
+    case "DISMISS_WELCOME":
+      state.tutorial.hasShownWelcome = true;
+      break;
     case "ADVANCE_TUTORIAL": {
       if (
         !state.tutorial.isActive ||

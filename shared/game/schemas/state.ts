@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Era } from "../domain/era";
 import { TrainingStatus } from "../domain/gameState";
-import { RULESET_VERSION, SNAPSHOT_VERSION } from "../../version";
+import { SUPPORTED_RULESET_VERSIONS, SNAPSHOT_VERSION } from "../../version";
 import type { EngineEffect } from "./effects";
 
 const finite = z.number().finite();
@@ -185,7 +185,7 @@ export const investmentMilestoneSchema = z
 
 export const gameStateSchema = z
   .object({
-    rulesetVersion: z.literal(RULESET_VERSION),
+    rulesetVersion: z.enum(SUPPORTED_RULESET_VERSIONS),
     snapshotSchemaVersion: z.literal(SNAPSHOT_VERSION),
     clock: simulationClockSchema,
     random: randomStateSchema,

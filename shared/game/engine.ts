@@ -1,7 +1,6 @@
 import { getEraIndex, getNextEra, Era } from "./domain/era";
 import {
   canUnlockBreakthrough,
-  getBaseTrainingRunForEra,
   getScaledInvestmentCost,
   TrainingStatus,
   type Breakthrough,
@@ -21,7 +20,13 @@ import {
   trainingPrerequisitesMet,
 } from "./normalize";
 import { drawRandom } from "./random";
-import { parseGameCommand, type GameCommand } from "./schemas/commands";
+import {
+  parseGameCommand,
+  type GameCommand,
+  type GameCommandIntent,
+} from "./schemas/commands";
+import { COMMAND_SCHEMA_VERSION } from "../version";
+import { getRuleset, governanceGap, serviceEfficiency } from "./rulesets";
 import type { EngineEffect } from "./schemas/effects";
 import {
   gameStateSchema,
@@ -110,7 +115,9 @@ function applyTrainingDiscount(
 ): void {
   for (const target of [Era.GNT3, Era.GNT4, Era.GNT5, Era.GNT6, Era.GNT7]) {
     const run = getTrainingRun(state, target);
-    const base = getBaseTrainingRunForEra(target);
+    const base = getRuleset(state.rulesetVersion).training[
+      target as keyof typeof state.training.runs
+    ];
     if (
       !run ||
       !base ||
@@ -646,7 +653,51 @@ function grantFunding(
 }
 
 function processFunding(state: GameStateV2, effects: MutableEffects): void {
+  if (state.rulesetVersion === "release-b.1") {
+    const rule = getRuleset(state.rulesetVersion);
+    if (
+      state.clock.activeTick >= rule.seedAssistTick &&
+      state.mechanics.lastSeedFundingTick === null
+    ) {
+      state.mechanics.lastSeedFundingTick = state.clock.activeTick;
+      grantFunding(
+        state,
+        effects,
+        "b_seed_assist",
+        2000 + Math.floor(state.intelligence * 10),
+        false,
+      );
+    }
+    const runway = rule.recovery[state.currentEra];
+    if (runway && state.clock.activeTick >= runway.earliestTick) {
+      grantFunding(
+        state,
+        effects,
+        runway.id,
+        Math.max(0, runway.targetCash - state.money),
+        true,
+      );
+      // A bounded second chance is explicit funding, never hidden revenue.
+      if (
+        state.clock.activeTick >=
+          runway.earliestTick + rule.recoveryDelayTicks &&
+        state.mechanics.appliedRecoveryGrantIds.includes(runway.id)
+      ) {
+        const target = getNextEra(state.currentEra);
+        const run = target ? getTrainingRun(state, target) : null;
+        if (run && !state.training.active && state.money < run.moneyCost)
+          grantFunding(
+            state,
+            effects,
+            `${runway.id}_recovery`,
+            Math.max(0, runway.targetCash - state.money),
+            true,
+          );
+      }
+    }
+  }
   if (
+    state.rulesetVersion === "release-a.1" &&
     state.clock.activeTick === 30 &&
     state.mechanics.lastSeedFundingTick === null
   ) {
@@ -656,6 +707,7 @@ function processFunding(state: GameStateV2, effects: MutableEffects): void {
   }
 
   if (
+    state.rulesetVersion === "release-a.1" &&
     state.clock.activeTick >= 60 &&
     state.currentEra === Era.GNT2 &&
     !state.mechanics.appliedRecoveryGrantIds.includes("gnt2_continuity_v1")
@@ -671,6 +723,7 @@ function processFunding(state: GameStateV2, effects: MutableEffects): void {
 
   const runway = CONTINUITY_RUNWAYS[state.currentEra];
   if (
+    state.rulesetVersion === "release-a.1" &&
     runway &&
     state.clock.activeTick >= runway.earliestTick &&
     !state.mechanics.appliedRecoveryGrantIds.includes(runway.id)
@@ -731,6 +784,59 @@ function productionTick(state: GameStateV2): void {
   state.resources.algorithm += state.production.algorithm;
 }
 
+/** Current potential rate, not a stale rate saved before a capacity change. */
+export function getResearchRate(state: GameStateV2): number {
+  const freeCompute = Math.max(
+    0,
+    state.computeCapacity.maxCapacity - state.computeCapacity.used,
+  );
+  const rule = getRuleset(state.rulesetVersion).research;
+  if (state.rulesetVersion === "release-a.1") {
+    const architectureMultiplier =
+      1 + state.algorithmInputs.architectures * 0.1;
+    const computeEfficiency = Math.log10(freeCompute + 1) * 0.5;
+    const engineerBonus = state.algorithmInputs.researchEngineers * 0.25;
+    return Math.max(
+      0.1,
+      0.5 + engineerBonus + computeEfficiency * architectureMultiplier,
+    );
+  }
+  return Math.max(
+    rule.minimum,
+    Math.min(
+      rule.maximum,
+      rule.base +
+        Math.min(
+          rule.engineerMaximum,
+          state.algorithmInputs.researchEngineers * rule.engineerFactor,
+        ) +
+        Math.log10(freeCompute + 1) *
+          rule.computeLogFactor *
+          (1 + state.algorithmInputs.architectures * rule.architectureFactor),
+    ),
+  );
+}
+
+/** Predict before launch; once active, return the captured persisted duration. */
+export function getTrainingDuration(
+  state: GameStateV2,
+  targetEra: Era,
+): number | null {
+  const run = getTrainingRun(state, targetEra);
+  if (!run) return null;
+  if (
+    state.rulesetVersion === "release-a.1" ||
+    run.status === TrainingStatus.IN_PROGRESS ||
+    run.status === TrainingStatus.COMPLETE
+  )
+    return run.daysRequired;
+  const rule = getRuleset(state.rulesetVersion);
+  return (
+    rule.trainingTicks[targetEra as keyof typeof rule.trainingTicks] +
+    governanceGap(state) * rule.governance.missingLevelTrainingTicks
+  );
+}
+
 function updateResearchOrTraining(
   state: GameStateV2,
   effects: MutableEffects,
@@ -771,13 +877,7 @@ function updateResearchOrTraining(
   );
   state.computeCapacity.available = freeCompute;
   state.computeCapacity.freeCompute = freeCompute;
-  const architectureMultiplier = 1 + state.algorithmInputs.architectures * 0.1;
-  const computeEfficiency = Math.log10(freeCompute + 1) * 0.5;
-  const engineerBonus = state.algorithmInputs.researchEngineers * 0.25;
-  state.training.algorithmResearchRate = Math.max(
-    0.1,
-    0.5 + engineerBonus + computeEfficiency * architectureMultiplier,
-  );
+  state.training.algorithmResearchRate = getResearchRate(state);
   state.training.algorithmResearchProgress = Math.min(
     100,
     state.training.algorithmResearchProgress +
@@ -800,7 +900,50 @@ function updateResearchOrTraining(
   }
 }
 
+export function getServiceDemand(state: GameStateV2): {
+  api: number;
+  chatbot: number;
+  total: number;
+} {
+  const rule = getRuleset(state.rulesetVersion).commercial;
+  const efficiency = serviceEfficiency(state);
+  const risk =
+    1 +
+    governanceGap(state) *
+      getRuleset(state.rulesetVersion).governance.shortfallRiskPerMissingLevel;
+  const api =
+    state.revenue.apiAvailable &&
+    state.revenue.apiPlatformBuilt &&
+    state.revenue.apiEnabled
+      ? Math.ceil(
+          (Math.floor(
+            (state.revenue.developers *
+              state.revenue.baseApiRate *
+              (1 + state.revenue.developerToolsLevel * 0.05)) /
+              100,
+          ) /
+            1000) *
+            rule.apiDemandPerThousandRevenue *
+            efficiency *
+            risk,
+        )
+      : 0;
+  const chatbot =
+    state.revenue.chatbotAvailable &&
+    state.revenue.chatbotPlatformBuilt &&
+    state.revenue.chatbotEnabled
+      ? Math.ceil(
+          state.revenue.subscribers *
+            rule.chatbotDemandPerSubscriber *
+            efficiency *
+            risk,
+        )
+      : 0;
+  return { api, chatbot, total: api + chatbot };
+}
+
 function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
+  const tuning = getRuleset(state.rulesetVersion).commercial;
   const apiActive =
     state.revenue.apiAvailable &&
     state.revenue.apiPlatformBuilt &&
@@ -840,7 +983,10 @@ function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
       } else if (state.revenue.developers > 5_000) {
         growth *= 1 - (state.revenue.developers - 5_000) / 25_000;
       }
-      state.revenue.developerGrowthRate = Math.min(0.15, growth);
+      state.revenue.developerGrowthRate = Math.min(
+        tuning.apiGrowthMaximum,
+        growth,
+      );
       state.revenue.developers = Math.floor(
         state.revenue.developers * (1 + state.revenue.developerGrowthRate),
       );
@@ -867,7 +1013,10 @@ function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
       } else if (state.revenue.subscribers > 50_000) {
         growth *= 1 - (state.revenue.subscribers - 50_000) / 250_000;
       }
-      state.revenue.subscriberGrowthRate = Math.min(0.12, growth);
+      state.revenue.subscriberGrowthRate = Math.min(
+        tuning.chatbotGrowthMaximum,
+        growth,
+      );
       state.revenue.subscribers = Math.floor(
         state.revenue.subscribers * (1 + state.revenue.subscriberGrowthRate),
       );
@@ -889,7 +1038,10 @@ function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
   const b2cDemand = chatbotActive
     ? Math.ceil(state.revenue.subscribers * 0.01)
     : 0;
-  const demand = b2bDemand + b2cDemand;
+  const demand =
+    state.rulesetVersion === "release-a.1"
+      ? b2bDemand + b2cDemand
+      : getServiceDemand(state).total;
   const capacity = state.computeCapacity.available;
   const serviceRatio = demand === 0 ? 1 : Math.min(1, capacity / demand);
   const shortfallRatio = demand === 0 ? 0 : Math.max(0, 1 - serviceRatio);
@@ -906,7 +1058,7 @@ function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
   }
 
   if (shortfallRatio > 0 && state.clock.activeTick % 10 === 0) {
-    const churn = 0.25 * shortfallRatio;
+    const churn = tuning.churn * shortfallRatio;
     if (chatbotActive && state.revenue.subscribers > 0) {
       const before = state.revenue.subscribers;
       state.revenue.subscribers = Math.floor(before * (1 - churn));
@@ -961,53 +1113,41 @@ function investmentCost(
   state: GameStateV2,
   command: GameCommand,
 ): number | null {
+  const scaledCost = (base: number, level: number): number => {
+    if (state.rulesetVersion === "release-a.1")
+      return getScaledInvestmentCost(base, level, state.currentEra);
+    const costs = getRuleset(state.rulesetVersion).costs;
+    const raw =
+      base * Math.pow(costs.levelGrowth, level) * costs.era[state.currentEra];
+    if (!Number.isFinite(raw) || raw > Number.MAX_SAFE_INTEGER)
+      throw new RangeError(
+        "investment cost exceeds the supported numeric range",
+      );
+    return Math.floor(raw + Math.max(1, raw) * Number.EPSILON * 4);
+  };
   switch (command.type) {
     case "INVEST_COMPUTE":
-      return getScaledInvestmentCost(
-        100,
-        state.levels.compute,
-        state.currentEra,
-      );
+      return scaledCost(100, state.levels.compute);
     case "INVEST_DATA_QUALITY":
-      return getScaledInvestmentCost(75, state.levels.data, state.currentEra);
+      return scaledCost(75, state.levels.data);
     case "INVEST_ALGORITHM_ARCHITECTURE":
-      return getScaledInvestmentCost(
-        125,
-        state.levels.algorithm,
-        state.currentEra,
-      );
+      return scaledCost(125, state.levels.algorithm);
     case "INVEST_ELECTRICITY":
-      return getScaledInvestmentCost(
-        85,
-        state.computeInputs.electricity,
-        state.currentEra,
-      );
+      return scaledCost(85, state.computeInputs.electricity);
     case "INVEST_HARDWARE":
-      return getScaledInvestmentCost(
-        160,
-        state.computeInputs.hardware,
-        state.currentEra,
-      );
+      return scaledCost(160, state.computeInputs.hardware);
     case "INVEST_REGULATION":
-      return getScaledInvestmentCost(
-        140,
-        state.computeInputs.regulation,
-        state.currentEra,
-      );
+      return scaledCost(140, state.computeInputs.regulation);
     case "INVEST_DATA_QUANTITY":
-      return getScaledInvestmentCost(
-        120,
-        state.dataInputs.quantity,
-        state.currentEra,
-      );
+      return scaledCost(120, state.dataInputs.quantity);
     case "INVEST_DATA_FORMATS":
-      return getScaledInvestmentCost(
-        140,
-        state.dataInputs.formats,
-        state.currentEra,
-      );
+      return scaledCost(140, state.dataInputs.formats);
     case "HIRE_RESEARCH_ENGINEER":
-      return 250;
+      return Math.floor(
+        getRuleset(state.rulesetVersion).costs.engineerBase *
+          getRuleset(state.rulesetVersion).costs.engineerGrowth **
+            state.algorithmInputs.researchEngineers,
+      );
     case "BUILD_API_PLATFORM":
       return state.revenue.apiPlatformCost;
     case "BUILD_CHATBOT_PLATFORM":
@@ -1050,6 +1190,15 @@ function validateCommandBusinessRules(
   reasonId: string;
   params?: Record<string, number | string | boolean>;
 } | null {
+  if (
+    command.type === "HIRE_RESEARCH_ENGINEER" &&
+    state.rulesetVersion === "release-b.1"
+  ) {
+    const rule = getRuleset(state.rulesetVersion).research;
+    const limit = Math.ceil(rule.engineerMaximum / rule.engineerFactor);
+    if (state.algorithmInputs.researchEngineers >= limit)
+      return { reasonId: "research_team_bonus_cap", params: { limit } };
+  }
   const cost = investmentCost(state, command);
   if (cost !== null && !validateSpend(state, cost)) {
     return {
@@ -1238,7 +1387,8 @@ function applyInvestment(
       break;
     case "RUN_MARKETING_CAMPAIGN":
       state.revenue.subscribers += Math.round(
-        1_000 * Math.max(1, state.intelligence / 200),
+        getRuleset(state.rulesetVersion).commercial.marketingCustomers *
+          Math.max(1, state.intelligence / 200),
       );
       state.revenue.lastMarketingCampaign = state.clock.activeTick;
       state.revenue.marketingCampaignCost = Math.round(
@@ -1323,14 +1473,24 @@ export function applyGameCommand(
     }
     case "START_TRAINING": {
       const run = getTrainingRun(state, command.payload.targetEra)!;
+      if (state.rulesetVersion === "release-b.1") {
+        run.daysRequired = getTrainingDuration(
+          state,
+          command.payload.targetEra,
+        )!;
+        run.daysRemaining = run.daysRequired;
+      }
       recordSpend(state, run.moneyCost, "training");
       state.training.active = true;
-      state.training.daysRemaining = run.daysRequired;
+      state.training.daysRemaining =
+        state.rulesetVersion === "release-a.1"
+          ? run.daysRequired
+          : run.daysRemaining;
       state.training.computeReserved = run.computeRequired;
       state.computeCapacity.available -= run.computeRequired;
       state.computeCapacity.used += run.computeRequired;
       run.status = TrainingStatus.IN_PROGRESS;
-      run.daysRemaining = run.daysRequired;
+      run.daysRemaining = state.training.daysRemaining;
       run.isTrainingReserveActive = true;
       pushEffect(state, effects, {
         type: "TRAINING_STARTED",
@@ -1414,7 +1574,10 @@ export function advanceGameOneTick(inputState: GameStateV2): EngineResult {
     state.revenue.chatbotEnabled
       ? Math.ceil(state.revenue.subscribers * 0.01)
       : 0;
-  const demand = apiDemand + chatbotDemand;
+  const demand =
+    state.rulesetVersion === "release-a.1"
+      ? apiDemand + chatbotDemand
+      : getServiceDemand(state).total;
   const nonCustomerUsage = Math.max(
     0,
     state.computeCapacity.used - state.computeCapacity.customerUsage,
@@ -1451,6 +1614,46 @@ export function advanceGameOneTick(inputState: GameStateV2): EngineResult {
   }
 
   return { state: normalizeGameState(state), effects };
+}
+
+export interface CommandInspection {
+  enabled: boolean;
+  cost: number | null;
+  reason: string | null;
+  params?: Record<string, number | string | boolean>;
+}
+
+/** Uses the engine's own validation without applying a command or changing RNG. */
+export function inspectCommand(
+  state: GameStateV2,
+  intent: GameCommandIntent,
+): CommandInspection {
+  const command = parseGameCommand({
+    ...intent,
+    id: "00000000-0000-4000-8000-000000000000",
+    tick: state.clock.activeTick,
+    commandSchemaVersion: COMMAND_SCHEMA_VERSION,
+  });
+  const cost =
+    command.type === "START_TRAINING"
+      ? (getTrainingRun(state, command.payload.targetEra)?.moneyCost ?? null)
+      : investmentCost(state, command);
+  if (state.clock.status === "completed")
+    return { enabled: false, cost, reason: "run_completed" };
+  const rejection = validateCommandBusinessRules(state, command);
+  const rateCapWarning =
+    !rejection &&
+    state.rulesetVersion === "release-b.1" &&
+    command.type === "HIRE_RESEARCH_ENGINEER" &&
+    getResearchRate(state) >= getRuleset(state.rulesetVersion).research.maximum;
+  return {
+    enabled: !rejection,
+    cost,
+    reason:
+      rejection?.reasonId ??
+      (rateCapWarning ? "research_rate_currently_capped" : null),
+    ...(rejection?.params ? { params: rejection.params } : {}),
+  };
 }
 
 export function advanceGameTicks(

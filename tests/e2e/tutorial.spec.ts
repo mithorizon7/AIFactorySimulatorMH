@@ -1,143 +1,113 @@
 import { expect, test, type Page } from "@playwright/test";
+import type { GameStateV2 } from "../../shared/game/schemas/state";
+import { getRunGuidance } from "../../shared/game/guidance";
 
-async function openFreshGame(page: Page) {
-  await page.addInitScript(() => {
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+async function savedState(page: Page): Promise<GameStateV2> {
+  return page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("ai-factory");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const tx = db.transaction(["meta", "runs"], "readonly");
+    const active = await new Promise<{ key: string; runId: string }>(
+      (resolve, reject) => {
+        const request = tx.objectStore("meta").get("activeRunId");
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      },
+    );
+    const run = await new Promise<{ simulation: GameStateV2 }>(
+      (resolve, reject) => {
+        const request = tx.objectStore("runs").get(active.runId);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      },
+    );
+    db.close();
+    return run.simulation;
   });
-
-  await page.goto("/");
 }
 
-test.beforeEach(async ({ page }) => {
-  await openFreshGame(page);
+test("one welcome leads to real contextual investment without locking navigation", async ({
+  page,
+}) => {
+  const began = Date.now();
+  await page.goto("/");
+  const welcome = page.getByRole("dialog", { name: "Welcome to AI Factory!" });
+  await expect(welcome).toBeVisible();
+  await welcome.getByRole("button", { name: "Open my lab" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(welcome).toBeHidden();
+  await expect(page.getByTestId("run-goal")).toContainText("Current blocker:");
+  await expect(page.getByTestId("run-goal")).toContainText("Why it matters:");
+  await page.getByTestId("button-start-game").click();
+  await page.getByRole("tab", { name: "Resources", exact: true }).click();
+  await page.getByTestId("investment-INVEST_COMPUTE").click();
+  expect(Date.now() - began).toBeLessThan(90_000);
+  await expect(page.getByTestId("compute-overview")).toBeHidden();
+  await page.getByRole("tab", { name: "Dashboard", exact: true }).click();
+  await expect(page.getByTestId("compute-overview")).toContainText("Level 2");
+  await page.getByRole("tab", { name: "Journey", exact: true }).click();
+  await expect(page.getByTestId("journey-panel")).toBeVisible();
+  await expect(
+    page.getByRole("tab", { name: "Journey", exact: true }),
+  ).toHaveAttribute("data-state", "active");
+  await page.waitForTimeout(700);
+  await page.reload();
+  await expect(welcome).toBeHidden();
+  await expect(
+    page.getByRole("tab", { name: "Journey", exact: true }),
+  ).toHaveAttribute("data-state", "active");
+  await expect(page.locator(".tutorial-active-target")).toHaveCount(0);
 });
 
-async function expectTutorialStep(
-  page: Page,
-  title: string,
-  stepLabel: string,
-) {
-  await expect(page.getByRole("heading", { name: title })).toBeVisible();
-  await expect(page.getByText(stepLabel)).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Do the highlighted action" }),
-  ).toBeVisible();
-}
-
-test("tutorial completes end-to-end and starts the run", async ({ page }) => {
-  await expect(
-    page.getByRole("dialog", { name: "Welcome to AI Factory!" }),
-  ).toBeVisible();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Continue" })
-    .click();
-
-  await expect(
-    page.getByRole("dialog", { name: "The Three Pillars of AI" }),
-  ).toBeVisible();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Continue" })
-    .click();
-
-  await expectTutorialStep(page, "Pillar 1: Compute Power", "Step 1 of 6");
-  await expect(
-    page.locator("[data-tutorial-id='compute-advanced-toggle']"),
-  ).toBeVisible();
-  await page.locator("[data-tutorial-id='compute-advanced-toggle']").click();
-
-  await expectTutorialStep(
-    page,
-    "Invest in Compute Infrastructure",
-    "Step 2 of 6",
-  );
-  const computeUpgrade = page.locator(
-    "[data-tutorial-id='compute-level-upgrade']",
-  );
-  await expect(computeUpgrade).toBeVisible();
-  await computeUpgrade.click();
-
-  await expectTutorialStep(page, "Pillar 2: High-Quality Data", "Step 3 of 6");
-  await expect(
-    page.locator("[data-tutorial-id='data-advanced-toggle']"),
-  ).toBeVisible();
-  await page.locator("[data-tutorial-id='data-advanced-toggle']").click();
-
-  await expectTutorialStep(page, "Improve Data Quality", "Step 4 of 6");
-  const dataUpgrade = page.locator("[data-tutorial-id='data-quality-upgrade']");
-  await expect(dataUpgrade).toBeVisible();
-  await dataUpgrade.click();
-
-  await expectTutorialStep(page, "Pillar 3: Smart Algorithms", "Step 5 of 6");
-  await expect(
-    page.locator("[data-tutorial-id='algorithm-advanced-toggle']"),
-  ).toBeVisible();
-  await page.locator("[data-tutorial-id='algorithm-advanced-toggle']").click();
-
-  await expectTutorialStep(page, "Research Better Algorithms", "Step 6 of 6");
-  const algorithmUpgrade = page.locator(
-    "[data-tutorial-id='algorithm-architecture-upgrade']",
-  );
-  await expect(algorithmUpgrade).toBeVisible();
-  await algorithmUpgrade.click();
-
-  // Tutorial investments can unlock breakthroughs. Keep their durable queue
-  // pending until onboarding ends, so they cannot cover the required target.
-  const breakthroughContinue = page.getByRole("button", {
-    name: /Thanks, Spark! Let's keep building!/,
+test("contextual goal choices complete first training within the 6–8 minute target", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.clock.install();
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open my lab" }).click();
+  await page.getByTestId("button-start-game").click();
+  await page.clock.runFor(600);
+  let state = await savedState(page);
+  let firstSpendTick: number | null = null;
+  for (let step = 0; step < 480 && state.currentEra === "GNT-2"; step++) {
+    const choice = getRunGuidance(state).actions.find(
+      (action) =>
+        action.enabled &&
+        action.command &&
+        action.command.type !== "PAUSE_RUN" &&
+        (action.command.type !== "HIRE_RESEARCH_ENGINEER" ||
+          state.algorithmInputs.researchEngineers === 0),
+    );
+    if (choice) await page.getByTestId(`goal-action-${choice.id}`).click();
+    await page.clock.fastForward(1_000);
+    await page.clock.fastForward(600);
+    state = await savedState(page);
+    if (state.facts.totalSpend > 0 && firstSpendTick === null)
+      firstSpendTick = state.clock.activeTick;
+  }
+  expect(firstSpendTick).not.toBeNull();
+  expect(firstSpendTick!).toBeLessThanOrEqual(90);
+  expect(state.currentEra).toBe("GNT-3");
+  expect(state.clock.activeTick).toBeLessThanOrEqual(480);
+  expect(state.clock.activeTick).toBeGreaterThanOrEqual(360);
+  await testInfo.attach("first-training-timing", {
+    body: JSON.stringify({
+      ruleset: state.rulesetVersion,
+      firstInvestmentTick: firstSpendTick,
+      firstTrainingCompletionTick: state.clock.activeTick,
+    }),
+    contentType: "application/json",
   });
-  await expect(breakthroughContinue).toBeHidden();
-
-  await expectTutorialStep(
-    page,
-    "Your AI Development Dashboard",
-    "Step 1 of 3",
+  await expect(page.getByTestId("run-goal")).not.toContainText(
+    "learn by doing",
   );
-  await page.locator("[data-tutorial-id='dashboard-tab']").click();
-  await expectTutorialStep(page, "The Path to AGI", "Step 2 of 3");
-  await page.locator("[data-tutorial-id='progression-tab']").click();
-  await expectTutorialStep(
-    page,
-    "Strategic Funding and Revenue",
-    "Step 3 of 3",
-  );
-  await page.locator("[data-tutorial-id='economy-tab']").click();
-
-  await expectTutorialStep(page, "The AI Economics Model", "Step 1 of 3");
-  await page.locator("[data-tutorial-id='training-tab-trigger']").click();
-
-  await expectTutorialStep(
-    page,
-    "Training Runs: The Path to AGI",
-    "Step 2 of 3",
-  );
-  await expect(
-    page.locator("[data-tutorial-id='training-panel']"),
-  ).toBeVisible();
-  await page.locator("[data-tutorial-id='training-panel']").click();
-
-  await expect(
-    page.getByRole("dialog", { name: "Tutorial Complete!" }),
-  ).toBeVisible();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Start Building!" })
-    .click();
-
-  await expect(
-    page.getByRole("dialog", { name: "Tutorial Complete!" }),
-  ).toBeHidden();
-  await expect(breakthroughContinue).toBeVisible();
-  while (await breakthroughContinue.isVisible())
-    await breakthroughContinue.click();
+  await expect(page.getByTestId("spark-message")).toHaveCount(1);
   await expect(page.getByTestId("button-pause-game")).toBeVisible();
-  await expect
-    .poll(async () => {
-      return page.evaluate(() =>
-        window.localStorage.getItem("hasPlayedAIFactory"),
-      );
-    })
-    .toBe("true");
+  expect(errors).toEqual([]);
 });

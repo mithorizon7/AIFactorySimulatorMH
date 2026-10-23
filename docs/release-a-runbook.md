@@ -31,7 +31,7 @@
    patch, the released package lock is the reviewed one, and no stale database
    integration or port mapping is active.
 
-The HTTP portion is automated by `BASE_URL=<served-origin> EXPECTED_BUILD_SHA=<full-sha> npm run release:verify`. It deliberately fails while core readiness is false.
+The HTTP portion is automated by `BASE_URL=<served-origin> EXPECTED_BUILD_SHA=<full-sha> EXPECTED_RULESET_VERSION=release-a.1 npm run release:verify`. Set the expected ruleset explicitly to `release-b.1` for B; never infer it from the returned response. It deliberately fails while core readiness is false.
 
 Record the median of five cold production navigations with `BASE_URL=<served-origin> npm run measure:lcp`. Later A/B checks pass that committed value as `BASELINE_LCP_MS`; regression requires both more than 250 ms and more than 20% degradation.
 
@@ -40,6 +40,35 @@ Record the median of five cold production navigations with `BASE_URL=<served-ori
 Core health/version/static-serving failures and synthetic startup/save/resume/completion failures use the release rollback thresholds. `/api/v1/events` failure is telemetry degradation only and does not independently trigger rollback. If telemetry is unavailable, synthetic local save/resume evidence is the release-safety signal.
 
 Release A currently has no product telemetry endpoint and `migrationVersion` is `null`.
+
+### Preserved and rehearsed rollback
+
+The first accepted rollback is tag `release-a-2026-10-23`, commit
+`8902ed9062b71afc9dc47cdc8b7207bb64aa6496`. Its
+[release artifacts](https://github.com/mithorizon7/AIFactorySimulatorMH/releases/tag/release-a-2026-10-23)
+include source and checksum plus redacted acceptance evidence. The immutable
+successful provider build is `5e850f10-d17d-4799-99ca-29bc7e14465c`.
+
+On October 23, an isolated clean checkout of that tag completed a fresh offline
+`npm ci --ignore-scripts` and an explicitly SHA-stamped release build on Node
+22.23.4. The resulting JavaScript SHA-256 was
+`38684235e836b16e93f3f1b9ed21e6948ec1cb5c44f2be96663cfcaa2136602f`, exactly
+matching production. All 12 production-mode Chromium browser tests then passed,
+including public-control completion and durable summary, takeover, pause,
+reload and reset. Production itself was not interrupted or rolled backward.
+
+For an actual code rollback, first preserve any newer provider workspace
+checkpoint, fetch the accepted tag, and synchronize a clean checkout to that
+exact SHA. Republish using the same checked-in bootstrap/build/start settings;
+repeat exact-SHA HTTP and browser acceptance on both public origins. If the
+provider still exposes that accepted image in deployment history, its image
+rollback may be used instead, but image retention/selectability must be verified
+at the time. The stable deployment ID alone does not identify the accepted image.
+
+Do not restore, delete or downgrade databases/local saves as part of code
+rollback. A newer unsupported snapshot/database remains preserved and exportable.
+Database recovery is a separate operation with its own backup/restore evidence
+and data-impact authorization; code-rebuild rehearsal is not a PITR test.
 
 ## Provider-side configuration
 

@@ -12,7 +12,7 @@ Release A must be deployed and independently verified before Release B starts.
 Release B must be deployed and verified before Release C technical readiness.
 Participant evidence is a separate gate and cannot be synthesized.
 
-## Current inventory
+## Discovery inventory (historical)
 
 - GitHub main at discovery: `f5d65d75c9a344163a93ea2a82c2b862d86a139d`.
 - Prior audited local roadmap candidate: `f2904ab4403e054bcbd9db0f51cffec45c4106ea`.
@@ -35,15 +35,16 @@ Participant evidence is a separate gate and cannot be synthesized.
 
 ## Delivery gates
 
-- [ ] A1 Containment and characterization integrated with current upstream.
-- [ ] A2 Deterministic engine and scripted completion verified.
-- [ ] A3 IndexedDB ownership, recovery, durability, hydration, reset verified.
-- [ ] A4 Factual scorecard and independent per-metric bests verified.
-- [ ] A5 CI, audits, CSP, keyboard/axe, bundle/LCP floors verified.
-- [ ] A6 PR merged, Replit deployed, exact serving SHA and browser canary verified.
-- [ ] B1 Strategic dilemmas and scripted simulator calibration implemented.
-- [ ] B2 Onboarding/Journey/debrief and educational claim labels implemented.
-- [ ] B3 Independently versioned calibrated scores/profiles implemented.
+- [x] A1 Containment and characterization integrated with current upstream.
+- [x] A2 Deterministic engine and scripted completion verified.
+- [x] A3 IndexedDB ownership, recovery, durability, hydration, reset verified.
+- [x] A4 Factual scorecard and independent per-metric bests verified.
+- [x] A5 CI, audits, CSP, keyboard/axe, bundle/LCP floors verified.
+- [x] A6 PR merged, Replit deployed, exact serving SHA and browser canary verified.
+- [x] B1 Strategic dilemmas and scripted simulator calibration implemented locally.
+- [x] B2 Onboarding/Journey/debrief and educational claim labels implemented locally.
+- [x] B3 Simulator-backed factual debrief implemented locally; normative scores/profiles
+      remain omitted until calibration and actual learner-comprehension evidence pass.
 - [ ] B4 Release regression gates passed, merged, deployed and verified.
 - [ ] C1 Accessibility and performance completion verified.
 - [ ] C2 Optional telemetry isolated from core readiness; separate consented study boundary.
@@ -57,6 +58,47 @@ Record implementation commit, PR/check/merge, provider deployment identity,
 serving SHA, HTTP evidence, browser scenarios, and rollback target separately.
 Do not treat provider-agent claims as independently observed HTTP/browser proof.
 Store only redacted operational evidence; no cookies, secrets or raw study answers.
+
+## Release A closure — 2026-10-23
+
+Production on both existing origins independently serves
+`8902ed9062b71afc9dc47cdc8b7207bb64aa6496`, ruleset `release-a.1`, Node
+`22.23.4`. Replit immutable successful build:
+`5e850f10-d17d-4799-99ca-29bc7e14465c`, completed `2026-10-23T04:49:32Z`.
+The stable deployment ID is not an immutable build identity.
+
+- PRs [4](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/4),
+  [15](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/15), and
+  [16](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/16) merged after
+  passing required checks. Main CI run `39902092731` passed for the served SHA.
+- Both origins passed exact-SHA HTTP verification, retired-route probes,
+  enforced CSP and HSTS. Independent browser review passed keyboard, zero
+  serious/critical axe findings, console/CSP, two-tab fencing, reset, and actual
+  browser-shutdown/restart persistence followed by playable resume.
+- Server-free public-origin browser suite: 12/12 passed, no skips or retries.
+  A public-control run completed with its factual scorecard durably persisted.
+- Initial JS: 1,511,077 bytes, +2.52% against baseline. Five cold LCP samples:
+  620, 644, 656, 756, 1100 ms; median 656 ms versus baseline 1028 ms.
+- Legacy database counts and row checksums unchanged; no rows exported or deleted.
+- Two failed provider builds were contained before compilation and did not replace
+  production. The tracked npm no-save policy prevented automatic install drift;
+  final frozen install/build succeeded. No TLS or lockfile safeguards were disabled.
+- [Verified release and rollback artifacts](https://github.com/mithorizon7/AIFactorySimulatorMH/releases/tag/release-a-2026-10-23)
+  retain the exact source archive, checksum and redacted independent evidence.
+  Source archive SHA-256:
+  `8dc29d75b58cf66b1805f1ea942efcf437f5b9a75a1cbe9211869df03c676884`.
+- PR [17](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/17) subsequently
+  merged a test-harness-only correction at `a37d0fab31b08766dc7a945fff84f9a7b1ebdf17`.
+  It is committed/pushed/merged, not a new deployed application revision.
+
+Release B is integrated and locally verified at `e2e9172b6707aae85fb37d949239c7169d23fa27`:
+227 behavioral tests, 19 development and 19 production-mode browser tests passed.
+See [the integrated B evidence](release-b-verification.md). Its merge, deployment
+and independent public-origin verification remain pending. The integration owner
+alone owns shared contracts, delivery and production.
+Release C remains gated on independently verified Release B production evidence.
+Provider host/kernel/trust-store attestation, historical log coverage and actual
+backup/PITR policy remain unverified; local application tests do not close them.
 
 ## Rollback procedure
 

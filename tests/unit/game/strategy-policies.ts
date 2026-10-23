@@ -6,7 +6,7 @@ import { createFreshGameState } from "../../../shared/game/factory";
 import { getNextEra } from "../../../shared/game/domain/era";
 import {
   COMMAND_SCHEMA_VERSION,
-  RULESET_VERSION,
+  LEGACY_RULESET_VERSION,
 } from "../../../shared/version";
 import type { GameCommand } from "../../../shared/game/schemas/commands";
 import type { GameStateV2 } from "../../../shared/game/schemas/state";
@@ -66,7 +66,7 @@ export function strategy(
     }
     return state;
   };
-  let initial = createFreshGameState({ ruleset: RULESET_VERSION, seed });
+  let initial = createFreshGameState({ ruleset: LEGACY_RULESET_VERSION, seed });
   initial = command(initial, "START_RUN");
   if (policy === "low-cash-recovery")
     initial = buy(initial, "INVEST_COMPUTE", () => true);

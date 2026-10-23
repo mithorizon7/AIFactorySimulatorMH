@@ -59,3 +59,16 @@ reacquires and hydrates paused before accepting simulation ticks.
 ## Version truth
 
 `rulesetVersion`, `snapshotVersion`, `commandSchemaVersion`, and the later `scoreAlgorithmVersion` evolve independently. `/api/version` accepts only explicitly injected build identity. `migrationVersion` is `null` when no production database schema applies.
+
+Fresh runs use `release-b.1`. Existing `release-a.1` snapshots retain their
+mechanics, seeded RNG and canonical checksum format; the snapshot header must
+agree with its simulation's ruleset. Ruleset lookup is explicit and rejects
+unsupported versions rather than silently falling forward. B does not change
+the IndexedDB schema version. Normative score and profile versions remain null.
+
+`getRunGuidance`, `inspectCommand`, `getResearchRate`, `getServiceDemand` and
+`getTrainingDuration` are canonical shared selectors. React does not reproduce
+their eligibility, cap or timing formulas. B captures effective training duration
+when training starts; progress and resume use that duration, not a recalculation
+from later investments. Educational provenance is presentation content, not an
+additional simulation authority.

@@ -75,7 +75,7 @@ test("mobile navigation rows clear the Resources heading", async ({ page }) => {
   await page.getByRole("tab", { name: "Resources", exact: true }).click();
   const tabs = await page.getByRole("tablist").first().boundingBox();
   const heading = await page
-    .getByRole("heading", { name: "Resource Factories" })
+    .getByRole("heading", { name: "Invest in your lab" })
     .boundingBox();
   expect(tabs).not.toBeNull();
   expect(heading).not.toBeNull();
@@ -180,25 +180,57 @@ test("a public-control strategy completes the ladder and persists its factual sc
     });
   await page.clock.runFor(600);
   let state = await savedState();
-  let verifiedPendingModal = false;
+  let verifiedPendingMessage = false;
   const dismissBreakthroughs = async () => {
     const toastClose = page.locator('[data-state="open"] [toast-close]');
     while ((await toastClose.count()) > 0) {
       await toastClose.first().focus();
       await page.keyboard.press("Enter");
     }
-    const breakthroughClose = page.getByRole("button", {
-      name: /Thanks, Spark!/,
-    });
-    while (await breakthroughClose.isVisible()) {
-      if (!verifiedPendingModal) {
+    const sparkMessage = page.getByTestId("spark-message");
+    if (await sparkMessage.isVisible()) {
+      if (!verifiedPendingMessage) {
+        const pendingId = await sparkMessage.getAttribute("data-message-id");
         await page.clock.runFor(600);
+        // IndexedDB completes asynchronously after the debounce timer. Prove the
+        // exact pending message is durable before simulating a closed document.
+        await expect
+          .poll(() =>
+            page.evaluate(async (messageId) => {
+              const db = await new Promise<IDBDatabase>((resolve, reject) => {
+                const request = indexedDB.open("ai-factory");
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+              });
+              const tx = db.transaction("runs", "readonly");
+              const runs = await new Promise<
+                Array<{
+                  experience: { queuedMessages: Array<{ messageId: string }> };
+                }>
+              >((resolve, reject) => {
+                const request = tx.objectStore("runs").getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+              });
+              db.close();
+              return runs.some((run) =>
+                run.experience.queuedMessages.some(
+                  (message) => message.messageId === messageId,
+                ),
+              );
+            }, pendingId),
+          )
+          .toBe(true);
         await page.reload();
-        await expect(breakthroughClose).toBeVisible();
-        verifiedPendingModal = true;
+        await expect(sparkMessage).toHaveAttribute(
+          "data-message-id",
+          pendingId!,
+        );
+        verifiedPendingMessage = true;
       }
-      await breakthroughClose.click();
-      await page.clock.runFor(1);
+      await sparkMessage
+        .getByRole("button", { name: /Dismiss Spark message/ })
+        .click();
     }
     const dismissCoaching = page.getByRole("button", {
       name: "Dismiss coaching message",
@@ -223,7 +255,9 @@ test("a public-control strategy completes the ladder and persists its factual sc
   };
   for (
     let iteration = 0;
-    iteration < 800 && state.clock.status !== "completed";
+    iteration < 2_000 &&
+    state.clock.status !== "completed" &&
+    state.clock.activeTick <= 1_800;
     iteration++
   ) {
     await dismissBreakthroughs();
@@ -275,28 +309,10 @@ test("a public-control strategy completes the ladder and persists its factual sc
       ];
       if (upgrades.some(([current, required]) => current < required)) {
         await page.getByRole("tab", { name: "Resources", exact: true }).click();
-        for (const section of ["compute", "data", "algorithm"]) {
-          const trigger = page.locator(
-            `[data-tutorial-id="${section}-advanced-toggle"]`,
-          );
-          if ((await trigger.getAttribute("data-state")) === "closed")
-            await trigger.click();
-        }
         for (const [current, required, selector] of upgrades) {
           if (current >= required) continue;
           const button = page.locator(selector);
-          if ((await button.count()) === 0) {
-            const section = selector.includes("algorithm-architecture")
-              ? "algorithm"
-              : selector.includes("INVEST_DATA") ||
-                  selector.includes("data-quality")
-                ? "data"
-                : "compute";
-            await page
-              .locator(`[data-tutorial-id="${section}-advanced-toggle"]`)
-              .click();
-            await page.clock.runFor(300);
-          }
+          await expect(button).toBeVisible();
           for (
             let level = current;
             level < required && (await button.isEnabled());
@@ -318,7 +334,8 @@ test("a public-control strategy completes the ladder and persists its factual sc
     state = await savedState();
   }
   expect(state.clock.status).toBe("completed");
-  expect(verifiedPendingModal).toBe(true);
+  expect(state.clock.activeTick).toBeLessThanOrEqual(1_800);
+  expect(verifiedPendingMessage).toBe(true);
   await expect(
     page.getByRole("heading", { name: /Run complete/ }),
   ).toBeVisible();

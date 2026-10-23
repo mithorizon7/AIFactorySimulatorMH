@@ -15,13 +15,17 @@ import {
 } from "@shared/experience/schemas";
 import { GameSession, type SessionSnapshot } from "@/lib/persistence/session";
 import { createFreshGameState } from "@shared/game/factory";
-import type { GameCommand } from "@shared/game/schemas/commands";
+import type {
+  GameCommand,
+  GameCommandIntent,
+} from "@shared/game/schemas/commands";
 import type { EngineEffect } from "@shared/game/schemas/effects";
 import type { EngineResult, GameStateV2 } from "@shared/game/schemas/state";
 import type { CompletedRunSummaryV1 } from "@shared/game/schemas/completedRuns";
 import type { PersonalBestRecordV1 } from "@shared/game/schemas/completedRuns";
 import { buildCompletedRunSummary } from "@shared/game/completed-summary";
 import { COMMAND_SCHEMA_VERSION, RULESET_VERSION } from "@shared/version";
+import { messageForEffect } from "@/lib/experiencePresentation";
 
 const LEGACY_COMPAT_TEMPLATE = createInitialGameState();
 
@@ -113,72 +117,6 @@ function projectCompatibilityState(
     },
     experienceState: experience,
   } as GameStateType;
-}
-
-function commandSuccessCopy(type: CommandType): [string, string] | null {
-  const copy: Partial<Record<CommandType, [string, string]>> = {
-    INVEST_COMPUTE: [
-      "Infrastructure Upgraded",
-      "Compute infrastructure and cross-resource efficiency improved.",
-    ],
-    INVEST_ELECTRICITY: [
-      "Power Infrastructure Improved",
-      "Electricity efficiency and compute throughput improved.",
-    ],
-    INVEST_HARDWARE: [
-      "Hardware Quality Upgraded",
-      "More capable accelerators are now available.",
-    ],
-    INVEST_REGULATION: [
-      "Regulatory Resilience Improved",
-      "Compliance capacity and operational resilience improved.",
-    ],
-    INVEST_DATA_QUALITY: [
-      "Data Infrastructure Upgraded",
-      "Training-data quality and data synergies improved.",
-    ],
-    INVEST_DATA_QUANTITY: [
-      "Data Collection Expanded",
-      "The available training corpus is larger.",
-    ],
-    INVEST_DATA_FORMATS: [
-      "Data Formats Expanded",
-      "The system can learn from more modalities.",
-    ],
-    INVEST_ALGORITHM_ARCHITECTURE: [
-      "Algorithm Research Upgraded",
-      "Architecture capability and research efficiency improved.",
-    ],
-    HIRE_RESEARCH_ENGINEER: [
-      "Research Engineer Hired",
-      "Algorithm research will progress faster.",
-    ],
-    BUILD_API_PLATFORM: [
-      "API Platform Built",
-      "The API can now be activated for B2B customers.",
-    ],
-    BUILD_CHATBOT_PLATFORM: [
-      "Chatbot Platform Built",
-      "The chatbot can now be activated for subscribers.",
-    ],
-    UPGRADE_DEVELOPER_TOOLS: [
-      "Developer Tools Improved",
-      "The API developer experience now supports stronger growth.",
-    ],
-    UPGRADE_CHATBOT: [
-      "Chatbot Improved",
-      "Consumer product quality and growth potential improved.",
-    ],
-    RUN_MARKETING_CAMPAIGN: [
-      "Marketing Campaign Launched",
-      "The active chatbot service attracted new subscribers.",
-    ],
-    SET_MONTHLY_FEE: [
-      "Subscription Price Updated",
-      "The new fee will apply to chatbot revenue.",
-    ],
-  };
-  return copy[type] ?? null;
 }
 
 export function useGameEngine() {
@@ -371,94 +309,16 @@ export function useGameEngine() {
   const presentEffects = useCallback(
     (effects: EngineEffect[]) => {
       for (const effect of effects) {
-        switch (effect.type) {
-          case "COMMAND_REJECTED":
-            toast({
-              title: "Action unavailable",
-              description: effect.reasonId.replaceAll("_", " "),
-              variant: "destructive",
-            });
-            break;
-          case "TRAINING_AVAILABLE":
-            toast({
-              title: "Training Available",
-              description: `${effect.targetEra} prerequisites are complete.`,
-            });
-            break;
-          case "TRAINING_STARTED":
-            toast({
-              title: "Training Started",
-              description: `${effect.targetEra} training is now in progress.`,
-            });
-            break;
-          case "TRAINING_COMPLETED":
-            toast({
-              title: "Training Complete",
-              description: `The system has advanced to ${effect.targetEra}.`,
-              duration: 6_000,
-            });
-            break;
-          case "ERA_ADVANCED": {
-            const key = `ERA_ADVANCE_${effect.era.replace("-", "")}`;
-            const message = narrative[key as keyof typeof narrative];
-            if (message) queueMessage(`advisor:${key}`, 80);
-            break;
-          }
-          case "SERVICE_UNLOCKED":
-            setExperience((current) => ({
-              ...current,
-              platformHighlights: {
-                ...current.platformHighlights,
-                [effect.service]: true,
-              },
-            }));
-            break;
-          case "FUNDING_GRANTED":
-            toast({
-              title: effect.emergency
-                ? "Continuity Funding Granted"
-                : "External Funding Received",
-              description: `$${effect.amount.toLocaleString()} was added to the run.`,
-            });
-            break;
-          case "BREAKTHROUGH_UNLOCKED": {
-            queueMessage(`breakthrough:${effect.breakthroughId}`, 100);
-            break;
-          }
-          case "CAPACITY_WARNING":
-            if (effect.tick % 10 === 0) {
-              toast({
-                title:
-                  effect.severity === "shortfall"
-                    ? "Compute Shortfall"
-                    : "Compute Under Pressure",
-                description:
-                  "Customer demand is approaching or exceeding available capacity.",
-                variant: "destructive",
-              });
-            }
-            break;
-          case "CUSTOMERS_LOST":
-            toast({
-              title: "Customers Lost",
-              description: `${effect.count.toLocaleString()} ${effect.service} customers left.`,
-              variant: "destructive",
-            });
-            break;
-          case "EVENT_TRIGGERED": {
-            const event = simulationRef.current.events.find(
-              (candidate) => candidate.id === effect.eventId,
-            );
-            if (event) {
-              toast({
-                title: `Event: ${event.title}`,
-                description: event.description,
-              });
-            }
-            break;
-          }
-          case "RUN_COMPLETED":
-            break;
+        const message = messageForEffect(effect, simulationRef.current);
+        if (message) queueMessage(message.messageId, message.priority);
+        if (effect.type === "SERVICE_UNLOCKED") {
+          setExperience((current) => ({
+            ...current,
+            platformHighlights: {
+              ...current.platformHighlights,
+              [effect.service]: true,
+            },
+          }));
         }
         applyExperience({
           experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
@@ -467,7 +327,7 @@ export function useGameEngine() {
         });
       }
     },
-    [applyExperience, queueMessage, setExperience, toast],
+    [applyExperience, queueMessage, setExperience],
   );
 
   const commitResult = useCallback(
@@ -498,8 +358,6 @@ export function useGameEngine() {
       } as Extract<GameCommand, { type: T }>;
       const result = commitResult(session.apply(command));
       if (result.acceptedCommandId) {
-        const copy = commandSuccessCopy(type);
-        if (copy) toast({ title: copy[0], description: copy[1] });
         if (
           type === "BUILD_API_PLATFORM" ||
           type === "BUILD_CHATBOT_PLATFORM"
@@ -670,18 +528,21 @@ export function useGameEngine() {
 
   const trainModel = useCallback(() => {
     const targetEra = getNextEra(simulationRef.current.currentEra);
-    if (!targetEra) {
-      toast({
-        title: "Final Era Reached",
-        description: "All training runs are complete.",
-      });
-      return;
-    }
+    if (!targetEra) return;
     issueCommand("START_TRAINING", { targetEra });
-  }, [issueCommand, toast]);
+  }, [issueCommand]);
 
   return {
     sessionSnapshot,
+    simulation,
+    dispatchIntent: (intent: GameCommandIntent) =>
+      issueCommand(intent.type, intent.payload),
+    dismissWelcome: () =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "DISMISS_WELCOME",
+        payload: {},
+      }),
     isLifecycleTransition: isLifecycleTransition || controllerTransitioning,
     sessionError:
       openingError ?? completionError ?? sessionSnapshot?.error ?? null,
