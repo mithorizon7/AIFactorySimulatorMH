@@ -1,5 +1,19 @@
-// UNIFIED TUTORIAL SYSTEM - Single source of truth for all tutorial and narrative content
-export type TutorialTabId = "dashboard" | "training" | "resources" | "economy" | "breakthroughs" | "progression";
+import {
+  CONTENT_REVIEW_DATE,
+  learningClaimSchema,
+  type LearningClaim,
+  type LinkedMechanic,
+} from "./learningContent";
+
+// Compatibility targets remain stable while the contextual tutorial replaces
+// the legacy tour. All copy in this file describes the simulation, not history.
+export type TutorialTabId =
+  | "dashboard"
+  | "training"
+  | "resources"
+  | "economy"
+  | "breakthroughs"
+  | "progression";
 export type TutorialAccordionId = "compute" | "data" | "algorithm";
 export interface TutorialStepAvailability {
   visibleTab?: TutorialTabId;
@@ -28,7 +42,6 @@ export const tutorialTargetAvailability = {
     expandedAccordion: "algorithm" as TutorialAccordionId,
   },
 } as const satisfies Record<string, TutorialStepAvailability>;
-
 export type TutorialTargetId = keyof typeof tutorialTargetAvailability;
 
 export interface TutorialStepDefinition {
@@ -44,473 +57,535 @@ export interface TutorialStepDefinition {
   speaker?: string;
 }
 
-export const tutorialContent: Record<string, Record<number, TutorialStepDefinition>> = {
-  // Phase 1: Welcome & First Steps
+export const tutorialContent: Record<
+  string,
+  Record<number, TutorialStepDefinition>
+> = {
   PHASE_1: {
     1: {
-      title: "Welcome to AI Factory!",
-      content: "Hello! I'm Spark, your AI advisor. Our goal is to build the world's first AGI. Before the simulation starts, I'll walk you through the systems that drive AI progress so your first choices make sense.",
-      context: "You're about to create your first neural network! In the real world, this is like the 'Hello, World!' of AI.",
-      action: "Continue to begin the guided tour",
+      title: "Welcome to AI Factory",
+      content:
+        "I'm Spark. Build a fictional model business by balancing compute, data, research, and customers. Your first goal is to prepare a training run.",
+      context:
+        "This simplified simulation is not a forecast. Model Capability is a game measure, not IQ or proof of general intelligence. GNT-5 through GNT-7 are speculative.",
+      action: "Continue",
       targetElement: null,
       modalStyle: true,
-      icon: "spark"
+      icon: "spark",
     },
     2: {
-      title: "The Three Pillars of AI",
-      content: "Excellent! We have a basic AI, but to make it truly intelligent, we need three key ingredients working together: Compute, Data, and Algorithms.",
-      context: "Just like a human needs a brain (compute), knowledge (data), and thinking methods (algorithms), AI requires all three elements.",
-      action: "Let's explore each pillar",
+      title: "Make your first choice",
+      content:
+        "Your starting cash is limited. Compute expands infrastructure, data supports training, and research unlocks improvements. The next-goal card shows what is missing.",
+      context:
+        "Game costs and unlocks are invented. There is no single purchase that recreates real AI research.",
+      action: "Explore your first investment",
       targetElement: null,
       modalStyle: true,
-      icon: "lightbulb"
-    }
+      icon: "lightbulb",
+    },
   },
-
-  // Phase 2: Learning the Three Pillars
   PHASE_2: {
     1: {
-      title: "Pillar 1: Compute Power",
-      content: "This is **Compute** - the raw brainpower of our AI. Think of it as the data centers filled with powerful GPUs that train and run AI models.",
-      context: "Companies like Google and NVIDIA build massive data centers! More compute means faster AI training and better performance. GPT-4 required enormous computational resources.",
-      action: "Open the advanced Compute controls",
+      title: "Compute capacity",
+      content:
+        "Compute supports both training and customer services. Open the controls to see available investments.",
+      context:
+        "In this game, serving demand can compete with the capacity reserved for training.",
+      action: "Open Compute controls",
       targetElement: "compute-advanced-toggle",
       modalStyle: false,
       icon: "cpu",
-      nextTarget: "compute-level-upgrade"
+      nextTarget: "compute-level-upgrade",
     },
     2: {
-      title: "Invest in Compute Infrastructure", 
-      content: "Perfect! Now invest your starting funds to upgrade your Compute Level. This is essential for meeting training prerequisites.",
-      context: "Real AI companies spend millions on compute infrastructure. OpenAI spent over $100M on computing resources for GPT-4.",
-      action: "Click the 'Invest in Compute Infrastructure' button to upgrade",
-      targetElement: "compute-level-upgrade", 
+      title: "Invest in compute",
+      content:
+        "Compare the infrastructure cost with the next training blocker before spending.",
+      context:
+        "An investment removes a particular game constraint; it does not guarantee a real-world capability gain.",
+      action: "Invest in Compute Infrastructure",
+      targetElement: "compute-level-upgrade",
       modalStyle: false,
-      icon: "cpu"
+      icon: "cpu",
     },
     3: {
-      title: "Pillar 2: High-Quality Data",
-      content: "Excellent! Next is **Data** - the knowledge our AI learns from. AI learns patterns from massive datasets of text, images, and other information.",
-      context: "GPT models were trained on hundreds of billions of words from books, websites, and articles. Quality data is crucial for intelligent AI.",
-      action: "Open the advanced Data controls",
+      title: "Training data",
+      content:
+        "Data investments have separate quality, quantity, and format requirements. Open the controls to inspect them.",
+      context:
+        "More data alone is not the same choice as better-curated data in this simulation.",
+      action: "Open Data controls",
       targetElement: "data-advanced-toggle",
       modalStyle: false,
       icon: "database",
-      nextTarget: "data-quality-upgrade"
+      nextTarget: "data-quality-upgrade",
     },
     4: {
-      title: "Improve Data Quality",
-      content: "Great! Now invest in better data curation. High-quality, diverse data makes your AI more reliable and capable.",
-      context: "Companies spend enormous effort on data cleaning and curation. The quality of training data directly impacts AI capabilities.",
-      action: "Click to invest in data quality improvements",
+      title: "Improve data quality",
+      content:
+        "Invest in the data requirement your next run needs. Keep enough cash for its other prerequisites.",
+      context:
+        "Quality is a simplified game input, not a promise that a model's answers are factual or unbiased.",
+      action: "Invest in data quality",
       targetElement: "data-quality-upgrade",
       modalStyle: false,
-      icon: "database"
+      icon: "database",
     },
     5: {
-      title: "Pillar 3: Smart Algorithms",
-      content: "Finally, **Algorithms** - the 'teaching methods' that help AI learn efficiently. These are the breakthrough techniques that make AI possible.",
-      context: "Breakthroughs like the Transformer architecture (from 'Attention Is All You Need') revolutionized AI and enabled models like GPT and BERT.",
-      action: "Open the advanced Algorithm controls",
+      title: "Algorithms and research",
+      content:
+        "Research supports architecture upgrades and breakthroughs. Open the controls to compare your options.",
+      context:
+        "Real research includes experiments and failures; the game compresses this into levels and progress.",
+      action: "Open Algorithm controls",
       targetElement: "algorithm-advanced-toggle",
       modalStyle: false,
       icon: "cog",
-      nextTarget: "algorithm-architecture-upgrade"
+      nextTarget: "algorithm-architecture-upgrade",
     },
     6: {
-      title: "Research Better Algorithms",
-      content: "Perfect! Invest in algorithm research to unlock powerful new AI architectures and training techniques.",
-      context: "Algorithm improvements often have the biggest impact. The Transformer architecture enabled the entire modern AI revolution.",
-      action: "Click to invest in algorithm improvements",
+      title: "Research an improvement",
+      content:
+        "Choose research that addresses a visible blocker rather than upgrading a stat without a purpose.",
+      context:
+        "Breakthrough prerequisites are game rules, not recipes for scientific discoveries.",
+      action: "Invest in algorithm improvements",
       targetElement: "algorithm-architecture-upgrade",
       modalStyle: false,
-      icon: "cog"
-    }
+      icon: "cog",
+    },
   },
-
-  // Phase 3: Understanding Progression
   PHASE_3: {
     1: {
-      title: "Your AI Development Dashboard",
-      content: "Excellent progress! Now let's see how these investments translate into AI capability. Check your Dashboard to see your intelligence growing.",
-      context: "Intelligence represents your AI's overall capability - like an IQ score for artificial minds. Higher intelligence unlocks new possibilities.",
-      action: "Click on the Dashboard tab to see your progress",
+      title: "Read the dashboard",
+      content:
+        "See what changed after your investments and inspect your next goal.",
+      context:
+        "Model Capability is a synthetic game measure. It is not a test of intelligence or a forecast.",
+      action: "Open Dashboard",
       targetElement: "dashboard-tab",
       modalStyle: false,
       icon: "trending-up",
-      highlightTab: "dashboard"
+      highlightTab: "dashboard",
     },
     2: {
-      title: "The Path to AGI", 
-      content: "This shows your progression toward Artificial General Intelligence. Each era represents a major milestone, like GPT-2 → GPT-3 → GPT-4.",
-      context: "The journey mirrors real AI development - from basic language models to systems approaching human-level reasoning across domains.",
-      action: "Explore the Progression tab to see your AGI roadmap",
+      title: "Your Journey",
+      content:
+        "Review era goals and breakthroughs. Later eras ask different strategic questions, not predictions about future products.",
+      context:
+        "GNT names are fictional. GNT-5 through GNT-7 are explicitly speculative scenarios.",
+      action: "Explore Journey",
       targetElement: "progression-tab",
       modalStyle: false,
       icon: "target",
-      highlightTab: "progression"
+      highlightTab: "progression",
     },
     3: {
-      title: "Strategic Funding and Revenue",
-      content: "Important economic lesson! GNT-3 training costs $25K, plus you'll need to build platforms (API $8K, eventually Chatbot $15K) to generate revenue. Series A ($5K) covers only part of this - you must generate revenue from early customers.",
-      context: "This mirrors real AI development - startups raise funding rounds (Seed→Series A→Series B) but must quickly build products that generate revenue. Companies like OpenAI had to monetize GPT-3 through APIs to fund GPT-4 development!",
-      action: "Check the Economy tab to see funding and revenue options",
+      title: "Revenue and capacity",
+      content:
+        "Platforms and enabled services can earn game revenue, but customers also use compute. Compare both sides before expanding.",
+      context:
+        "These fictional cash flows are not an account of how any real company financed a model.",
+      action: "Inspect Economy",
       targetElement: "economy-tab",
-      modalStyle: false, 
+      modalStyle: false,
       icon: "dollar-sign",
-      highlightTab: "economy"
-    }
+      highlightTab: "economy",
+    },
   },
-
-  // Phase 4: Advanced Concepts  
   PHASE_4: {
     1: {
-      title: "The AI Economics Model",
-      content: "Here's the economic reality! To reach GNT-3, you need: $25K for training + $8K for API platform = $33K total, but Series A only gives $5K. For GNT-4: $100K training + $15K chatbot platform = $115K, while Series B gives $25K. The gap is filled by customer revenue!",
-      context: "Real AI companies raise funding to kickstart operations, but must quickly monetize through products. OpenAI had to generate millions in API revenue to afford GPT-4's $100M+ training costs. Venture capital alone isn't enough - you need paying customers.",
-      action: "Open the Training tab to inspect the next training run",
-      targetElement: "training-tab-trigger", 
+      title: "Prepare the next run",
+      content:
+        "The training card lists current costs, blockers, and capacity requirements. Use those values, not remembered prices from another era.",
+      context:
+        "Funding and revenue are game resources. Their relative size is not a real-world financial model.",
+      action: "Open Training",
+      targetElement: "training-tab-trigger",
       modalStyle: false,
-      icon: "target"
+      icon: "target",
     },
     2: {
-      title: "Training Runs: The Path to AGI",
-      content: "Now you understand the economic model! Training Runs are expensive computational efforts that advance your AI. You'll need to balance funding rounds with revenue from customers to afford the escalating costs of each era.",
-      context: "Real training runs can take weeks or months, consuming enormous compute power. GPT-4's training likely cost over $100 million - requiring both venture funding and product revenue to finance.",
-      action: "Review the training card and blocker list",
+      title: "Commit capacity to training",
+      content:
+        "Start training when its listed requirements are met. The run reserves compute, so consider current customer demand too.",
+      context:
+        "Simulation ticks and training prices are invented; they do not estimate real model-training time or cost.",
+      action: "Review the training card and blockers",
       targetElement: "training-panel",
       modalStyle: false,
-      icon: "zap"
+      icon: "zap",
     },
     3: {
-      title: "Tutorial Complete!",
-      content: "Outstanding! You now understand the fundamentals of AI development. Continue investing, researching, and training to achieve AGI!",
-      context: "You're now ready to explore advanced strategies: balancing resources, managing compute capacity, timing training runs, and scaling revenue.",
-      action: "Begin your journey to AGI!",
+      title: "Keep experimenting",
+      content:
+        "You have seen the basic loop. Compare investments, training, customer demand, and recovery choices as the scenario develops.",
+      context:
+        "Completing the game is not evidence of mastery of AI development. Use the end-of-era questions to reflect on your decisions.",
+      action: "Continue playing",
       targetElement: null,
       modalStyle: true,
-      icon: "trophy"
-    }
-  }
+      icon: "trophy",
+    },
+  },
 };
 
-export function getTutorialCurrentStep(tutorial: { phase: number; step: number }) {
-  const currentPhase = `PHASE_${tutorial.phase}` as keyof typeof tutorialContent;
-  return tutorialContent[currentPhase]?.[tutorial.step];
+export function getTutorialCurrentStep(tutorial: {
+  phase: number;
+  step: number;
+}) {
+  return tutorialContent[`PHASE_${tutorial.phase}`]?.[tutorial.step];
 }
 
 export function getTutorialStepAvailability(
   step?: Pick<TutorialStepDefinition, "targetElement"> | null,
 ): TutorialStepAvailability {
-  if (!step?.targetElement) {
-    return {};
-  }
-
-  return tutorialTargetAvailability[step.targetElement] ?? {};
+  return step?.targetElement
+    ? tutorialTargetAvailability[step.targetElement]
+    : {};
 }
 
+const message = (
+  title: string,
+  content: string,
+  context = "Simulation guidance: compare the visible game requirements and outcomes before your next choice.",
+) => ({ title, content, context, speaker: "spark" as const });
+
 export const narrative = {
-  
-  // Breakthroughs (keyed by breakthrough ID)
-  BREAKTHROUGH_1: {
-    title: "Breakthrough: Transformer Architecture!",
-    content: "Outstanding work! Our algorithm research has paid off. We've developed the Transformer Architecture, which will revolutionize how our AI understands language.",
-    context: "This mirrors the 2017 'Attention Is All You Need' paper that enabled models like GPT, BERT, and modern language AI."
-  },
-  
-  BREAKTHROUGH_2: {
-    title: "Breakthrough: Advanced Training Techniques!",
-    content: "Incredible! We've discovered new training methods that make our AI learn more efficiently and with better results.",
-    context: "Techniques like reinforcement learning from human feedback (RLHF) helped make ChatGPT safe and helpful."
-  },
-  
-  BREAKTHROUGH_3: {
-    title: "Breakthrough: Neural Architecture Search!",
-    content: "Amazing! We've automated the process of designing better neural networks. Our AI can now improve its own architecture.",
-    context: "Companies like Google use AutoML to automatically discover network architectures that outperform human-designed ones."
-  },
-  
-  BREAKTHROUGH_16: {
-    title: "Breakthrough: Chain-of-Thought Reasoning!",
-    content: "Incredible! Our AI now thinks step-by-step before answering, just like how humans approach complex problems. This dramatically improves accuracy on math, logic, and coding tasks!",
-    context: "This mirrors OpenAI's o1 reasoning models that pause to think through problems systematically, achieving much higher success rates on challenging tasks.",
-    speaker: "spark"
-  },
-  
-  BREAKTHROUGH_17: {
-    title: "Breakthrough: Reinforcement Learning Training!",
-    content: "Outstanding! We've mastered reinforcement learning - our AI can now learn from trial and error, getting better through practice and feedback!",
-    context: "Modern AI systems use reinforcement learning to improve reasoning abilities, similar to how humans learn skills through repetition and feedback.",
-    speaker: "spark"
-  },
-  
-  BREAKTHROUGH_18: {
-    title: "Breakthrough: Next-Generation Computing Hardware!",
-    content: "Phenomenal! We've upgraded to cutting-edge hardware that processes AI calculations dramatically faster and more efficiently. The future is here!",
-    context: "Advanced GPU architectures like NVIDIA's Blackwell series provide massive speedups for AI development, making previously impossible projects feasible.",
-    speaker: "spark"
-  },
-  
-  BREAKTHROUGH_19: {
-    title: "Breakthrough: AI-Generated Training Data!",
-    content: "Revolutionary! Our AI can now create its own high-quality training examples, extending far beyond what's available on the internet!",
-    context: "As internet text becomes limited, AI systems generate synthetic training data that's carefully filtered and verified, opening new frontiers for learning.",
-    speaker: "spark"
-  },
-  
-  BREAKTHROUGH_20: {
-    title: "Breakthrough: AI Team Coordination!",
-    content: "Remarkable! Multiple AI assistants can now work together as a team, checking each other's work and solving complex problems through collaboration!",
-    context: "Multi-agent AI systems where different AIs specialize in planning, execution, and verification achieve much higher success rates on complex enterprise tasks.",
-    speaker: "spark"
-  },
-  
-  BREAKTHROUGH_21: {
-    title: "Breakthrough: Pocket-Sized AI!",
-    content: "Amazing! Powerful AI assistants now run directly on smartphones and laptops, providing instant, private responses without needing the cloud!",
-    context: "Edge AI enables fast, private assistance while reducing costs and improving user experience through on-device processing capabilities.",
-    speaker: "spark"
-  },
-  
-  // Era Advancements (keyed by the new Era)
-  ERA_ADVANCE_GNT2: {
-    title: "We're in a New Era: GNT-2!",
-    content: "Congratulations! Our AI has reached the GNT-2 era. It's now capable of more sophisticated reasoning and can handle complex tasks.",
-    context: "This represents the leap from basic language models to more capable systems that can engage in meaningful dialogue."
-  },
-  
-  ERA_ADVANCE_GNT3: {
-    title: "🚀 New Era: GNT-3 Unlocked!",
-    content: "Remarkable! Our AI has reached GNT-3 capabilities. Most exciting: **API Services are now available!** Companies can integrate your AI into their applications for B2B revenue.",
-    context: "GPT-3's 175B parameters established 'scaling laws' and launched the API economy. Real companies now generate millions from AI API services. Check your Economy tab to enable this new revenue stream!"
-  },
-  
-  ERA_ADVANCE_GNT4: {
-    title: "🎯 New Era: GNT-4 Unlocked!",
-    content: "Extraordinary! We've reached GNT-4 capabilities with sophisticated reasoning and creativity. **Chatbot Services are now available!** Create consumer subscriptions like ChatGPT Plus.",
-    context: "GPT-4's leap enabled consumer AI assistants. ChatGPT Plus generates hundreds of millions in subscription revenue. Enable Chatbot Services in the Economy tab to start building your consumer base!"
-  },
-  
-  ERA_ADVANCE_AGI: {
-    title: "🏆 HISTORIC BREAKTHROUGH: AGI ACHIEVED! 🏆",
-    content: "**EXTRAORDINARY ACHIEVEMENT!** You've successfully built the world's first Artificial General Intelligence! Your AI now matches human-level performance across ALL cognitive domains - reasoning, creativity, learning, and adaptation.",
-    context: "This is the ultimate milestone in AI development! You've balanced the three pillars perfectly: massive compute power, high-quality data, and breakthrough algorithms. In the real world, achieving AGI would represent the most significant technological advancement in human history."
-  },
-  
-  // Investment Milestones
-  INVESTMENT_MILESTONE_1M: {
-    title: "First Million Invested!",
-    content: "Excellent progress! We've invested our first million dollars into the AI infrastructure. This is just the beginning of our journey.",
-    context: "Real AI companies often require hundreds of millions in funding. OpenAI raised over $1 billion before achieving breakthrough results."
-  },
-  
-  INVESTMENT_MILESTONE_10M: {
-    title: "Ten Million Investment Milestone!",
-    content: "Fantastic! We've now invested $10 million into our AI development. We're building serious infrastructure now.",
-    context: "At this scale, companies typically have substantial compute clusters and can train models with billions of parameters."
-  },
-  
-  // Revenue Achievements
-  REVENUE_FIRST_API: {
-    title: "First API Revenue!",
-    content: "Success! Developers are now paying to use our AI through our API. We're generating real business value from our research.",
-    context: "OpenAI's API business became crucial for funding continued research, creating a virtuous cycle of improvement and revenue."
-  },
-  
-  REVENUE_FIRST_SUBSCRIPTION: {
-    title: "First Subscription Revenue!",
-    content: "Wonderful! Consumers are now paying monthly subscriptions for our AI chatbot service. We're reaching mainstream users.",
-    context: "ChatGPT Plus subscriptions provided stable recurring revenue that helped OpenAI scale their infrastructure."
-  },
-  
-  // Warnings and Guidance
-  COMPUTE_WARNING_HIGH: {
-    title: "System Strain Detected!",
-    content: "Our compute capacity is over 90%! We risk service slowdowns, which will affect our revenue and customer growth. Consider expanding infrastructure.",
-    context: "This is a real challenge for AI companies - balancing the cost of infrastructure with computational demands of users."
-  },
-  
-  MONEY_WARNING_LOW: {
-    title: "Funding Running Low!",
-    content: "We're running low on funds! Focus on revenue-generating activities or we might have to slow down our research progress.",
-    context: "AI research is expensive. Even well-funded companies must balance ambitious research with sustainable business models."
-  },
-  
-  TRAINING_FIRST_SUCCESS: {
-    title: "First Training Run Complete!",
-    content: "Excellent! We've successfully completed our first AI training run. Each training session improves our AI's intelligence.",
-    context: "Training runs can take weeks or months for large models, consuming enormous amounts of compute power and electricity."
-  },
-  
-  // Strategic Advice
-  ADVICE_BALANCE_RESOURCES: {
-    title: "Strategic Advice: Resource Balance",
-    content: "I notice we're heavily invested in one area. Consider balancing compute, data, and algorithms for optimal AI development.",
-    context: "Successful AI requires all three elements working together. Neglecting any one area creates bottlenecks in overall progress."
-  },
-  
-  ADVICE_REVENUE_FOCUS: {
-    title: "Strategic Advice: Revenue Opportunities",
-    content: "Our AI capabilities are strong enough to generate revenue! Consider activating API services or subscription offerings.",
-    context: "The best AI companies balance research with revenue generation, using profits to fund even more ambitious projects."
-  },
-
-  // New Service-Specific Guidance
-  API_SERVICE_AVAILABLE: {
-    title: "💼 API Services Ready to Launch!",
-    content: "Your AI has reached GNT-3 capabilities! **API Services are now unlocked** - enable them in the Economy tab to start generating B2B revenue from companies integrating your AI.",
-    context: "Companies pay premium rates for reliable AI APIs. Start with a competitive pricing base around $1,500 and adjust based on demand."
-  },
-
-  API_AUTO_ENABLE_SUGGESTION: {
-    title: "💡 Enable API Services?",
-    content: "I notice you haven't enabled API services yet. This is one of the most important revenue streams for funding your AI development. **Would you like me to enable it for you** with a competitive starting rate?",
-    context: "Many successful AI companies generate most of their revenue through API access. Enable now to start building your developer ecosystem."
-  },
-
-  CHATBOT_SERVICE_AVAILABLE: {
-    title: "👥 Consumer Chatbot Ready!",
-    content: "GNT-4 unlocked **Chatbot Services**! Enable consumer subscriptions in the Economy tab. Start with a $15-20 subscription price - users will pay for reliable, high-quality AI assistance.",
-    context: "ChatGPT Plus and similar services generate massive subscription revenue. Balance price and quality to maximize growth."
-  },
-
-  API_OPTIMIZATION_ADVICE: {
-    title: "🔧 API Optimization Opportunity",
-    content: "Your API service is running but could be optimized! Consider adjusting rates or improving developer tools to maximize revenue without losing customers.",
-    context: "Successful API businesses constantly optimize pricing. Monitor usage patterns and adjust rates to find the sweet spot between revenue and adoption."
-  },
-
-  CHATBOT_OPTIMIZATION_ADVICE: {
-    title: "📈 Chatbot Growth Strategy",
-    content: "Your chatbot has subscribers but growth could improve! Consider improving chatbot capabilities or running ad campaigns to accelerate user acquisition.",
-    context: "Consumer AI products succeed through quality and marketing. Invest in improvements to reduce churn and attract new users."
-  },
-  
-  // Enhanced Strategic Warnings
-  COMPUTE_WARNING_CRITICAL: {
-    title: "Critical System Overload!",
-    content: "We're completely maxed out on compute! Services are severely degraded and customers are leaving. This is an emergency - we need immediate compute expansion.",
-    context: "When AI services go down, users quickly switch to competitors. Reliability is crucial for maintaining market position."
-  },
-  
-  LOW_FUNDS_WARNING: {
-    title: "Cash Flow Concern",
-    content: "Our bank account is running low. Without funding, we can't afford upgrades or training runs. Consider focusing on revenue streams or seeking investment.",
-    context: "AI companies burn through cash quickly due to expensive compute costs. Managing finances is as important as technical progress."
-  },
-  
-  FIRST_TRAINING_COMPLETED: {
-    title: "Your First Training Success!",
-    content: "Excellent! You've completed your first major training run. Notice how your intelligence score jumped significantly. This is the core loop of AI development.",
-    context: "Training runs are expensive but provide the biggest leaps in capability. Each era represents a major milestone in AI development."
-  },
-  
-  FIRST_REVENUE_MILESTONE: {
-    title: "Revenue is Flowing!",
-    content: "Great work! You're now generating revenue from your AI services. This creates a positive feedback loop - revenue funds better infrastructure, which enables better AI.",
-    context: "The transition from research to profitable product is crucial for AI companies. Revenue enables sustainable growth and innovation."
-  },
-  
-  BALANCE_STRATEGY_ADVICE: {
-    title: "Strategic Balance Tip",
-    content: "Remember: all three resources work together. Compute without data is just expensive heating. Data without algorithms is just storage. Focus on balanced growth.",
-    context: "Successful AI companies excel at resource allocation - knowing when to invest in compute, data collection, or research talent."
-  },
-  
-  FUNDING_MILESTONE_ADVICE: {
-    title: "Strategic Funding Advice",
-    content: "Remember: funding accelerates progress but increases expectations. Use capital wisely on balanced infrastructure growth rather than just one area.",
-    context: "Successful AI companies strategically allocate funding across compute, data, and research talent rather than over-investing in single areas."
-  },
-  
-  INVESTMENT_MILESTONE_100M: {
-    title: "Major Investment Round!",
-    content: "Incredible! You've secured major funding. You're now playing in the big leagues. This level of capital enables ambitious projects and faster scaling.",
-    context: "Series A and beyond funding allows AI companies to compete with tech giants, but also brings increased scrutiny and pressure to deliver."
-  },
-  
-  RESEARCH_PROGRESS_SLOW: {
-    title: "Algorithm Research Stalling",
-    content: "Your research progress has slowed significantly. Consider hiring more research engineers or upgrading your algorithm infrastructure to accelerate breakthroughs.",
-    context: "AI research requires dedicated talent and resources. Companies that fall behind in algorithmic innovation struggle to compete."
-  },
-  
-  TRAINING_STRATEGY_HINT: {
-    title: "Training Strategy Insight",
-    content: "Pro tip: Reserve compute for training during low-revenue periods. Training during peak usage hours means lost revenue. Time your training runs strategically.",
-    context: "Real AI companies carefully schedule training runs to minimize impact on customer-facing services while maximizing research progress."
-  },
-
-  // Spark Character Dialogue - Tutorial Steps
-  TUTORIAL_STEP_1: {
-    title: "Welcome to the Factory!",
-    content: "Hi there! I'm Spark, your AI advisor. Together, we're going to build the world's first AGI! Let's start by investing in our core infrastructure: Compute.",
-    context: "Think of Compute as the raw brainpower for our AI. In the real world, this means massive data centers filled with GPUs and specialized chips.",
-    speaker: "spark"
-  },
-  
-  TUTORIAL_STEP_2: {
-    title: "Expanding Your Operations",
-    content: "Excellent work! Now let's diversify our approach. Click on the Data Factory to start collecting the information our AI needs to learn from.",
-    context: "Data is the fuel of AI. Companies like OpenAI trained GPT models on hundreds of billions of tokens from books, websites, and articles.",
-    speaker: "spark"
-  },
-  
-  TUTORIAL_STEP_3: {
-    title: "The Algorithm Lab",
-    content: "Perfect progress! Now we need smart algorithms to process all that compute and data. Open the Algorithm Lab to start researching cutting-edge techniques.",
-    context: "Algorithms are the 'recipes' that tell our AI how to think. Breakthroughs like Transformers revolutionized the entire field.",
-    speaker: "spark"
-  },
-
-  // Spark's Strategic Advice
-  SPARK_BREAKTHROUGH_ADVICE: {
-    title: "Breakthrough Achieved!",
-    content: "Amazing! This breakthrough will unlock new possibilities. Remember, real AI progress comes from combining compute power, quality data, and algorithmic innovation.",
-    context: "Each breakthrough represents years of research compressed into game mechanics. These mirror real-world AI milestones.",
-    speaker: "spark"
-  },
-
-  SPARK_TRAINING_GUIDANCE: {
-    title: "Training Run Strategy",
-    content: "Pro tip from your AI advisor: Schedule training runs when customer demand is low. This maximizes your learning while minimizing lost revenue!",
-    context: "Real AI companies carefully balance research training with customer service demands.",
-    speaker: "spark"
-  },
-
-  SPARK_SCALING_WISDOM: {
-    title: "Scaling Insights",
-    content: "You're learning the fundamental truth of AI: scaling compute, data, and algorithms together creates emergent capabilities. This is how we'll reach AGI!",
-    context: "Modern AI breakthroughs follow predictable scaling laws discovered by researchers at OpenAI, DeepMind, and others.",
-    speaker: "spark"
-  },
-
-  // Stuck Detection Guidance from Spark
-  STUCK_NO_MONEY_HINT: {
-    title: "Financial Strategy Tip",
-    content: "I notice you're low on funds and haven't been making revenue. Try enabling the API or Chatbot to start generating income from your current AI capabilities!",
-    context: "Revenue generation is crucial for funding further research. Enable customer-facing services to monetize your AI progress.",
-    speaker: "spark"
-  },
-
-  STUCK_NO_REVENUE_HINT: {
-    title: "Revenue Strategy Guidance",
-    content: "You have good intelligence but no revenue streams! Enable the API for developers or the Chatbot for consumers to start making money from your AI.",
-    context: "Even basic AI capabilities can generate revenue. Companies like OpenAI started monetizing GPT models early in development.",
-    speaker: "spark"
-  },
-
-  STUCK_TRAINING_BLOCKED_HINT: {
-    title: "Training Prerequisites Help",
-    content: "Training is blocked because at least one real requirement is still missing. Check the Training tab for exact deficits in compute, data, research, electricity, hardware, regulation, funding, or available compute.",
-    context: "Real frontier training runs fail on concrete operational blockers, not vague readiness. Good teams make each missing requirement visible before they attempt the run.",
-    speaker: "spark"
-  },
-
-  STUCK_NO_BREAKTHROUGHS_HINT: {
-    title: "Research Progress Tip",
-    content: "Stuck on breakthroughs? Invest in all three pillars (compute, data, algorithms) evenly. Breakthroughs unlock when you reach the required investment levels!",
-    context: "AI breakthroughs often require balanced investment across multiple areas, just like how GPT required advances in compute, data, and architecture.",
-    speaker: "spark"
-  }
+  BREAKTHROUGH_1: message(
+    "Transformer milestone",
+    "A research milestone unlocked. Its game benefits do not recreate a scientific discovery.",
+  ),
+  BREAKTHROUGH_2: message(
+    "Pre-training milestone",
+    "A data milestone unlocked. Review its game effect in Journey.",
+  ),
+  BREAKTHROUGH_3: message(
+    "Scaling milestone",
+    "An infrastructure milestone unlocked. Larger game levels are not real parameter counts.",
+  ),
+  BREAKTHROUGH_16: message(
+    "Reasoning milestone — speculative",
+    "This scenario unlock is not proof that generated reasoning is correct or human-like.",
+  ),
+  BREAKTHROUGH_17: message(
+    "Feedback-training milestone",
+    "A feedback-related game milestone unlocked; this is not a guarantee of safe or reliable behavior.",
+  ),
+  BREAKTHROUGH_18: message(
+    "Hardware milestone — speculative",
+    "A fictional hardware upgrade unlocked. Its efficiency benefits are game rules, not vendor benchmarks.",
+  ),
+  BREAKTHROUGH_19: message(
+    "Generated-data milestone — speculative",
+    "This fictional upgrade explores generated data. Generated examples still need careful evaluation.",
+  ),
+  BREAKTHROUGH_20: message(
+    "Coordination milestone — speculative",
+    "This fictional upgrade explores teams of systems. More systems do not automatically mean fewer errors.",
+  ),
+  BREAKTHROUGH_21: message(
+    "Compact-model milestone — speculative",
+    "This fictional upgrade explores efficiency. Running locally does not by itself guarantee privacy.",
+  ),
+  ERA_ADVANCE_GNT2: message(
+    "GNT-2: limited capital",
+    "Choose which infrastructure, data, or research blocker to remove first.",
+  ),
+  ERA_ADVANCE_GNT3: message(
+    "GNT-3: revenue versus capacity",
+    "API services become a game option. Build the platform and reserve enough capacity for training.",
+  ),
+  ERA_ADVANCE_GNT4: message(
+    "GNT-4: growth versus overload",
+    "Chatbot services become a game option. Customer growth also increases demand on compute.",
+  ),
+  ERA_ADVANCE_AGI: message(
+    "Scenario complete",
+    "You completed the fictional scenario, not a real AGI system.",
+    "Model Capability is synthetic. GNT-5 through GNT-7 are speculative, not a forecast.",
+  ),
+  INVESTMENT_MILESTONE_1M: message(
+    "Investment milestone",
+    "Your recorded game investment crossed a milestone. Review where you allocated it.",
+  ),
+  INVESTMENT_MILESTONE_10M: message(
+    "Investment milestone",
+    "A larger investment milestone is recorded. Spending alone does not show which choices were useful.",
+  ),
+  REVENUE_FIRST_API: message(
+    "First API revenue",
+    "Your API service has earned its first game revenue. Check the capacity it uses.",
+  ),
+  REVENUE_FIRST_SUBSCRIPTION: message(
+    "First subscription revenue",
+    "Your chatbot has earned game revenue. Watch retention as well as growth.",
+  ),
+  COMPUTE_WARNING_HIGH: message(
+    "Review capacity",
+    "High utilization alone is not failure. Check whether demand exceeds capacity or blocks the next training run.",
+  ),
+  MONEY_WARNING_LOW: message(
+    "Review your cash",
+    "Compare your cash with the next required purchase and any active revenue options.",
+  ),
+  TRAINING_FIRST_SUCCESS: message(
+    "First training complete",
+    "Your first run completed. Review its capability gain and the next era's choices.",
+  ),
+  ADVICE_BALANCE_RESOURCES: message(
+    "Compare your bottlenecks",
+    "Invest where it removes a current blocker; equal spending is not automatically the best strategy.",
+  ),
+  ADVICE_REVENUE_FOCUS: message(
+    "Consider a revenue option",
+    "A service may help fund the next run, while also consuming compute.",
+  ),
+  API_SERVICE_AVAILABLE: message(
+    "API service available",
+    "Inspect the platform cost, enablement state, and capacity demand in Economy.",
+  ),
+  API_AUTO_ENABLE_SUGGESTION: message(
+    "Consider enabling API service",
+    "You can enable the service in Economy if its platform is ready. Check capacity first; Spark does not make this choice for you.",
+  ),
+  CHATBOT_SERVICE_AVAILABLE: message(
+    "Chatbot service available",
+    "Compare subscription price, product quality, marketing, and available capacity.",
+  ),
+  API_OPTIMIZATION_ADVICE: message(
+    "Review the API service",
+    "Compare developer-tool improvements and capacity with your next training goal.",
+  ),
+  CHATBOT_OPTIMIZATION_ADVICE: message(
+    "Review chatbot growth",
+    "A better product or marketing may grow demand. Check whether you can serve that demand.",
+  ),
+  COMPUTE_WARNING_CRITICAL: message(
+    "Capacity pressure",
+    "Inspect actual shortfall and customer loss. More compute, lower demand, or service changes may help.",
+  ),
+  LOW_FUNDS_WARNING: message(
+    "Cash-flow concern",
+    "Cash is low. Check available services and visible recovery notices before choosing another investment.",
+  ),
+  FIRST_TRAINING_COMPLETED: message(
+    "Your first training success",
+    "The run increased Model Capability. This is a game outcome, not an intelligence test.",
+  ),
+  FIRST_REVENUE_MILESTONE: message(
+    "Revenue is flowing",
+    "Game revenue can finance later purchases. It also brings serving demand.",
+  ),
+  BALANCE_STRATEGY_ADVICE: message(
+    "Invest with a purpose",
+    "Compare the next blocker and current shortfall instead of maximizing one stat or equalizing everything.",
+  ),
+  FUNDING_MILESTONE_ADVICE: message(
+    "Allocate your funding",
+    "You have more game capital. Decide which blocker or reserve is worth buying next.",
+  ),
+  INVESTMENT_MILESTONE_100M: message(
+    "Funding milestone",
+    "A major game funding milestone is recorded. This amount is not a real-world funding estimate.",
+  ),
+  RESEARCH_PROGRESS_SLOW: message(
+    "Research progress",
+    "Inspect research requirements and engineer costs. Compare hiring with the next architecture upgrade.",
+  ),
+  TRAINING_STRATEGY_HINT: message(
+    "Reserve room for training",
+    "Compare the training reserve with current serving demand before launching a run.",
+  ),
+  TUTORIAL_STEP_1: message(
+    "Welcome to the Factory",
+    "Start with a visible training blocker and compare the investment options.",
+    "This fictional simulation simplifies research, capacity, money, and time; it is not a forecast.",
+  ),
+  TUTORIAL_STEP_2: message(
+    "Data choices",
+    "Inspect data quality, quantity, and formats against the training requirements.",
+  ),
+  TUTORIAL_STEP_3: message(
+    "Research choices",
+    "Compare architecture upgrades and engineer hiring with the next research blocker.",
+  ),
+  SPARK_BREAKTHROUGH_ADVICE: message(
+    "Breakthrough unlocked",
+    "Review the recorded game benefit in Journey. A milestone name is not proof of a real-world capability.",
+  ),
+  SPARK_TRAINING_GUIDANCE: message(
+    "Training capacity",
+    "Keep enough available compute for the training reserve and compare it with serving demand.",
+  ),
+  SPARK_SCALING_WISDOM: message(
+    "Scale is one choice",
+    "Compare data quality, research, and compute. More infrastructure is not automatically the most useful next investment.",
+  ),
+  STUCK_NO_MONEY_HINT: message(
+    "Financial options",
+    "Check whether a platform and service are available to earn game revenue. Read any recovery notice before acting.",
+  ),
+  STUCK_NO_REVENUE_HINT: message(
+    "Revenue options",
+    "Inspect Economy for platform readiness and service controls, then check available compute.",
+  ),
+  STUCK_TRAINING_BLOCKED_HINT: message(
+    "Training blockers",
+    "The Training card lists exact unmet requirements. Choose an investment that reduces a listed deficit.",
+  ),
+  STUCK_NO_BREAKTHROUGHS_HINT: message(
+    "Breakthrough requirements",
+    "Inspect Journey for the missing era or resource level. Even spending is not itself an unlock condition.",
+  ),
 };
+
+const narrativeMechanics = {
+  BREAKTHROUGH_1: ["INVEST_ALGORITHM_ARCHITECTURE", "selector:breakthroughs"],
+  BREAKTHROUGH_2: ["INVEST_DATA_QUALITY", "selector:breakthroughs"],
+  BREAKTHROUGH_3: ["INVEST_COMPUTE", "selector:breakthroughs"],
+  BREAKTHROUGH_16: ["INVEST_ALGORITHM_ARCHITECTURE", "INVEST_COMPUTE"],
+  BREAKTHROUGH_17: ["INVEST_ALGORITHM_ARCHITECTURE", "INVEST_DATA_QUALITY"],
+  BREAKTHROUGH_18: ["INVEST_COMPUTE", "selector:breakthroughs"],
+  BREAKTHROUGH_19: ["INVEST_DATA_QUALITY", "INVEST_ALGORITHM_ARCHITECTURE"],
+  BREAKTHROUGH_20: ["INVEST_ALGORITHM_ARCHITECTURE", "INVEST_COMPUTE"],
+  BREAKTHROUGH_21: ["INVEST_ALGORITHM_ARCHITECTURE", "INVEST_DATA_QUALITY"],
+  ERA_ADVANCE_GNT2: ["selector:allocation"],
+  ERA_ADVANCE_GNT3: [
+    "BUILD_API_PLATFORM",
+    "TOGGLE_API_SERVICE",
+    "selector:capacity",
+  ],
+  ERA_ADVANCE_GNT4: [
+    "BUILD_CHATBOT_PLATFORM",
+    "TOGGLE_CHATBOT_SERVICE",
+    "selector:capacity",
+  ],
+  ERA_ADVANCE_AGI: ["selector:completion"],
+  INVESTMENT_MILESTONE_1M: ["selector:allocation"],
+  INVESTMENT_MILESTONE_10M: ["selector:allocation"],
+  REVENUE_FIRST_API: ["TOGGLE_API_SERVICE", "selector:capacity"],
+  REVENUE_FIRST_SUBSCRIPTION: ["TOGGLE_CHATBOT_SERVICE", "selector:churn"],
+  COMPUTE_WARNING_HIGH: ["selector:capacity", "selector:shortfall"],
+  MONEY_WARNING_LOW: ["selector:allocation", "selector:training-readiness"],
+  TRAINING_FIRST_SUCCESS: ["START_TRAINING", "selector:training-readiness"],
+  ADVICE_BALANCE_RESOURCES: [
+    "selector:training-readiness",
+    "selector:allocation",
+  ],
+  ADVICE_REVENUE_FOCUS: ["TOGGLE_API_SERVICE", "TOGGLE_CHATBOT_SERVICE"],
+  API_SERVICE_AVAILABLE: ["BUILD_API_PLATFORM", "TOGGLE_API_SERVICE"],
+  API_AUTO_ENABLE_SUGGESTION: ["TOGGLE_API_SERVICE", "selector:capacity"],
+  CHATBOT_SERVICE_AVAILABLE: [
+    "SET_MONTHLY_FEE",
+    "UPGRADE_CHATBOT",
+    "RUN_MARKETING_CAMPAIGN",
+  ],
+  API_OPTIMIZATION_ADVICE: ["UPGRADE_DEVELOPER_TOOLS", "selector:capacity"],
+  CHATBOT_OPTIMIZATION_ADVICE: [
+    "UPGRADE_CHATBOT",
+    "RUN_MARKETING_CAMPAIGN",
+    "selector:capacity",
+  ],
+  COMPUTE_WARNING_CRITICAL: [
+    "INVEST_COMPUTE",
+    "selector:shortfall",
+    "selector:churn",
+  ],
+  LOW_FUNDS_WARNING: [
+    "TOGGLE_API_SERVICE",
+    "TOGGLE_CHATBOT_SERVICE",
+    "selector:allocation",
+  ],
+  FIRST_TRAINING_COMPLETED: ["START_TRAINING", "selector:completion"],
+  FIRST_REVENUE_MILESTONE: [
+    "TOGGLE_API_SERVICE",
+    "TOGGLE_CHATBOT_SERVICE",
+    "selector:capacity",
+  ],
+  BALANCE_STRATEGY_ADVICE: [
+    "selector:allocation",
+    "selector:training-readiness",
+  ],
+  FUNDING_MILESTONE_ADVICE: ["selector:allocation", "selector:resilience"],
+  INVESTMENT_MILESTONE_100M: ["selector:allocation"],
+  RESEARCH_PROGRESS_SLOW: [
+    "HIRE_RESEARCH_ENGINEER",
+    "INVEST_ALGORITHM_ARCHITECTURE",
+  ],
+  TRAINING_STRATEGY_HINT: ["START_TRAINING", "selector:capacity"],
+  TUTORIAL_STEP_1: ["selector:training-readiness"],
+  TUTORIAL_STEP_2: [
+    "INVEST_DATA_QUALITY",
+    "INVEST_DATA_QUANTITY",
+    "INVEST_DATA_FORMATS",
+  ],
+  TUTORIAL_STEP_3: ["INVEST_ALGORITHM_ARCHITECTURE", "HIRE_RESEARCH_ENGINEER"],
+  SPARK_BREAKTHROUGH_ADVICE: ["selector:breakthroughs"],
+  SPARK_TRAINING_GUIDANCE: ["START_TRAINING", "selector:capacity"],
+  SPARK_SCALING_WISDOM: [
+    "INVEST_COMPUTE",
+    "INVEST_DATA_QUALITY",
+    "INVEST_ALGORITHM_ARCHITECTURE",
+  ],
+  STUCK_NO_MONEY_HINT: [
+    "BUILD_API_PLATFORM",
+    "TOGGLE_API_SERVICE",
+    "selector:allocation",
+  ],
+  STUCK_NO_REVENUE_HINT: ["TOGGLE_API_SERVICE", "TOGGLE_CHATBOT_SERVICE"],
+  STUCK_TRAINING_BLOCKED_HINT: ["selector:training-readiness"],
+  STUCK_NO_BREAKTHROUGHS_HINT: ["selector:breakthroughs"],
+} satisfies Record<keyof typeof narrative, LinkedMechanic[]>;
+
+export const narrativeLearning = Object.fromEntries(
+  Object.entries(narrative).map(([key, entry]) => [
+    key,
+    learningClaimSchema.parse({
+      id: `narrative-${key.toLowerCase()}`,
+      text: `${entry.content} ${entry.context}`,
+      sourceUrls: [],
+      reviewedAt: CONTENT_REVIEW_DATE,
+      claimType: "simulation",
+      uncertaintyLabel: "Simulation guidance — not real-world evidence",
+      linkedMechanics: narrativeMechanics[key as keyof typeof narrative],
+    }),
+  ]),
+) as Record<keyof typeof narrative, LearningClaim>;
+
+export const tutorialLearning: Record<string, LearningClaim> =
+  Object.fromEntries(
+    Object.entries(tutorialContent).flatMap(([phase, steps]) =>
+      Object.entries(steps).map(([step, entry]) => {
+        const links: LinkedMechanic[] = entry.targetElement?.startsWith(
+          "compute-",
+        )
+          ? ["INVEST_COMPUTE"]
+          : entry.targetElement?.startsWith("data-")
+            ? ["INVEST_DATA_QUALITY"]
+            : entry.targetElement?.startsWith("algorithm-")
+              ? ["INVEST_ALGORITHM_ARCHITECTURE"]
+              : entry.targetElement === "economy-tab"
+                ? [
+                    "TOGGLE_API_SERVICE",
+                    "TOGGLE_CHATBOT_SERVICE",
+                    "selector:capacity",
+                  ]
+                : ["selector:training-readiness", "selector:allocation"];
+        return [
+          `${phase}.${step}`,
+          learningClaimSchema.parse({
+            id: `tutorial-${phase.toLowerCase()}-${step}`,
+            text: `${entry.content} ${entry.context}`,
+            sourceUrls: [],
+            reviewedAt: CONTENT_REVIEW_DATE,
+            claimType: "simulation",
+            uncertaintyLabel:
+              "Simplified game guidance — not real-world evidence",
+            linkedMechanics: links,
+          }),
+        ];
+      }),
+    ),
+  );
