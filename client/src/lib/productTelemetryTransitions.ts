@@ -7,7 +7,7 @@ export interface ProductTelemetryFrame {
   rulesetVersion: RulesetVersion;
   writable: boolean;
   activeTick: number;
-  status: "running" | "paused" | "completed";
+  status: "not_started" | "running" | "paused" | "completed";
   era: "GNT-2" | "GNT-3" | "GNT-4" | "GNT-5" | "GNT-6" | "GNT-7";
   nonTrainingSpend: number;
   emergencyInterventions: number;
@@ -25,13 +25,14 @@ export function observedProductTransitions(
     !before ||
     before.runId !== after.runId ||
     before.rulesetVersion !== after.rulesetVersion ||
+    after.activeTick < before.activeTick ||
     !before.writable ||
     !after.writable
   )
     return [];
   const events: TelemetryIntent[] = [];
   if (
-    before.status === "paused" &&
+    before.status === "not_started" &&
     after.status === "running" &&
     before.activeTick === 0
   )
@@ -41,7 +42,8 @@ export function observedProductTransitions(
       type: "first_investment",
       properties: { activeTick: after.activeTick },
     });
-  if (before.era !== after.era) {
+  const eras = ["GNT-2", "GNT-3", "GNT-4", "GNT-5", "GNT-6", "GNT-7"];
+  if (eras.indexOf(after.era) === eras.indexOf(before.era) + 1) {
     events.push({
       type: "training_completed",
       properties: { era: after.era, activeTick: after.activeTick },

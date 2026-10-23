@@ -23,6 +23,7 @@ export interface TelemetryPreference {
   consent: AnalyticsConsent;
   globalPrivacyControl: boolean;
   enabled: boolean;
+  persistenceError?: boolean;
 }
 
 export interface TelemetryCaptureContext {
@@ -58,7 +59,10 @@ const intentShapeSchema = z
 const buildShaSchema = z
   .object({
     data: z
-      .object({ buildSha: z.string().regex(/^[0-9a-f]{40}$/) })
+      .object({
+        buildSha: z.string().regex(/^[0-9a-f]{40}$/),
+        telemetry: z.enum(["not_configured", "ready", "degraded"]).optional(),
+      })
       .passthrough(),
   })
   .passthrough();
@@ -106,6 +110,7 @@ function acknowledgedIds(value: unknown): string[] | null {
 }
 
 export interface TelemetrySdkOptions {
+  executingBuildSha?: string | null;
   clock?: () => number;
   randomUuid?: () => string;
   network?: TelemetryNetwork;
@@ -123,6 +128,12 @@ export interface TelemetrySdkOptions {
  * have no API path into this class.
  */
 export class TelemetrySdk {
+  private closed = false;
+  private privacyEpoch = 0;
+  private revokedInMemory = false;
+  private consentPersistenceError = false;
+  private requests = new Set<AbortController>();
+  private readonly executingBuildSha: string | null;
   private outbox: TelemetryOutboxLike | null | undefined;
   private openingOutbox: Promise<TelemetryOutboxLike | null> | undefined;
   private flushing: Promise<void> | undefined;
@@ -138,6 +149,13 @@ export class TelemetrySdk {
   private privacyReconciliation: Promise<void> | undefined;
 
   constructor(options: TelemetrySdkOptions = {}) {
+    const executingBuildSha: unknown =
+      options.executingBuildSha ?? import.meta.env.VITE_APP_BUILD_SHA;
+    this.executingBuildSha =
+      typeof executingBuildSha === "string" &&
+      /^[a-f0-9]{40}$/.test(executingBuildSha)
+        ? executingBuildSha
+        : null;
     this.clock = options.clock ?? Date.now;
     this.randomUuid = options.randomUuid ?? (() => crypto.randomUUID());
     this.network = options.network ?? (globalThis.fetch as TelemetryNetwork);
@@ -169,7 +187,10 @@ export class TelemetrySdk {
     const globalPrivacyControl = this.readGlobalPrivacyControl();
     let consent: AnalyticsConsent = "no";
     try {
-      if (this.storage?.getItem(ANALYTICS_CONSENT_KEY) === "yes")
+      if (
+        !this.revokedInMemory &&
+        this.storage?.getItem(ANALYTICS_CONSENT_KEY) === "yes"
+      )
         consent = "yes";
     } catch {
       // Storage failures fail closed: opt-in cannot be inferred or retained.
@@ -178,14 +199,25 @@ export class TelemetrySdk {
       consent,
       globalPrivacyControl,
       enabled: consent === "yes" && !globalPrivacyControl,
+      ...(this.consentPersistenceError ? { persistenceError: true } : {}),
     };
   }
 
   async setConsent(consent: AnalyticsConsent): Promise<TelemetryPreference> {
+    // Explicit revocation takes effect synchronously, even if storage rejects
+    // the write or a prior opted-in capture is awaiting network/storage work.
+    this.privacyEpoch++;
+    this.revokedInMemory = true;
     try {
-      this.storage?.setItem(ANALYTICS_CONSENT_KEY, consent);
+      if (!this.storage) throw new Error("Consent storage unavailable");
+      this.storage.setItem(ANALYTICS_CONSENT_KEY, consent);
+      if (this.storage.getItem(ANALYTICS_CONSENT_KEY) !== consent)
+        throw new Error("Consent storage did not retain choice");
+      this.consentPersistenceError = false;
+      this.revokedInMemory = consent !== "yes";
     } catch {
       // A non-persistent opt-in is not an opt-in. The returned preference stays off.
+      this.consentPersistenceError = true;
       await this.schedulePrivacyPurge();
       return this.preference();
     }
@@ -203,36 +235,55 @@ export class TelemetrySdk {
     return preference;
   }
 
+  /** Process the event value as well as current storage, preserving a rapid
+   * cross-tab revocation even when another explicit opt-in has already followed. */
+  async handleStorageChange(
+    event: Pick<StorageEvent, "key" | "newValue">,
+  ): Promise<void> {
+    if (event.key !== null && event.key !== ANALYTICS_CONSENT_KEY) return;
+    if (event.newValue !== "yes") await this.schedulePrivacyPurge();
+    else this.revokedInMemory = false;
+    await this.reconcilePrivacy();
+  }
+
   /** Safe for game observers to call and intentionally never rejects. */
   async capture(
     context: TelemetryCaptureContext,
     intent: TelemetryIntent,
   ): Promise<void> {
     try {
+      if (this.closed || !this.executingBuildSha) return;
+      const epoch = this.privacyEpoch;
+      const occurredAt = new Date(this.clock()).toISOString();
       // Do not enqueue a newly opted-in event until an older opt-out/GPC purge
       // that was already in progress has completed.
       await this.privacyReconciliation;
-      if (!this.preference().enabled) {
-        void this.schedulePrivacyPurge();
+      if (!this.privacyCurrent(epoch)) {
+        if (!this.preference().enabled) void this.schedulePrivacyPurge();
         return;
       }
       const parsedContext = captureContextSchema.safeParse(context);
       const parsedIntent = intentShapeSchema.safeParse(intent);
       if (!parsedContext.success || !parsedIntent.success) return;
       const buildSha = await this.versionFetcher();
-      if (!buildSha || !this.preference().enabled) return;
+      if (
+        !this.privacyCurrent(epoch) ||
+        buildSha !== this.executingBuildSha ||
+        !this.preference().enabled
+      )
+        return;
       const event = telemetryEventSchema.safeParse({
         schemaVersion: TELEMETRY_SCHEMA_VERSION,
         eventId: this.randomUuid(),
         runId: parsedContext.data.runId,
         buildSha,
         rulesetVersion: parsedContext.data.rulesetVersion,
-        occurredAt: new Date(this.clock()).toISOString(),
+        occurredAt,
         ...parsedIntent.data,
       });
-      if (!event.success || !this.preference().enabled) return;
+      if (!event.success || !this.privacyCurrent(epoch)) return;
       const outbox = await this.getOutbox();
-      if (!outbox || !this.preference().enabled) return;
+      if (!outbox || !this.privacyCurrent(epoch)) return;
       await outbox.enqueue(event.data);
       void this.flush();
     } catch {
@@ -251,6 +302,8 @@ export class TelemetrySdk {
   }
 
   async close(): Promise<void> {
+    this.closed = true;
+    for (const controller of Array.from(this.requests)) controller.abort();
     try {
       this.outbox?.close();
     } catch {
@@ -263,7 +316,7 @@ export class TelemetrySdk {
   private async fetchBuildSha(): Promise<string | null> {
     if (!this.network) return null;
     try {
-      const response = await this.network(TELEMETRY_VERSION_ENDPOINT, {
+      const response = await this.request(TELEMETRY_VERSION_ENDPOINT, {
         method: "GET",
         mode: "same-origin",
         credentials: "omit",
@@ -273,9 +326,39 @@ export class TelemetrySdk {
       });
       if (!response.ok) return null;
       const parsed = buildShaSchema.safeParse(await response.json());
-      return parsed.success ? parsed.data.data.buildSha : null;
+      return parsed.success && parsed.data.data.telemetry !== "not_configured"
+        ? parsed.data.data.buildSha
+        : null;
     } catch {
       return null;
+    }
+  }
+
+  private async request(
+    input: RequestInfo | URL,
+    init: RequestInit,
+  ): Promise<TelemetryResponse> {
+    if (this.closed || !this.network)
+      throw new Error("Optional analytics closed");
+    const controller = new AbortController();
+    this.requests.add(controller);
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await this.network(input, {
+        ...init,
+        signal: controller.signal,
+      });
+      // Keep cancellation active through the response body, not just headers.
+      // A stalled body must neither pin a capture nor strand the retry loop.
+      const body = await response.json();
+      return {
+        ok: response.ok,
+        status: response.status,
+        json: async () => body,
+      };
+    } finally {
+      clearTimeout(timeout);
+      this.requests.delete(controller);
     }
   }
 
@@ -289,6 +372,7 @@ export class TelemetrySdk {
   }
 
   private async getOutbox(): Promise<TelemetryOutboxLike | null> {
+    if (this.closed) return null;
     if (this.outbox !== undefined) return this.outbox;
     if (!this.openingOutbox) {
       this.openingOutbox = this.outboxFactory()
@@ -298,6 +382,10 @@ export class TelemetrySdk {
         });
     }
     const opened = await this.openingOutbox;
+    if (this.closed) {
+      opened?.close();
+      return null;
+    }
     if (opened) this.outbox = opened;
     return opened;
   }
@@ -316,6 +404,8 @@ export class TelemetrySdk {
   }
 
   private schedulePrivacyPurge(): Promise<void> {
+    this.privacyEpoch++;
+    for (const controller of Array.from(this.requests)) controller.abort();
     if (!this.privacyReconciliation) {
       this.privacyReconciliation = this.purge().finally(() => {
         this.privacyReconciliation = undefined;
@@ -326,22 +416,21 @@ export class TelemetrySdk {
 
   private async flushSafely(): Promise<void> {
     try {
+      if (this.closed) return;
+      const epoch = this.privacyEpoch;
       if (!this.preference().enabled) {
         await this.schedulePrivacyPurge();
         return;
       }
       const outbox = await this.getOutbox();
-      if (!outbox || !this.network || !this.preference().enabled) return;
+      if (!outbox || !this.network || !this.privacyCurrent(epoch)) return;
       const records = await outbox.due();
       if (!records.length) return;
-      if (!this.preference().enabled) {
-        await this.schedulePrivacyPurge();
-        return;
-      }
+      if (!this.privacyCurrent(epoch)) return;
       const events = records.map((record) => record.event);
       let response: TelemetryResponse;
       try {
-        response = await this.network(TELEMETRY_EVENTS_ENDPOINT, {
+        response = await this.request(TELEMETRY_EVENTS_ENDPOINT, {
           method: "POST",
           mode: "same-origin",
           credentials: "omit",
@@ -354,17 +443,13 @@ export class TelemetrySdk {
           body: JSON.stringify({ events }),
         });
       } catch {
-        if (this.preference().enabled)
+        if (this.privacyCurrent(epoch))
           await outbox.recordFailure(
             records.map((record) => record.event.eventId),
           );
-        else await this.schedulePrivacyPurge();
         return;
       }
-      if (!this.preference().enabled) {
-        await this.schedulePrivacyPurge();
-        return;
-      }
+      if (!this.privacyCurrent(epoch)) return;
       if (!response.ok || response.status !== 202) {
         await outbox.recordFailure(
           records.map((record) => record.event.eventId),
@@ -381,6 +466,12 @@ export class TelemetrySdk {
     } catch {
       // A malformed response, IndexedDB error or network failure is non-blocking.
     }
+  }
+
+  private privacyCurrent(epoch: number): boolean {
+    return (
+      !this.closed && epoch === this.privacyEpoch && this.preference().enabled
+    );
   }
 }
 

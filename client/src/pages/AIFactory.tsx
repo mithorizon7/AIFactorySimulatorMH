@@ -13,6 +13,8 @@ import RunGoal from "@/components/factory/RunGoal";
 // Unified Tutorial System
 import { UnifiedTutorialSystem } from "@/components/tutorial/UnifiedTutorialSystem";
 import { Button } from "@/components/ui/button";
+import { useProductTelemetry } from "@/hooks/useProductTelemetry";
+import { TelemetryPreferences } from "@/components/telemetry/TelemetryPreferences";
 
 export default function AIFactory() {
   const {
@@ -40,6 +42,25 @@ export default function AIFactory() {
     trainModel,
     formattedTime,
   } = useGameEngine();
+  const telemetry = useProductTelemetry(
+    sessionSnapshot
+      ? {
+          runId: sessionSnapshot.runId,
+          rulesetVersion: simulation.rulesetVersion,
+          writable: sessionSnapshot.writable && !isLifecycleTransition,
+          activeTick: simulation.clock.activeTick,
+          status: simulation.clock.status,
+          era: simulation.currentEra,
+          nonTrainingSpend:
+            simulation.facts.totalSpend -
+            simulation.facts.spendByCategory.training,
+          emergencyInterventions:
+            simulation.facts.emergencyFundingInterventions +
+            simulation.facts.emergencyCapacityInterventions,
+          debriefViewed: sessionSnapshot.experience.debrief.viewed,
+        }
+      : null,
+  );
 
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const completionPresentedRef = useRef(false);
@@ -239,6 +260,11 @@ export default function AIFactory() {
                 trainModel={trainModel}
               />
             </fieldset>
+            {telemetry && (
+              <footer className="mt-6 rounded-lg border border-gray-700 bg-gray-900 p-4 text-sm text-gray-200">
+                <TelemetryPreferences telemetry={telemetry} />
+              </footer>
+            )}
             {hasAchievedAgi(gameState) && (
               <Button
                 id="review-run-summary"

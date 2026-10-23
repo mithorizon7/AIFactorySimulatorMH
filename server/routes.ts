@@ -65,6 +65,9 @@ export function registerRoutes(
           ),
           nodeVersion: process.version,
           ...(dependencies.telemetry
+            ? { telemetry: dependencies.telemetry.status() }
+            : {}),
+          ...(dependencies.telemetry
             ? {
                 migrationAttestation:
                   dependencies.telemetry.migrationAttestation(),

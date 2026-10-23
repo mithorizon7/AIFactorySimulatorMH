@@ -29,6 +29,46 @@ function productionStaticApp() {
 }
 
 describe("Release A API containment", () => {
+  it("mounts telemetry privacy/origin guards before all JSON parsing", async () => {
+    const accept = vi.fn(async () => {});
+    const sink: TelemetrySink = {
+      status: () => "ready",
+      migrationVersion: () => null,
+      migrationAttestation: () => ({
+        state: "unverified",
+        version: null,
+        checksum: null,
+      }),
+      accept,
+      close: async () => {},
+    };
+    const instance = app({
+      rulesetLoaded: true,
+      telemetry: sink,
+      telemetryOrigins: ["https://aifactorysimulation.com"],
+    });
+    const privateMarker = "never-log-this-synthetic-body";
+    const logs = vi.spyOn(console, "log").mockImplementation(() => {});
+    const gpc = await request(instance)
+      .post("/api/v1/events")
+      .set("Sec-GPC", "1")
+      .set("Content-Type", "application/json")
+      .send(`malformed ${privateMarker}`);
+    expect(gpc.status).toBe(204);
+    const oversized = await request(instance)
+      .post("/api/v1/events")
+      .set("Sec-GPC", "1")
+      .send({ secret: privateMarker.repeat(2000) });
+    expect(oversized.status).toBe(204);
+    const foreign = await request(instance)
+      .post("/api/v1/events")
+      .set("Origin", "https://foreign.invalid")
+      .set("Content-Type", "application/json")
+      .send(`malformed ${privateMarker}`);
+    expect(foreign.status).toBe(403);
+    expect(accept).not.toHaveBeenCalled();
+    expect(JSON.stringify(logs.mock.calls)).not.toContain(privateMarker);
+  });
   it.each(["unverified", "verified", "mismatch"] as const)(
     "keeps core readiness available during degraded telemetry with %s migration evidence",
     async (state) => {

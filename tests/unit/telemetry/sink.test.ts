@@ -90,6 +90,62 @@ const enabledEnvironment = {
 };
 
 describe("telemetry sink privilege and availability boundaries", () => {
+  it("isolates idle pool errors instead of allowing an uncaught server exception", async () => {
+    let idleError: ((error: unknown) => void) | undefined;
+    const fixture = poolWith([
+      [restrictedRole()],
+      [
+        {
+          version: TELEMETRY_MIGRATION_VERSION,
+          checksum: TELEMETRY_MIGRATION_CHECKSUM,
+        },
+      ],
+    ]);
+    const pool = {
+      ...fixture.pool,
+      on: vi.fn((_event: "error", listener: (error: unknown) => void) => {
+        idleError = listener;
+      }),
+      off: vi.fn(),
+    };
+    const sink = await createTelemetrySink({
+      environment: enabledEnvironment,
+      poolFactory: () => pool,
+      writerFactory: () => ({ insert: async () => {} }),
+    });
+    expect(sink.status()).toBe("ready");
+    expect(() =>
+      idleError?.(new Error("Synthetic idle connection failure")),
+    ).not.toThrow();
+    expect(sink.status()).toBe("degraded");
+    expect(sink.migrationAttestation().state).toBe("verified");
+    await sink.close();
+    expect(pool.off).toHaveBeenCalledWith("error", idleError);
+  });
+  it("can start core serving without waiting for an unavailable telemetry probe", async () => {
+    let finish:
+      ((value: { rows: TelemetryRoleVerification[] }) => void) | undefined;
+    const pool = {
+      query: vi.fn(
+        () =>
+          new Promise<{ rows: TelemetryRoleVerification[] }>((resolve) => {
+            finish = resolve;
+          }),
+      ) as TelemetryPool["query"],
+      end: vi.fn(async () => {}),
+    };
+    const sink = await createTelemetrySink({
+      environment: enabledEnvironment,
+      poolFactory: () => pool,
+      writerFactory: () => ({ insert: async () => {} }),
+      startInBackground: true,
+    });
+    expect(sink.status()).toBe("degraded");
+    expect(sink.migrationAttestation().state).toBe("unverified");
+    finish?.({ rows: [] });
+    await Promise.resolve();
+    await sink.close();
+  });
   it("permits only the exact transitive analytics role boundary", () => {
     const { roleIsRestricted } = telemetrySinkInternals;
     expect(roleIsRestricted(restrictedRole())).toBe(true);

@@ -8,7 +8,7 @@ const frame: ProductTelemetryFrame = {
   rulesetVersion: "release-b.1",
   writable: true,
   activeTick: 0,
-  status: "paused",
+  status: "not_started",
   era: "GNT-2",
   nonTrainingSpend: 0,
   emergencyInterventions: 0,
@@ -32,6 +32,12 @@ it("does not manufacture history on hydration, run replacement or a read-only ta
     observedProductTransitions(frame, { ...resumed, writable: false }),
   ).toEqual([]);
   expect(observedProductTransitions(resumed, resumed)).toEqual([]);
+  expect(
+    observedProductTransitions(resumed, { ...frame, activeTick: 0 }),
+  ).toEqual([]);
+  expect(observedProductTransitions({ ...frame, era: "GNT-7" }, frame)).toEqual(
+    [],
+  );
 });
 it("reports only bounded factual transitions with closed primitive properties", () => {
   expect(
@@ -39,8 +45,14 @@ it("reports only bounded factual transitions with closed primitive properties", 
   ).toEqual([{ type: "run_started", properties: {} }]);
   expect(
     observedProductTransitions(
-      { ...frame, activeTick: 30 },
+      { ...frame, activeTick: 30, status: "paused" },
       { ...frame, activeTick: 30, status: "running" },
+    ),
+  ).toEqual([]);
+  expect(
+    observedProductTransitions(
+      { ...frame, status: "paused" },
+      { ...frame, status: "running" },
     ),
   ).toEqual([]);
   expect(

@@ -10,6 +10,7 @@ import {
   requestLogger,
 } from "./errorHandler";
 import type { TelemetrySink } from "@shared/telemetry/contracts";
+import { installTelemetryIngress } from "./telemetry/ingress";
 
 export interface AppDependencies {
   environment?: "development" | "test" | "production";
@@ -17,6 +18,8 @@ export interface AppDependencies {
   migrationVersion?: string | null;
   rulesetLoaded?: boolean;
   telemetry?: TelemetrySink;
+  telemetryOrigins?: readonly string[];
+  onTelemetryDegraded?: () => void;
 }
 
 const viteReactRefreshHash =
@@ -94,6 +97,18 @@ export function createApiApp(dependencies: AppDependencies = {}): Express {
     );
     next();
   });
+  if (dependencies.telemetry) {
+    // Route preflight (including GPC) runs BEFORE any app-wide body parser or
+    // request logger. No research data path is installed in this application.
+    installTelemetryIngress(app, {
+      sink: dependencies.telemetry,
+      origins: dependencies.telemetryOrigins ?? [
+        "https://aifactorysimulation.com",
+        "https://ai-factory-mithorizon.replit.app",
+      ],
+      onTelemetryDegraded: dependencies.onTelemetryDegraded,
+    });
+  }
   app.use(express.json({ limit: "16kb", inflate: false }));
   app.use(
     express.urlencoded({

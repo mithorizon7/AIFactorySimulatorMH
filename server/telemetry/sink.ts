@@ -27,6 +27,8 @@ export class TelemetryUnavailableError extends Error {
 type QueryResult<Row> = { rows: Row[] };
 
 export interface TelemetryPool {
+  on?(event: "error", listener: (error: unknown) => void): unknown;
+  off?(event: "error", listener: (error: unknown) => void): unknown;
   query<Row = Record<string, unknown>>(
     text: string,
     values?: readonly unknown[],
@@ -39,6 +41,7 @@ export interface TelemetryWriter {
 }
 
 export interface TelemetrySinkFactoryOptions {
+  startInBackground?: boolean;
   environment?: NodeJS.ProcessEnv;
   poolFactory?: (configuration: PoolConfig) => TelemetryPool;
   writerFactory?: (pool: TelemetryPool) => TelemetryWriter;
@@ -209,6 +212,18 @@ const roleVerificationSql = `
     SELECT role_id FROM reachable
     UNION
     SELECT 0::oid
+  ),
+  managed_relations(qualified_name, relation_id) AS (
+    -- Resolve through catalogs, not textual regclass casts: the runtime must
+    -- be able to prove it cannot read research without USAGE on that schema.
+    SELECT namespace.nspname || '.' || relation.relname, relation.oid
+    FROM pg_class relation
+    JOIN pg_namespace namespace ON namespace.oid = relation.relnamespace
+    WHERE (namespace.nspname, relation.relname) IN (
+      ('analytics', 'telemetry_events'),
+      ('analytics', 'schema_migrations'),
+      ('research', 'study_responses')
+    )
   )
   SELECT
     current_user AS current_user,
@@ -220,25 +235,25 @@ const roleVerificationSql = `
     (SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = 'analytics') AS analytics_owner,
     (SELECT pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname = 'research') AS research_owner,
     COALESCE((
-      SELECT array_agg(member_role.rolname ORDER BY member_role.rolname)
+      SELECT array_agg(member_role.rolname::text ORDER BY member_role.rolname)
       FROM reachable
       JOIN pg_roles member_role ON member_role.oid = reachable.role_id
     ), ARRAY[]::text[]) AS reachable_memberships,
     pg_has_role(current_user, 'aifactory_analytics', 'member') AS analytics_member,
     has_schema_privilege(current_user, 'analytics', 'USAGE') AS analytics_schema_usage,
     has_schema_privilege(current_user, 'analytics', 'CREATE') AS analytics_schema_create,
-    has_table_privilege(current_user, 'analytics.telemetry_events', 'INSERT') AS telemetry_insert,
-    has_table_privilege(current_user, 'analytics.telemetry_events', 'SELECT') AS telemetry_read,
-    has_table_privilege(current_user, 'analytics.telemetry_events', 'UPDATE') AS telemetry_update,
-    has_table_privilege(current_user, 'analytics.telemetry_events', 'DELETE') AS telemetry_delete,
-    has_table_privilege(current_user, 'analytics.telemetry_events', 'TRUNCATE') AS telemetry_truncate,
-    has_table_privilege(current_user, 'analytics.schema_migrations', 'SELECT') AS migration_read,
-    has_table_privilege(current_user, 'analytics.schema_migrations', 'INSERT') AS migration_insert,
-    has_table_privilege(current_user, 'analytics.schema_migrations', 'UPDATE') AS migration_update,
-    has_table_privilege(current_user, 'analytics.schema_migrations', 'DELETE') AS migration_delete,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.telemetry_events'), 'INSERT') AS telemetry_insert,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.telemetry_events'), 'SELECT') AS telemetry_read,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.telemetry_events'), 'UPDATE') AS telemetry_update,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.telemetry_events'), 'DELETE') AS telemetry_delete,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.telemetry_events'), 'TRUNCATE') AS telemetry_truncate,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.schema_migrations'), 'SELECT') AS migration_read,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.schema_migrations'), 'INSERT') AS migration_insert,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.schema_migrations'), 'UPDATE') AS migration_update,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'analytics.schema_migrations'), 'DELETE') AS migration_delete,
     has_schema_privilege(current_user, 'research', 'USAGE') AS research_usage,
     has_schema_privilege(current_user, 'research', 'CREATE') AS research_create,
-    has_table_privilege(current_user, 'research.study_responses', 'SELECT') AS research_read,
+    has_table_privilege(current_user, (SELECT relation_id FROM managed_relations WHERE qualified_name = 'research.study_responses'), 'SELECT') AS research_read,
     COALESCE((
       SELECT array_agg(
         namespace.nspname || '.' || relation.relname || ':' || grant_item.privilege_type
@@ -404,6 +419,7 @@ class InactiveTelemetrySink implements TelemetrySink {
 }
 
 class PostgresTelemetrySink implements TelemetrySink {
+  private readonly onPoolError = () => this.markTransientFailure();
   private statusValue: TelemetryStatus = "degraded";
   private attestationValue: MigrationAttestation = unverifiedAttestation();
   private lastVerified: MigrationAttestation | null = null;
@@ -418,7 +434,11 @@ class PostgresTelemetrySink implements TelemetrySink {
     private readonly clock: () => number,
     private readonly setTimer: typeof setTimeout,
     private readonly clearTimer: typeof clearTimeout,
-  ) {}
+  ) {
+    // pg emits idle-client errors on the pool itself. Without a listener an
+    // optional database outage could become an uncaught process-level error.
+    this.pool.on?.("error", this.onPoolError);
+  }
 
   status(): TelemetryStatus {
     return this.statusValue;
@@ -473,6 +493,8 @@ class PostgresTelemetrySink implements TelemetrySink {
       await this.pool.end();
     } catch {
       // Closing an optional sink must never affect application shutdown.
+    } finally {
+      this.pool.off?.("error", this.onPoolError);
     }
   }
 
@@ -592,7 +614,8 @@ export async function createTelemetrySink(
       options.setTimer ?? setTimeout,
       options.clearTimer ?? clearTimeout,
     );
-    await sink.start();
+    if (options.startInBackground) void sink.start().catch(() => sink.close());
+    else await sink.start();
     return sink;
   } catch {
     await pool?.end().catch(() => {
