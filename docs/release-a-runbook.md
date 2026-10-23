@@ -8,9 +8,11 @@
    globally shadowed npm silently choose the lockfile format or resolution.
 3. Confirm production audit has zero vulnerabilities and the full dependency tree has no critical advisories.
 4. Record initial JS, LCP, console, keyboard, and axe regression results against the committed baseline.
-5. Build with the exact release SHA injected as `BUILD_SHA`, using
-   `npm run build:release`. A null, abbreviated, or mismatched SHA is a release
-   failure.
+5. Use the checked-in `tools/build-release.mjs` through the Node bootstrap.
+   It requires a clean tracked/untracked tree, resolves the full Git revision,
+   installs the reviewed lockfile without lifecycle scripts, and supplies the
+   matching `BUILD_SHA` / `EXPECTED_BUILD_SHA` to `npm run build:release`.
+   A null, abbreviated, dirty, or mismatched revision is a release failure.
 6. Confirm enforced CSP has no unexplained violation. The current inline-style
    exception has an owner and Release C production-sign-off expiry; any
    extension requires a recorded security/accessibility review.
@@ -41,14 +43,15 @@ Release A currently has no product telemetry endpoint and `migrationVersion` is 
 
 ## Provider-side configuration
 
-The checked-in `.replit` source now requests Node 22 and only exposes port 5000
-to port 80, but it is not proof of the active provider configuration. Before
-deployment, a provider owner must:
+The checked-in `.replit` source requests Node 22, uses the checksum-pinned
+bootstrap/release wrapper, and only exposes port 5000 to port 80. Before
+deployment, the integration owner must verify the actual provider settings:
 
-1. Confirm no retained PostgreSQL/database integration is still needed; export
-   or retain it under the provider's backup policy before removing it.
-2. Configure the build to use `npm run build:release` and inject the immutable
-   `BUILD_SHA` / `EXPECTED_BUILD_SHA` for the exact commit.
+1. Preserve the legacy PostgreSQL integration and its existing records. Release
+   A neither reads nor migrates them; removing a runtime module is not authority
+   to remove provider data. Record backup-policy visibility separately.
+2. Confirm build/start invoke the checked-in Node bootstrap and clean-revision
+   release wrapper. Synchronize the clean workspace to the reviewed merged SHA.
 3. Record the deployment ID, live runtime version, served SHA, and HTTPS header
    response. Do not treat a repository commit or build log as substitute
    evidence.
