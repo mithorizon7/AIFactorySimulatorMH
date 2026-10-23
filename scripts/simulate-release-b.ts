@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { format } from "prettier";
 import {
   CALIBRATION_SEEDS,
   RELEASE_B_POLICIES,
@@ -71,7 +72,10 @@ if (outputIndex >= 0) {
   const output = process.argv[outputIndex + 1];
   if (!output) throw new Error("--output requires a path");
   mkdirSync(dirname(output), { recursive: true });
-  writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
+  writeFileSync(
+    output,
+    await format(JSON.stringify(report), { parser: "json" }),
+  );
 }
 console.log(
   JSON.stringify({
