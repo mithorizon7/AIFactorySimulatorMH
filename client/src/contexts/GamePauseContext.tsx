@@ -39,24 +39,31 @@ export function GamePauseProvider({
 }) {
   const [isPausedForLearning, setIsPausedForLearning] = useState(false);
   const learningPauseRef = useRef(false);
+  const runningRef = useRef(isRunning);
+  const pauseActionRef = useRef(pauseGame);
+  const resumeActionRef = useRef(startGame);
+  runningRef.current = isRunning;
+  pauseActionRef.current = pauseGame;
+  resumeActionRef.current = startGame;
 
   // This will pause the game and track that it was paused for learning
   const pauseForLearning = useCallback(() => {
-    if (isRunning) {
+    if (runningRef.current) {
+      runningRef.current = false;
       learningPauseRef.current = true;
       setIsPausedForLearning(true);
-      pauseGame();
+      pauseActionRef.current();
     }
-  }, [isRunning, pauseGame]);
+  }, []);
 
   // This will resume the game if it was paused for learning
   const resumeFromLearning = useCallback(() => {
     if (learningPauseRef.current) {
       learningPauseRef.current = false;
       setIsPausedForLearning(false);
-      startGame();
+      resumeActionRef.current();
     }
-  }, [startGame]);
+  }, []);
 
   // These methods are for direct control, without tracking learning state
   const pauseGameEngine = useCallback(() => {
