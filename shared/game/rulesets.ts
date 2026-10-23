@@ -58,6 +58,7 @@ export interface RulesetTuning {
     readonly shortfallRiskPerMissingLevel: number;
   };
   readonly seedAssistTick: number;
+  readonly recoveryDelayTicks: number;
   readonly recovery: Readonly<Partial<Record<Era, RunwayRule>>>;
 }
 
@@ -125,6 +126,7 @@ const legacy: RulesetTuning = {
     shortfallRiskPerMissingLevel: 0,
   },
   seedAssistTick: 30,
+  recoveryDelayTicks: 0,
   recovery: {
     [Era.GNT2]: {
       id: "gnt2_continuity_v1",
@@ -192,6 +194,7 @@ const betterGame: RulesetTuning = {
     shortfallRiskPerMissingLevel: 0.08,
   },
   seedAssistTick: 60,
+  recoveryDelayTicks: 120,
   recovery: {
     [Era.GNT2]: { id: "b_seed_runway", earliestTick: 120, targetCash: 45000 },
     [Era.GNT3]: { id: "b_api_bridge", earliestTick: 540, targetCash: 150000 },

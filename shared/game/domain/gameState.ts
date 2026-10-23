@@ -438,7 +438,10 @@ export interface TrainingRun {
   realWorldParallel: string; // Educational context
 }
 
-export function getTrainingRunForEra(state: GameStateType, era: Era | null) {
+export function getTrainingRunForEra(
+  state: Pick<GameStateType, "training">,
+  era: Era | null,
+) {
   if (!era || !Object.prototype.hasOwnProperty.call(state.training.runs, era)) {
     return null;
   }
@@ -468,8 +471,20 @@ export function getUpcomingTrainingRun(state: GameStateType) {
   return getTrainingRunForEra(state, getNextEra(state.currentEra));
 }
 
+export type TrainingRequirementState = Pick<
+  GameStateType,
+  | "currentEra"
+  | "training"
+  | "levels"
+  | "dataInputs"
+  | "algorithmInputs"
+  | "computeInputs"
+  | "computeCapacity"
+  | "money"
+>;
+
 export function getTrainingRequirementDetails(
-  state: GameStateType,
+  state: TrainingRequirementState,
   targetEra: Era | null = getNextEra(state.currentEra),
 ): TrainingRequirementDetail[] {
   const trainingRun = getTrainingRunForEra(state, targetEra);
@@ -581,7 +596,7 @@ export function getTrainingRequirementDetails(
 }
 
 export function getTrainingBlockers(
-  state: GameStateType,
+  state: TrainingRequirementState,
   targetEra: Era | null = getNextEra(state.currentEra),
 ) {
   return getTrainingRequirementDetails(state, targetEra).filter(

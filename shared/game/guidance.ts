@@ -1,6 +1,10 @@
 import { Era, getNextEra } from "./domain/era";
 import { getTrainingRequirementDetails } from "./domain/gameState";
-import { getServiceDemand, inspectCommand } from "./engine";
+import {
+  getServiceDemand,
+  getTrainingDuration,
+  inspectCommand,
+} from "./engine";
 import { getRuleset, governanceGap } from "./rulesets";
 import type { GameCommandIntent } from "./schemas/commands";
 import type { GameStateV2 } from "./schemas/state";
@@ -26,6 +30,7 @@ export interface RunGuidance {
     ready: boolean;
     cost: number | null;
     computeRequired: number | null;
+    durationTicks: number | null;
     blockers: string[];
   };
 }
@@ -101,7 +106,7 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
       reason: inspection.reason,
     });
   };
-  const details = getTrainingRequirementDetails(state as never, targetEra);
+  const details = getTrainingRequirementDetails(state, targetEra);
   const unmet = details.filter((detail) => !detail.met);
   const inspection = targetEra
     ? inspectCommand(state, { type: "START_TRAINING", payload: { targetEra } })
@@ -135,6 +140,7 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
         ready: false,
         cost: null,
         computeRequired: null,
+        durationTicks: null,
         blockers: [],
       },
     };
@@ -167,14 +173,24 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
         );
     }
     if (unmet.some((detail) => detail.key === "research-progress")) {
-      add(
-        "hire-engineer",
-        "Hire research engineer",
-        { type: "HIRE_RESEARCH_ENGINEER", payload: {} },
-        "resources",
-      );
-      reason =
-        "Research advances on active ticks using free compute, architecture, and engineers. Selling service capacity can slow research.";
+      if (state.algorithmInputs.researchEngineers === 0)
+        add(
+          "hire-engineer",
+          "Hire one research engineer (optional)",
+          { type: "HIRE_RESEARCH_ENGINEER", payload: {} },
+          "resources",
+        );
+      actions.push({
+        id: "research-in-progress",
+        label: "Let research advance",
+        command: null,
+        tab: "training",
+        enabled: true,
+        cost: null,
+        reason:
+          "Waiting while the run is active is a viable choice. Engineers are optional; keep cash for training.",
+      });
+      reason = `Research advances on active ticks using free compute, architecture, and engineers. Waiting is viable; additional engineers cost money${state.rulesetVersion === "release-b.1" ? " and their research benefit is capped" : ""}. Selling service capacity can slow research.`;
     }
     if (targetEra)
       add(
@@ -244,19 +260,30 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
     }
   }
   if (governanceGap(state) > 0 && !state.training.active) {
-    add(
-      "invest-regulation",
-      "Invest in governance",
-      { type: "INVEST_REGULATION", payload: {} },
-      "resources",
+    const rule = getRuleset(state.rulesetVersion).governance;
+    const regulationGap = Math.max(
+      0,
+      rule.targetRegulation - state.computeInputs.regulation,
     );
-    add(
-      "invest-hardware",
-      "Add hardware redundancy",
-      { type: "INVEST_HARDWARE", payload: {} },
-      "resources",
+    const hardwareGap = Math.max(
+      0,
+      rule.targetHardware - state.computeInputs.hardware,
     );
-    reason += ` The final run adds ${governanceGap(state) * getRuleset(state.rulesetVersion).governance.missingLevelTrainingTicks} active seconds at current governance/redundancy levels; these investments reduce that delay.`;
+    if (regulationGap > 0)
+      add(
+        "invest-regulation",
+        "Invest in governance",
+        { type: "INVEST_REGULATION", payload: {} },
+        "resources",
+      );
+    if (hardwareGap > 0)
+      add(
+        "invest-hardware",
+        "Add hardware redundancy",
+        { type: "INVEST_HARDWARE", payload: {} },
+        "resources",
+      );
+    reason += ` The remaining margin is ${regulationGap} governance level(s) and ${hardwareGap} hardware level(s). The final run adds ${governanceGap(state) * rule.missingLevelTrainingTicks} active seconds at current levels; each listed investment reduces that delay by ${rule.missingLevelTrainingTicks} seconds.`;
   }
   if (unmet.some((detail) => detail.key === "training-funds")) {
     const recovery = getRuleset(state.rulesetVersion).recovery[
@@ -266,8 +293,14 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
       const alreadyUsed = state.mechanics.appliedRecoveryGrantIds.includes(
         recovery.id,
       );
-      const recoveryId = alreadyUsed ? `${recovery.id}_recovery` : recovery.id;
-      const tick = recovery.earliestTick + (alreadyUsed ? 180 : 0);
+      const secondChance =
+        alreadyUsed && state.rulesetVersion === "release-b.1";
+      const recoveryId = secondChance ? `${recovery.id}_recovery` : recovery.id;
+      const tick =
+        recovery.earliestTick +
+        (secondChance
+          ? getRuleset(state.rulesetVersion).recoveryDelayTicks
+          : 0);
       if (!state.mechanics.appliedRecoveryGrantIds.includes(recoveryId)) {
         actions.push({
           id: "recover",
@@ -281,6 +314,8 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
       }
     }
   }
+  if (state.clock.status === "paused")
+    reason = `Active time and research do not advance while paused. ${reason}`;
   return {
     goal,
     blocker,
@@ -291,6 +326,7 @@ export function getRunGuidance(state: GameStateV2): RunGuidance {
       ready: inspection?.enabled ?? false,
       cost: run?.moneyCost ?? null,
       computeRequired: run?.computeRequired ?? null,
+      durationTicks: targetEra ? getTrainingDuration(state, targetEra) : null,
       blockers: state.training.active
         ? ["Training already active"]
         : unmet.map((detail) => detail.label),

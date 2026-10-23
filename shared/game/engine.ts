@@ -679,7 +679,8 @@ function processFunding(state: GameStateV2, effects: MutableEffects): void {
       );
       // A bounded second chance is explicit funding, never hidden revenue.
       if (
-        state.clock.activeTick >= runway.earliestTick + 180 &&
+        state.clock.activeTick >=
+          runway.earliestTick + rule.recoveryDelayTicks &&
         state.mechanics.appliedRecoveryGrantIds.includes(runway.id)
       ) {
         const target = getNextEra(state.currentEra);
@@ -783,6 +784,59 @@ function productionTick(state: GameStateV2): void {
   state.resources.algorithm += state.production.algorithm;
 }
 
+/** Current potential rate, not a stale rate saved before a capacity change. */
+export function getResearchRate(state: GameStateV2): number {
+  const freeCompute = Math.max(
+    0,
+    state.computeCapacity.maxCapacity - state.computeCapacity.used,
+  );
+  const rule = getRuleset(state.rulesetVersion).research;
+  if (state.rulesetVersion === "release-a.1") {
+    const architectureMultiplier =
+      1 + state.algorithmInputs.architectures * 0.1;
+    const computeEfficiency = Math.log10(freeCompute + 1) * 0.5;
+    const engineerBonus = state.algorithmInputs.researchEngineers * 0.25;
+    return Math.max(
+      0.1,
+      0.5 + engineerBonus + computeEfficiency * architectureMultiplier,
+    );
+  }
+  return Math.max(
+    rule.minimum,
+    Math.min(
+      rule.maximum,
+      rule.base +
+        Math.min(
+          rule.engineerMaximum,
+          state.algorithmInputs.researchEngineers * rule.engineerFactor,
+        ) +
+        Math.log10(freeCompute + 1) *
+          rule.computeLogFactor *
+          (1 + state.algorithmInputs.architectures * rule.architectureFactor),
+    ),
+  );
+}
+
+/** Predict before launch; once active, return the captured persisted duration. */
+export function getTrainingDuration(
+  state: GameStateV2,
+  targetEra: Era,
+): number | null {
+  const run = getTrainingRun(state, targetEra);
+  if (!run) return null;
+  if (
+    state.rulesetVersion === "release-a.1" ||
+    run.status === TrainingStatus.IN_PROGRESS ||
+    run.status === TrainingStatus.COMPLETE
+  )
+    return run.daysRequired;
+  const rule = getRuleset(state.rulesetVersion);
+  return (
+    rule.trainingTicks[targetEra as keyof typeof rule.trainingTicks] +
+    governanceGap(state) * rule.governance.missingLevelTrainingTicks
+  );
+}
+
 function updateResearchOrTraining(
   state: GameStateV2,
   effects: MutableEffects,
@@ -823,33 +877,7 @@ function updateResearchOrTraining(
   );
   state.computeCapacity.available = freeCompute;
   state.computeCapacity.freeCompute = freeCompute;
-  const architectureMultiplier = 1 + state.algorithmInputs.architectures * 0.1;
-  const computeEfficiency = Math.log10(freeCompute + 1) * 0.5;
-  const engineerBonus = state.algorithmInputs.researchEngineers * 0.25;
-  const legacyRate = Math.max(
-    0.1,
-    0.5 + engineerBonus + computeEfficiency * architectureMultiplier,
-  );
-  const rule = getRuleset(state.rulesetVersion).research;
-  state.training.algorithmResearchRate =
-    state.rulesetVersion === "release-a.1"
-      ? legacyRate
-      : Math.max(
-          rule.minimum,
-          Math.min(
-            rule.maximum,
-            rule.base +
-              Math.min(
-                rule.engineerMaximum,
-                state.algorithmInputs.researchEngineers * rule.engineerFactor,
-              ) +
-              Math.log10(freeCompute + 1) *
-                rule.computeLogFactor *
-                (1 +
-                  state.algorithmInputs.architectures *
-                    rule.architectureFactor),
-          ),
-        );
+  state.training.algorithmResearchRate = getResearchRate(state);
   state.training.algorithmResearchProgress = Math.min(
     100,
     state.training.algorithmResearchProgress +
@@ -1085,51 +1113,35 @@ function investmentCost(
   state: GameStateV2,
   command: GameCommand,
 ): number | null {
+  const scaledCost = (base: number, level: number): number => {
+    if (state.rulesetVersion === "release-a.1")
+      return getScaledInvestmentCost(base, level, state.currentEra);
+    const costs = getRuleset(state.rulesetVersion).costs;
+    const raw =
+      base * Math.pow(costs.levelGrowth, level) * costs.era[state.currentEra];
+    if (!Number.isFinite(raw) || raw > Number.MAX_SAFE_INTEGER)
+      throw new RangeError(
+        "investment cost exceeds the supported numeric range",
+      );
+    return Math.floor(raw + Math.max(1, raw) * Number.EPSILON * 4);
+  };
   switch (command.type) {
     case "INVEST_COMPUTE":
-      return getScaledInvestmentCost(
-        100,
-        state.levels.compute,
-        state.currentEra,
-      );
+      return scaledCost(100, state.levels.compute);
     case "INVEST_DATA_QUALITY":
-      return getScaledInvestmentCost(75, state.levels.data, state.currentEra);
+      return scaledCost(75, state.levels.data);
     case "INVEST_ALGORITHM_ARCHITECTURE":
-      return getScaledInvestmentCost(
-        125,
-        state.levels.algorithm,
-        state.currentEra,
-      );
+      return scaledCost(125, state.levels.algorithm);
     case "INVEST_ELECTRICITY":
-      return getScaledInvestmentCost(
-        85,
-        state.computeInputs.electricity,
-        state.currentEra,
-      );
+      return scaledCost(85, state.computeInputs.electricity);
     case "INVEST_HARDWARE":
-      return getScaledInvestmentCost(
-        160,
-        state.computeInputs.hardware,
-        state.currentEra,
-      );
+      return scaledCost(160, state.computeInputs.hardware);
     case "INVEST_REGULATION":
-      return getScaledInvestmentCost(
-        140,
-        state.computeInputs.regulation,
-        state.currentEra,
-      );
+      return scaledCost(140, state.computeInputs.regulation);
     case "INVEST_DATA_QUANTITY":
-      return getScaledInvestmentCost(
-        120,
-        state.dataInputs.quantity,
-        state.currentEra,
-      );
+      return scaledCost(120, state.dataInputs.quantity);
     case "INVEST_DATA_FORMATS":
-      return getScaledInvestmentCost(
-        140,
-        state.dataInputs.formats,
-        state.currentEra,
-      );
+      return scaledCost(140, state.dataInputs.formats);
     case "HIRE_RESEARCH_ENGINEER":
       return Math.floor(
         getRuleset(state.rulesetVersion).costs.engineerBase *
@@ -1178,6 +1190,15 @@ function validateCommandBusinessRules(
   reasonId: string;
   params?: Record<string, number | string | boolean>;
 } | null {
+  if (
+    command.type === "HIRE_RESEARCH_ENGINEER" &&
+    state.rulesetVersion === "release-b.1"
+  ) {
+    const rule = getRuleset(state.rulesetVersion).research;
+    const limit = Math.ceil(rule.engineerMaximum / rule.engineerFactor);
+    if (state.algorithmInputs.researchEngineers >= limit)
+      return { reasonId: "research_team_bonus_cap", params: { limit } };
+  }
   const cost = investmentCost(state, command);
   if (cost !== null && !validateSpend(state, cost)) {
     return {
@@ -1453,11 +1474,11 @@ export function applyGameCommand(
     case "START_TRAINING": {
       const run = getTrainingRun(state, command.payload.targetEra)!;
       if (state.rulesetVersion === "release-b.1") {
-        run.daysRemaining =
-          run.daysRequired +
-          governanceGap(state) *
-            getRuleset(state.rulesetVersion).governance
-              .missingLevelTrainingTicks;
+        run.daysRequired = getTrainingDuration(
+          state,
+          command.payload.targetEra,
+        )!;
+        run.daysRemaining = run.daysRequired;
       }
       recordSpend(state, run.moneyCost, "training");
       state.training.active = true;
@@ -1620,10 +1641,17 @@ export function inspectCommand(
   if (state.clock.status === "completed")
     return { enabled: false, cost, reason: "run_completed" };
   const rejection = validateCommandBusinessRules(state, command);
+  const rateCapWarning =
+    !rejection &&
+    state.rulesetVersion === "release-b.1" &&
+    command.type === "HIRE_RESEARCH_ENGINEER" &&
+    getResearchRate(state) >= getRuleset(state.rulesetVersion).research.maximum;
   return {
     enabled: !rejection,
     cost,
-    reason: rejection?.reasonId ?? null,
+    reason:
+      rejection?.reasonId ??
+      (rateCapWarning ? "research_rate_currently_capped" : null),
     ...(rejection?.params ? { params: rejection.params } : {}),
   };
 }
