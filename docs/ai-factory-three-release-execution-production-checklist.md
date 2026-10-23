@@ -11,6 +11,36 @@ Source of truth checklist for a large/intense task.
 
 ## Scope
 
+### Current execution checkpoint — 2026-10-22 America/New_York
+
+The frozen specification is recovered in `approved-three-release-roadmap.md`.
+Current integration lives on `codex/three-release-execution-20261022`, based on
+fresh upstream `f5d65d7`; the original cloud-offloaded checkout is preserved.
+The historical evidence below remains dated evidence, not current runtime truth.
+
+- A1/A2 source containment and deterministic core are integrated, preserving
+  current upstream Tailwind4 and patched Node/bootstrap security improvements.
+- A3 local persistence/recovery and A4 factual summaries are implemented and
+  committed. The focused storage/lifecycle/summary gate passes59cases; six
+  distinct completion scenarios pass, including actual IndexedDB close/resume
+  byte-equivalent to uninterrupted simulation and durable independent bests.
+- Combined gate:170tests pass; statement coverage91.87%, branches88.14%.
+  Typecheck, lint, format, tutorial and CSP checks pass. Later UI transition
+  notifications require the final affected-suite rerun before release sign-off.
+- Full lockfile advisory scan reports0vulnerabilities; current source secret scan
+  reports no leaks. Production build wrapper clean-installs without scripts and
+  stamps exact commit identity, rejecting dirty/untracked source and mismatches.
+- Candidate8318936 has a clean stamped build, JS1510082bytes(+2.45% from baseline).
+  Full production browser completion gate is running; no deployment claim yet.
+- Draft PR: https://github.com/mithorizon7/AIFactorySimulatorMH/pull/4.
+- Current deployed domain is https://aifactorysimulation.com. Baseline HSTS is
+  observed; deployed SHA and safe API contract remain unproven until publish.
+- Existing production/development database row counts and aggregate fingerprints
+  were inspected read-only and preserved. Actual backup/PITR and historical log
+  coverage remain unavailable through the provider connector.
+- Release B/C remain blocked by their predecessor's production gate. Participant
+  recruitment and consented research collection remain separate human actions.
+
 - [x] Q-000 [status:verified] Implement the frozen three-release plan without crossing a release stop gate prematurely.
   - Evidence: Release A must prove anonymous deterministic GNT-2→GNT-7 completion, correct pause timing, complete close/resume, safe reset, factual scorecard, unsafe API shutdown, enforced CSP, CI/security gates, deployed SHA, and independent verification. Release B owns game redesign and calibrated scoring. Release C owns accessibility, telemetry/research separation, pilot validation, performance, and monitoring.
 
