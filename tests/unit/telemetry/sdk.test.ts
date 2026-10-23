@@ -22,6 +22,7 @@ const buildSha = "a".repeat(40);
 beforeEach(() => vi.stubEnv("VITE_APP_BUILD_SHA", buildSha));
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -62,6 +63,44 @@ function memoryOutbox() {
 }
 
 describe("optional telemetry SDK", () => {
+  it("retains the global receiver when using native fetch by default", async () => {
+    const receivers: unknown[] = [];
+    vi.stubGlobal(
+      "fetch",
+      function (this: unknown, input: RequestInfo | URL, init?: RequestInit) {
+        receivers.push(this);
+        return Promise.resolve({
+          ok: true,
+          status: input === TELEMETRY_VERSION_ENDPOINT ? 200 : 202,
+          json: async () =>
+            input === TELEMETRY_VERSION_ENDPOINT
+              ? { data: { buildSha, telemetry: "ready" } }
+              : {
+                  data: {
+                    acceptedEventIds: (
+                      JSON.parse(String(init?.body)) as {
+                        events: TelemetryEvent[];
+                      }
+                    ).events.map((event) => event.eventId),
+                  },
+                },
+        });
+      },
+    );
+    const outbox = memoryOutbox();
+    const sdk = createTelemetrySdk({
+      storage: storage({ [ANALYTICS_CONSENT_KEY]: "yes" }),
+      outboxFactory: async () => outbox,
+      clearExistingOutbox: async () => {},
+    });
+    await sdk.capture(run, { type: "run_started", properties: {} });
+    await sdk.flush();
+    expect(outbox.enqueue).toHaveBeenCalledOnce();
+    expect(receivers.length).toBeGreaterThan(0);
+    expect(receivers.every((receiver) => receiver === globalThis)).toBe(true);
+    await sdk.close();
+  });
+
   it("does not send stale due records after revocation and re-opt-in", async () => {
     const outbox = memoryOutbox();
     const record: OutboxRecord = {

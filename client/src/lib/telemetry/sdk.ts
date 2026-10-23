@@ -158,7 +158,13 @@ export class TelemetrySdk {
         : null;
     this.clock = options.clock ?? Date.now;
     this.randomUuid = options.randomUuid ?? (() => crypto.randomUUID());
-    this.network = options.network ?? (globalThis.fetch as TelemetryNetwork);
+    // Native browser fetch requires its Window receiver. Storing the unbound
+    // method and invoking it as this.network() fails only in real browsers.
+    this.network =
+      options.network ??
+      (typeof globalThis.fetch === "function"
+        ? (input, init) => globalThis.fetch(input, init)
+        : undefined);
     this.storage = options.storage ?? defaultStorage();
     this.globalPrivacyControl = options.globalPrivacyControl ?? defaultGpc;
     this.indexedDbFactory = options.indexedDbFactory;
