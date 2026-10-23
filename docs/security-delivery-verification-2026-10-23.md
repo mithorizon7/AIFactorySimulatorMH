@@ -41,6 +41,30 @@ The provider workspace and prior checkpoints were preserved. Legacy production
 database counts and in-database aggregate row checksums were unchanged after
 deployment. No database rows were downloaded, migrated or deleted.
 
+### Subsequent provider tooling drift
+
+The pre-B read-only inspection found a clean provider-only checkpoint
+`5792b87de0529283217d959dab11e75e6604616c`, descending from the retained publish
+checkpoint `76d013fc6fff91d78f713c7d5a1a5769bcb0b855`. Its only application-tree
+difference is an added `postgresql-16` tooling module. Commit labels identify
+Replit Agent as recorder; the initiating action/actor is not established.
+The existing Nix `psql` client reports 16.10; this is not the production database
+server, which separately reports 16.15.
+
+The official [16.15 release notes](https://www.postgresql.org/docs/release/16.15/)
+include later client fixes, including scripted COPY handling. Installed 16.10
+tooling is not attested to contain those fixes. No dumps, restores or untrusted
+SQL scripts were executed by this inspection, and no compromise was established.
+
+Decision: do not promote this unnecessary, older tooling into the reviewed
+Node-only A/B application configuration. Preserve its checkpoint before syncing
+the provider to the exact reviewed merged release. Do not delete its database,
+data directory, credentials or retained integration. Application build/start must
+not invoke that client. If a provider pre-step reintroduces it, stop at the
+clean-source guard and resolve the configuration through reviewed source rather
+than accepting a drifted revision. Future database work must use an explicitly
+reviewed patched client/driver; no further 16.10 client use is required.
+
 ## Explicit remaining coverage gaps
 
 - The official CISA KEV JSON endpoint returned HTTP 403 during the audit refresh.
