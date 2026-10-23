@@ -23,7 +23,7 @@ const versionSchema = z
 
 test.use({ reducedMotion: "reduce" });
 
-/** No event/research request from these tests is ever forwarded to a server. */
+/** Dedicated HTTPS-fixture suite: no event/research request is forwarded. */
 async function localTelemetry(
   page: Page,
   baseURL: string | undefined,

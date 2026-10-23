@@ -4,10 +4,10 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "../..");
 const port = process.env.LOCAL_HTTPS_PORT ?? "5014";
 export default defineConfig({
-  testDir: path.join(root, "tests/e2e"),
+  testDir: path.join(root, "tests"),
   testMatch: [
-    "release-c-accessibility.spec.ts",
-    "release-c-telemetry-privacy.spec.ts",
+    "**/e2e/release-c-accessibility.spec.ts",
+    "**/browser/release-c-telemetry-privacy.spec.ts",
   ],
   workers: 1,
   timeout: 60000,
