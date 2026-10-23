@@ -5,7 +5,10 @@ const root = path.resolve(import.meta.dirname, "../..");
 const port = process.env.LOCAL_HTTPS_PORT ?? "5014";
 export default defineConfig({
   testDir: path.join(root, "tests/e2e"),
-  testMatch: "release-c-accessibility.spec.ts",
+  testMatch: [
+    "release-c-accessibility.spec.ts",
+    "release-c-telemetry-privacy.spec.ts",
+  ],
   workers: 1,
   timeout: 60000,
   expect: { timeout: 10000 },
@@ -36,6 +39,8 @@ export default defineConfig({
     env: {
       LOCAL_HTTPS_PORT: port,
       LOCAL_BACKEND_PORT: process.env.LOCAL_BACKEND_PORT ?? "5015",
+      // Browser fixtures must never activate a provider-backed telemetry sink.
+      TELEMETRY_ENABLED: "false",
     },
     reuseExistingServer: false,
   },
