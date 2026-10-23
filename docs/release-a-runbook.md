@@ -31,7 +31,7 @@
    patch, the released package lock is the reviewed one, and no stale database
    integration or port mapping is active.
 
-The HTTP portion is automated by `BASE_URL=<served-origin> EXPECTED_BUILD_SHA=<full-sha> npm run release:verify`. It deliberately fails while core readiness is false.
+The HTTP portion is automated by `BASE_URL=<served-origin> EXPECTED_BUILD_SHA=<full-sha> EXPECTED_RULESET_VERSION=release-a.1 npm run release:verify`. Set the expected ruleset explicitly to `release-b.1` for B; never infer it from the returned response. It deliberately fails while core readiness is false.
 
 Record the median of five cold production navigations with `BASE_URL=<served-origin> npm run measure:lcp`. Later A/B checks pass that committed value as `BASELINE_LCP_MS`; regression requires both more than 250 ms and more than 20% degradation.
 

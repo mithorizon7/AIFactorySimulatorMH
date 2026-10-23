@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { RULESET_VERSION } from "../../shared/version";
 
 test("legacy global persistence and ranking APIs are retired", async ({
   request,
@@ -47,10 +48,12 @@ test("health and version endpoints expose truthful nullable release identity", a
   const versionBody = await version.json();
   expect(versionBody).toMatchObject({
     data: {
-      rulesetVersion: "release-a.1",
+      rulesetVersion: RULESET_VERSION,
       snapshotVersion: 1,
       commandSchemaVersion: 1,
       migrationVersion: null,
+      scoreAlgorithmVersion: null,
+      profileClassifierVersion: null,
     },
     meta: { requestId: expect.any(String) },
   });

@@ -255,7 +255,9 @@ test("a public-control strategy completes the ladder and persists its factual sc
   };
   for (
     let iteration = 0;
-    iteration < 800 && state.clock.status !== "completed";
+    iteration < 2_000 &&
+    state.clock.status !== "completed" &&
+    state.clock.activeTick <= 1_800;
     iteration++
   ) {
     await dismissBreakthroughs();
@@ -332,6 +334,7 @@ test("a public-control strategy completes the ladder and persists its factual sc
     state = await savedState();
   }
   expect(state.clock.status).toBe("completed");
+  expect(state.clock.activeTick).toBeLessThanOrEqual(1_800);
   expect(verifiedPendingMessage).toBe(true);
   await expect(
     page.getByRole("heading", { name: /Run complete/ }),

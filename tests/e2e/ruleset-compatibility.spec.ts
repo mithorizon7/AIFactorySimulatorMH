@@ -12,6 +12,7 @@ import type { GameStateV2 } from "../../shared/game/schemas/state";
 test("new presentation hydrates an intact paused Release A save without reinterpreting mechanics", async ({
   page,
 }) => {
+  await page.clock.install();
   let state = createFreshGameState({ ruleset: "release-a.1", seed: 777 });
   let sequence = 0;
   const command = (intent: GameCommandIntent) => {
@@ -41,6 +42,7 @@ test("new presentation hydrates an intact paused Release A save without reinterp
     .getByRole("dialog", { name: /^Welcome to AI Factory!?$/ })
     .getByRole("button", { name: "Skip Tutorial" })
     .click();
+  await page.clock.runFor(600);
   await expect(page.getByTestId("session-status")).toContainText(
     "Saved on this device",
   );
@@ -106,9 +108,15 @@ test("new presentation hydrates an intact paused Release A save without reinterp
   });
   expect(saved).toEqual(state);
   expect(saved.rulesetVersion).toBe("release-a.1");
+  expect(await page.evaluate(() => document.visibilityState)).toBe("visible");
+  await page.clock.runFor(2_000);
+  await expect(page.getByTestId("active-time")).toHaveText("0:17");
   await page.getByTestId("button-start-game").click();
-  await expect(page.getByTestId("active-time")).not.toHaveText("0:17");
+  await expect(page.getByTestId("button-pause-game")).toBeVisible();
+  await page.clock.runFor(2_000);
+  await expect(page.getByTestId("active-time")).toHaveText("0:19");
   await page.getByTestId("button-pause-game").click();
+  await page.clock.runFor(600);
   await expect(page.getByTestId("session-status")).toContainText(
     "Saved on this device",
   );

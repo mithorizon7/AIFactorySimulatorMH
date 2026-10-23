@@ -1,9 +1,11 @@
 const baseUrl = process.env.BASE_URL;
 const expectedBuildSha = process.env.EXPECTED_BUILD_SHA;
-const expectedRuleset = process.env.EXPECTED_RULESET_VERSION ?? "release-a.1";
+const expectedRuleset = process.env.EXPECTED_RULESET_VERSION;
 
-if (!baseUrl || !expectedBuildSha) {
-  throw new Error("BASE_URL and EXPECTED_BUILD_SHA are required.");
+if (!baseUrl || !expectedBuildSha || !expectedRuleset) {
+  throw new Error(
+    "BASE_URL, EXPECTED_BUILD_SHA and EXPECTED_RULESET_VERSION are required.",
+  );
 }
 if (!/^[a-f0-9]{40}(?:[a-f0-9]{24})?$/i.test(expectedBuildSha)) {
   throw new Error(
