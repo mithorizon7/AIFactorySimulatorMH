@@ -117,6 +117,7 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
                   variant="ghost"
                   size="sm"
                   onClick={onDismiss}
+                  aria-label="Dismiss coaching message"
                   className="h-6 w-6 p-0 text-gray-400 hover:text-white ml-2"
                 >
                   <X className="h-4 w-4" />
