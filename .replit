@@ -1,6 +1,12 @@
-modules = ["nodejs-22", "web"]
+# Retain the observed provider tooling module for the stdlib inspection helper.
+# Application build/start use Node; this avoids the same auto-detected Git diff.
+modules = ["nodejs-22", "web", "python-base-3.13"]
 run = ["bash", "tools/with-node22.sh", "npm", "run", "dev"]
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
+[packager.features]
+guessImports = false
+enabledForHosting = false
+
 [env]
 HOST = "0.0.0.0"
 PUBLIC_HOSTS = "aifactorysimulation.com,ai-factory-mithorizon.replit.app"
