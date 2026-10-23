@@ -24,6 +24,7 @@ test("core tabs render after skipping the tutorial", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Training" }).click();
   await expect(page.getByTestId("training-tab")).toBeVisible();
+  await expect(page.locator(".tutorial-active-target")).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: /Training Prerequisites/i }),
   ).toBeVisible();

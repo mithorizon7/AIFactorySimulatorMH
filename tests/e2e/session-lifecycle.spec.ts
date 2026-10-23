@@ -118,7 +118,10 @@ test("reset disables commands while a storage transaction is pending", async ({
   });
   await page.getByTestId("button-reset-game").click();
   await page.getByTestId("button-confirm-reset").click();
-  await expect(page.getByTestId("game-controls")).toBeDisabled();
+  await expect(page.getByTestId("game-controls")).toHaveAttribute(
+    "disabled",
+    "",
+  );
   await expect(page.getByTestId("button-start-game")).toBeDisabled();
   await page
     .getByTestId("button-start-game")
@@ -128,7 +131,10 @@ test("reset disables commands while a storage transaction is pending", async ({
       window as Window & { releaseTestStorageLock?: () => void }
     ).releaseTestStorageLock?.(),
   );
-  await expect(page.getByTestId("game-controls")).toBeEnabled();
+  await expect(page.getByTestId("game-controls")).not.toHaveAttribute(
+    "disabled",
+    "",
+  );
   await expect(page.getByTestId("button-start-game")).toContainText(
     "Start Game",
   );
@@ -193,6 +199,14 @@ test("a public-control strategy completes the ladder and persists its factual sc
       }
       await breakthroughClose.click();
       await page.clock.runFor(1);
+    }
+    const dismissCoaching = page.getByRole("button", {
+      name: "Dismiss coaching message",
+    });
+    while (await dismissCoaching.isVisible()) await dismissCoaching.click();
+    const dismissAdvisor = page.getByRole("button", { name: "Got it, Spark!" });
+    while (await dismissAdvisor.isVisible()) {
+      await dismissAdvisor.click();
     }
     const resume = page.getByTestId("button-start-game");
     if ((await resume.isVisible()) && (await resume.isEnabled()))
@@ -288,7 +302,10 @@ test("a public-control strategy completes the ladder and persists its factual sc
       const start = page.getByTestId("start-training-button");
       if (await start.isEnabled()) await start.click();
     }
-    await page.clock.runFor(10_600);
+    // Each step is no longer than one engine interval, so no simulation tick
+    // is skipped, while decorative animation frames do not swamp the canary.
+    await page.clock.fastForward(1_000);
+    await page.clock.fastForward(600);
     state = await savedState();
   }
   expect(state.clock.status).toBe("completed");
