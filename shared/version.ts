@@ -14,7 +14,7 @@ export const SNAPSHOT_VERSION = 1;
 export const COMMAND_SCHEMA_VERSION = 1;
 export const COMPLETED_RUN_SUMMARY_SCHEMA_VERSION = 1;
 export const PERSONAL_BEST_SCHEMA_VERSION = 1;
-export const PERSISTENCE_DATABASE_VERSION = 1;
+export const PERSISTENCE_DATABASE_VERSION = 2;
 export const TELEMETRY_SCHEMA_VERSION = 1;
 
 export interface VersionInfo {
