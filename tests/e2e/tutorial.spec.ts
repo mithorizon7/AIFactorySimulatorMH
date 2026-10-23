@@ -83,6 +83,13 @@ test("tutorial completes end-to-end and starts the run", async ({ page }) => {
   await expect(algorithmUpgrade).toBeVisible();
   await algorithmUpgrade.click();
 
+  // Tutorial investments can unlock breakthroughs. Keep their durable queue
+  // pending until onboarding ends, so they cannot cover the required target.
+  const breakthroughContinue = page.getByRole("button", {
+    name: /Thanks, Spark! Let's keep building!/,
+  });
+  await expect(breakthroughContinue).toBeHidden();
+
   await expectTutorialStep(
     page,
     "Your AI Development Dashboard",
@@ -119,10 +126,13 @@ test("tutorial completes end-to-end and starts the run", async ({ page }) => {
     .getByRole("button", { name: "Start Building!" })
     .click();
 
-  await expect(page.getByTestId("button-pause-game")).toBeVisible();
   await expect(
     page.getByRole("dialog", { name: "Tutorial Complete!" }),
   ).toBeHidden();
+  await expect(breakthroughContinue).toBeVisible();
+  while (await breakthroughContinue.isVisible())
+    await breakthroughContinue.click();
+  await expect(page.getByTestId("button-pause-game")).toBeVisible();
   await expect
     .poll(async () => {
       return page.evaluate(() =>

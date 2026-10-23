@@ -91,7 +91,9 @@ export default function AIFactory() {
       )
     : null;
   const showBreakthroughModal = Boolean(
-    currentBreakthrough && sessionSnapshot?.writable,
+    currentBreakthrough &&
+    sessionSnapshot?.writable &&
+    (!gameState.tutorial.isActive || gameState.tutorial.isCompleted),
   );
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
 
