@@ -35,6 +35,15 @@ afterEach(() => {
 });
 
 describe("production canary safety and evidence policy", () => {
+  it("uses runner context only in step environments, not the pre-runner job environment", () => {
+    const workflow = source(".github/workflows/production-canary.yml");
+    const beforeSteps = workflow.split("    steps:")[0];
+    expect(beforeSteps).not.toContain("${{ runner.");
+    expect(
+      workflow.match(/PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}/g),
+    ).toHaveLength(2);
+  });
+
   it("requires an explicit full deployed identity instead of inferring main", () => {
     expect(readCanaryConfiguration(base).migrationVersion).toBeNull();
     for (const key of [

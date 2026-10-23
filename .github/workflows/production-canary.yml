@@ -23,7 +23,6 @@ jobs:
       EXPECTED_RULESET_VERSION: ${{ vars.PRODUCTION_CANARY_RULESET_VERSION }}
       EXPECTED_MIGRATION_VERSION: ${{ vars.PRODUCTION_CANARY_MIGRATION_VERSION }}
       EXPECTED_MIGRATION_CHECKSUM: ${{ vars.PRODUCTION_CANARY_MIGRATION_CHECKSUM }}
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/aifactory-canary-browsers
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -37,7 +36,11 @@ jobs:
           test "$(npm --version)" = "10.9.9"
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm exec -- playwright install --with-deps --only-shell chromium
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/aifactory-canary-browsers
       - name: Startup, durable resume, completion and exact deployed identity
         run: node scripts/canary-production.mjs
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/aifactory-canary-browsers
       # No artifact upload: browser traces, snapshots, logs and credentials must
       # never be published. The runner emits an allowlisted status-only summary.
