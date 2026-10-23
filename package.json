@@ -21,7 +21,7 @@
     "test:tutorial": "node --import tsx test_tutorial_availability.ts",
     "test:unit": "vitest run tests/unit",
     "test:api": "vitest run tests/api",
-    "test:persistence": "vitest run tests/unit/contracts/completed-runs.test.ts tests/unit/game/clock-rng.test.ts tests/unit/game/factory-and-schemas.test.ts tests/unit/game/training-replay-reachability.test.ts",
+    "test:persistence": "vitest run tests/session tests/unit/contracts/completed-runs.test.ts",
     "test:coverage": "vitest run --coverage",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:csp:dev": "node --import tsx scripts/check-vite-csp.ts",
@@ -63,7 +63,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.4",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.1",
