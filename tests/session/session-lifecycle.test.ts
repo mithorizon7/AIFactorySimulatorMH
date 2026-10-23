@@ -31,7 +31,12 @@ function repository(loaded: LoadResult = { kind: "empty" }) {
     save: vi.fn(async (payload: SnapshotPayload) => ({
       ...structuredClone(payload),
       checksum: String(++revision).padStart(64, "0"),
-      savedAt: Date.now(),
+      createdAt: new Date().toISOString(),
+      savedAt: new Date().toISOString(),
+      abandonedAt: null,
+      writerId: "test-writer",
+      writerEpoch: 1,
+      leaseExpiresAt: Date.now() + 60_000,
     })),
     heartbeat: vi.fn(async (lease) => ({
       ...lease,
@@ -118,7 +123,7 @@ describe("session durability and browser lifecycle failures", () => {
     const experience = structuredClone(session.getSnapshot().experience);
     experience.lastActiveTab = "training";
     session.setExperience(experience);
-    await vi.advanceTimersByTimeAsync(249);
+    await vi.advanceTimersByTimeAsync(499);
     expect(adapter.save).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     await session.flush();
@@ -169,16 +174,18 @@ describe("session durability and browser lifecycle failures", () => {
       new DOMException("quota", "QuotaExceededError"),
     );
     session.setExperience(createFreshExperienceState(true));
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(500);
     expect(session.getSnapshot().status).toBe("error");
     expect(session.getSnapshot().error).toContain("storage is full");
     expect(session.getSnapshot().experience.onboardingStatus).toBe("completed");
-    await vi.advanceTimersByTimeAsync(14_750);
+    await vi.advanceTimersByTimeAsync(14_500);
     expect(session.getSnapshot().status).toBe("saved");
-    expect(adapter.maintenance).toHaveBeenCalledTimes(1);
+    expect(adapter.maintenance).not.toHaveBeenCalled();
     expect(adapter.save.mock.calls.at(-1)![0].experience.onboardingStatus).toBe(
       "completed",
     );
+    await vi.advanceTimersByTimeAsync(15 * 60_000 - 15_000);
+    expect(adapter.maintenance).toHaveBeenCalledTimes(1);
   });
 
   it("heartbeats only visible writers and renews immediately on focus and visibility restoration", async () => {
@@ -263,6 +270,7 @@ describe("session durability and browser lifecycle failures", () => {
       kind: "recovered",
       snapshot: {
         runId: crypto.randomUUID(),
+        status: "paused",
         revision: 4,
         rulesetVersion: RULESET_VERSION,
         snapshotVersion: 1,
@@ -270,7 +278,12 @@ describe("session durability and browser lifecycle failures", () => {
         simulation,
         experience: createFreshExperienceState(),
         checksum: "a".repeat(64),
-        savedAt: 1,
+        createdAt: "2026-10-22T12:00:00.000Z",
+        savedAt: "2026-10-22T12:00:00.000Z",
+        abandonedAt: null,
+        writerId: "test-writer",
+        writerEpoch: 1,
+        leaseExpiresAt: 60_000,
       },
     });
     const session = await open(value);
@@ -360,7 +373,7 @@ describe("session durability and browser lifecycle failures", () => {
     browser();
     const { value, adapter } = repository();
     const storage = new Map<string, string>();
-    storage.set("ai-factory-local:writer-id", "duplicated-writer");
+    storage.set("ai-factory:writer-id", "duplicated-writer");
     vi.stubGlobal("sessionStorage", {
       getItem: (key: string) => storage.get(key) ?? null,
       setItem: (key: string, value: string) => storage.set(key, value),
@@ -378,7 +391,7 @@ describe("session durability and browser lifecycle failures", () => {
     expect(request).toHaveBeenCalledTimes(2);
     const writer = adapter.acquireWriter.mock.calls[0][0];
     expect(writer).not.toBe("duplicated-writer");
-    expect(storage.get("ai-factory-local:writer-id")).toBe(writer);
+    expect(storage.get("ai-factory:writer-id")).toBe(writer);
     expect(released).toHaveBeenCalledTimes(1);
     session.close();
     sessions.splice(sessions.indexOf(session), 1);

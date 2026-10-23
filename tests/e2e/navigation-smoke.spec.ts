@@ -19,7 +19,7 @@ test("core tabs render after skipping the tutorial", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Dashboard" }).click();
   await expect(
-    page.getByRole("heading", { name: "AGI Readiness" }),
+    page.getByRole("heading", { name: "Scenario Progress" }),
   ).toBeVisible();
 
   await page.getByRole("tab", { name: "Training" }).click();
