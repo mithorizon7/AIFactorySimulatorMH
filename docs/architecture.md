@@ -22,7 +22,7 @@
 
 Snapshot checksums use SHA-256 over canonical recursively key-sorted JSON containing:
 
-- run ID and revision;
+- run ID, revision, and lifecycle status;
 - ruleset, snapshot, and command-schema versions;
 - complete simulation state;
 - complete experience state.
@@ -30,6 +30,29 @@ Snapshot checksums use SHA-256 over canonical recursively key-sorted JSON contai
 Lease fields and save timestamps are excluded. Visible writers heartbeat every five seconds; leases expire after 60 seconds. Focus/visibility restoration heartbeats immediately. A takeover increments `writerEpoch` and is announced through `BroadcastChannel`; stale epochs cannot overwrite current data. `pagehide` is best effort—debounced command saves are the durability mechanism.
 
 Starting a new run abandons the active run after confirmation and preserves its recovery record according to retention policy. Completed runs are immutable summaries. Personal bests use the composite key `[rulesetVersion, metric]`.
+
+Database `ai-factory`, version 1, contains `runs` (indexes `status`, `savedAt`,
+`rulesetVersion`), `meta`, `recoveryBackups`, `completedSnapshots`,
+`completedRuns`, and `personalBests`. `meta.activeRunId` is updated atomically
+with the run. Canonical checksum keys are `runId`, `revision`, `status`,
+`snapshotVersion`, `rulesetVersion`, `commandSchemaVersion`, `simulationState`,
+and `experienceState`. ISO creation/save/abandonment timestamps, writer identity,
+epoch and lease expiry are metadata outside the hash.
+
+Commands debounce saves for 500 ms; dirty sessions flush every 15 seconds.
+Maintenance every 15 minutes retains three backups per run and at most five
+abandoned runs for 30 days. Completed full snapshots expire after 30 days;
+immutable summaries and independent best references remain. Corrupt or newer
+records remain byte-for-byte exportable rather than being rewritten with
+abandonment metadata. An unsupported database version can be exported through
+a read-only connection without downgrading or recreating it. Historical
+`ai-factory-local` development data is preserved and included in recovery export.
+
+Reload uses a Web Lock to reserve a tab writer identity. Browsers without Web
+Locks use fresh writer identities and explicit takeover. Every acquisition
+increments the epoch, preventing late operations from an older document from
+overwriting or releasing the reloaded document's lease. BFCache restoration
+reacquires and hydrates paused before accepting simulation ticks.
 
 `clock.activeTick` is the only active-time authority. Factual spend must reconcile to six exhaustive categories: compute, data, algorithms, commercial, regulation/resilience, and training. Completed summaries are rejected rather than saved when their time, cash, spend, capacity, or completion invariants do not reconcile.
 
