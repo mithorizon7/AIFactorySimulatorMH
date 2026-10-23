@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+import { renderNonceHtml } from "./csp";
 
 const viteLogger = createLogger();
 
@@ -65,7 +66,10 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
       const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      res
+        .status(200)
+        .set({ "Content-Type": "text/html", "Cache-Control": "no-store" })
+        .end(renderNonceHtml(page, res));
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
@@ -89,24 +93,31 @@ export function serveStatic(app: Express) {
     );
   }
 
+  const template = fs.readFileSync(
+    path.resolve(distPath, "index.html"),
+    "utf8",
+  );
+  const serveHtml: express.RequestHandler = (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.type("html").send(renderNonceHtml(template, res));
+  };
+  // express.static's index:false does not intercept an explicit /index.html.
+  app.get(["/", "/index.html"], serveHtml);
+
+  app.get("/build-meta.json", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.sendFile(path.resolve(distPath, "build-meta.json"));
+  });
   app.use(
-    express.static(distPath, {
-      setHeaders(res, filePath) {
-        if (
-          filePath.endsWith("index.html") ||
-          filePath.endsWith("build-meta.json")
-        ) {
-          res.setHeader("Cache-Control", "no-store");
-        } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        }
+    "/assets",
+    express.static(path.join(distPath, "assets"), {
+      index: false,
+      setHeaders(res) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       },
     }),
   );
 
   // fall through to index.html if the file doesn't exist
-  app.use((_req, res) => {
-    res.setHeader("Cache-Control", "no-store");
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  app.use(serveHtml);
 }

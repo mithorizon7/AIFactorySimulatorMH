@@ -103,7 +103,34 @@ describe("Release A API containment", () => {
       "script-src 'self' 'unsafe-inline'",
     );
     expect(response.headers["content-security-policy"]).not.toContain("ws:");
+    expect(response.headers["content-security-policy"]).not.toContain(
+      "unsafe-inline",
+    );
+    expect(response.headers["content-security-policy"]).toMatch(
+      /style-src 'self' 'nonce-[A-Za-z0-9+/]{32}'/,
+    );
+    expect(response.headers["content-security-policy"]).toContain(
+      "style-src-attr 'none'",
+    );
     expect(response.headers["cache-control"]).toBe("no-store");
+  });
+
+  it("uses a fresh matching nonce for every HTML response and never serves the build placeholder", async () => {
+    const instance = productionStaticApp();
+    const nonces = new Set<string>();
+    for (const url of ["/", "/index.html", "/%69ndex.html", "/journey"]) {
+      const response = await request(instance).get(url);
+      expect(response.status).toBe(200);
+      expect(response.headers["cache-control"]).toBe("no-store");
+      expect(response.text).not.toContain("__AI_FACTORY_REQUEST_NONCE__");
+      const nonce = response.headers["content-security-policy"].match(
+        /'nonce-([A-Za-z0-9+/]{32})'/,
+      )?.[1];
+      expect(nonce).toBeTruthy();
+      expect(response.text).toContain(`nonce="${nonce}"`);
+      nonces.add(nonce!);
+    }
+    expect(nonces.size).toBe(4);
   });
 
   it("selects CSP exceptions from explicit environment input", () => {

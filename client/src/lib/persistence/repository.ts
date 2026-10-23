@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { OUTBOX_STORE } from "@shared/telemetry/contracts";
 import { assertGameStateInvariants } from "@shared/game/normalize";
 import { expectedCash } from "@shared/game/ledger";
 import { buildCompletedRunSummary } from "@shared/game/completed-summary";
@@ -21,6 +22,10 @@ import {
 } from "@shared/version";
 
 export const DATABASE_NAME = "ai-factory";
+// Compatibility checkpoint: create v1, but safely read/write the exact known
+// additive v2 layout. The C activation commit changes creation to v2 only after
+// this rollback-compatible core is preserved as an immutable artifact.
+export const GAME_DATABASE_VERSION = 1;
 export const LEASE_DURATION_MS = 60_000;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const payloadSchema = z
@@ -279,7 +284,10 @@ export class GameRepository {
       throw new Error(
         "Browser storage is unavailable. This run is temporary until storage is restored.",
       );
-    const opening = factory.open(options.name ?? DATABASE_NAME, 1);
+    const opening = factory.open(
+      options.name ?? DATABASE_NAME,
+      GAME_DATABASE_VERSION,
+    );
     opening.onupgradeneeded = () => {
       const db = opening.result;
       // The first schema creates stores only; future migrations must preserve old stores.
@@ -299,21 +307,42 @@ export class GameRepository {
       });
     };
     let blocked = false;
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      opening.onsuccess = () => {
-        if (blocked) opening.result.close();
-        else resolve(opening.result);
-      };
-      opening.onerror = () => reject(opening.error);
-      opening.onblocked = () => {
-        blocked = true;
-        reject(
-          new Error(
-            "Storage upgrade blocked by another tab. Close the older tab and retry.",
-          ),
+    let db: IDBDatabase;
+    try {
+      db = await new Promise<IDBDatabase>((resolve, reject) => {
+        opening.onsuccess = () => {
+          if (blocked) opening.result.close();
+          else resolve(opening.result);
+        };
+        opening.onerror = () => reject(opening.error);
+        opening.onblocked = () => {
+          blocked = true;
+          reject(
+            new Error(
+              "Storage upgrade blocked by another tab. Close the older tab and retry.",
+            ),
+          );
+        };
+      });
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== "VersionError")
+        throw error;
+      const existing = factory.open(options.name ?? DATABASE_NAME);
+      existing.onupgradeneeded = () => existing.transaction?.abort();
+      db = await new Promise<IDBDatabase>((resolve, reject) => {
+        existing.onsuccess = () => resolve(existing.result);
+        existing.onerror = () => reject(existing.error);
+        existing.onblocked = () =>
+          reject(new Error("Close other tabs before opening storage."));
+      });
+      if (!isKnownAdditiveV2(db)) {
+        db.close();
+        throw new DOMException(
+          "Unknown future storage layout; export it before changing versions.",
+          "VersionError",
         );
-      };
-    });
+      }
+    }
     db.onversionchange = () => db.close();
     const repository = new GameRepository(db, options.now ?? Date.now);
     await repository.maintenance();
@@ -782,4 +811,47 @@ export class GameRepository {
         completedSnapshots.delete(row.runId);
     await done;
   }
+}
+
+/** Strict layout recognition, never an attempted downgrade or record rewrite. */
+function isKnownAdditiveV2(db: IDBDatabase): boolean {
+  if (db.version !== 2) return false;
+  const expected: Record<
+    string,
+    { key: string | string[]; indexes: string[] }
+  > = {
+    runs: { key: "runId", indexes: ["status", "savedAt", "rulesetVersion"] },
+    recoveryBackups: { key: "backupId", indexes: ["runId", "createdAt"] },
+    meta: { key: "key", indexes: [] },
+    completedRuns: { key: "runId", indexes: [] },
+    completedSnapshots: { key: "runId", indexes: [] },
+    personalBests: { key: ["rulesetVersion", "metric"], indexes: [] },
+    [OUTBOX_STORE]: {
+      key: "event.eventId",
+      indexes: ["queuedAt", "nextAttemptAt"],
+    },
+  };
+  const names = Array.from(db.objectStoreNames);
+  if (
+    JSON.stringify(names.sort()) !==
+    JSON.stringify(Object.keys(expected).sort())
+  )
+    return false;
+  const tx = db.transaction(names, "readonly");
+  return names.every((name) => {
+    const store = tx.objectStore(name);
+    const specification = expected[name];
+    return (
+      !store.autoIncrement &&
+      JSON.stringify(store.keyPath) === JSON.stringify(specification.key) &&
+      JSON.stringify(Array.from(store.indexNames).sort()) ===
+        JSON.stringify([...specification.indexes].sort()) &&
+      specification.indexes.every((indexName) => {
+        const index = store.index(indexName);
+        return (
+          index.keyPath === indexName && !index.unique && !index.multiEntry
+        );
+      })
+    );
+  });
 }
