@@ -138,6 +138,7 @@ describe("production release builder executable contract", () => {
     const result = await run();
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("clean");
+    expect(result.stderr).toContain("source.txt");
     expect(result.calls).toEqual([]);
   });
 
@@ -149,6 +150,7 @@ describe("production release builder executable contract", () => {
     );
     const result = await run();
     expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("untracked-source.js");
     expect(result.calls).toEqual([]);
   });
 

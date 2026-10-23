@@ -13,7 +13,9 @@ const dirty = execFileSync(
   options,
 ).trim();
 if (dirty)
-  throw new Error("Release builds require a clean source tree.");
+  throw new Error(
+    `Release builds require a clean source tree. Git status: ${JSON.stringify(dirty)}`,
+  );
 for (const name of ["BUILD_SHA", "EXPECTED_BUILD_SHA"]) {
   if (process.env[name] && process.env[name] !== sha) {
     throw new Error(`${name} must match the checked-out revision.`);

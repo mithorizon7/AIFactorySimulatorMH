@@ -59,3 +59,21 @@ deployment, the integration owner must verify the actual provider settings:
 ## Evidence packet
 
 Record the local commit, upstream commit, CI run, deployment ID, served SHA/version response, synthetic canary output, browser screenshots, console/CSP/axe results, dependency audits, and any accepted risks. Keep each truth layer distinct.
+
+## Replit build pre-step compatibility
+
+The first production attempt for merged `07d75ea` failed before compilation:
+the workspace acquired a Python tooling module entry and the clean-tree guard
+rejected the uncommitted configuration. The exact triggering actor is unverified;
+the previous production app remained serving.
+The Python module supports the standard-library security inspection helper;
+application build/start remain exclusively on the verified Node wrapper.
+
+Declare that tooling module in reviewed configuration and disable package import
+guessing and hosting-time automatic installation explicitly. These controls are
+documented in [Replit configuration](https://docs.replit.com/features/project-setup/configuration)
+and [dependency management](https://docs.replit.com/features/project-setup/dependency-management).
+They do not prove the platform will skip all pre-steps: inspect actual publish
+logs. The release wrapper still requires an entirely clean source tree and runs
+its own lockfile install without lifecycle scripts. Dirty filenames are included
+in failure diagnostics; no file contents or environment values are printed.
