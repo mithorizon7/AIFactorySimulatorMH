@@ -23,9 +23,11 @@ permission or play. Do not infer permission for one dataset from another.
 ## Withdrawal, practiced with synthetic records first
 
 1. The approved external study system creates a cryptographically random code,
-   gives it privately to the participant and stores a one-way verifier separately
-   from answers. Do not use names, dates, email fragments or game run IDs as codes.
-   The exact code/verifier and custody implementation requires owner review.
+   gives it privately to the participant and stores only its SHA-256 verifier in
+   the restricted research record. Never store the raw code in the app, logs or
+   telemetry. Do not derive codes from names, dates, email fragments or run IDs.
+   A proposed generator compatible with the frozen operator contract is below;
+   external custody/participant delivery still requires owner review.
 2. The participant submits only the code through the approved private contact
    route. The custodian verifies it without asking for unrelated identity data.
    Keep the request out of GitHub, public chat, application logs and telemetry.
@@ -48,6 +50,40 @@ activation. Do not invent an operational service level from this draft. A lost
 code may make anonymous records impossible to locate; explain that limit before
 consent without collecting extra identity to work around it.
 
+## High-entropy code and operator boundary
+
+Proposed generator for the approved external custodian process, not the app or
+canary. This example is not executed by preparing this document:
+
+```js
+import { randomBytes, createHash } from "node:crypto";
+const withdrawalCode = randomBytes(32).toString("base64url"); // 256 random bits
+const withdrawalHash = createHash("sha256")
+  .update(withdrawalCode)
+  .digest("hex");
+// Deliver withdrawalCode only through the approved private participant route.
+// Store withdrawalHash in the restricted record. Never log either value here.
+```
+
+The 43-character random code satisfies the frozen 32–128-character base64url
+operator contract without embedding any identity. No names, emails or birthdays
+are collected to generate or recover it. There is no name-based lookup fallback.
+
+Root's separate reviewed manager is `scripts/manage-pilot-data.ts`, exposed after
+integration as `npm run data:manage -- migrate|retention|withdraw`. All operations
+default to dry-run. `migrate --apply` needs explicit DDL authority; retention or
+withdrawal deletion additionally needs `--apply --confirm-delete-expired` after
+reviewing exact dry-run counts and deletion authorization. The flag name is also
+used for withdrawal; it does not mean only expired rows are selected there.
+
+The manager takes process-only `PILOT_DATA_OPERATOR_URL` and, for withdrawal,
+`PILOT_WITHDRAWAL_CODE`; no legacy shared database-key fallback is allowed. Never
+paste their values into shell history, repository files, shared app secrets or
+CI logs. The CLI's counts and transaction do not establish named-researcher
+credential lifecycle, external export deletion, backup expiry or provider access.
+This lane did not run database operations or apply the migration in production.
+The `pilot-v1` study remains inactive until independent authorization and evidence.
+
 ## Retention and access rehearsal evidence
 
 Use synthetic records only, with a test clock or already-expired synthetic dates;
@@ -59,7 +95,7 @@ never shorten real retention by changing production clocks. Prove at least:
   attributable, with revocation demonstrated outside the app runtime.
 - General events reject raw answer/identity/free-text fields. Study ingestion is
   disabled without explicit permission and correct restricted role bindings.
-  -90-day event and 180-day raw-research expiry delete the intended synthetic rows
+- 90-day event and 180-day raw-research expiry delete the intended synthetic rows
   and leave newer/control records intact. Consent mapping follows the approved
   policy. Deletion job failure alerts without falsely reporting success.
 - Code withdrawal removes the right synthetic records and exports without

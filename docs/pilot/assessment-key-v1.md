@@ -1,4 +1,4 @@
-# Facilitator key — pilot-assessment-1
+# Facilitator key — pilot-v1
 
 Matches [participant questions](assessment-v1.md) exactly. Freeze before a cohort;
 never change the key after seeing results. Do not give answer feedback between
@@ -12,10 +12,13 @@ pre and post. A version change starts a separately reported instrument group.
 | Q4       | D              | GNT-5–7 are fictional/speculative; no real AGI, IQ or forecast claim follows.                    |
 | Q5       | B              | Historical research supports bounded claims, not invented game prices, timing or returns.        |
 
-Award 1 point per exact correct choice,0 for incorrect or skipped; total 0–5. Keep
-skipped-item counts separately so missingness is visible. No partial credit,
-free-text inference, changed denominator or retroactive recoding. Record only
-question IDs and selected letters/skip in the restricted study system. Never
+For a complete assessment, award 1 point per exact correct choice and 0 for an
+incorrect choice; total 0–5. A participant may always skip or stop. Incomplete
+assessments are not submitted to the strict five-letter study payload and do not
+emit `assessment_completed` or an aggregate correctness event. Record only that
+the assessment was incomplete/skipped in the separately consented rubric; never
+invent a selected letter or convert missingness into a zero score. No partial
+credit, free-text inference, changed denominator or retroactive recoding. Never
 send selected letters or question text to general telemetry.
 
 For paired results, compare only participants with both pre and post scores.

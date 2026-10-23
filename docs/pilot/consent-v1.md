@@ -1,4 +1,4 @@
-# Pilot participant notice — pilot-consent-1
+# Pilot participant notice — pilot-consent-v1
 
 Draft for research-owner review. Collection is disabled. Do not recruit or ask
 anyone to sign this draft until the owner supplies an accessible contact channel,

@@ -12,10 +12,10 @@ issue tracker, Actions artifacts, application logs, or general telemetry.
 ## Frozen operating package
 
 - [Participant notice and assent/permission boundaries](pilot/consent-v1.md),
-  revision `pilot-consent-1`.
+  revision `pilot-consent-v1`.
 - [Five-question participant assessment](pilot/assessment-v1.md) and
   [facilitator answer key](pilot/assessment-key-v1.md), revision
-  `pilot-assessment-1`. Same five questions before and after; no answer feedback
+  `pilot-v1`. Same five questions before and after; no answer feedback
   until post-assessment is complete. This is an unvalidated formative instrument.
 - [Exact tasks, timing and observation rubric](pilot/tasks-rubric-v1.md),
   revision `pilot-tasks-1`.
@@ -25,6 +25,13 @@ issue tracker, Actions artifacts, application logs, or general telemetry.
   Blank means not collected, never zero or passed.
 - [Production canary operations](pilot/canary-operations.md) and
   [verified external capability gaps](pilot/provider-capability-gaps.md).
+
+Frozen backend identity: `studyId: pilot-v1`, `assessmentVersion: pilot-v1`,
+`consentVersion: pilot-consent-v1`. The study registry starts inactive. The
+submission contract requires all five selected A/B/C/D answers; skipped or
+incomplete assessments are not submitted and do not emit `assessment_completed`.
+Record their missingness separately in the consented observation rubric. Never
+invent a letter to satisfy the payload, and never prevent a participant skipping.
 
 Changing an assessment question, key, task prompt or scoring rule requires a new
 revision before the next cohort. Retain the old version, record deviations, and

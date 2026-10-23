@@ -70,6 +70,19 @@ export function classifyCanary(core, browser, telemetry) {
   return { status: "healthy", exitCode: 0, rollback: "none" };
 }
 
+export function normalizeTelemetryStatus(value) {
+  return [
+    "not_configured",
+    "ready",
+    "degraded",
+    "healthy",
+    "ok",
+    "disabled",
+  ].includes(value)
+    ? value
+    : "unknown";
+}
+
 export function childEnvironment(env, configuration, reportPath) {
   const permitted = ["PATH", "HOME", "TMPDIR", "PLAYWRIGHT_BROWSERS_PATH"];
   return {

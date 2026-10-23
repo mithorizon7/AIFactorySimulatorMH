@@ -61,7 +61,7 @@ Telemetry status separately: ____; no telemetry-only rollback: ____.
 Record observed runs spanning at least 30 minutes and every gap/error, with a named
 operator watching results and checking stale/missing samples. Scheduled dispatch
 or elapsed wall time alone is not 30 minutes of observed canary health. GitHub's
-best-effort 30-minute schedule is not sufficient by itself for continuous release
+best-effort 10-minute schedule is not sufficient by itself for continuous release
 observation; use a supervised bounded sequence and record its actual cadence.
 Core rollback thresholds are in [operations](canary-operations.md); raw hosting
 metrics are unavailable unless separately evidenced.

@@ -6,6 +6,7 @@ import {
   childEnvironment,
   classifyCanary,
   readCanaryConfiguration,
+  normalizeTelemetryStatus,
   verifyCoreResponses,
 } from "../../../scripts/canary-policy.mjs";
 import CanaryReporter from "../../../scripts/canary-reporter.mjs";
@@ -152,6 +153,17 @@ describe("production canary safety and evidence policy", () => {
     );
   });
 
+  it("recognizes the frozen C ready telemetry contract without a false outage", () => {
+    expect(normalizeTelemetryStatus("ready")).toBe("ready");
+    expect(
+      classifyCanary(healthyCore, "passed", normalizeTelemetryStatus("ready"))
+        .status,
+    ).toBe("healthy");
+    expect(normalizeTelemetryStatus({ privateData: "not emitted" })).toBe(
+      "unknown",
+    );
+  });
+
   it("does not pass arbitrary inherited secrets or Actions tokens to the browser child", () => {
     const env = childEnvironment(
       {
@@ -225,7 +237,7 @@ describe("production canary safety and evidence policy", () => {
   it("uses an opt-in read-only schedule and no private evidence uploads or local server", () => {
     const workflow = source(".github/workflows/production-canary.yml");
     expect(workflow).toContain("vars.PRODUCTION_CANARY_ENABLED == 'true'");
-    expect(workflow).toContain('cron: "17,47 * * * *"');
+    expect(workflow).toContain('cron: "7,17,27,37,47,57 * * * *"');
     expect(workflow).toContain("contents: read");
     expect(workflow).not.toMatch(
       /upload-artifact|issues:\s*write|contents:\s*write|github\.sha/,
@@ -260,6 +272,14 @@ describe("production canary safety and evidence policy", () => {
     );
     expect(source("docs/pilot/evidence-template.md")).toContain(
       "Status: NOT COLLECTED",
+    );
+    expect(source("docs/pilot-operations.md")).toContain("`studyId: pilot-v1`");
+    expect(source("docs/pilot-operations.md")).toContain(
+      "`consentVersion: pilot-consent-v1`",
+    );
+    expect(key).toContain("Incomplete");
+    expect(source("docs/pilot/data-boundaries-and-withdrawal.md")).toContain(
+      "randomBytes(32)",
     );
   });
 });

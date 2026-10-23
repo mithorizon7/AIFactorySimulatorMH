@@ -1,9 +1,10 @@
-# Five-question assessment — pilot-assessment-1
+# Five-question assessment — pilot-v1
 
 Frozen draft,2026-10-23. An unvalidated formative instrument, not an intelligence
 test or proof of learning. Give the same questions before and after the session.
-Choose one answer per question; "skip" is always allowed. Do not enter your name
-or free text. Collection remains disabled until the approved study opens.
+Choose one answer per question; "skip" is always allowed. A skipped/incomplete
+assessment is not submitted or scored as a completed assessment. Do not enter
+your name or free text. Collection remains disabled until the approved study opens.
 
 ## Q1 — Choosing an investment
 

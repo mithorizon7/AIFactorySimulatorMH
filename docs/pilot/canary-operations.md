@@ -24,7 +24,8 @@ document the resulting blind interval. The runner verifies health/readiness and
 full API/build-metadata identity before gameplay and rechecks identity afterward,
 so a deployment switch during the run fails rather than mixing artifacts.
 
-The workflow runs on the default branch at minute 17 and 47 UTC and supports manual
+The workflow runs on the default branch every ten minutes at minutes
+7, 17, 27, 37, 47 and 57 UTC and supports manual
 dispatch. GitHub schedules may be delayed or dropped; public inactive repos can
 have schedules disabled after 60 days. This is best effort, not an SLA or a
 substitute for an external uptime monitor. Assign an operator to inspect last

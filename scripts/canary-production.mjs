@@ -6,6 +6,7 @@ import {
   childEnvironment,
   classifyCanary,
   readCanaryConfiguration,
+  normalizeTelemetryStatus,
   verifyCoreResponses,
 } from "./canary-policy.mjs";
 
@@ -41,15 +42,7 @@ try {
     ]);
     core = verifyCoreResponses(configuration, health, ready, version, metadata);
     const value = ready?.data?.telemetry;
-    telemetry = [
-      "degraded",
-      "healthy",
-      "ok",
-      "not_configured",
-      "disabled",
-    ].includes(value)
-      ? value
-      : "unknown";
+    telemetry = normalizeTelemetryStatus(value);
     if (Object.values(core).every(Boolean)) {
       const browserPath = path.join(directory, `browser-${randomUUID()}.json`);
       const child = spawnSync(
