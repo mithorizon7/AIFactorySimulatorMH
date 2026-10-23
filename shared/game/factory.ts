@@ -1,5 +1,9 @@
 import { createInitialGameState } from "./domain/gameState";
-import { isSupportedRuleset, SNAPSHOT_VERSION, type RulesetVersion } from "../version";
+import {
+  isSupportedRuleset,
+  SNAPSHOT_VERSION,
+  type RulesetVersion,
+} from "../version";
 import { gameStateSchema, type GameStateV2 } from "./schemas/state";
 
 export interface FreshGameStateOptions {

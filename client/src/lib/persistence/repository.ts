@@ -35,10 +35,13 @@ const payloadSchema = z
     experience: experienceStateSchema,
   })
   .strict()
-  .refine((payload) => payload.rulesetVersion === payload.simulation.rulesetVersion, {
-    message: "Snapshot header and simulation ruleset must match",
-    path: ["rulesetVersion"],
-  });
+  .refine(
+    (payload) => payload.rulesetVersion === payload.simulation.rulesetVersion,
+    {
+      message: "Snapshot header and simulation ruleset must match",
+      path: ["rulesetVersion"],
+    },
+  );
 export type SnapshotPayload = z.infer<typeof payloadSchema>;
 export type Snapshot = SnapshotPayload & {
   checksum: string;

@@ -15,7 +15,10 @@ import {
 } from "@shared/experience/schemas";
 import { GameSession, type SessionSnapshot } from "@/lib/persistence/session";
 import { createFreshGameState } from "@shared/game/factory";
-import type { GameCommand, GameCommandIntent } from "@shared/game/schemas/commands";
+import type {
+  GameCommand,
+  GameCommandIntent,
+} from "@shared/game/schemas/commands";
 import type { EngineEffect } from "@shared/game/schemas/effects";
 import type { EngineResult, GameStateV2 } from "@shared/game/schemas/state";
 import type { CompletedRunSummaryV1 } from "@shared/game/schemas/completedRuns";
@@ -683,12 +686,14 @@ export function useGameEngine() {
   return {
     sessionSnapshot,
     simulation,
-    dispatchIntent: (intent: GameCommandIntent) => issueCommand(intent.type, intent.payload),
-    dismissWelcome: () => applyExperience({
-      experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
-      type: "DISMISS_WELCOME",
-      payload: {},
-    }),
+    dispatchIntent: (intent: GameCommandIntent) =>
+      issueCommand(intent.type, intent.payload),
+    dismissWelcome: () =>
+      applyExperience({
+        experienceSchemaVersion: EXPERIENCE_SCHEMA_VERSION,
+        type: "DISMISS_WELCOME",
+        payload: {},
+      }),
     isLifecycleTransition: isLifecycleTransition || controllerTransitioning,
     sessionError:
       openingError ?? completionError ?? sessionSnapshot?.error ?? null,

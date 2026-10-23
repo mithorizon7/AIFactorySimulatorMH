@@ -17,11 +17,13 @@ const commandBase = {
 };
 
 export const experienceCommandSchema = z.discriminatedUnion("type", [
-  z.object({
-    ...commandBase,
-    type: z.literal("DISMISS_WELCOME"),
-    payload: z.object({}).strict(),
-  }).strict(),
+  z
+    .object({
+      ...commandBase,
+      type: z.literal("DISMISS_WELCOME"),
+      payload: z.object({}).strict(),
+    })
+    .strict(),
   z
     .object({
       ...commandBase,

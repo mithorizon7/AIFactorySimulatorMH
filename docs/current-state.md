@@ -1,16 +1,20 @@
 # Current State
 
-Verified execution base: `f5d65d7` from freshly fetched `origin/main` on 2026-10-22. The audited deterministic-engine candidate was restored into `codex/three-release-execution-20261022`, preserving the newer upstream Node bootstrap, Tailwind 4 security migration, and historical security evidence.
+Release A is deployed and independently verified as of 2026-10-23. Both
+https://aifactorysimulation.com and https://ai-factory-mithorizon.replit.app serve
+`8902ed9062b71afc9dc47cdc8b7207bb64aa6496` on Node 22.23.4, ruleset `release-a.1`.
+The preserved execution record distinguishes historical source snapshots,
+subsequent non-runtime Git maintenance, provider builds and served revisions.
 
-## Delivery security status — 2026-10-22
+## Delivery security status — 2026-10-23
 
-- `origin/main` has advanced to `f5d65d7`. The historical `c372658` security audit
-  is retained as evidence of the earlier state, rather than current remote truth.
-- The currently served artifact is being verified independently by the integration
-  owner. Local security tests do not establish the deployed revision.
-- Treat deployment as blocked until the contained revision is pushed, built on
-  patched Node 22.23.4+, and independently verified with `/api/version`, the
-  retired-endpoint probes, and the synthetic browser canary.
+- The historical `c372658` security audit is retained as earlier-state evidence,
+  not current remote or production truth.
+- The production artifact passed exact serving-SHA, retired-endpoint, enforced
+  CSP/HSTS, keyboard/axe and browser startup/save/resume/completion checks.
+- No credential compromise was established by the repository audit. Historical
+  host exposure, provider trust stores/kernel, log retention and backup policy
+  remain evidence gaps, not a declaration of safety.
 
 See [the security audit and local remediation record](security-audit-2026-10-22.md).
 
@@ -28,7 +32,11 @@ See [the security audit and local remediation record](security-audit-2026-10-22.
 2. **Release B — Better Game:** strategic era dilemmas, balance simulator, onboarding/Journey redesign, debrief, claim governance, and calibrated scoring/profiles.
 3. **Release C — Validated Pilot:** accessibility completion, privacy-separated telemetry/research, formative playtests, performance, monitoring, and deployment evidence.
 
-Release B remains blocked until Release A is deployed and independently verified. Release C remains blocked until Release B meets the same stop gate.
+Release A's external stop gate passed. Release B is now in progress; Release C
+remains blocked until B meets the same independently verified production gate.
+Existing A runs retain A rules; B will not silently reinterpret their saves.
+Unvalidated normative scores and named strategy profiles remain omitted, with
+independent algorithm/classifier versions explicitly null.
 
 ## Containment already established
 
@@ -38,6 +46,9 @@ Release B remains blocked until Release A is deployed and independently verified
 - Production uses enforced CSP and does not permit inline/eval scripts.
 - The unused database/auth/query/chart stack was removed; application persistence
   uses IndexedDB with canonical snapshots, epoch-fenced writers, immutable
-  completed summaries, and recovery/export. Production verification is pending.
+  completed summaries, and recovery/export. Production verification passed.
+
+See [current delivery evidence and rollback](end-to-end-delivery.md) and the
+[immutable Release A release](https://github.com/mithorizon7/AIFactorySimulatorMH/releases/tag/release-a-2026-10-23).
 
 The living execution record is [the three-release production checklist](ai-factory-three-release-execution-production-checklist.md).

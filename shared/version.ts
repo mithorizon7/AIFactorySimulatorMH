@@ -1,4 +1,7 @@
-export const SUPPORTED_RULESET_VERSIONS = ["release-a.1", "release-b.1"] as const;
+export const SUPPORTED_RULESET_VERSIONS = [
+  "release-a.1",
+  "release-b.1",
+] as const;
 export type RulesetVersion = (typeof SUPPORTED_RULESET_VERSIONS)[number];
 export const LEGACY_RULESET_VERSION = "release-a.1" as const;
 // Promote only after the separately verified Release B integration gate.

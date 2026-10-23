@@ -171,6 +171,11 @@ The historical evidence below remains dated evidence, not current runtime truth.
 
 ## Change Log
 
+- 2026-10-23: Release A production stop gate closed independently at served SHA
+  `8902ed9062b71afc9dc47cdc8b7207bb64aa6496`. Historical July entries above remain
+  unchanged as a work log, not current status. Current authoritative completion,
+  Git/build/HTTP/browser evidence and rollback artifacts are recorded in
+  [end-to-end-delivery.md](end-to-end-delivery.md). Release B unblocked; C gated.
 - 2026-07-10T01:22:38: Checklist initialized.
 - 2026-07-10T01:25:35-06:00: Recorded frozen scope, release stop gates, known P0/P1 findings, fixes, validation matrix, and fresh baseline outcomes after upstream synchronization.
 - 2026-07-10T01:32:00-06:00: Retired global save/leaderboard/ranking APIs, removed leaderboard client behavior, stabilized request IDs/log envelopes, added nullable version identity, and passed focused containment E2E.
