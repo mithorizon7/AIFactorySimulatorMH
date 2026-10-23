@@ -35,10 +35,14 @@ time from the task's stated start. Do not invent observations from telemetry.
 Proposed formative gates (15-session cohort):
 
 - At least 13/15 start within 90 seconds without facilitator instructions.
-- At least 12/15 correctly identify their next training blocker without help.
-- At least 13/15 resume the same run after reload without apparent loss.
-- At least 12/15 complete and explain one resource tradeoff in their own words.
-- Zero observed data-loss events or keyboard-blocking critical paths.
+- At least 12/15 complete their first training.
+- At least 9/15 finish in 20–35 minutes.
+- At most 1/15 is stuck without a valid action for more than two minutes.
+- At least 10/15 improve on the five-question assessment.
+- At least 12/15 answer four or more post-run questions correctly.
+- At least 12/15 rate enjoyment four or five out of five.
+- At least 5/15 voluntarily replay or request replay.
+- Zero corrupted saves or unrecoverable soft locks.
 - All serious accessibility failures receive a fix and affected retest.
 
 Treat these gates as investigation triggers and report every observed failure,
@@ -61,9 +65,10 @@ timestamps rather than trusting the client clock.
 Raw answers belong to a separate consented study dataset with a distinct access
 role and pseudonymous study ID. Keep consent/contact mapping separately from
 responses. Never write either to general telemetry events or application logs.
-Default raw-response retention: 30 days after cohort review, then verified
-deletion; retain only approved deidentified findings. The study owner must
-approve any longer retention and include it in the consent notice.
+Raw responses expire after 180 days as specified in the frozen roadmap, then
+require verified deletion; retain only approved deidentified aggregates. The
+consent notice must state this limit. Keep raw responses in a separate research
+schema with separate study-submission and researcher access boundaries.
 
 ## Evidence packet and closeout
 
