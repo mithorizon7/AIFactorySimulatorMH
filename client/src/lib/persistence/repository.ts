@@ -14,7 +14,8 @@ import {
   type PersonalBestRecordV1,
 } from "@shared/game/schemas/completedRuns";
 import {
-  RULESET_VERSION,
+  SUPPORTED_RULESET_VERSIONS,
+  isSupportedRuleset,
   SNAPSHOT_VERSION,
   COMMAND_SCHEMA_VERSION,
 } from "@shared/version";
@@ -27,13 +28,17 @@ const payloadSchema = z
     runId: z.string().uuid(),
     revision: z.number().int().nonnegative(),
     status: z.enum(["active", "paused", "completed", "abandoned"]),
-    rulesetVersion: z.literal(RULESET_VERSION),
+    rulesetVersion: z.enum(SUPPORTED_RULESET_VERSIONS),
     snapshotVersion: z.literal(SNAPSHOT_VERSION),
     commandSchemaVersion: z.literal(COMMAND_SCHEMA_VERSION),
     simulation: gameStateSchema,
     experience: experienceStateSchema,
   })
-  .strict();
+  .strict()
+  .refine((payload) => payload.rulesetVersion === payload.simulation.rulesetVersion, {
+    message: "Snapshot header and simulation ruleset must match",
+    path: ["rulesetVersion"],
+  });
 export type SnapshotPayload = z.infer<typeof payloadSchema>;
 export type Snapshot = SnapshotPayload & {
   checksum: string;
@@ -146,7 +151,7 @@ export function snapshotPayload(
     runId,
     revision,
     status,
-    rulesetVersion: RULESET_VERSION,
+    rulesetVersion: simulation.rulesetVersion,
     snapshotVersion: SNAPSHOT_VERSION,
     commandSchemaVersion: COMMAND_SCHEMA_VERSION,
     simulation,
@@ -335,7 +340,7 @@ export class GameRepository {
       raw &&
       (raw.snapshotVersion !== SNAPSHOT_VERSION ||
         raw.commandSchemaVersion !== COMMAND_SCHEMA_VERSION ||
-        raw.rulesetVersion !== RULESET_VERSION)
+        !isSupportedRuleset(raw.rulesetVersion))
     )
       return { kind: "unsupported" };
     for (const backup of backups

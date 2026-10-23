@@ -1,9 +1,9 @@
 import { createInitialGameState } from "./domain/gameState";
-import { RULESET_VERSION, SNAPSHOT_VERSION } from "../version";
+import { isSupportedRuleset, SNAPSHOT_VERSION, type RulesetVersion } from "../version";
 import { gameStateSchema, type GameStateV2 } from "./schemas/state";
 
 export interface FreshGameStateOptions {
-  ruleset: typeof RULESET_VERSION;
+  ruleset: RulesetVersion;
   seed: number;
 }
 
@@ -26,7 +26,7 @@ export function createFreshGameState({
   ruleset,
   seed,
 }: FreshGameStateOptions): GameStateV2 {
-  if (ruleset !== RULESET_VERSION) {
+  if (!isSupportedRuleset(ruleset)) {
     throw new RangeError(`Unsupported ruleset: ${ruleset}`);
   }
 
@@ -43,7 +43,7 @@ export function createFreshGameState({
 
   return gameStateSchema.parse({
     ...simulation,
-    rulesetVersion: RULESET_VERSION,
+    rulesetVersion: ruleset,
     snapshotSchemaVersion: SNAPSHOT_VERSION,
     computeCapacity: {
       ...simulation.computeCapacity,

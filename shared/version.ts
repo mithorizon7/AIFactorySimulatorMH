@@ -1,4 +1,11 @@
-export const RULESET_VERSION = "release-a.1";
+export const SUPPORTED_RULESET_VERSIONS = ["release-a.1", "release-b.1"] as const;
+export type RulesetVersion = (typeof SUPPORTED_RULESET_VERSIONS)[number];
+export const LEGACY_RULESET_VERSION = "release-a.1" as const;
+// Promote only after the separately verified Release B integration gate.
+export const RULESET_VERSION: RulesetVersion = LEGACY_RULESET_VERSION;
+export function isSupportedRuleset(value: unknown): value is RulesetVersion {
+  return SUPPORTED_RULESET_VERSIONS.some((version) => version === value);
+}
 export const SNAPSHOT_VERSION = 1;
 export const COMMAND_SCHEMA_VERSION = 1;
 export const COMPLETED_RUN_SUMMARY_SCHEMA_VERSION = 1;
@@ -11,6 +18,8 @@ export interface VersionInfo {
   commandSchemaVersion: number;
   completedRunSummarySchemaVersion: number;
   personalBestSchemaVersion: number;
+  scoreAlgorithmVersion: string | null;
+  profileClassifierVersion: string | null;
   migrationVersion: string | null;
 }
 
@@ -25,6 +34,8 @@ export function getVersionInfo(
     commandSchemaVersion: COMMAND_SCHEMA_VERSION,
     completedRunSummarySchemaVersion: COMPLETED_RUN_SUMMARY_SCHEMA_VERSION,
     personalBestSchemaVersion: PERSONAL_BEST_SCHEMA_VERSION,
+    scoreAlgorithmVersion: null,
+    profileClassifierVersion: null,
     migrationVersion,
   };
 }
