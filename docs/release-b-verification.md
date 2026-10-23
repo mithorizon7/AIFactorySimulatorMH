@@ -2,15 +2,18 @@
 
 ## Status and scope
 
-The integrated application at `e2e9172b6707aae85fb37d949239c7169d23fa27`
-passes the local Release B acceptance gates. This records implementation and
-local verification, not a merge, deployment, served revision, or learner study.
-Subsequent documentation-only delivery commits do not change the compiled game.
+The integrated application first passed local gates at
+`e2e9172b6707aae85fb37d949239c7169d23fa27`. The final served merge is
+`fadcea8391a31163c004682d83ea76035404b115`, tag `release-b-2026-10-23`.
+Required PR CI and complete exact-merge main CI attempt2 passed. Root's live
+browser suite passed19/19; fresh verification passed16/16 focused browser checks
+and two actual process restarts across both origins. This is production evidence,
+not participant validation. See [the closure record](end-to-end-delivery.md).
 
-Release A remains the independently verified production artifact until B is
-explicitly published and checked. The integration owner must record the merged
-revision, successful provider build, both public-origin identities, browser
-canaries, and cold production LCP separately in the delivery record.
+Release A is retained as the prior accepted rollback. B's immutable provider
+build, identities, browser canaries and cold public LCP are recorded separately
+from source-only evidence. Detailed artifacts remain private unless public
+disclosure is separately authorized.
 
 ## Behavioral evidence
 
@@ -110,3 +113,9 @@ fresh matrix rows) in 199.49 seconds. Its command still exited nonzero because
 running only that file cannot satisfy the unchanged whole-application 80%
 coverage floors. Those floors were not disabled; a complete 451-test coverage
 run and the new complete CI candidate remain the acceptance checks.
+
+The subsequent complete local run passed451/451 in204.02 seconds with unchanged
+coverage percentages. Complete PR CI39911334623 passed before merge. Exact-merge
+main CI39912618225 attempt1 stalled without an available job log; its metadata
+was retained and the job cancelled. Complete same-SHA attempt2 passed every gate,
+job completed2026-10-23T07:22:35Z. No root cause is invented for the first stall.
