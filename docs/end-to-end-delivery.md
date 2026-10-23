@@ -41,9 +41,9 @@ Participant evidence is a separate gate and cannot be synthesized.
 - [x] A4 Factual scorecard and independent per-metric bests verified.
 - [x] A5 CI, audits, CSP, keyboard/axe, bundle/LCP floors verified.
 - [x] A6 PR merged, Replit deployed, exact serving SHA and browser canary verified.
-- [ ] B1 Strategic dilemmas and scripted simulator calibration implemented.
-- [ ] B2 Onboarding/Journey/debrief and educational claim labels implemented.
-- [ ] B3 Simulator-backed factual debrief implemented; normative scores/profiles
+- [x] B1 Strategic dilemmas and scripted simulator calibration implemented locally.
+- [x] B2 Onboarding/Journey/debrief and educational claim labels implemented locally.
+- [x] B3 Simulator-backed factual debrief implemented locally; normative scores/profiles
       remain omitted until calibration and actual learner-comprehension evidence pass.
 - [ ] B4 Release regression gates passed, merged, deployed and verified.
 - [ ] C1 Accessibility and performance completion verified.
@@ -91,8 +91,11 @@ The stable deployment ID is not an immutable build identity.
   merged a test-harness-only correction at `a37d0fab31b08766dc7a945fff84f9a7b1ebdf17`.
   It is committed/pushed/merged, not a new deployed application revision.
 
-Release B is now in progress in isolated balance, content and experience lanes;
-the integration owner alone owns shared contracts, delivery and production.
+Release B is integrated and locally verified at `e2e9172b6707aae85fb37d949239c7169d23fa27`:
+227 behavioral tests, 19 development and 19 production-mode browser tests passed.
+See [the integrated B evidence](release-b-verification.md). Its merge, deployment
+and independent public-origin verification remain pending. The integration owner
+alone owns shared contracts, delivery and production.
 Release C remains gated on independently verified Release B production evidence.
 Provider host/kernel/trust-store attestation, historical log coverage and actual
 backup/PITR policy remain unverified; local application tests do not close them.

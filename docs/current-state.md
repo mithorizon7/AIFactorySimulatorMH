@@ -23,16 +23,17 @@ See [the security audit and local remediation record](security-audit-2026-10-22.
 - One anonymous player can complete one reliable GNT-2 to GNT-7 run.
 - The simulation is learning-first, not a verified competition product.
 - Persistence is local-first. No account system is planned in the three-release program.
-- Release A reports factual outcomes only. Subjective 0–100 scores and strategy profiles belong to simulator-calibrated Release B and have their own `scoreAlgorithmVersion`.
+- Releases A and B report factual outcomes. Subjective 0–100 scores and strategy profiles require simulator calibration and real learner-comprehension evidence; that unmet human gate means B omits them and reports null independent algorithm/classifier versions.
 - GNT-5 through GNT-7 are speculative learning scenarios and must be labeled as such.
 
 ## Release sequence
 
 1. **Release A — Trustworthy Core:** deterministic simulation, safe local persistence/recovery, factual scorecard, security/CI, and deployed proof.
-2. **Release B — Better Game:** strategic era dilemmas, balance simulator, onboarding/Journey redesign, debrief, claim governance, and calibrated scoring/profiles.
+2. **Release B — Better Game:** strategic era dilemmas, balance simulator, onboarding/Journey redesign, factual debrief and claim governance. Normative scoring/profiles remain gated and omitted.
 3. **Release C — Validated Pilot:** accessibility completion, privacy-separated telemetry/research, formative playtests, performance, monitoring, and deployment evidence.
 
-Release A's external stop gate passed. Release B is now in progress; Release C
+Release A's external stop gate passed. Release B is implemented and locally
+verified, with Git/provider delivery still pending; Release C
 remains blocked until B meets the same independently verified production gate.
 Existing A runs retain A rules; B will not silently reinterpret their saves.
 Unvalidated normative scores and named strategy profiles remain omitted, with
