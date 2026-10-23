@@ -38,12 +38,15 @@ test("new presentation hydrates an intact paused Release A save without reinterp
   const checksum = await checksumPayload(payload);
   await page.goto("/");
   await page
-    .getByRole("dialog", { name: "Welcome to AI Factory!" })
+    .getByRole("dialog", { name: /^Welcome to AI Factory!?$/ })
     .getByRole("button", { name: "Skip Tutorial" })
     .click();
   await expect(page.getByTestId("session-status")).toContainText(
     "Saved on this device",
   );
+  // Leave the application before replacing the synthetic record: pagehide may
+  // flush the prior document and must not race this migration fixture.
+  await page.goto("/api/healthz");
   // Seed a synthetic legacy record to test migration/hydration, not completion.
   // The browser context is disposable and contains no player data.
   await page.evaluate(
@@ -83,7 +86,7 @@ test("new presentation hydrates an intact paused Release A save without reinterp
     },
     { payload, checksum },
   );
-  await page.reload();
+  await page.goto("/");
   await expect(page.getByTestId("active-time")).toHaveText("0:17");
   await expect(page.getByTestId("button-start-game")).toContainText("Resume");
   const saved = await page.evaluate(async () => {
