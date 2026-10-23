@@ -94,3 +94,19 @@ version expectation, an A-length completion horizon, and a wall-clock resume
 assertion. The final tests require the explicit current ruleset, retain the
 30-minute completion bound, and assert exact controlled pause/resume ticks.
 The earlier failures were not suppressed or relabeled as passing evidence.
+
+The first final-candidate CI run (`39909844749`) passed unit/persistence/API and
+build, then failed only the monolithic 224-run coverage test's 240-second timeout
+(336 seconds of instrumented work on its runner). The harness now executes every
+seed/policy as a separately bounded test, comparing its full result and canonical
+state digest to the committed report. Aggregate pacing/diversity/dominance
+assertions remain, with no shared test-order dependency. No simulation, seed,
+assertion, coverage floor or application code was removed to obtain green CI.
+The 227-test local result above precedes that test-only decomposition; final CI
+must record the new count before delivery is accepted.
+
+The focused instrumented balance rerun passed all 239 cases (including the 224
+fresh matrix rows) in 199.49 seconds. Its command still exited nonzero because
+running only that file cannot satisfy the unchanged whole-application 80%
+coverage floors. Those floors were not disabled; a complete 451-test coverage
+run and the new complete CI candidate remain the acceptance checks.

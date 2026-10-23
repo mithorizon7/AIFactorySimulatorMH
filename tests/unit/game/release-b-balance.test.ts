@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { Era } from "../../../shared/game/domain/era";
 import { getTrainingRequirementDetails } from "../../../shared/game/domain/gameState";
 import {
@@ -18,6 +19,7 @@ import {
   dominates,
   releaseBStrategy,
   simulatePolicy,
+  type SimulationRow,
 } from "./release-b-policies";
 import type { GameStateV2 } from "../../../shared/game/schemas/state";
 import { expectCoreInvariants } from "./helpers";
@@ -51,11 +53,49 @@ function checkpoint(
   return agent.state();
 }
 
-it("passes all seven scripted strategies on the frozen 32-seed corpus without pairwise dominance", () => {
-  const rows = CALIBRATION_SEEDS.flatMap((seed) =>
-    RELEASE_B_POLICIES.map((policy) => simulatePolicy(seed, policy)),
-  );
+const calibrationReport = JSON.parse(
+  readFileSync(
+    new URL("../../../docs/release-b-balance-report.json", import.meta.url),
+    "utf8",
+  ),
+) as { rows: SimulationRow[] };
+
+// Keep all 224 real simulations, but bound each independently. A monolithic
+// matrix test exceeded its wall-clock timeout under instrumented two-core CI.
+// Exact row/digest comparison connects the freshly executed corpus to the
+// aggregate checks below without shared mutable state or test-order dependence.
+it.each(
+  CALIBRATION_SEEDS.flatMap((seed) =>
+    RELEASE_B_POLICIES.map((policy) => ({ seed, policy })),
+  ),
+)(
+  "replays calibrated seed $seed / $policy through completion",
+  ({ seed, policy }) => {
+    const row = simulatePolicy(seed, policy);
+    const expectedRows = calibrationReport.rows.filter(
+      (candidate) => candidate.seed === seed && candidate.policy === policy,
+    );
+    expect(expectedRows).toHaveLength(1);
+    expect(row).toEqual(expectedRows[0]);
+    expect(row.completed).toBe(true);
+    expect(row.activeTicks).toBeGreaterThanOrEqual(1200);
+    expect(row.activeTicks).toBeLessThanOrEqual(1800);
+    expect(row.firstTrainingTick).not.toBeNull();
+    expect(row.firstTrainingTick).toBeGreaterThanOrEqual(360);
+    expect(row.firstTrainingTick).toBeLessThanOrEqual(480);
+  },
+);
+
+it("qualifies the fully replayed frozen corpus without pairwise dominance", () => {
+  const rows = calibrationReport.rows;
   expect(rows).toHaveLength(224);
+  expect(new Set(rows.map((row) => `${row.seed}:${row.policy}`)).size).toBe(
+    224,
+  );
+  expect([...new Set(rows.map((row) => row.seed))]).toEqual(CALIBRATION_SEEDS);
+  expect([...new Set(rows.map((row) => row.policy))]).toEqual(
+    RELEASE_B_POLICIES,
+  );
   expect(
     rows.every(
       (row) =>
@@ -117,7 +157,7 @@ it("passes all seven scripted strategies on the frozen 32-seed corpus without pa
   ).toBeGreaterThan(
     seedRows.find((row) => row.policy === "revenue-first")!.revenue * 10,
   );
-}, 240000);
+});
 
 it("uses seven genuinely different public-command sequences and factual allocations", () => {
   const agents = RELEASE_B_POLICIES.map((policy) => {
