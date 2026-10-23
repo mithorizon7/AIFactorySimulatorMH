@@ -11,9 +11,12 @@ if (!/^[a-f0-9]{40}$/.test(process.env.EXPECTED_BUILD_SHA ?? "")) {
   );
 }
 
-export default defineConfig(production, {
-  webServer: undefined,
-  use: { baseURL },
+export default defineConfig({
+  ...production,
+  // defineConfig's multi-config merge concatenates server arrays. Override
+  // before passing one config so no local server can be inherited.
+  webServer: [],
+  use: { ...production.use, baseURL },
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "output/playwright/live-report" }],
