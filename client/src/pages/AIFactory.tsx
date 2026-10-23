@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import BreakthroughModal from "@/components/factory/BreakthroughModal";
 import VictoryScreen from "@/components/victory/VictoryScreen";
-import LeaderboardModal from "@/components/leaderboard/LeaderboardModal";
 import { useToast } from "@/hooks/use-toast";
 import { useGameEngine } from "@/hooks/useGameEngine";
 import { Breakthrough, hasAchievedAgi } from "@/lib/gameState";
-import { apiRequest } from "@/lib/queryClient";
 import "@/components/factory/resourceFlow.css";
 import { GamePauseProvider, useGamePause } from "@/contexts/GamePauseContext";
 
@@ -55,7 +53,6 @@ export default function AIFactory() {
     // Revenue service controls
     toggleApiService,
     toggleChatbotService,
-    setApiRate,
     setMonthlyFee,
     // Revenue enhancement functions
     improveDeveloperTools,
@@ -64,7 +61,6 @@ export default function AIFactory() {
     // Platform development functions
     buildApiPlatform,
     buildChatbotPlatform,
-    timeElapsed,
     formattedTime
   } = useGameEngine();
 
@@ -72,15 +68,11 @@ export default function AIFactory() {
   const [showBreakthroughModal, setShowBreakthroughModal] = useState<boolean>(false);
   const [currentBreakthrough, setCurrentBreakthrough] = useState<Breakthrough | null>(null);
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
-  const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
   
   // Unified tutorial and narrative system
   const [currentNarrativeMessage, setCurrentNarrativeMessage] = useState<NarrativeMessage | null>(null);
   const unlockedBreakthroughIdsRef = useRef<number[]>([]);
-  const saveSnapshotRef = useRef({ gameState, timeElapsed });
-  useEffect(() => {
-    saveSnapshotRef.current = { gameState, timeElapsed };
-  }, [gameState, timeElapsed]);
+  const completionPresentedRef = useRef(false);
   
   // Narrative trigger system
   useNarrativeTriggers({
@@ -89,17 +81,6 @@ export default function AIFactory() {
     setGameState
   });
   
-  // Save game state periodically
-  useEffect(() => {
-    if (!isRunning) return;
-    
-    const saveInterval = setInterval(() => {
-      saveGameState();
-    }, 30000); // Save every 30 seconds
-    
-    return () => clearInterval(saveInterval);
-  }, [isRunning]);
-
   // Watch for breakthroughs
   useEffect(() => {
     const previouslyUnlocked = new Set(unlockedBreakthroughIdsRef.current);
@@ -118,42 +99,20 @@ export default function AIFactory() {
 
   // Check for victory condition
   useEffect(() => {
-    if (hasAchievedAgi(gameState) && isRunning) {
-      pauseGame();
+    if (!hasAchievedAgi(gameState)) {
+      completionPresentedRef.current = false;
+      return;
+    }
+    if (!completionPresentedRef.current) {
+      completionPresentedRef.current = true;
       setShowSummaryModal(true);
     }
-  }, [gameState, isRunning, pauseGame]);
+  }, [gameState]);
 
   // Handler for Spark AI Advisor
   const handleAdvisorClose = () => {
     setAdvisorMessage(null);
   };
-
-  async function saveGameState() {
-    const { gameState, timeElapsed } = saveSnapshotRef.current;
-    try {
-      await apiRequest("POST", "/api/game-state", {
-        intelligence: Math.max(0, Math.floor(gameState.intelligence)),
-        money: Math.max(0, Math.floor(gameState.money)),
-        timeRemaining: timeElapsed,
-        resourceCompute: Math.floor(gameState.resources.compute),
-        resourceData: Math.floor(gameState.resources.data),
-        resourceAlgorithm: Math.floor(gameState.resources.algorithm),
-        computeLevel: gameState.levels.compute,
-        dataLevel: gameState.levels.data,
-        algorithmLevel: gameState.levels.algorithm,
-        // Save revenue information
-        revenueB2B: Math.max(0, Math.floor(gameState.revenue.b2b)),
-        revenueB2C: Math.max(0, Math.floor(gameState.revenue.b2c)),
-        revenueInvestors: Math.max(0, Math.floor(gameState.revenue.investors)),
-        unlockedBreakthroughs: gameState.breakthroughs
-          .filter(b => b.unlocked)
-          .map(b => b.id),
-      });
-    } catch (error) {
-      console.error("Failed to save game state:", error);
-    }
-  }
 
   const handleCloseBreakthroughModal = () => {
     setShowBreakthroughModal(false);
@@ -167,14 +126,6 @@ export default function AIFactory() {
   const handleResetAndCloseSummary = () => {
     resetGame();
     setShowSummaryModal(false);
-  };
-
-  const handleOpenLeaderboard = () => {
-    setShowLeaderboard(true);
-  };
-
-  const handleCloseLeaderboard = () => {
-    setShowLeaderboard(false);
   };
 
   const tutorialOverlayActive = gameState.tutorial.isActive && !gameState.tutorial.isCompleted;
@@ -192,12 +143,10 @@ export default function AIFactory() {
           <GameHeader 
             gameState={gameState}
             isRunning={isRunning}
-            timeElapsed={timeElapsed}
             formattedTime={formattedTime}
             startGame={startGame}
             pauseGame={pauseGame}
             resetGame={resetGame}
-            onOpenLeaderboard={handleOpenLeaderboard}
           />
           
           {/* Main Game Navigation Tabs - Moved directly under the header */}
@@ -240,12 +189,6 @@ export default function AIFactory() {
               onReset={handleResetAndCloseSummary}
             />
           )}
-
-          {/* Leaderboard Modal - Available anytime */}
-          <LeaderboardModal 
-            open={showLeaderboard}
-            onOpenChange={handleCloseLeaderboard}
-          />
 
           <UnifiedTutorialSystem
             gameState={gameState}

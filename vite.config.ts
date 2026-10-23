@@ -1,27 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
 import path, { dirname } from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    themePlugin(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
@@ -32,5 +18,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    // Release A supports the modern browser floor used by Vite 8. Keep this
+    // explicit so a future bundler upgrade cannot silently move the contract.
+    target: ["chrome111", "edge111", "firefox114", "safari16.4"],
+    rolldownOptions: {
+      experimental: {
+        // lucide-react is a side-effect-free barrel with thousands of exports.
+        // Without lazy barrel traversal, Vite 8 compiles every icon even though
+        // this application imports only a small subset.
+        lazyBarrel: true,
+      },
+    },
   },
 });

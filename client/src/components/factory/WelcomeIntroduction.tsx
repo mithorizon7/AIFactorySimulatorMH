@@ -11,7 +11,7 @@ interface WelcomeIntroductionProps {
 
 export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntroductionProps) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-4xl bg-gray-900 border-gray-800 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-t-lg">
           <CardTitle className="text-3xl flex items-center gap-2">
@@ -147,7 +147,7 @@ export default function WelcomeIntroduction({ onClose, currentEra }: WelcomeIntr
                   <p className="text-gray-200">
                     Complete <span className="font-bold text-amber-300">GNT-7 training</span> and then reach the
                     <span className="font-bold text-amber-300"> 1000 intelligence threshold</span> as quickly as possible
-                    by strategically managing your resources and making wise investments. Your time will be ranked on the leaderboard!
+                    by strategically managing your resources and making wise investments. Your completed runs stay private on this device.
                   </p>
                 </div>
                 

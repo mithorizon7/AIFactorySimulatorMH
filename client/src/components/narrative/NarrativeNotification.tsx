@@ -83,7 +83,7 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
           
           <div className="bg-black/20 border border-gray-700/50 rounded p-3">
             <div className="flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-xs font-medium text-blue-300 mb-1">Real-World Context</p>
                 <p className="text-xs text-blue-200 leading-relaxed">{message.context}</p>
@@ -104,7 +104,7 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
       ) : (
         <div className={`bg-gray-900 border-2 ${getBorderColor()} ${getBackgroundColor()} rounded-lg shadow-2xl max-w-md p-4`}>
           <div className="flex items-start gap-3">
-            <div className="shrink-0 mt-0.5">
+            <div className="flex-shrink-0 mt-0.5">
               {getIcon()}
             </div>
             
@@ -129,7 +129,7 @@ export function NarrativeNotification({ message, onDismiss }: NarrativeNotificat
               
               <div className="bg-black/20 border border-gray-700/50 rounded p-3">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                  <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs font-medium text-blue-300 mb-1">Real-World Context</p>
                     <p className="text-xs text-blue-200 leading-relaxed">{message.context}</p>

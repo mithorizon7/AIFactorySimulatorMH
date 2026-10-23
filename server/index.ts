@@ -1,56 +1,58 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
-import { configureSecurity } from "./security";
-import '../tools/check-runtime.mjs';
-import { globalErrorHandler, notFoundHandler, requestLogger } from "./errorHandler";
+import { createServer } from "http";
+import { createApiApp, installTerminalHandlers } from "./app";
+import { setupVite, serveStatic, log } from "./vite";
 import { logger } from "./logger";
-import { pool } from './db';
-import { release } from './release';
+import { readBuildMetadata } from "./buildMetadata";
+import { createFreshGameState } from "../shared/game/factory";
+import { RULESET_VERSION } from "../shared/version";
 
-const app = express();
-configureSecurity(app);
-app.use(express.json({ limit: '16kb', inflate: false, strict: true }));
+async function startServer(): Promise<void> {
+  const environment =
+    process.env.NODE_ENV === "production" ? "production" : "development";
+  const buildMetadata = readBuildMetadata();
+  // The factory performs strict state-schema and ruleset validation. A broken
+  // ruleset fails startup instead of allowing readiness to claim a usable app.
+  const startupState = createFreshGameState({
+    ruleset: RULESET_VERSION,
+    seed: 1,
+  });
+  const app = createApiApp({
+    environment,
+    buildSha: environment === "production" ? buildMetadata.buildSha : null,
+    // No production database schema applies to anonymous browser-local runs.
+    migrationVersion: null,
+    rulesetLoaded: startupState.rulesetVersion === RULESET_VERSION,
+  });
+  const server = createServer(app);
 
-// Use structured request logging
-app.use(requestLogger);
-
-(async () => {
-  // Fail before serving requests if the release schema was not migrated.
-  if (pool) {
-    await pool.query('SELECT owner_hash FROM game_states LIMIT 0');
-    await pool.query('SELECT owner_hash FROM leaderboard LIMIT 0');
-  }
-  const server = await registerRoutes(app);
-  app.use('/api', notFoundHandler);
-
-  // Setup Vite BEFORE 404 handler so SPA can load
   if (app.get("env") === "development") {
-    // Keep the development-only module out of the production bundle.
-    const devModule = './vite';
-    const { setupVite } = await import(devModule);
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Handle 404 errors (after Vite setup)
-  app.use(notFoundHandler);
-  
-  // Global error handler (must be last)
-  app.use(globalErrorHandler);
+  installTerminalHandlers(app);
 
-  // Default to 5000 for hosted environments, but allow local overrides.
-  const port = Number(process.env.PORT ?? 5000);
-  server.listen({
-    port,
-    host: process.env.HOST ?? (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1'),
-  }, () => {
-    logger.info(`serving on port ${port}`);
-    console.log(JSON.stringify({ event: 'release_started', release, node: process.version, openssl: process.versions.openssl, storage: pool ? 'postgresql' : 'memory' }));
+  server.requestTimeout = 30_000;
+  server.headersTimeout = 35_000;
+  server.keepAliveTimeout = 5_000;
+  server.on("error", (error) => {
+    logger.fatal("HTTP server failure", error);
+    process.exitCode = 1;
   });
-})().catch(() => {
-  logger.fatal('Server startup failed. Verify production hosts, database connectivity and ownership migration.');
-  process.exitCode = 1;
-  void pool?.end();
+
+  const port = Number(process.env.PORT ?? 5000);
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen({ port, host: "0.0.0.0" }, () => {
+      server.off("error", reject);
+      log(`serving on port ${port}`);
+      resolve();
+    });
+  });
+}
+
+startServer().catch((error) => {
+  logger.fatal("Application startup failed", error as Error);
+  process.exit(1);
 });

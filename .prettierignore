@@ -1,0 +1,10 @@
+attached_assets
+coverage
+dist
+node_modules
+output
+package-lock.json
+docs/ai-factory-causal-cleanup-production-checklist.md
+docs/ai-factory-tutorial-and-end-to-end-qa-hardening-production-checklist.md
+docs/security-audit-upstream-2026-10-22.md
+docs/security-2026-10-22-checklist.md

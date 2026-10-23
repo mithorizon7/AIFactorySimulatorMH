@@ -110,9 +110,9 @@ export default function MainGameTabs({
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // Add temporary highlight effect
-        element.classList.add('ring-2', 'ring-amber-400/50');
+        element.classList.add('ring-2', 'ring-amber-400', 'ring-opacity-50');
         setTimeout(() => {
-          element.classList.remove('ring-2', 'ring-amber-400/50');
+          element.classList.remove('ring-2', 'ring-amber-400', 'ring-opacity-50');
         }, 2000);
       }
     }, 100);
@@ -122,7 +122,7 @@ export default function MainGameTabs({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="flex justify-center mb-6 relative z-20">
         <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-lg p-2 shadow-xl w-full border-t-2 border-b-2 border-amber-500 max-w-5xl mx-auto">
-          <TabsList aria-label="Game sections" className="grid h-auto grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1 relative z-10">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg p-1 relative z-10">
             <TabsTrigger 
               value="dashboard" 
               className="flex items-center justify-center gap-2 font-medium py-3 px-3 rounded-md text-white text-sm
@@ -133,7 +133,7 @@ export default function MainGameTabs({
               data-tab="dashboard"
               onClick={() => completeTutorialTarget("dashboard-tab")}
             >
-              <BarChart3 className="h-5 w-5 shrink-0" />
+              <BarChart3 className="h-5 w-5 flex-shrink-0" />
               <span>Dashboard</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -147,7 +147,7 @@ export default function MainGameTabs({
               data-tab="training"
               onClick={() => completeTutorialTarget("training-tab-trigger")}
             >
-              <Target className="h-5 w-5 shrink-0" />
+              <Target className="h-5 w-5 flex-shrink-0" />
               <span>Training</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -158,7 +158,7 @@ export default function MainGameTabs({
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tab="resources"
             >
-              <Zap className="h-5 w-5 shrink-0" />
+              <Zap className="h-5 w-5 flex-shrink-0" />
               <span>Resources</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -172,7 +172,7 @@ export default function MainGameTabs({
               data-tab="economy"
               onClick={() => completeTutorialTarget("economy-tab")}
             >
-              <GanttChart className="h-5 w-5 shrink-0" />
+              <GanttChart className="h-5 w-5 flex-shrink-0" />
               <span>Economy</span>
               {(gameState.narrativeFlags.highlightApiPlatform || gameState.narrativeFlags.highlightChatbotPlatform) && (
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -189,7 +189,7 @@ export default function MainGameTabs({
                 hover:bg-gray-700 transition-all duration-200 min-h-[44px]"
               data-tab="breakthroughs"
             >
-              <Lightbulb className="h-5 w-5 shrink-0" />
+              <Lightbulb className="h-5 w-5 flex-shrink-0" />
               <span>Breakthroughs</span>
             </TabsTrigger>
             <TabsTrigger 
@@ -202,7 +202,7 @@ export default function MainGameTabs({
               data-tab="progression"
               onClick={() => completeTutorialTarget("progression-tab")}
             >
-              <BrainCog className="h-5 w-5 shrink-0" />
+              <BrainCog className="h-5 w-5 flex-shrink-0" />
               <span>Progression</span>
             </TabsTrigger>
           </TabsList>

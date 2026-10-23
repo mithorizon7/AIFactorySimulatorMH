@@ -1,334 +1,237 @@
-# Security Audit And Release Remediation, October 22, 2026
+# Security audit and local remediation — 2026-10-22
 
-Audit date: October 22, 2026, America/New_York. Live primary-advisory checks were
-refreshed through 12:59 EDT / 16:59 UTC; local validation continued afterward.
-This is a repository/local
-validation result, **not production security sign-off or incident-recovery clearance**.
+## Bottom line
 
-### Release Continuation
+The checked-in remediation candidate is materially safer: it pins the patched
+Node 22 line, replaces the vulnerable production dependency graph, hardens CI,
+removes stale delivery configuration, and records a truthful release-evidence
+procedure. It is **not** a production attestation.
 
-The user subsequently authorized commit, merge and deployment. Replit access was
-restored: the app is `8be7f233-2556-442c-ae8c-40eccc810e27`, published at
-`https://aifactorysimulation.com` and `https://ai-factory-mithorizon.replit.app`.
-Its workspace was still at `1159ce54056ee8c05ced31c7fe58766f993ad8f4`, before
-GitHub's tutorial fixes. Replit completed its automatic development-database
-upgrade to private Helium PostgreSQL 16.10. Separate production inspection found
-Neon PostgreSQL 16.15; an external connection using certificate/hostname-validated
-TLS succeeded. Metadata shows broad provider-managed role privileges; host-level
-controls and the actual running process role remain unverified.
+The urgent unresolved risk is delivery drift. On 2026-10-22, the fetched public
+`origin/main` still resolves to
+`c372658ea89b1e2c8a640cce345b0d2a1d9f3317`, while the contained local work is
+on `codex/ai-factory-trustworthy-core`. The old upstream source exposes
+unscoped, client-writable global game state and leaderboard routes. No provider
+dashboard, served SHA, environment-variable inventory, build log, database
+inventory, or live origin was available from this workspace. Do not infer that
+the local fixes are live.
 
-Tailwind 4.3.3 replaces the vulnerable glob chain, and tailwind-merge 3.7.0 preserves
-class conflict handling. Full npm audit now reports **zero vulnerabilities**, with
-no CI exceptions. A fresh OSV query covers all **509 unique name/version pairs**
-in the **619-record lockfile**, also with zero findings. Standard `pg` replaces the
-Neon-only WebSocket driver to support both private Helium and validated-TLS Neon.
-Startup checks ownership columns; migration is an explicit transactional operation,
-never hidden in startup/build. A build-time Git revision is exposed by `/api/health`.
+## Immediate provider actions
 
-Production backup/isolated restore was blocked by auto-review pending specific
-approval to copy production records inside the same Replit project. No backup,
-application schema migration or deployment has been performed at this checkpoint.
-The application release has now merged through
-[PR #2](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/2) at
-`8d3c13008d09f86fc9df53877cb3c9449e5fa311`. Both final head CI runs
-[branch](https://github.com/mithorizon7/AIFactorySimulatorMH/actions/runs/39834691893)
-and [PR](https://github.com/mithorizon7/AIFactorySimulatorMH/actions/runs/39834697016)
-passed every stage, including all 14 security and five browser checks and
-production-mode smoke. Merged-main run 39835186492 also passed. Replit independently
-passed those checks on the reviewed application source, then verified the exact
-clean merged 8d3c130 with runtime/build/smoke and matching release marker. The default
-Replit Node 22 module is only 22.22.0, so build/start now use a checksum-pinned
-official Node 22.23.4 Linux runtime without changing the system installation.
-Read-only production aggregates found zero accounts, one save, one leaderboard
-entry and no other application tables. No individual records were retrieved or
-displayed. Because production is not empty, the private-backup approval gate
-remains in force; no production backup, migration or deployment was performed.
-The current queue and verification state are maintained in
-`docs/security-2026-10-22-checklist.md`; the following initial-access observations
-are historical where this continuation explicitly supersedes them.
+1. Determine the live deployment's source revision and runtime. If it is
+   `c372658` or another revision with the legacy handlers, block
+   `/api/game-state`, `/api/leaderboard`, and `/api/ranking/*` at the edge for
+   every HTTP method before further release work.
+2. Push/review the contained candidate, rebuild from a clean lockfile on Node
+   22.23.4 or later approved 22.x, and inject its immutable full commit SHA as
+   `BUILD_SHA` and `EXPECTED_BUILD_SHA`.
+3. Verify the served SHA with `/api/version`, both GET and POST `410` behavior
+   for the retired routes, HTTPS/HSTS headers, and the synthetic browser canary.
+4. Inspect retained Replit/Railway-like database resources and environment
+   variables before deleting any integration. Preserve data and incident
+   evidence according to the provider's retention policy.
 
-## Urgent Findings And Next Actions
+These actions need a provider owner because they can affect availability,
+credentials, or data. They were not performed by this audit.
 
-1. Deploy the ownership and server fixes only after applying the additive database
-   migration and configuring exact production hosts. The old API exposes the most
-   recent save globally; the accessible published app is behind GitHub, but its
-   exact deployed revision is not exposed. Owner: project/deployment administrator.
-2. Replace the deployed Node 20 selection with a verified patched Node 22 runtime.
-   Node 22.23.4 was downloaded from nodejs.org, checksum-verified and used locally.
-   The existing machine-wide Node 22.12.0 was not altered. Owner: deployment/device administrator.
-3. The seven initial **build-only** reports rooted in `braces@3.0.3` are now
-   resolved by migrating to Tailwind 4.3.3. Full and production audit: zero
-   advisories. Keep development/build configuration trusted and previews private.
-4. The installed local Chrome 155.0.8059.85 and PostgreSQL 17.9 need their vendors'
-   security updates. These are outside project mutation scope; no global update,
-   database restart, credential rotation or production change was performed.
+## Scope, evidence, and access gaps
 
-## Prior Work Reused
+| Surface                       | Evidence checked                                                                                     | Result                                                                                                                                                                                     | Remaining gap                                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Current source and history    | Tracked files, manifest/lockfile, route and middleware review, 353-commit secret scan                | No detected secrets; no current auth, database client, server-side game-state write path, upload, SSRF-style outbound request, AI/MCP tool path, Docker, or Python/PHP/Bun project surface | Deleted/unreachable history, local untracked files outside the checkout, and provider secrets/logs were not available               |
+| Upstream source               | Fresh `git fetch --prune`, `origin/main` inspection                                                  | `origin/main` remains `c372658`; its legacy source has unauthenticated global save/leaderboard routes                                                                                      | Served revision and traffic are unverified                                                                                          |
+| Dependency supply chain       | `package.json`, lockfile v3, lifecycle-marker review, isolated no-script install, npm advisory scans | Lock resolves only from `https://registry.npmjs.org/` with integrity metadata; no LiteLLM/package-manager compromise indicator in source                                                   | Historical developer machines, caches, and provider build images cannot be proven clean from a lockfile                             |
+| CI/CD                         | Local GitHub workflow/configuration review and GitHub metadata available to the checkout             | Workflow is locally hardened, but it is not present on public `origin/main` and no run proves it has executed                                                                              | GitHub Actions runs, branch protection, secrets, environments, and artifact retention cannot be inspected here                      |
+| Replit/delivery configuration | `.replit`, build/start paths, public repository homepage metadata                                    | Source now requests Node 22, one port, and no database integration                                                                                                                         | Actual provider runtime, active ports, database resources, environment variables, logs, backups, and served endpoint are unverified |
+| Workstation tool inventory    | Read-only version checks                                                                             | Local Node is 22.23.4; PHP is 8.5.12; pip is 26.2.2; Bun is 1.3.11; no Java runtime is installed                                                                                           | These local tools do not establish versions on hosted services, CI, containers, or other developer devices                          |
 
-The March 30 tutorial checklist and January 30 dependency-update commit were
-reviewed. Existing tutorial fixes and the user's uncommitted narrative-hook change
-were preserved. The original tutorial investigations were not repeated. Type,
-build and browser checks were rerun because runtime/toolchain changes invalidate
-their earlier results. The March claim of zero production advisories and its five
-accepted esbuild reports were stale: the initial fresh scan found 27 affected
-packages. The esbuild issue is now patched; the remaining brace-parser issue is
-different. No previous production audit completion could be verified. The older
-`adc2f23` commit named for security only removed Replit port entries; it is not
-evidence of comprehensive security hardening.
+## Compromise precheck
 
-## Asset And Access Inventory
+Before running project code, the audit inspected the manifest, lockfile,
+repository structure, installed-package metadata, and source/history indicators.
+No LiteLLM reference, Python dependency manifest, Docker image, floating
+container tag, `litellm-1.107.0` marker, foreign npm registry URL, root package
+lifecycle hook, or suspect package-install change was found. Gitleaks found no
+secrets in the current source archive or in the 353 reachable commits.
 
-| Asset | Observed Evidence | Coverage / Missing Evidence |
-| --- | --- | --- |
-| Repository | Public `mithorizon7/AIFactorySimulatorMH`, local starting HEAD `c372658ea89b1e2c8a640cce345b0d2a1d9f3317`; one pre-existing narrative edit | Current files and reachable local Git history inspected; no history rewriting or publishing |
-| Workspaces / languages | One npm project; TypeScript server/shared code and browser React; no workspace manifests, Python environment, Docker/devcontainer or native application project found | Host/vendor binaries and old build caches beyond accessible records cannot be ruled out |
-| Browser app | React/React DOM 18.3.1, client-side simulator, Vite middleware during development | No RSC package, server functions, real LLM inference, file upload, webhook, shell execution, user-supplied fetch destination or privileged AI tool API found |
-| API / storage | Express 4.22.1; Drizzle ORM 0.39.3 before, 0.45.4 after; standard pg 8.23.1 replaces Neon-only serverless driver; memory fallback for non-hosted tests | API tested using isolated MemStorage; production schema/TLS inspected read-only. Real hosted production refuses missing DATABASE_URL |
-| Runtime | Machine default Node 22.12.0; Replit declared Node 20; project-local verified Node 22.23.4/npm 10.9.9 used for checks | Host selection now Node 22 with guards; running production patch version unknown |
-| Delivery | Replit app and both production domains identified; Cloud Run/Autoscale target, checksum-pinned Node wrapper, only port 5000 mapping retained | Source release merged; provider inspection completed. Actual live revision/runtime and migrated/deployed ownership still await release execution |
-| CI | Initially no workflows; new minimal-permission, SHA-pinned workflow now passes branch, PR and merged-main checks | Main run 39835186492 passed on merged 8d3c130; runner-host trust/kernel inventory still requires provider evidence |
-| Infrastructure | No Railway/Vercel deployment configuration, workers, scheduled jobs, self-managed GitLab, Oracle or DNS appliances declared | Absence of repository files does not rule out external supporting services; administrator/provider inventory required |
-| Local tools / device | macOS 26.6.2 build 25G83; local PostgreSQL 17.9; Chrome 155.0.8059.85; no Bun, uv, Docker, gitleaks, semgrep or trivy executable located on PATH | OS trust/update status, other installations, actual provider host kernels and managed database revisions unverified |
-| Automation browser | Playwright 1.58.2 -> 1.64.1; matching Chromium 156.0.8078.4 installed under ignored project output | Latest package does not prove browser trust/patch parity with Chrome 156.0.8078.47/.48; production smoke restricts browser requests to loopback |
-| Coding-agent configuration | No custom model-provider/base_url override in inspected Codex config; MCP section names only inventoried | Not proof of historic gateway routing or trace privacy. External gateways, agent session archives and their access/audit logs remain unverified |
+This is absence of repository evidence, not proof that a developer machine,
+CI worker, provider build cache, or unrelated agent session never used the
+compromised LiteLLM artifact. The official incident says affected PyPI wheels
+were available from 11:39 to 13:23 UTC and floating container tags were affected
+on October 21; any environment that used them needs incident response from
+trusted media, not an in-place version update. See the
+[LiteLLM incident notice](https://docs.litellm.ai/blog/security-incident-oct-21-2026).
 
-## Compromise And Secret Precheck
+## Mandatory incident applicability matrix
 
-Before project execution, the manifests, installed lock metadata, lifecycle script
-metadata, hooks, artifact sources, project logs and available dependency history
-were examined with shell utilities and system Python using `-I -S` to disable
-environment imports/site startup hooks. All npm artifact URLs were on
-`registry.npmjs.org`; installed versions matched the original lock where installed.
-Only expected esbuild/native optional-package lifecycle entries were found; all
-subsequent installs used `--ignore-scripts`. No active Git hooks were found.
+Status meanings: **remediated locally, deployment pending** only describes the
+working tree; **not applicable in source** does not make a provider or device
+safe; **unverified** identifies the exact missing evidence.
 
-`tools/security-precheck.py` checked 2,114 named historical objects, eligible text
-blobs up to 2 MB, and working files up to 10 MB. It reports credential types,
-locations and line numbers only. No recognized credentials or LiteLLM indicators
-were found in that coverage. The accessible project install logs begin October 22;
-they do not establish October 21 build/install history. No project Python/container
-history or matching global LiteLLM package paths/known temporary markers were found
-in the limited checked locations. No affected artifact digest was identified.
+| Baseline                                           | Source/local evidence                                                                                                                                            | Status                                                      | Exact next evidence                                                                                                                                                         |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PHP CVE-2026-109618 / CVE-2026-109619              | No Composer, PHP source, PHP server, container, or appliance config. Local CLI PHP is 8.5.12.                                                                    | Not applicable in source; hosted/appliance scope unverified | Provider/service inventory and logs from October 17 onward; PAN-OS/Panorama vendor assessment if present                                                                    |
+| Node October 21 release, including CVE-2026-111497 | Old `.replit` used Node 20 and old `.nvmrc` used 22.14.0. Local remediation pins 22.23.4 and enforces it at build/start.                                         | Remediated locally, deployment pending                      | Provider/CI `node --version`, image digest, build log, and served SHA                                                                                                       |
+| Bun 1.4.4                                          | No Bun manifest, lock, script, CI, image, or deployment path. Local Bun is 1.3.11.                                                                               | Not applicable in source; local workstation action pending  | Update Bun only where it is intentionally used, then record `bun --version` and trust-store behavior                                                                        |
+| Railway credential incident                        | No Railway configuration, token, or service reference found in source.                                                                                           | Unverified external service                                 | Account owner must identify every Railway project/environment, rotate third-party secrets, reconnect affected integrations, and verify running deployments use replacements |
+| LiteLLM 1.107.0 compromise                         | No LiteLLM/package/image/agent-gateway reference in source or readable history.                                                                                  | No repository evidence; historical host exposure unverified | Search provider/developer artifact inventories, build logs, and agent traces without starting suspect Python environments                                                   |
+| eMudhra / emSign CA incident                       | Local pip is 26.2.2. No Python project or uv/certifi dependency is in this repository. Node 22.23.4 includes the October security release's certificate updates. | Source not applicable; active trust stores unverified       | Inspect the actual package-manager, container, OS, browser, Java, Go/Rust, and provider trust stores; rebuild cached images from trusted bases                              |
+| GitLab October 21 release                          | Remote is GitHub; no `.gitlab-ci.yml` or GitLab service config.                                                                                                  | Not applicable in source; runners/infrastructure unverified | Inventory self-managed GitLab/runners separately if any support delivery                                                                                                    |
+| Java/GraalVM / Oracle CVE-2026-91403               | No Java/Graal build configuration; local Java reports no installed runtime.                                                                                      | Not applicable in source                                    | Inventory hosted agents, appliances, and developer JDKs by vendor and version                                                                                               |
+| BIND / Unbound advisories                          | No DNS-server configuration or package in source.                                                                                                                | Not applicable in source                                    | Provider/DNS inventory, branch/vendor patch matrix, and actual daemon versions                                                                                              |
+| Cisco, Splunk SOAR, Fortinet updates               | No network/security-product configuration in source.                                                                                                             | Not applicable in source                                    | Network-owner inventory, firmware versions, supported upgrade path, and provider management-plane confirmation                                                              |
+| HTTP/3/QPACK Header Accordions                     | No QUIC or production WebSocket server in source; development CSP permits only localhost Vite HMR sockets.                                                       | Not applicable in source; edge termination unverified       | Identify CDN/load-balancer HTTP/3 terminator and its QPACK mitigation/version                                                                                               |
+| Linux PwnEscape, Atlassian, BeyondTrust            | No host image, Kubernetes/IaC, or product configuration in source.                                                                                               | Unverified infrastructure                                   | Managed-host kernel/backport/reboot evidence and self-hosted product inventory                                                                                              |
+| Google Cloud Shell WebSocket issue                 | No Cloud Shell dependency and no production WebSocket service.                                                                                                   | Not applicable in source                                    | Do not revoke Google credentials solely for this issue; investigate only if specific session evidence exists                                                                |
+| Browser/Electron/Signal and broader stack          | Playwright Chromium is a test dependency; no Electron or Signal/RingRTC package.                                                                                 | Test-browser patch status unverified; no app dependency     | Record exact CI/browser binary version and update through approved Playwright releases                                                                                      |
 
-This was a focused pattern/IOC check, not a full forensic investigation, entropy
-secret scan, malware sandbox or proof of no compromise. No credible compromise
-evidence was established, so blanket credential revocation is not justified by
-these results. Provider/host history, deleted artifacts, containers, gateway logs
-and cloud audit records remain incomplete. Replit subsequently returned sampled
-deployment logs for October 17-22, apparently capped near 100 entries per daily
-query. Targeted structured error queries found no matches; this is not complete
-security/access-log coverage or proof of no intrusion. Retention remains unverified.
+The CISA KEV feed could not be fetched from this environment (the direct feed
+returned an access denial), so KEV status is a recorded coverage gap. No absence
+from KEV is treated as a safety conclusion.
 
-Evidence is in ignored `output/security/2026-10-22/`, under mode-0700 directories.
-No private source or secret values were uploaded to a scanning service. npm/OSV
-received dependency names and versions; GitHub/provider queries were read-only.
+## Findings and local remediation
 
-## Prioritized Findings
+| Priority                  | Finding and affected asset                                                                                           | Evidence and exposure                                                                                                                                        | Local remediation                                                                                                                    | Owner / remaining status                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Release stop              | Public `origin/main` has unauthenticated `GET`/`POST` global save and leaderboard routes and globally scoped storage | Source at `c372658` accepts client game/leaderboard claims; whether it is served is unverified                                                               | Contained local branch already retires each route with JSON `410`                                                                    | Provider owner must prove served SHA and block legacy routes if old source is live                    |
+| High                      | Node runtime was stale                                                                                               | `.replit` selected EOL Node 20; `.nvmrc`/CI selected 22.14.0, below the October 21 patch                                                                     | `.nvmrc`, `engines`, CI, README, and a runtime guard now require 22.23.4+ through 22.x                                               | Deployment/CI runtime still pending proof                                                             |
+| Critical resolved locally | Express 4 lock graph included `proxy-addr` 2.0.7 and `qs` 6.15.3                                                     | npm/GitHub advisory scan identified the affected production graph                                                                                            | Migrated to Express 5.3.0, adjusted catch-all middleware, and resolved `proxy-addr` 2.0.8, `body-parser` 2.4.0, and `qs` 6.16.1      | Production audit is clean; deploy from reviewed lock still required                                   |
+| High resolved locally     | Vite, Vitest, PostCSS, NanoID, source-map-js, and unused Typography resolutions were stale                           | Advisory scan against the prior lock                                                                                                                         | Updated compatible direct tools and removed the unused Typography plugin/package                                                     | Full dependency scan retains Tailwind 3 build-only findings below                                     |
+| Medium                    | Tailwind 3 build graph retains advisories                                                                            | Current full lock scan has 5 high and 3 moderate findings under Tailwind 3/chokidar/braces/micromatch/PostCSS selector parsing; production-only scan is zero | No unsafe override or untested Tailwind 4 migration was applied                                                                      | Frontend owner: perform a separately reviewed Tailwind 4 migration with visual/E2E regression proof   |
+| Medium                    | Replit config and operations documentation claimed stale database capability                                         | Source retained PostgreSQL module, database integration, eight unrelated port mappings, and obsolete database/session documentation                          | Removed stale source declarations/mappings and rewrote `replit.md` to match current source                                           | Provider owner must preserve/retire actual resources separately                                       |
+| Low                       | CI actions used mutable tags and persisted checkout credentials by default                                           | Local workflow used `@v4` tags                                                                                                                               | Pinned reviewed action commits, disabled checkout credential persistence, shortened failure-artifact retention, and added Dependabot | Changes only protect CI after the workflow is pushed and enabled                                      |
+| Low                       | Future secret-commit guard was absent                                                                                | `.env*` was not ignored; no local `.env*` was found                                                                                                          | Added narrowly scoped `.env` ignores while preserving example files; current/history Gitleaks scans passed                           | Add an approved server-side secret-scanning gate before relying on it for organization-wide assurance |
+| Conditional               | CSP inline-style exception and HSTS delivery                                                                         | Script CSP is enforced; style inline exception remains for a named UI compatibility need; app-side HSTS is intentionally off pending edge proof              | Recorded owner/expiry on the style exception and documented the HSTS verification gate                                               | Security/accessibility and provider owners must resolve before production release                     |
 
-All local fixes below still require production deployment/verification.
+The Express dependency finding is supported by the
+[GitHub advisory for `proxy-addr`](https://github.com/advisories/GHSA-jqcg-44mw-7w3h).
+Node 22.23.4 is the official patched line for the October 21 release, including
+the high-severity Brotli issue and certificate updates; see the
+[Node advisory](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
 
-| ID / Priority | Advisory / Affected Asset And Version | Exposure And Evidence | Remediation / Owner / Status |
-| --- | --- | --- | --- |
-| S1 / High | Broken object ownership, old `server/routes.ts` and both storage implementations | Anonymous GET returned global latest save; POST accepted caller userId and appended records. Confirmed by source; new two-owner regression passes | Server-generated 256-bit HttpOnly/SameSite cookie, hashed ownership, owner-filtered reads, per-owner save upserts; administrator must apply migration and deploy. **Remediated locally** |
-| S2 / High | [Node October advisory](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases), Node 22.12.0 / declared EOL 20 | Runtime affected independent of npm packages. HTTP parser now rejects compressed bodies, but that is not a runtime patch | Pin/guard 22.23.4; verified local binary SHA-256 `c9e1dbc748b33ed2d14f42445191ecaf14c56259c7a9a26d0042c49ec2b66428`; deployment/device owners must replace actual runtimes. **Local validation remediated; deployment/default machine runtime pending** |
-| S3 / High | [Vite advisory set](https://github.com/vitejs/vite/security/advisories), Vite 5.4.21 and `allowedHosts:true` | Public development binding, disabled host checks and custom transform middleware create file-disclosure/DNS-rebinding exposure; exact individual advisory prerequisites differ | Vite 6.4.5, exact Host validation before API, loopback local default, bounded fs allow/deny lists, no Vite production imports. No public-production exposure verified. **Remediated locally** |
-| S4 / High | Development process termination in `server/vite.ts` | Error logger called process.exit, including for ordinary Vite request errors | Remove exit from request error logging. **Remediated locally**, project owner deploys |
-| S5 / High package severity | [ws GHSA-96hv-2xvq-fx4p](https://github.com/websockets/ws/security/advisories/GHSA-96hv-2xvq-fx4p) / memory disclosure advisory; ws 8.18.0 | Used by outbound Neon client and development tooling; no own privileged production WS server found. May 22 fragment-DoS fix is 8.21.0 | Updated to 8.22.0. **Remediated locally**, administrator rebuilds |
-| S6 / Critical package severity, conditional reachability | [proxy-addr GHSA-jqcg-44mw-7w3h](https://github.com/advisories/GHSA-jqcg-44mw-7w3h), 2.0.7; [shell-quote advisories](https://github.com/advisories/GHSA-395f-4hp3-45gv), 1.8.3 | Initial npm scan flags critical packages. Proxy issue requires trusted-subnet/IP handling; no trust-proxy configuration existed. shell-quote was build tooling, not a proven remote shell path | proxy-addr 2.0.8; vulnerable shell-quote chain removed by updates; default forwarded-IP distrust preserved. **Remediated locally** |
-| S7 / High package severity, not reachable in reviewed SQL | [Drizzle GHSA-gpj5-g38j-94v9](https://github.com/drizzle-team/drizzle-orm/security/advisories/GHSA-gpj5-g38j-94v9), ORM 0.39.3 | Advisory affects attacker-controlled identifiers/aliases; reviewed queries use static schema and parameterized values | ORM 0.45.4 and kit 0.31.11. **Remediated locally**; provider-backed query/migration test pending |
-| S8 / Medium | Validation, request amplification and logging, application code | Unbounded names/arbitrary breakthrough JSON, lenient numeric parsing, full bodies/query values/error args logged, Zod failures converted to 500 | Strict bounded schemas, 16 KiB uncompressed JSON, real 400/413/415 responses, per-process API/write limits, memory caps, metadata-only logs, secure headers/no-store. **Remediated locally** |
-| S9 / Medium | Leaderboard replay and client trust | Previously arbitrary repeated entries; eligibility checked only in browser | Per-owner leaderboard upsert and 5/minute write limit; scores remain **self-reported**. Verified competitive results require authoritative/replayed gameplay; owner decides future scope |
-| S10 / High, build-only | [braces GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), braces 3.0.3 | Deep untrusted glob patterns can exhaust stack; seven initial package reports shared this chain | **Resolved** by Tailwind 4.3.3 migration, eliminating the affected chain. Full npm/OSV scans now zero; strict CI has no advisory exceptions |
+## Repository changes
 
-Other patched chains include Babel, body-parser, brace-expansion, browserslist,
-lodash, nanoid, PostCSS/selector parser, source-map-js, uuid, qs and old esbuild.
-Their precise before-scan ranges and GHSA URLs are in `npm-audit-before.json`.
-No forced audit fix or indiscriminate major-version upgrade was used. The esbuild
-override applies only to the legacy Drizzle loader; installed-tree and SBOM checks
-validate that current tsx retains its own supported esbuild.
-Vite 6.4 is a [supported security-backport branch](https://vite.dev/releases), so
-6.4.5 was chosen to receive the fixes with a smaller compatibility change.
+- Pinned Node 22.23.4 and npm 10.9.9; added a deterministic build/start runtime
+  guard.
+- Added `build:release`, which refuses a release build without a full commit
+  SHA, while preserving ordinary local build behavior.
+- Migrated Express 4 to 5.3.0 and changed the two wildcard fallbacks to
+  pathless middleware so they remain valid under Express 5 routing.
+- Regenerated `package-lock.json` with Node 22.23.4's bundled npm 10.9.9 and
+  no lifecycle scripts.
+- Removed the unused `@tailwindcss/typography` plugin.
+- Hardened GitHub Actions: immutable action SHAs, no persisted checkout token,
+  `npm ci --ignore-scripts`, local Playwright execution, shorter/smaller
+  failure artifacts, and weekly Dependabot updates.
+- Updated `.replit`, `.gitignore`, README, release runbook, current-state
+  record, and the deployment notes.
+- Repaired the CI persistence gate so it executes the existing replay,
+  snapshot, completed-run, and schema contract tests instead of a nonexistent
+  directory.
 
-## Mandatory Baseline Applicability Matrix
+## Verification record
 
-"Not applicable" below is limited to inventoried project components; paired
-"unverified" entries require external evidence, not a conclusion from absent files.
+The final verification results are recorded after every modified source or lock
+file is rechecked. The required checks include:
 
-| Baseline | Current Primary Guidance / Dates | Project Status / Exact Next Evidence |
-| --- | --- | --- |
-| A PHP | [PHP October 21 notice](https://www.php.net/), [CERT-EU 2026-018](https://cert.europa.eu/publications/security-advisories/2026-018), [AWS incident](https://aws.amazon.com/blogs/security/amazon-threat-intelligence-identifies-php2shell-exploitation-prior-to-public-disclosure-in-madpot/) and [bulletin](https://aws.amazon.com/security/security-bulletins/2026-143-aws/): CVE-2026-109618/-109619; PHP 8.2.35/8.3.36/8.4.27/8.5.12 or vendor backports. AWS observed an attempt October 17, before disclosure | **Not applicable to declared Node server; unverified host/appliances.** Obtain deployed/embedded runtimes and logs from at least October 17, with retention gaps. [Palo Alto vendor assessment](https://security.paloaltonetworks.com/CVE-2026-109618) must govern product impact, not an assumption of proven upstream RCE in every appliance |
-| B Node | [October 21 release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases): 22.23.4/24.22.1/26.12.1; [support schedule](https://nodejs.org/en/about/previous-releases) lists Node 20 EOL | **Remediated in local audit runtime/pins; deployment/default local runtime pending.** Ten issues assessed below; collect running process version, image/build provenance and trust overrides per environment |
-| C Bun | [October 22 Bun 1.4.4](https://bun.com/blog/bun-v1.4.4): network/TLS, WS, DB-client/package-manager fixes. Web reader failed; official release HTML retrieved separately and NSS 3.131.1 update confirmed | **Not applicable to located project/runtime tools; external images/compiled executables unverified.** No QPACK-specific resolution was established from this release; do not conflate certificate and QPACK fixes |
-| D Railway | [October 21 disclosure](https://blog.railway.com/p/security-disclosure-wednesday-october-21st) requires secret/private-registry rotation. [Status](https://status.railway.com/): API tokens invalidated October 22 04:17 UTC; latest displayed 16:14 UTC update has Pro/Enterprise operating, Hobby/Free/Trial not yet all enabled | **Unverified external service inventory**, no repo Railway link found. Obtain project/environment list; if used, revoke provider/DB/registry secrets separately, verify bucket replacements, reconnect GitHub, replace API integration tokens and redeploy consumers |
-| E LiteLLM | [Maintainer incident](https://docs.litellm.ai/blog/security-incident-oct-21-2026), [StepSecurity](https://www.stepsecurity.io/blog/litellm-1-107-0-compromised-pypi-backdoored-wheels-credential-stealer), [Wiz](https://www.wiz.io/blog/litellm-compromised-steals-credentials): October 21 malicious 1.107.0 wheels, floating container tags; recommended clean pin 1.106.2 | **No current project match found; historic host/gateway exposure unverified.** Match historical pulls/installs to full vendor digests/windows, not source tag. See incident checklist; a clean lockfile does not close this item |
-| F Trust stores | [Python guidance](https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576), [uv GHSA](https://github.com/astral-sh/uv/security/advisories/GHSA-hq85-5cpj-mr62), [certifi GHSA](https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2): pip 26.2.2, uv 0.13.4, certifi 2026.10.19; October 20 guidance. Go 1.26.10/1.27.3; webpki 0.103.16, roots/root-certs 1.0.10 | **Local Node bundled CA remediated by patched runtime; deployed and device stores unverified.** No project Python/pip/uv environment. System Python used `-I -S` for local file inspection, not network bootstrap. Its LibreSSL/system paths do not prove trust remediation. Inventory embedded bundles; follow trusted vendor bootstrap, never disable TLS verification |
-| G GitLab | [October 21 release](https://docs.gitlab.com/releases/patches/patch-release-gitlab-19-5-1-released/): 12 issues including CVE-2026-110264; supported fixes 19.5.1/19.4.3/19.3.6; selected older critical-only backports are not complete release coverage | **Not applicable to observed GitHub repository/CI; external self-managed GitLab/runners unverified.** Obtain product/runner versions and supported upgrade stops |
-| H Oracle/Java | [October 20 CPU](https://www.oracle.com/security-alerts/cpuoct2026.html), [October 21 CVE-2026-91403 alert](https://www.oracle.com/security-alerts/alert-cve-2026-91403.html): later JSSE issue needs its vendor's specific fixes | **Not applicable to project code; external JDK/Oracle unverified.** Determine actual distribution, product/version and out-of-band patch; affected-build examples are not fixed versions. Some patch detail requires My Oracle Support |
-| I DNS | [BIND matrix](https://kb.isc.org/docs/aa-00913), October 21: CVE-2026-19630/-94300/-96888/-97313, 9.20.30 stable, branch/vendor-specific alternatives. [Unbound 1.26.2](https://nlnetlabs.nl/projects/unbound/download/), October 21: CVE-2026-97206/-50106/-96405/-109125/-35501 | **Unverified provider/network DNS infrastructure.** Obtain actual resolver implementations, versions/backports and configurations; no repo package update establishes DNS remediation |
-| J Network/security products | [Cisco October 21 complete 14-advisory set](https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-notice-QGwHnJ6k), [Splunk SOAR](https://advisory.splunk.com/), [Fortinet notice](https://www.fortinet.com/blog/ciso-collective/fortinet-releases-security-hardening-release-for-multiple-products) | **Unverified device inventory.** Cisco: Snort 3.12.4.0, Expressway X15.5.20, UC 15SU5, Secure Client 5.1.20.333, IOS XR branch SMUs. SOAR SVD-2026-1010/1011/1012: 8.7.0+. Fortinet October 22 hardening: use product/branch matrices; confirm portal firmware and manual/cloud updates even before November 10 details. Separate from PHP2Shell and historical Smart Install |
-| K HTTP/3 | [FoxIO October 20 report](https://foxio.io/blog/header-accordions-qpack-amplification-attacks-against-http-3-servers): implementation-specific amplification; quic-go 0.57.0 fixed November 21, 2025; quiche 0.29.3 July 14, 2026; lsquic 4.9.0 | **No direct project HTTP/3 server; provider edge unverified.** Obtain Replit ingress/library version and resource limits, then match affected implementation/fix; do not assume all QUIC servers or Bun fixes cover QPACK |
-| L Infrastructure | [Ubuntu CVE-2026-99999](https://ubuntu.com/security/CVE-2026-99999), [Red Hat](https://access.redhat.com/security/cve/cve-2026-99999), [Atlassian October 20 bulletin](https://confluence.atlassian.com/security/security-bulletin-october-20-2026-1874690162.html), [BeyondTrust BT26-05](https://www.beyondtrust.com/trust-center/security-advisories/bt26-05) | **Unverified Linux provider hosts / appliances; native macOS not the affected Linux kernel.** Obtain host build/backports and reboot/livepatch evidence. BeyondTrust: disclosure October 15, SaaS fix October 9, KEV October 16, self-hosted patch BT26-05-RS for 24.3.1-26.2.3. Atlassian fixes vary by product/branch and bundled components |
-| M Cloud Shell / WS | [Google release notes](https://docs.cloud.google.com/shell/docs/release-notes): CVE-2026-85267 service fix July 28; no customer action required. [Research URL](https://cymulate.com/blog/cve-2026-85267-google-cloud-shell-oauth-token-theft/) inaccessible in research tool | **Cloud Shell project use unverified; no repository fix or blanket Google revocation warranted.** Own development WS protected by patched Vite; production has only outbound Neon WS, no privileged tunnel route identified. Historic tunnel/provider access still unverified |
-| N Broader stack/devices | [PostgreSQL August 13 fixes](https://www.postgresql.org/about/news/postgresql-186-1711-1615-1519-1424-and-19-beta-3-released-3365/): 18.6/17.11/16.15/15.19/14.24. [RHSA-2026:86594](https://access.redhat.com/errata/RHSA-2026:86594): RHEL8 .NET runtime 8.0.32/SDK 8.0.132. [Chrome](https://chromereleases.googleblog.com/), [Mozilla](https://www.mozilla.org/en-US/security/advisories/), [Apple](https://support.apple.com/en-us/100100), [RingRTC CVE](https://nvd.nist.gov/vuln/detail/CVE-2026-113380) | **Application dependencies remediated locally except S10; actual DB/device/native/MCP versions unverified.** Local PostgreSQL 17.9 is older than 17.11. Chrome 155 is older than the October 20 stable fix 156.0.8078.47/.48. RingRTC needs 2.72.0 if present. No .NET/Signal dependency identified in repo; no blanket Bluetooth action supported |
-
-### All Ten Node Issues
-
-Additional trust-bundle source matrices: [Go releases](https://go.dev/doc/devel/release),
-[rustls-webpki](https://rustsec.org/advisories/RUSTSEC-2026-0382),
-[webpki-roots](https://rustsec.org/advisories/RUSTSEC-2026-0381) and
-[webpki-root-certs](https://rustsec.org/advisories/RUSTSEC-2026-0383).
-
-The October 21 patch also updates c-ares, CA certificates, OpenSSL, SQLite and
-Undici as applicable. These assessments do not depend on npm audit reporting them.
-
-| CVE | Condition / Assessment For This Project |
-| --- | --- |
-| 2026-105482 | NUL DNS-name handling: Node 22 affected runtime; no user-controlled DNS name route identified |
-| 2026-105483 | Fullwidth-IP TLS hostname bypass: listed 24/26, not this chosen 22 line |
-| 2026-106069 | Loose-IP TLS hostname bypass: Node 22 affected runtime/outbound TLS |
-| 2026-111497 | Brotli out-of-bounds write/RCE: Node 22 affected; incoming compressed bodies now rejected and runtime patched |
-| 2026-105481 | Keep-alive response sequencing: Node 22 affected HTTP client runtime |
-| 2026-106072 | Noncanonical IPv4 certificate validation: Node 22 affected TLS runtime |
-| 2026-106074 | UUID/randomInt snapshot entropy: no custom startup snapshot or SEA build found; runtime patched |
-| 2026-106070 | ZipFile prefix validation: listed Node 26, not chosen 22 line |
-| 2026-106071 | Permission wildcard overgrant: listed Node 26, not chosen 22 line |
-| 2026-106073 | realpathSync permission bypass: no reliance on experimental permission model found; runtime patched |
-
-### Database/Advisory Cross-Checks
-
-CISA official JSON was downloaded successfully: snapshot **2026.10.21**, released
-2026-10-21T14:04:39.8983Z, 1,754 entries. The relevant new BeyondTrust entry is
-confirmed with October 16 addition; Atlassian CVE-2026-21589 was added October 15.
-The PHP/Node baseline CVEs were absent in this snapshot. This is not proof of no
-exploitation or complete October 22 KEV coverage. [CISA feed](https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json).
-
-OSV batch name/version queries were cross-checked against GitHub/npm advisories.
-The final release query covers all 509 unique name/version pairs in the 619-record
-lockfile and returns zero findings. Earlier intermediate-graph scans found the
-brace-parser advisory, which the Tailwind 4 migration subsequently removed. Different database
-refresh times explain why scanner lists
-must be assessed together; neither certifies source or runtime behavior.
-
-## Repository Changes And Validation
-
-Changes: owner-scoped saves/leaderboard, additive ownership migration, strict API
-inputs, storage upserts/caps, HTTP security middleware, privacy-preserving logs,
-development/production separation, runtime guards/pins, narrowed public Replit
-ports, targeted lock updates, ignored secret-file patterns and placeholder-only
-environment example. CI uses SHA-pinned checkout/setup-node with contents-read
-permissions, no persisted checkout token and no deployment credentials.
-
-| Check | Result / Coverage |
-| --- | --- |
-| Compromise precheck | Passed focused IOC/pattern check; bounds and historic gaps above |
-| npm audit before | 27 package reports: 2 critical, 16 high, 7 moderate, 2 low |
-| npm audit after | Zero vulnerabilities, including development/build dependencies after Tailwind 4 migration |
-| npm audit --omit=dev | Passed, zero reported production advisories |
-| npm ci/install --ignore-scripts | Passed with reviewed registry/lifecycle metadata, no lifecycle execution |
-| npm ls --all --json / CycloneDX SBOM | Passed after narrowing esbuild override; includes resolved optional/platform dependency metadata |
-| npm run check | Passed on patched local Node |
-| npm run test:security | 9 API tests plus 5 advisory/transport tests passed: ownership/upserts, hidden hashes, bounded inputs, Origin/Host/compression, rate limits, headers, secure cookies, log privacy, validated database TLS and fail-closed CI advisory checks |
-| npm run audit:security | Passed strict zero-finding gate, rejecting every advisory and scanner/incomplete-output failure |
-| npm run test:tutorial | Passed existing target-availability checks |
-| npm run build | Passed; lottie-web contains eval-capable code and bundle-size warning. CSP does not permit unsafe-eval; checked production flow had no uncaught page errors |
-| npm run test:regression | Five browser tests passed: desktop/mobile full tutorial, core navigation, mobile tab containment and continuous-play autosave. Navigation waits for DOM/UI assertions rather than unrelated remote fonts |
-| Local production smoke | Passed built server boot, assets, CSP, API 404, welcome/start, desktop/mobile captures, no uncaught page errors; no real database credentials used |
-| git diff --check | Passed |
-| Live database migration / provider integration | **Not run.** Actual production database/schema/TLS inspected read-only; production-data backup/restore approval is pending before migration. Unpatched local PostgreSQL was not started |
-| Production / CI actual execution | Branch, PR and merged-main CI passed; Replit source preparation validations passed. **No production deployment or credential rotation performed** |
-
-Compatibility limits: old unowned saves cannot safely be assigned to visitors and
-will be unreachable; cached clients sending userId:null remain accepted, but cannot
-claim a numeric user ID. Clearing the cookie creates a new anonymous owner; there
-is no account recovery. Each owner has one current save and leaderboard result.
-The unchanged game client starts fresh rather than restoring API saves. Integer
-database bounds still apply; fractional money/revenue are rounded at autosave.
-Production requires PUBLIC_HOSTS or REPLIT_DOMAINS, and may need explicit proxy
-CIDRs. Memory storage is not durable; DB credentials are needed for persistence.
-The mobile tab container now grows with its grid instead of overlapping content.
-An independent autosave timer fix uses the latest state snapshot rather than
-restarting its 30-second interval every game tick. Expanded browser checks cover
-the full desktop/mobile tutorial, mobile tab containment and continuous-play saves.
-
-No container/OS scanner or full SAST/entropy-secret tool was installed; container
-images are absent from the repo, and provider host/managed native-component checks
-require their metadata. Manual source review covered API/storage/error paths,
-database parameterization, the trusted-source chart style injection, frontend
-requests, CSP and the absence of privileged AI/server tool routes. A negative
-dependency scan does not replace those checks or establish exhaustive coverage.
-
-## Production Checklist, Requires Administrator Authorization/Access
-
-- [ ] Identify the Replit app, every production/staging/preview deployment and old reachable revision; obtain actual URL, build logs and runtime metadata. Do not treat GitHub's empty deployment list as no deployments.
-- [ ] Export database backup and review the additive migration. Apply with a project migration role; it does not delete legacy rows. On a large table, plan index creation/locking with the database operator.
-- [ ] Configure exact PUBLIC_HOSTS, server-only DATABASE_URL and verified TRUSTED_PROXIES. Confirm HTTPS and that ingress strips spoofed forwarded headers.
-- [ ] Select patched Node 22, verify `node --version` is at least 22.23.4 in builder and running service, and record executable/image provenance and CA overrides.
-- [ ] Clean rebuild with `npm ci --ignore-scripts` and `npm run build`; prune dev dependencies only after building. Avoid reusing any cache later identified as compromised.
-- [ ] Deploy reviewed repository changes; no push, deployment or migration was performed during this audit.
-- [ ] Verify saves with two fresh browser contexts: each POST/GET is isolated, repeat save replaces one row, anonymous GET cannot retrieve another save, and responses do not expose owner hashes. Test real Neon-backed upserts.
-- [ ] Verify HTTPS cookie attributes, disallowed Host/Origin rejection, 400/413/415 behavior, no-store/security headers, static-only production, navigation/tutorial and leaderboard flows.
-- [ ] Configure shared/edge limits for multiple replicas and database quotas/retention. Per-process limits and per-owner upserts do not prevent unlimited distributed creation of new owners.
-- [ ] Obtain Neon/PostgreSQL actual server revision (16.15 minimum on branch 16 per current vendor release), TLS enforcement, role grants, network controls, backups and provider patch evidence. No browser database credentials were found; RLS/grants were not inspected.
-- [ ] Obtain Replit/Neon host-kernel and HTTP/3/trust-store remediation evidence; an updated app container does not establish host remediation.
-- [ ] Review access/security logs from October 17 onward; record retention coverage. Inspect provider changes/usage/billing if anomalies are found.
-
-Migration command, only in the authorized project's deployment console with its
-connection already configured as a secret; do not paste the value into chat/logs:
-
-```sh
-psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/security-save-ownership.sql
-node --version
-npm ci --ignore-scripts
-npm run check
-npm run test:security
-npm run build
-npm audit --omit=dev
-npm prune --omit=dev --ignore-scripts
-NODE_ENV=production node dist/index.js
+```bash
+/usr/local/bin/npm ci --ignore-scripts
+/usr/local/bin/npm run check:runtime
+/usr/local/bin/npm run format:check
+/usr/local/bin/npm run lint
+/usr/local/bin/npm run check
+/usr/local/bin/npm run test:api
+/usr/local/bin/npm run test:unit
+/usr/local/bin/npm run test:persistence
+/usr/local/bin/npm run test:coverage
+/usr/local/bin/npm run build
+/usr/local/bin/npm run check:csp:dev
+/usr/local/bin/npm run test:e2e
+/usr/local/bin/npm audit --package-lock-only --omit=dev --audit-level=high
 ```
 
-Deployment rollback: keep the additive columns/indexes. Roll back to a reviewed
-build retaining ownership guards, or temporarily block save/leaderboard endpoints
-at ingress. Do not re-expose the old global-save API as a rollback strategy.
+The test environment must allow local loopback listeners for Supertest and
+Playwright. The restricted shell blocks those listeners; elevated isolated test
+execution is used instead. Full-tree audit findings are not suppressed: the
+Tailwind 3 migration remains an explicit open item.
 
-## Conditional Credential / Incident-Response Checklist
+## Provider deployment and rollback checklist
 
-No specific exposed credential identifier was found. The following actions are
-conditional on provider use/exposure evidence, and require coordinated owner action.
+1. Fetch and record `origin/main`, candidate SHA, dirty-tree state, CI run URL,
+   and reviewer approval.
+2. Confirm branch protection and CI execute the pinned workflow from the
+   candidate SHA; never assume the local-only workflow is active.
+3. Inventory every provider environment, preview, worker, scheduled job,
+   database, bucket, registry credential, and build cache. Preserve relevant
+   backups and incident logs before cleanup.
+4. Confirm Node 22.23.4+ and npm 10.9.9 in the actual build/runtime; use
+   `npm ci --ignore-scripts` from the reviewed lock.
+5. Build with `npm run build:release`, injecting the immutable full SHA. Record
+   image/build digest and deployment ID.
+6. Probe `/api/healthz`, `/api/readyz`, and `/api/version`; a null or mismatched
+   build SHA, non-ready core, or fabricated migration version fails release.
+7. Probe legacy endpoints with GET and POST and require JSON `410` responses.
+8. Run the synthetic browser path: startup, local save, reload/resume,
+   pause/no-time-drift, reset/new-run, and completion. Record screenshots,
+   console/CSP output, and accessibility results.
+9. Verify HTTPS security headers at the real edge, including a documented HSTS
+   policy, and check no unexpected port, database, or external API route is
+   reachable.
+10. Roll back for core health/version/static-serving or synthetic gameplay
+    failure. Keep telemetry failures separate from core rollback signals.
 
-- [ ] If Railway supported any environment, inventory environment-variable and private-registry consumers. Revoke/reissue third-party provider, database, registry and bucket credentials at their issuing services; replacing Railway variables alone is not revocation.
-- [ ] Replace invalidated Railway API tokens in the specific CI/integration secret stores; verify restored calls. Reconnect GitHub and redeploy bucket consumers under current provider guidance. Verify running deployments use replacements; don't assume the Railway token reset covers other secrets.
-- [ ] If LiteLLM was used, preserve historical wheel/container hashes and install/pull/start timestamps. Maintainer wheel interval: October 21 11:39:51-13:23 UTC; affected image tags pointed at compromised artifacts starting 11:46:56 UTC, GHCR unavailable by 13:51 and Docker Hub repointed by 14:20. Match the vendor's complete image-index digests, including database/non-root variants.
-- [ ] On credible LiteLLM exposure, do not start Python/pip/apps or delete hooks/evidence. Isolate the affected environment, preserve protected logs/hashes/markers and process/persistence evidence, then recover from trusted artifacts. Version removal alone is not recovery.
-- [ ] Coordinate revocation across shared projects: cloud keys/roles and temporary sessions, provider/master/virtual keys, DB secrets, GitHub CLI OAuth tokens, SSH/GPG access, agent sessions and registry credentials reachable from an exposed host. Put replacements only into a trusted recovered environment.
-- [ ] Inspect relevant gateway prompts/responses, tool traces and CI artifacts for credential patterns using redacted output. Investigate the vendor's suspected logged-response path; do not assume every coding tool leaked tokens.
-- [ ] Review CloudTrail GetCallerIdentity, model-discovery and IAM-enumeration events and out-of-infrastructure role use; correlate with host/install times. Check GCP/provider access, usage and billing where applicable. No such cloud logs were accessible here.
+## Credential and incident-response checklist
 
-## One-Time Device / Account / Network Checklist
+Use this only for services actually in scope; do not rotate shared credentials
+speculatively from this repository.
 
-- [ ] Update the machine's default Node 22.12.0 through its administrator/version manager; repository pins and the audit-local runtime do not update it globally.
-- [ ] Update local PostgreSQL 17.9 to its vendor's patched branch release and plan any service restart separately. Verify the actual process revision rather than the package label alone.
-- [ ] Update Chrome 155.0.8059.85 and verify macOS, Firefox, Electron, automation browsers and embedded trust bundles. Current Playwright still packages Chromium 156.0.8078.4; local smoke was confined to loopback, and browser CA/patch parity is not certified.
-- [ ] Inventory Python/pip vendored certifi, uv, Rust/webpki, Go and Java trust consumers, plus CI/buildpack images. Use vendor trusted-bootstrap guidance; never turn off certificate checks.
-- [ ] Inventory Cisco/Snort/Expressway/UC/IOS XR/Secure Client (including macOS Posture), Splunk SOAR, Fortinet, BIND/Unbound, PAN-OS/Panorama, Atlassian and BeyondTrust supporting this project. Apply branch/product-specific patches and compromise guidance only where present.
-- [ ] For Fortinet, confirm scheduled hardening firmware availability and supported paths: FortiOS 8.0.2/7.6.8/7.4.13/7.2.14; FortiManager/Analyzer 8.0.2/7.6.8/7.4.12/7.2.13; recent FortiMail/Authenticator fixes also apply by branch. Detailed November advisories are not a reason to defer vendor-mandated available updates.
-- [ ] Check Signal/RingRTC 2.72.0 if installed/relevant. Google Cloud Shell's historical service disclosure alone requires no blanket token revocation. No unsupported Bluetooth instructions were adopted.
+1. If any Railway project was used, follow Railway's incident guidance: rotate
+   all environment variables, third-party database/bucket/registry credentials,
+   reconnect invalidated Railway API-token integrations, and verify each
+   running deployment has replacement values. Railway's own token invalidation
+   does not revoke third-party credentials. See the
+   [Railway disclosure](https://blog.railway.com/p/security-disclosure-wednesday-october-21st)
+   and its live status page.
+2. If LiteLLM 1.107.0 or a listed floating image tag ever ran, preserve logs and
+   markers, isolate the environment, rebuild from trusted artifacts, rotate all
+   reachable secrets and IAM credentials, and review cloud identity/model
+   discovery history. Do not start a suspect Python environment to investigate.
+3. Search provider logs, CI artifacts, coding-agent traces, and gateway prompts
+   for credential exposure without printing values. Record only redacted
+   identifiers, issuing service, scope, and affected consumers.
+4. For any confirmed secret exposure, revoke at the issuer, create replacement
+   credentials in a clean environment, update every consumer, invalidate old
+   sessions/temporary credentials, and review access, usage, and billing logs.
 
-## Confidence And Closure Evidence
+## One-time device and network checklist
 
-An independent read-only review of the final server/storage/schema/migration and
-dependency/workflow changes found no additional actionable issues. The final CI
-gate was separately tested against new-advisory, production-dependency and
-incomplete-scanner-output cases.
+- Update Bun from local 1.3.11 to 1.4.4 or later only where Bun is intentionally
+  used; the repository itself does not use it.
+- Keep local PHP at 8.5.12 or newer; it is not a project runtime here.
+- Verify every Python distribution/virtual environment that is actually used:
+  pip 26.2.2+, uv 0.13.4+, certifi 2026.10.19+, and rebuilt system/container
+  certificate stores. Do not disable certificate verification. The
+  [Python packaging guidance](https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576)
+  explains why each tool's own trust bundle matters.
+- Inventory non-repository DNS, network, Java, GitLab, Atlassian, BeyondTrust,
+  Cisco, Splunk, Fortinet, and managed-host assets with their owners; no source
+  file can validate them.
+- Obtain managed-host kernel/backport and reboot/livepatch evidence rather than
+  using a container or local macOS version as a proxy for provider remediation.
 
-High confidence: reviewed ownership/logging/input/development-server weaknesses,
-resolved dependency versions, patched audit runtime provenance and passing local
-checks. Moderate coverage: bounded redacted secret/IOC/history review and manual
-source analysis; no evidence of compromise found within those limits.
+## Confidence and closure criteria
 
-Blockers to production sign-off: deployment access and actual runtime/artifact
-metadata; database migration plus real Neon-backed tests; edge/kernel/trust-store
-provider evidence; relevant October incident/access history; resolution or explicit
-owner decision on the unpatched build dependency. CI must run after publication.
-Closing those items requires the concrete evidence listed above, not another
-claim based solely on package scans. This audit does not guarantee complete safety.
+- **High confidence:** source/lockfile findings, local runtime inventory,
+  no-secret scan results, and the contained old-upstream route design are
+  evidence-backed.
+- **Moderate confidence:** the rebuilt dependency graph has zero production npm
+  advisories, subject to the audit database's coverage and the reviewed lock
+  actually being used by CI/deployment.
+- **Low confidence / blocked:** production runtime, served SHA, TLS/HSTS,
+  provider secrets, databases, logs, caches, external infrastructure, CISA KEV
+  status, and historical host exposure.
+
+Close the deployment blocker only with provider-side evidence for the exact
+candidate SHA, runtime version, release artifact, live route behavior, browser
+canary, and credential/resource inventory. An audit cannot prove the absence of
+all vulnerabilities or compromise.

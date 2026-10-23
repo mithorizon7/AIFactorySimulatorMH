@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  darkMode: "class",
+  darkMode: ["class"],
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -80,13 +80,13 @@ export default {
           },
         },
         "pulse-slow": {
-          '0%, 100%': {
-            opacity: '0.3',
+          "0%, 100%": {
+            opacity: "0.3",
           },
-          '50%': {
-            opacity: '0.8',
+          "50%": {
+            opacity: "0.8",
           },
-        }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -95,5 +95,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;

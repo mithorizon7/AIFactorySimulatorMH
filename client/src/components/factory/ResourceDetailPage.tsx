@@ -55,7 +55,7 @@ export default function ResourceDetailPage({
   const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
   
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold">Resource Management</h2>

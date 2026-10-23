@@ -377,7 +377,7 @@ export function UnifiedTutorialSystem({ gameState, onNextStep, onSkipTutorial, o
           
           <div className="bg-blue-900/20 border border-blue-700/30 rounded p-3 mb-3">
             <div className="flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+              <Lightbulb className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-200 leading-relaxed">{currentStep.context}</p>
             </div>
           </div>

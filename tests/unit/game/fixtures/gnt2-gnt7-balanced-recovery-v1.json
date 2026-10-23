@@ -1,0 +1,33 @@
+{
+  "fixtureVersion": 1,
+  "agent": "balanced-recovery-v1",
+  "seed": 42,
+  "maxTicks": 750,
+  "expected": {
+    "activeTick": 570,
+    "currentEra": "GNT-7",
+    "status": "completed",
+    "completedTrainingRuns": 5,
+    "money": 5500000,
+    "intelligence": 3479.17329,
+    "totalSpend": 8410903,
+    "spendByCategory": {
+      "compute": 32477,
+      "data": 42478,
+      "algorithm": 22163,
+      "commercial": 0,
+      "regulationResilience": 5285,
+      "training": 8308500
+    },
+    "earnedRevenue": 0,
+    "externalFunding": 13909903,
+    "emergencyFunding": 12776609,
+    "emergencyFundingInterventions": 5,
+    "rngDraws": 19,
+    "rngState": 3489566947,
+    "breakthroughIds": [
+      1, 2, 3, 4, 5, 6, 7, 8, 11, 9, 12, 13, 14, 10, 16, 17, 18, 19, 20, 21
+    ],
+    "eventIds": [1, 3, 4, 5, 7, 8]
+  }
+}

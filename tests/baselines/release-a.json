@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-07-10",
+  "baseCommit": "c372658ea89b1e2c8a640cce345b0d2a1d9f3317",
+  "initialJavaScriptBytes": 1473993,
+  "maximumUnexplainedIncreaseRatio": 0.1,
+  "lcpMilliseconds": null,
+  "notes": "The bundle floor is enforced immediately. The five-run cold production LCP median remains a required Release A gate and must replace null before deployment."
+}

@@ -23,11 +23,18 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  const configuredHosts = (process.env.VITE_ALLOWED_HOSTS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter((host) => /^[A-Za-z0-9.-]+$/.test(host));
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: [...(process.env.REPLIT_DOMAINS?.split(',') ?? []), ...(process.env.DEV_ALLOWED_HOSTS?.split(',') ?? [])].filter(Boolean),
-    fs: { strict: true, allow: [path.resolve(__dirname, '..', 'client'), path.resolve(__dirname, '..', 'shared')], deny: ['.env', '.env.*', '*.{crt,pem,key}', '**/.git/**', '**/output/**'] },
+    allowedHosts: ["127.0.0.1", "localhost", ...configuredHosts],
+    // Vite 8 otherwise changes this default when it detects an agent process.
+    // Browser failures are asserted by Playwright; they must not be forwarded
+    // into the fatal Vite configuration-error logger.
+    forwardConsole: false,
   };
 
   const vite = await createViteServer({
@@ -37,6 +44,7 @@ export async function setupVite(app: Express, server: Server) {
       ...viteLogger,
       error: (msg, options) => {
         viteLogger.error(msg, options);
+        process.exit(1);
       },
     },
     server: serverOptions,
@@ -44,7 +52,7 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  app.use(async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
@@ -67,5 +75,42 @@ export async function setupVite(app: Express, server: Server) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }
+  });
+}
+
+export function serveStatic(app: Express) {
+  // The bundled server lives in dist/, while source-level API tests import
+  // this module from server/. Resolve the same built client artifact in both
+  // contexts instead of making the test path diverge from production.
+  const distPath = [
+    path.resolve(__dirname, "public"),
+    path.resolve(__dirname, "..", "dist", "public"),
+  ].find((candidate) => fs.existsSync(candidate));
+
+  if (!distPath) {
+    throw new Error(
+      "Could not find dist/public, make sure to build the client first",
+    );
+  }
+
+  app.use(
+    express.static(distPath, {
+      setHeaders(res, filePath) {
+        if (
+          filePath.endsWith("index.html") ||
+          filePath.endsWith("build-meta.json")
+        ) {
+          res.setHeader("Cache-Control", "no-store");
+        } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      },
+    }),
+  );
+
+  // fall through to index.html if the file doesn't exist
+  app.use((_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

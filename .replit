@@ -1,4 +1,4 @@
-modules = ["nodejs-22", "web", "postgresql-16"]
+modules = ["nodejs-22", "web"]
 run = ["bash", "tools/with-node22.sh", "npm", "run", "dev"]
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 [env]
@@ -10,7 +10,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
-build = ["bash", "-c", "bash tools/with-node22.sh npm ci --ignore-scripts && bash tools/with-node22.sh npm run build"]
+build = ["bash", "tools/with-node22.sh", "node", "tools/build-release.mjs"]
 run = ["bash", "tools/with-node22.sh", "npm", "run", "start"]
 
 [[ports]]
@@ -44,6 +44,3 @@ args = "bash tools/with-node22.sh npm ci --ignore-scripts"
 task = "shell.exec"
 args = "bash tools/with-node22.sh npm run dev"
 waitForPort = 5000
-
-[agent]
-integrations = ["javascript_database:1.0.0"]

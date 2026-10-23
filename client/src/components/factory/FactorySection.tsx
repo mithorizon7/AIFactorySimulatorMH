@@ -2,11 +2,42 @@ import { GameStateType, Era, getScaledInvestmentCost } from "@/lib/gameState";
 import { ResourceTooltip } from "@/components/ui/educational-tooltip";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { resourceDefinitions } from "@/lib/educationalContent";
-import { getTutorialCurrentStep, getTutorialStepAvailability, type TutorialTargetId } from "@/lib/narrativeContent";
+import {
+  getTutorialCurrentStep,
+  getTutorialStepAvailability,
+  type TutorialTargetId,
+} from "@/lib/narrativeContent";
 import { formatCurrency } from "@/lib/utils";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Cpu, Database, BrainCog, Zap, Server, LightbulbIcon, PlugZap, HardDrive, LayoutGrid, Scale, Boxes, Layers, Workflow, GraduationCap, Info, Users, Brain, FileText, Globe, Lightbulb, PauseCircle } from "lucide-react";
-import { 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Cpu,
+  Database,
+  BrainCog,
+  Zap,
+  Server,
+  LightbulbIcon,
+  PlugZap,
+  HardDrive,
+  LayoutGrid,
+  Scale,
+  Boxes,
+  Layers,
+  Workflow,
+  GraduationCap,
+  Info,
+  Users,
+  Brain,
+  FileText,
+  Globe,
+  Lightbulb,
+  PauseCircle,
+} from "lucide-react";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -14,10 +45,10 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useGamePause } from "@/contexts/GamePauseContext";
+import { useOptionalGamePause } from "@/contexts/GamePauseContext";
 import { useEffect, useState } from "react";
 
 interface FactorySectionProps {
@@ -33,7 +64,6 @@ interface FactorySectionProps {
   allocateMoneyToDataFormats: () => void;
   allocateMoneyToAlgorithmArchitectures: () => void;
   hireResearchEngineer?: () => void;
-
 }
 
 // Learning Dialog Component for Advanced Options
@@ -45,52 +75,45 @@ interface LearningDialogProps {
   category: "compute" | "data" | "algorithm";
 }
 
-function LearningDialog({ title, description, realWorldExample, importance, category }: LearningDialogProps) {
+function LearningDialog({
+  title,
+  description,
+  realWorldExample,
+  importance,
+  category,
+}: LearningDialogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  // Safe access to game pause context
-  let gamePause;
-  try {
-    gamePause = useGamePause();
-  } catch (error) {
-    // If context is not available, provide no-op functions
-    gamePause = {
-      isPausedForLearning: false, 
-      pauseForLearning: () => {}, 
-      resumeFromLearning: () => {},
-      pauseGameEngine: () => {},
-      resumeGameEngine: () => {}
-    };
-  }
+
+  const gamePause = useOptionalGamePause();
   const categoryColors = {
     compute: "text-blue-400",
-    data: "text-green-400", 
-    algorithm: "text-purple-400"
+    data: "text-green-400",
+    algorithm: "text-purple-400",
   };
-  
+
   const categoryBgColors = {
     compute: "bg-blue-900/20",
     data: "bg-green-900/20",
-    algorithm: "bg-purple-900/20"
+    algorithm: "bg-purple-900/20",
   };
 
   // Production-safe LearningDialog color mappings
   const dialogTriggerColors = {
     compute: "bg-blue-900/30 hover:bg-blue-900/50 border-blue-500/40",
-    data: "bg-green-900/30 hover:bg-green-900/50 border-green-500/40", 
-    algorithm: "bg-purple-900/30 hover:bg-purple-900/50 border-purple-500/40"
+    data: "bg-green-900/30 hover:bg-green-900/50 border-green-500/40",
+    algorithm: "bg-purple-900/30 hover:bg-purple-900/50 border-purple-500/40",
   };
 
   const dialogContentColors = {
     compute: "bg-blue-900/20 border-blue-600/50",
     data: "bg-green-900/20 border-green-600/50",
-    algorithm: "bg-purple-900/20 border-purple-600/50"
+    algorithm: "bg-purple-900/20 border-purple-600/50",
   };
 
   const dialogIconBgColors = {
     compute: "bg-blue-900/50",
-    data: "bg-green-900/50", 
-    algorithm: "bg-purple-900/50"
+    data: "bg-green-900/50",
+    algorithm: "bg-purple-900/50",
   };
 
   // Production-safe color mappings for educational panels
@@ -98,18 +121,18 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
     foundation: {
       text: "text-green-200",
       accent: "text-amber-200",
-      icon: "text-green-400"
+      icon: "text-green-400",
     },
     scaling: {
-      text: "text-green-200", 
+      text: "text-green-200",
       accent: "text-amber-200",
-      icon: "text-green-400"
+      icon: "text-green-400",
     },
     advanced: {
       text: "text-green-200",
-      accent: "text-purple-200", 
-      icon: "text-green-400"
-    }
+      accent: "text-purple-200",
+      icon: "text-green-400",
+    },
   };
 
   const algorithmColorClasses = {
@@ -117,22 +140,22 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
       text: "text-purple-200",
       accent: "text-amber-200",
       progress: "text-gray-400",
-      icon: "text-purple-400"
+      icon: "text-purple-400",
     },
     innovation: {
       text: "text-purple-200",
-      accent: "text-amber-200", 
+      accent: "text-amber-200",
       progress: "text-gray-400",
-      icon: "text-purple-400"
+      icon: "text-purple-400",
     },
     agi: {
       text: "text-purple-200",
       accent: "text-cyan-200",
       progress: "text-cyan-300",
-      icon: "text-purple-400"
-    }
+      icon: "text-purple-400",
+    },
   };
-  
+
   // Use effect to pause/resume game when dialog opens/closes
   useEffect(() => {
     if (isDialogOpen) {
@@ -141,7 +164,7 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
       gamePause.resumeFromLearning();
     }
   }, [isDialogOpen]);
-  
+
   // Handle dialog open/close events
   const handleOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
@@ -150,8 +173,8 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="sm"
           className={`text-xs px-2 py-1 h-auto ml-2 inline-flex items-center ${dialogTriggerColors[category]} rounded-md`}
         >
@@ -161,8 +184,12 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
       </DialogTrigger>
       <DialogContent className={`${dialogContentColors[category]} shadow-lg`}>
         <DialogHeader className="p-2 mb-2 bg-gray-900/50 rounded-lg border-b border-gray-700">
-          <DialogTitle className={`${categoryColors[category]} flex items-center gap-2 text-xl font-bold`}>
-            <div className={`p-1.5 rounded-full ${dialogIconBgColors[category]}`}>
+          <DialogTitle
+            className={`${categoryColors[category]} flex items-center gap-2 text-xl font-bold`}
+          >
+            <div
+              className={`p-1.5 rounded-full ${dialogIconBgColors[category]}`}
+            >
               <Info className="h-5 w-5" />
             </div>
             {title}
@@ -171,51 +198,70 @@ function LearningDialog({ title, description, realWorldExample, importance, cate
             Learn how this works in real AI development
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           <div className="space-y-2 p-4 bg-gray-800/80 rounded-lg border border-gray-700 shadow-inner">
-            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+            <h4
+              className={`${categoryColors[category]} font-medium flex items-center gap-2`}
+            >
               <FileText className="h-4 w-4" />
               <span>Description</span>
             </h4>
             <div className="bg-gray-900/40 p-3 rounded-md">
-              <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
+              <p className="text-gray-200 text-sm leading-relaxed">
+                {description}
+              </p>
             </div>
           </div>
-          
+
           <div className="space-y-2 p-4 bg-gray-800/80 rounded-lg border border-gray-700 shadow-inner">
-            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+            <h4
+              className={`${categoryColors[category]} font-medium flex items-center gap-2`}
+            >
               <Globe className="h-4 w-4" />
               <span>Real World Example</span>
             </h4>
-            <div className={`${category === "compute" ? "bg-blue-900/20" : category === "data" ? "bg-green-900/20" : "bg-purple-900/20"} p-3 rounded-md border-l-4 ${category === "compute" ? "border-blue-500/50" : category === "data" ? "border-green-500/50" : "border-purple-500/50"}`}>
-              <p className="text-gray-200 text-sm leading-relaxed">{realWorldExample}</p>
+            <div
+              className={`${category === "compute" ? "bg-blue-900/20" : category === "data" ? "bg-green-900/20" : "bg-purple-900/20"} p-3 rounded-md border-l-4 ${category === "compute" ? "border-blue-500/50" : category === "data" ? "border-green-500/50" : "border-purple-500/50"}`}
+            >
+              <p className="text-gray-200 text-sm leading-relaxed">
+                {realWorldExample}
+              </p>
             </div>
           </div>
-          
+
           <div className="space-y-2 p-4 bg-gray-800/80 rounded-lg border border-gray-700 shadow-inner">
-            <h4 className={`${categoryColors[category]} font-medium flex items-center gap-2`}>
+            <h4
+              className={`${categoryColors[category]} font-medium flex items-center gap-2`}
+            >
               <Lightbulb className="h-4 w-4" />
               <span>Why It Matters</span>
             </h4>
             <div className="bg-gray-900/40 p-3 rounded-md">
-              <p className="text-gray-200 text-sm leading-relaxed italic">{importance}</p>
+              <p className="text-gray-200 text-sm leading-relaxed italic">
+                {importance}
+              </p>
             </div>
           </div>
-          
+
           {/* Pause indicator */}
           {gamePause.isPausedForLearning && (
             <div className="mt-4 px-4 py-2 bg-yellow-900/40 border border-yellow-500/40 rounded-lg shadow-inner text-yellow-300 text-xs flex items-center">
               <div className="p-1.5 bg-yellow-500/20 rounded-full mr-2">
                 <PauseCircle className="w-3 h-3" />
               </div>
-              <span className="font-medium">Game timer paused while learning</span>
+              <span className="font-medium">
+                Game timer paused while learning
+              </span>
             </div>
           )}
         </div>
         <DialogFooter className="p-2 mt-2 bg-gray-900/50 rounded-lg border-t border-gray-700">
           <DialogClose asChild>
-            <Button variant="outline" className={`${category === "compute" ? "bg-blue-900/30 hover:bg-blue-800/50 border-blue-700" : category === "data" ? "bg-green-900/30 hover:bg-green-800/50 border-green-700" : "bg-purple-900/30 hover:bg-purple-800/50 border-purple-700"} text-white`}>
+            <Button
+              variant="outline"
+              className={`${category === "compute" ? "bg-blue-900/30 hover:bg-blue-800/50 border-blue-700" : category === "data" ? "bg-green-900/30 hover:bg-green-800/50 border-green-700" : "bg-purple-900/30 hover:bg-purple-800/50 border-purple-700"} text-white`}
+            >
               <span className="mr-2">Continue Building</span>
               <Server className="h-4 w-4" />
             </Button>
@@ -250,18 +296,18 @@ export default function FactorySection({
     foundation: {
       text: "text-green-200",
       accent: "text-amber-200",
-      icon: "text-green-400"
+      icon: "text-green-400",
     },
     scaling: {
-      text: "text-green-200", 
+      text: "text-green-200",
       accent: "text-amber-200",
-      icon: "text-green-400"
+      icon: "text-green-400",
     },
     advanced: {
       text: "text-green-200",
-      accent: "text-purple-200", 
-      icon: "text-green-400"
-    }
+      accent: "text-purple-200",
+      icon: "text-green-400",
+    },
   };
 
   const algorithmColorClasses = {
@@ -269,35 +315,76 @@ export default function FactorySection({
       text: "text-purple-200",
       accent: "text-amber-200",
       progress: "text-gray-400",
-      icon: "text-purple-400"
+      icon: "text-purple-400",
     },
     innovation: {
       text: "text-purple-200",
-      accent: "text-amber-200", 
+      accent: "text-amber-200",
       progress: "text-gray-400",
-      icon: "text-purple-400"
+      icon: "text-purple-400",
     },
     agi: {
       text: "text-purple-200",
       accent: "text-cyan-200",
       progress: "text-cyan-300",
-      icon: "text-purple-400"
-    }
+      icon: "text-purple-400",
+    },
   };
 
-  const { resources, production, upgradeCosts, money, computeInputs, dataInputs, algorithmInputs } = gameState;
+  const {
+    resources,
+    production,
+    upgradeCosts,
+    money,
+    computeInputs,
+    dataInputs,
+    algorithmInputs,
+  } = gameState;
 
   // Calculate actual upgrade costs
-  const computeLevelCost = getScaledInvestmentCost(100, gameState.levels.compute, gameState.currentEra);
-  const dataLevelCost = getScaledInvestmentCost(75, gameState.levels.data, gameState.currentEra);
-  const algorithmLevelCost = getScaledInvestmentCost(125, gameState.levels.algorithm, gameState.currentEra);
-  const electricityCost = getScaledInvestmentCost(85, computeInputs.electricity, gameState.currentEra);
-  const hardwareCost = getScaledInvestmentCost(160, computeInputs.hardware, gameState.currentEra);
-  const regulationCost = getScaledInvestmentCost(140, computeInputs.regulation, gameState.currentEra);
-  const dataQuantityCost = getScaledInvestmentCost(120, dataInputs.quantity, gameState.currentEra);
-  const dataFormatsCost = getScaledInvestmentCost(140, dataInputs.formats, gameState.currentEra);
+  const computeLevelCost = getScaledInvestmentCost(
+    100,
+    gameState.levels.compute,
+    gameState.currentEra,
+  );
+  const dataLevelCost = getScaledInvestmentCost(
+    75,
+    gameState.levels.data,
+    gameState.currentEra,
+  );
+  const algorithmLevelCost = getScaledInvestmentCost(
+    125,
+    gameState.levels.algorithm,
+    gameState.currentEra,
+  );
+  const electricityCost = getScaledInvestmentCost(
+    85,
+    computeInputs.electricity,
+    gameState.currentEra,
+  );
+  const hardwareCost = getScaledInvestmentCost(
+    160,
+    computeInputs.hardware,
+    gameState.currentEra,
+  );
+  const regulationCost = getScaledInvestmentCost(
+    140,
+    computeInputs.regulation,
+    gameState.currentEra,
+  );
+  const dataQuantityCost = getScaledInvestmentCost(
+    120,
+    dataInputs.quantity,
+    gameState.currentEra,
+  );
+  const dataFormatsCost = getScaledInvestmentCost(
+    140,
+    dataInputs.formats,
+    gameState.currentEra,
+  );
   const currentTutorialStep = getTutorialCurrentStep(gameState.tutorial);
-  const { expandedAccordion } = getTutorialStepAvailability(currentTutorialStep);
+  const { expandedAccordion } =
+    getTutorialStepAvailability(currentTutorialStep);
 
   const completeTutorialTarget = (targetId: TutorialTargetId) => {
     if (
@@ -308,7 +395,7 @@ export default function FactorySection({
       advanceTutorial?.();
     }
   };
-  
+
   // Fixed costs (do not scale with level or era)
   const engineerCost = 250;
 
@@ -361,15 +448,19 @@ export default function FactorySection({
   };
 
   useEffect(() => {
-    if (!gameState.tutorial.isActive || gameState.tutorial.isCompleted || !expandedAccordion) {
+    if (
+      !gameState.tutorial.isActive ||
+      gameState.tutorial.isCompleted ||
+      !expandedAccordion
+    ) {
       return;
     }
 
-    setExpandedSections((previous) => (
+    setExpandedSections((previous) =>
       previous[expandedAccordion]
         ? previous
-        : { ...previous, [expandedAccordion]: true }
-    ));
+        : { ...previous, [expandedAccordion]: true },
+    );
   }, [
     gameState.tutorial.isActive,
     gameState.tutorial.isCompleted,
@@ -380,9 +471,11 @@ export default function FactorySection({
     <div className="bg-gray-800 rounded-lg p-5 md:col-span-1">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Resource Factories</h2>
-        <div className="font-medium text-green-400">Available: $<AnimatedNumber value={formatCurrency(money)} /></div>
+        <div className="font-medium text-green-400">
+          Available: $<AnimatedNumber value={formatCurrency(money)} />
+        </div>
       </div>
-      
+
       {/* Compute Factory */}
       <Accordion
         type="single"
@@ -397,16 +490,23 @@ export default function FactorySection({
         }}
       >
         <AccordionItem value="compute" className="border-none">
-          <div id="compute-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]" data-tutorial-id="compute-factory-card">
+          <div
+            id="compute-section"
+            className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#3B82F6]"
+            data-tutorial-id="compute-factory-card"
+          >
             <div className="flex justify-between items-center mb-2">
-              <ResourceTooltip 
+              <ResourceTooltip
                 resourceType="compute"
                 content={
                   <div className="space-y-2">
-                    <p className="font-bold">{resourceDefinitions.compute.title}</p>
+                    <p className="font-bold">
+                      {resourceDefinitions.compute.title}
+                    </p>
                     <p>{resourceDefinitions.compute.description}</p>
                     <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                      <span className="font-semibold">Real-world example:</span> {resourceDefinitions.compute.realWorldExample}
+                      <span className="font-semibold">Real-world example:</span>{" "}
+                      {resourceDefinitions.compute.realWorldExample}
                     </p>
                   </div>
                 }
@@ -420,7 +520,7 @@ export default function FactorySection({
                 <AnimatedNumber value={Math.floor(resources.compute)} />
               </span>
             </div>
-            
+
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Production Rate:</span>
@@ -431,17 +531,22 @@ export default function FactorySection({
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#3B82F6] h-full" style={{ width: getComputeBarWidth() }}></div>
+                  <div
+                    className="bg-[#3B82F6] h-full"
+                    style={{ width: getComputeBarWidth() }}
+                  ></div>
                 </div>
               </div>
             </div>
-            
+
             {/* System Status Section */}
             <div className="my-3 bg-gray-700 rounded-md p-2 border border-gray-600">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-400">System Status</span>
                 <div className="flex items-center">
-                  {gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 ? (
+                  {gameState.computeCapacity.used /
+                    gameState.computeCapacity.maxCapacity >=
+                  0.95 ? (
                     <span className="text-xs text-red-400 flex items-center">
                       <span className="relative flex h-2 w-2 mr-1">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -449,7 +554,9 @@ export default function FactorySection({
                       </span>
                       Critical
                     </span>
-                  ) : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9 ? (
+                  ) : gameState.computeCapacity.used /
+                      gameState.computeCapacity.maxCapacity >=
+                    0.9 ? (
                     <span className="text-xs text-amber-400 flex items-center">
                       <span className="relative flex h-2 w-2 mr-1">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -467,49 +574,61 @@ export default function FactorySection({
                   )}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-3 gap-1 text-center mb-1">
                 <div className="bg-gray-800 rounded p-1">
                   <div className="text-[0.65rem] text-gray-400">Available</div>
-                  <div className="text-xs font-medium text-blue-400">{gameState.computeCapacity.available}</div>
+                  <div className="text-xs font-medium text-blue-400">
+                    {gameState.computeCapacity.available}
+                  </div>
                 </div>
                 <div className="bg-gray-800 rounded p-1">
                   <div className="text-[0.65rem] text-gray-400">Used</div>
-                  <div className="text-xs font-medium text-orange-400">{gameState.computeCapacity.used}</div>
+                  <div className="text-xs font-medium text-orange-400">
+                    {gameState.computeCapacity.used}
+                  </div>
                 </div>
                 <div className="bg-gray-800 rounded p-1">
                   <div className="text-[0.65rem] text-gray-400">Total</div>
-                  <div className="text-xs font-medium text-purple-400">{gameState.computeCapacity.maxCapacity}</div>
+                  <div className="text-xs font-medium text-purple-400">
+                    {gameState.computeCapacity.maxCapacity}
+                  </div>
                 </div>
               </div>
-              
+
               {/* Usage bar */}
               <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full ${
-                    gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.95 
-                      ? 'bg-red-500 animate-pulse' 
-                      : gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity >= 0.9
-                        ? 'bg-amber-500'
-                        : 'bg-blue-500'
-                  }`} 
-                  style={{ width: `${Math.min(100, (gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity) * 100)}%` }}
+                    gameState.computeCapacity.used /
+                      gameState.computeCapacity.maxCapacity >=
+                    0.95
+                      ? "bg-red-500 animate-pulse"
+                      : gameState.computeCapacity.used /
+                            gameState.computeCapacity.maxCapacity >=
+                          0.9
+                        ? "bg-amber-500"
+                        : "bg-blue-500"
+                  }`}
+                  style={{
+                    width: `${Math.min(100, (gameState.computeCapacity.used / gameState.computeCapacity.maxCapacity) * 100)}%`,
+                  }}
                 ></div>
               </div>
             </div>
-            
-
           </div>
-          
-          <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
+
+          <AccordionTrigger
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-blue-400 font-medium border border-gray-600 hover:border-blue-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-blue-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="compute-advanced-toggle"
             onClick={handleComputeAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
               <span>Advanced Compute Options</span>
-              <span className="ml-auto text-xs text-gray-500 group-hover:text-blue-400">Click to expand</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-blue-400">
+                Click to expand
+              </span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
@@ -535,11 +654,14 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Invests money to increase Compute Level for training requirements and computing capacity.
+                  Invests money to increase Compute Level for training
+                  requirements and computing capacity.
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < computeLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < computeLevelCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={handleComputeUpgrade}
                   disabled={money < computeLevelCost}
@@ -549,10 +671,9 @@ export default function FactorySection({
                   <span className="font-medium">${computeLevelCost}</span>
                 </button>
               </div>
-              
+
               {/* Electricity */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium flex items-center gap-1">
@@ -572,11 +693,14 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Better power infrastructure enables more energy-efficient compute.
+                  Better power infrastructure enables more energy-efficient
+                  compute.
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < electricityCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < electricityCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToElectricity}
                   disabled={money < electricityCost}
@@ -585,10 +709,9 @@ export default function FactorySection({
                   <span className="font-medium">${electricityCost}</span>
                 </button>
               </div>
-              
+
               {/* Hardware */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
-
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium flex items-center gap-1">
@@ -608,11 +731,14 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Advanced GPU/TPU hardware dramatically increases training capacity.
+                  Advanced GPU/TPU hardware dramatically increases training
+                  capacity.
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < hardwareCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < hardwareCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToHardware}
                   disabled={money < hardwareCost}
@@ -621,7 +747,7 @@ export default function FactorySection({
                   <span className="font-medium">${hardwareCost}</span>
                 </button>
               </div>
-              
+
               {/* Regulatory Environment */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
                 <div className="flex justify-between items-center mb-2">
@@ -645,9 +771,11 @@ export default function FactorySection({
                 <p className="text-gray-400 text-xs mb-2">
                   Compliance investments reduce restrictions on compute usage.
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < regulationCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                    money < regulationCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   onClick={allocateMoneyToRegulations}
                   disabled={money < regulationCost}
@@ -660,7 +788,7 @@ export default function FactorySection({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-      
+
       {/* Data Factory */}
       <Accordion
         type="single"
@@ -675,16 +803,23 @@ export default function FactorySection({
         }}
       >
         <AccordionItem value="data" className="border-none">
-          <div id="data-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]" data-tutorial-id="data-factory-card">
+          <div
+            id="data-section"
+            className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#10B981]"
+            data-tutorial-id="data-factory-card"
+          >
             <div className="flex justify-between items-center mb-2">
-              <ResourceTooltip 
+              <ResourceTooltip
                 resourceType="data"
                 content={
                   <div className="space-y-2">
-                    <p className="font-bold">{resourceDefinitions.data.title}</p>
+                    <p className="font-bold">
+                      {resourceDefinitions.data.title}
+                    </p>
                     <p>{resourceDefinitions.data.description}</p>
                     <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                      <span className="font-semibold">Real-world example:</span> {resourceDefinitions.data.realWorldExample}
+                      <span className="font-semibold">Real-world example:</span>{" "}
+                      {resourceDefinitions.data.realWorldExample}
                     </p>
                   </div>
                 }
@@ -698,7 +833,7 @@ export default function FactorySection({
                 <AnimatedNumber value={Math.floor(resources.data)} />
               </span>
             </div>
-            
+
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Collection Rate:</span>
@@ -709,7 +844,10 @@ export default function FactorySection({
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#10B981] h-full" style={{ width: getDataBarWidth() }}></div>
+                  <div
+                    className="bg-[#10B981] h-full"
+                    style={{ width: getDataBarWidth() }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -717,33 +855,63 @@ export default function FactorySection({
             {/* Dynamic Data Factory Educational Content */}
             <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-green-400 mt-0.5 shrink-0">📊</div>
+                <div className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0">
+                  📊
+                </div>
                 <div>
-                  <h5 className="text-xs font-medium text-green-300 mb-2">Data Development Focus</h5>
+                  <h5 className="text-xs font-medium text-green-300 mb-2">
+                    Data Development Focus
+                  </h5>
                   <div className="text-xs text-gray-300 space-y-2">
                     {(() => {
                       const currentEra = gameState.currentEra;
                       const dataLevel = gameState.levels.data;
-                      
+
                       if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
                         const colors = eraColorClasses.foundation;
                         return (
                           <>
-                            <div>🔍 <strong>Foundation Phase:</strong> Building basic data pipelines and establishing quality standards</div>
-                            <div className={`${colors.text} italic`}>Like early AI labs collecting web scrapes and academic papers - quality matters more than quantity at this stage</div>
+                            <div>
+                              🔍 <strong>Foundation Phase:</strong> Building
+                              basic data pipelines and establishing quality
+                              standards
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Like early AI labs collecting web scrapes and
+                              academic papers - quality matters more than
+                              quantity at this stage
+                            </div>
                             {dataLevel < 3 && (
-                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Focus on Data Quality improvements to establish robust collection processes</div>
+                              <div className={colors.accent}>
+                                💡 <strong>Next Step:</strong> Focus on Data
+                                Quality improvements to establish robust
+                                collection processes
+                              </div>
                             )}
                           </>
                         );
-                      } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                      } else if (
+                        currentEra === Era.GNT4 ||
+                        currentEra === Era.GNT5
+                      ) {
                         const colors = eraColorClasses.scaling;
                         return (
                           <>
-                            <div>📈 <strong>Scaling Phase:</strong> Massively expanding data collection while maintaining high standards</div>
-                            <div className={`${colors.text} italic`}>Modern AI companies process trillions of tokens - like how GPT models trained on the entire internet</div>
+                            <div>
+                              📈 <strong>Scaling Phase:</strong> Massively
+                              expanding data collection while maintaining high
+                              standards
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Modern AI companies process trillions of tokens -
+                              like how GPT models trained on the entire internet
+                            </div>
                             {dataLevel < 5 && (
-                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Balance Data Quantity scaling with Quality improvements for optimal training</div>
+                              <div className={colors.accent}>
+                                💡 <strong>Next Step:</strong> Balance Data
+                                Quantity scaling with Quality improvements for
+                                optimal training
+                              </div>
                             )}
                           </>
                         );
@@ -751,9 +919,20 @@ export default function FactorySection({
                         const colors = eraColorClasses.advanced;
                         return (
                           <>
-                            <div>🚀 <strong>Advanced Phase:</strong> Specialized datasets and multimodal data integration for AGI capabilities</div>
-                            <div className={`${colors.text} italic`}>Cutting-edge research requires diverse, high-quality datasets across text, images, code, and reasoning tasks</div>
-                            <div className={colors.accent}>💡 <strong>AGI Focus:</strong> Multimodal data formats become critical for general intelligence</div>
+                            <div>
+                              🚀 <strong>Advanced Phase:</strong> Specialized
+                              datasets and multimodal data integration for AGI
+                              capabilities
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Cutting-edge research requires diverse,
+                              high-quality datasets across text, images, code,
+                              and reasoning tasks
+                            </div>
+                            <div className={colors.accent}>
+                              💡 <strong>AGI Focus:</strong> Multimodal data
+                              formats become critical for general intelligence
+                            </div>
                           </>
                         );
                       }
@@ -762,19 +941,19 @@ export default function FactorySection({
                 </div>
               </div>
             </div>
-            
-
           </div>
-          
-          <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
+
+          <AccordionTrigger
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-green-400 font-medium border border-gray-600 hover:border-green-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-green-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="data-advanced-toggle"
             onClick={handleDataAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
               <span>Advanced Data Options</span>
-              <span className="ml-auto text-xs text-gray-500 group-hover:text-green-400">Click to expand</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-green-400">
+                Click to expand
+              </span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
@@ -800,11 +979,17 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  <strong className="text-green-300">⭐ Raises Data Level</strong> - Investments in data curation lead to more accurate AI models and unlock training prerequisites.
+                  <strong className="text-green-300">
+                    ⭐ Raises Data Level
+                  </strong>{" "}
+                  - Investments in data curation lead to more accurate AI models
+                  and unlock training prerequisites.
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < dataLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataLevelCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
                   }`}
                   onClick={handleDataQualityUpgrade}
                   disabled={money < dataLevelCost}
@@ -814,7 +999,7 @@ export default function FactorySection({
                   <span className="font-medium">${dataLevelCost}</span>
                 </button>
               </div>
-              
+
               {/* Data Quantity */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
                 <div className="flex justify-between items-center mb-2">
@@ -836,11 +1021,20 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  <strong className="text-amber-400">⚡ Boosts Production</strong> - More data through web scraping and licensing leads to better capabilities. <em className="text-gray-500">Quality upgrades needed for Data Level.</em>
+                  <strong className="text-amber-400">
+                    ⚡ Boosts Production
+                  </strong>{" "}
+                  - More data through web scraping and licensing leads to better
+                  capabilities.{" "}
+                  <em className="text-gray-500">
+                    Quality upgrades needed for Data Level.
+                  </em>
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < dataQuantityCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataQuantityCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
                   }`}
                   onClick={allocateMoneyToDataQuantity}
                   disabled={money < dataQuantityCost}
@@ -849,7 +1043,7 @@ export default function FactorySection({
                   <span className="font-medium">${dataQuantityCost}</span>
                 </button>
               </div>
-              
+
               {/* Data Formats */}
               <div className="bg-gray-700 p-3 rounded-lg border border-gray-600 relative">
                 <div className="flex justify-between items-center mb-2">
@@ -871,11 +1065,19 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  <strong className="text-amber-400">⚡ Boosts Production</strong> - Investment in multimodal data unlocks new AI capabilities. <em className="text-gray-500">Quality upgrades needed for Data Level.</em>
+                  <strong className="text-amber-400">
+                    ⚡ Boosts Production
+                  </strong>{" "}
+                  - Investment in multimodal data unlocks new AI capabilities.{" "}
+                  <em className="text-gray-500">
+                    Quality upgrades needed for Data Level.
+                  </em>
                 </p>
-                <button 
+                <button
                   className={`w-full py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                    money < dataFormatsCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                    money < dataFormatsCost
+                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
                   }`}
                   onClick={allocateMoneyToDataFormats}
                   disabled={money < dataFormatsCost}
@@ -888,7 +1090,7 @@ export default function FactorySection({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-      
+
       {/* Algorithm Lab */}
       <Accordion
         type="single"
@@ -902,16 +1104,23 @@ export default function FactorySection({
         }}
       >
         <AccordionItem value="algorithm" className="border-none">
-          <div id="algorithm-section" className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]" data-tutorial-id="algorithm-factory-card">
+          <div
+            id="algorithm-section"
+            className="resource-card bg-gray-700 rounded-lg p-4 mb-2 border-l-4 border-[#8B5CF6]"
+            data-tutorial-id="algorithm-factory-card"
+          >
             <div className="flex justify-between items-center mb-2">
-              <ResourceTooltip 
+              <ResourceTooltip
                 resourceType="algorithm"
                 content={
                   <div className="space-y-2">
-                    <p className="font-bold">{resourceDefinitions.algorithm.title}</p>
+                    <p className="font-bold">
+                      {resourceDefinitions.algorithm.title}
+                    </p>
                     <p>{resourceDefinitions.algorithm.description}</p>
                     <p className="text-xs italic mt-1 border-t border-gray-700 pt-1">
-                      <span className="font-semibold">Real-world example:</span> {resourceDefinitions.algorithm.realWorldExample}
+                      <span className="font-semibold">Real-world example:</span>{" "}
+                      {resourceDefinitions.algorithm.realWorldExample}
                     </p>
                   </div>
                 }
@@ -925,7 +1134,7 @@ export default function FactorySection({
                 <AnimatedNumber value={Math.floor(resources.algorithm)} />
               </span>
             </div>
-            
+
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Research Rate:</span>
@@ -936,7 +1145,10 @@ export default function FactorySection({
               </div>
               <div className="relative">
                 <div className="bg-gray-600 h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#8B5CF6] h-full" style={{ width: getAlgorithmBarWidth() }}></div>
+                  <div
+                    className="bg-[#8B5CF6] h-full"
+                    style={{ width: getAlgorithmBarWidth() }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -944,47 +1156,98 @@ export default function FactorySection({
             {/* Dynamic Algorithm Lab Educational Content */}
             <div className="mt-3 bg-gray-800/60 border border-gray-700 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-purple-400 mt-0.5 shrink-0">🧠</div>
+                <div className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0">
+                  🧠
+                </div>
                 <div>
-                  <h5 className="text-xs font-medium text-purple-300 mb-2">Algorithm Research Focus</h5>
+                  <h5 className="text-xs font-medium text-purple-300 mb-2">
+                    Algorithm Research Focus
+                  </h5>
                   <div className="text-xs text-gray-300 space-y-2">
                     {(() => {
                       const currentEra = gameState.currentEra;
                       const algorithmLevel = gameState.levels.algorithm;
-                      const researchProgress = gameState.training.algorithmResearchProgress;
-                      
+                      const researchProgress =
+                        gameState.training.algorithmResearchProgress;
+
                       if (currentEra === Era.GNT2 || currentEra === Era.GNT3) {
                         const colors = algorithmColorClasses.foundation;
                         return (
                           <>
-                            <div>🔬 <strong>Foundation Research:</strong> Developing core neural network architectures and training methods</div>
-                            <div className={`${colors.text} italic`}>Early stages focus on proving basic concepts - like how attention mechanisms revolutionized NLP in 2017</div>
+                            <div>
+                              🔬 <strong>Foundation Research:</strong>{" "}
+                              Developing core neural network architectures and
+                              training methods
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Early stages focus on proving basic concepts -
+                              like how attention mechanisms revolutionized NLP
+                              in 2017
+                            </div>
                             {algorithmLevel < 3 && (
-                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Hire Research Engineers to accelerate architectural breakthroughs</div>
+                              <div className={colors.accent}>
+                                💡 <strong>Next Step:</strong> Hire Research
+                                Engineers to accelerate architectural
+                                breakthroughs
+                              </div>
                             )}
-                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% toward next breakthrough</div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>
+                              Research Progress: {researchProgress.toFixed(1)}%
+                              toward next breakthrough
+                            </div>
                           </>
                         );
-                      } else if (currentEra === Era.GNT4 || currentEra === Era.GNT5) {
+                      } else if (
+                        currentEra === Era.GNT4 ||
+                        currentEra === Era.GNT5
+                      ) {
                         const colors = algorithmColorClasses.innovation;
                         return (
                           <>
-                            <div>⚡ <strong>Innovation Phase:</strong> Advanced architectures and training optimizations for massive scale</div>
-                            <div className={`${colors.text} italic`}>Focus shifts to scaling architectures efficiently - like how GPT-4 optimized training for trillion-parameter models</div>
+                            <div>
+                              ⚡ <strong>Innovation Phase:</strong> Advanced
+                              architectures and training optimizations for
+                              massive scale
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Focus shifts to scaling architectures efficiently
+                              - like how GPT-4 optimized training for
+                              trillion-parameter models
+                            </div>
                             {algorithmLevel < 5 && (
-                              <div className={colors.accent}>💡 <strong>Next Step:</strong> Balance architectural improvements with research talent acquisition</div>
+                              <div className={colors.accent}>
+                                💡 <strong>Next Step:</strong> Balance
+                                architectural improvements with research talent
+                                acquisition
+                              </div>
                             )}
-                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% - approaching major architectural leap</div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>
+                              Research Progress: {researchProgress.toFixed(1)}%
+                              - approaching major architectural leap
+                            </div>
                           </>
                         );
                       } else {
                         const colors = algorithmColorClasses.agi;
                         return (
                           <>
-                            <div>🚀 <strong>AGI Research:</strong> Novel architectures for general intelligence and reasoning capabilities</div>
-                            <div className={`${colors.text} italic`}>Cutting-edge research into unified architectures that can handle any task - the holy grail of AI</div>
-                            <div className={colors.accent}>💡 <strong>AGI Focus:</strong> Research engineers become critical for breakthrough discoveries</div>
-                            <div className={`mt-1 text-xs ${colors.progress}`}>Research Progress: {researchProgress.toFixed(1)}% - pushing the boundaries of what's possible</div>
+                            <div>
+                              🚀 <strong>AGI Research:</strong> Novel
+                              architectures for general intelligence and
+                              reasoning capabilities
+                            </div>
+                            <div className={`${colors.text} italic`}>
+                              Cutting-edge research into unified architectures
+                              that can handle any task - the holy grail of AI
+                            </div>
+                            <div className={colors.accent}>
+                              💡 <strong>AGI Focus:</strong> Research engineers
+                              become critical for breakthrough discoveries
+                            </div>
+                            <div className={`mt-1 text-xs ${colors.progress}`}>
+                              Research Progress: {researchProgress.toFixed(1)}%
+                              - pushing the boundaries of what's possible
+                            </div>
                           </>
                         );
                       }
@@ -993,19 +1256,19 @@ export default function FactorySection({
                 </div>
               </div>
             </div>
-            
-
           </div>
-          
-          <AccordionTrigger 
-            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-xs hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
+
+          <AccordionTrigger
+            className="py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-purple-400 font-medium border border-gray-600 hover:border-purple-500/50 transition-all duration-200 shadow-sm hover:shadow-md data-[state=open]:border-purple-500 data-[state=open]:bg-gray-700"
             data-tutorial-id="algorithm-advanced-toggle"
             onClick={handleAlgorithmAccordionToggle}
           >
             <span className="flex items-center">
               <Zap className="h-4 w-4 mr-2" />
               <span>Advanced Algorithm Options</span>
-              <span className="ml-auto text-xs text-gray-500 group-hover:text-purple-400">Click to expand</span>
+              <span className="ml-auto text-xs text-gray-500 group-hover:text-purple-400">
+                Click to expand
+              </span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pt-3">
@@ -1031,12 +1294,15 @@ export default function FactorySection({
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mb-2">
-                  Hire more of the best engineers to accelerate research and develop novel architectures.
+                  Hire more of the best engineers to accelerate research and
+                  develop novel architectures.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  <button 
+                  <button
                     className={`py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                      money < algorithmLevelCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                      money < algorithmLevelCost
+                        ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                        : "bg-purple-600 hover:bg-purple-700"
                     }`}
                     onClick={handleAlgorithmUpgrade}
                     disabled={money < algorithmLevelCost}
@@ -1045,11 +1311,13 @@ export default function FactorySection({
                     <span>Improve Architectures</span>
                     <span className="font-medium">${algorithmLevelCost}</span>
                   </button>
-                  
+
                   {hireResearchEngineer && (
-                    <button 
+                    <button
                       className={`py-1.5 px-3 rounded text-sm flex justify-between items-center ${
-                        money < engineerCost ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                        money < engineerCost
+                          ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                          : "bg-purple-600 hover:bg-purple-700"
                       }`}
                       onClick={hireResearchEngineer}
                       disabled={money < engineerCost}
