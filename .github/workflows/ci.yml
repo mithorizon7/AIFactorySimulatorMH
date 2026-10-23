@@ -13,6 +13,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  database-boundaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        # Official library image index, inspected 2026-10-23; patched 16.15.
+        image: postgres:16.15@sha256:9e2cf6287f25c3151f4c9421ccce2b17f3e60061c111a29165e0d2cdd9ff0a97
+        env:
+          POSTGRES_PASSWORD: disposable-ci-only
+        ports:
+          - 127.0.0.1:55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm run check:runtime
+      - run: npm ci --ignore-scripts
+      - run: npm run test:database
+        env:
+          # Synthetic ephemeral CI database, loopback only, never a provider URL.
+          C_DB_TEST_ADMIN_URL: postgresql://postgres:disposable-ci-only@127.0.0.1:55432/postgres
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 30

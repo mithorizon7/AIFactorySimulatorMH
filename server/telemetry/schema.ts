@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -42,6 +43,10 @@ export const telemetryEvents = analyticsSchema.table(
 // Never imported by the application's telemetry writer. These tables have
 // distinct credentials and are operated only by the consented-study custodian.
 export const researchSchema = pgSchema("research");
+export const activeStudies = researchSchema.table("active_studies", {
+  studyId: varchar("study_id", { length: 32 }).primaryKey(),
+  enabled: boolean("enabled").notNull().default(false),
+});
 export const studyResponses = researchSchema.table(
   "study_responses",
   {

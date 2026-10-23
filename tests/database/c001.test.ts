@@ -1,5 +1,8 @@
 import pg from "pg";
 import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   applyAdditiveMigration,
@@ -23,21 +26,24 @@ const admin = new pg.Client({
   statement_timeout: 5000,
 });
 const clients: pg.Client[] = [];
+const urls = new WeakMap<pg.Client, string>();
 async function restricted(role: string) {
   const login = `test_${randomUUID().replaceAll("-", "")}`;
+  const password = randomUUID().replaceAll("-", "");
   // Generated test identifiers only, never user input or production credentials.
   await admin.query(
-    `CREATE ROLE ${login} LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS IN ROLE ${role}`,
+    `CREATE ROLE ${login} LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS IN ROLE ${role}`,
   );
   const url = new URL(connectionString!);
   url.username = login;
-  url.password = "";
+  url.password = password;
   const client = new pg.Client({
     connectionString: url.toString(),
     connectionTimeoutMillis: 3000,
     statement_timeout: 5000,
   });
   clients.push(client);
+  urls.set(client, url.toString());
   await client.connect();
   return client;
 }
@@ -51,6 +57,96 @@ afterAll(async () => {
 });
 
 describe("actual PostgreSQL additive schema and role boundaries", () => {
+  it("dry-runs retention and withdrawal, requires deletion confirmation and never emits supplied credentials", async () => {
+    const custodian = await restricted("aifactory_data_custodian");
+    const code = "synthetic-withdrawal-code-0000000000";
+    const withdrawalHash = createHash("sha256").update(code).digest("hex");
+    const responseId = randomUUID();
+    const expiredEventId = randomUUID();
+    await admin.query(
+      "INSERT INTO research.study_responses(response_id,study_id,participant_id,withdrawal_hash,consent_version,assessment_version,phase,answers) VALUES($1,'pilot-v1',$2,$3,'pilot-consent-v1','pilot-v1','post',$4)",
+      [responseId, randomUUID(), withdrawalHash, ["A", "B", "C", "D", "A"]],
+    );
+    await admin.query(
+      "INSERT INTO analytics.telemetry_events VALUES($1,$2,$3,'release-b.1',1,'run_started','{}',statement_timestamp()-interval '100 days',statement_timestamp()-interval '100 days',statement_timestamp()-interval '100 days'+interval '2160 hours')",
+      [expiredEventId, randomUUID(), "a".repeat(40)],
+    );
+    const run = (
+      operation: string,
+      flags: string[] = [],
+      overrides: Record<string, string> = {},
+    ) =>
+      spawnSync(
+        process.execPath,
+        [
+          "--import",
+          "tsx",
+          path.resolve("scripts/manage-pilot-data.ts"),
+          operation,
+          ...flags,
+        ],
+        {
+          encoding: "utf8",
+          timeout: 15000,
+          env: {
+            ...process.env,
+            PILOT_DATA_OPERATOR_URL: urls.get(custodian),
+            PILOT_WITHDRAWAL_CODE: code,
+            ...overrides,
+          },
+        },
+      );
+    const retention = run("retention");
+    expect(retention.status).toBe(0);
+    expect(JSON.parse(retention.stdout)).toMatchObject({
+      mode: "dry_run",
+      productRows: 1,
+    });
+    const rejected = run("retention", ["--apply"]);
+    expect(rejected.status).toBe(1);
+    expect(
+      (
+        await admin.query(
+          "SELECT event_id FROM analytics.telemetry_events WHERE event_id=$1",
+          [expiredEventId],
+        )
+      ).rows,
+    ).toHaveLength(1);
+    expect(
+      run("retention", ["--apply", "--confirm-delete-expired"]).status,
+    ).toBe(0);
+    expect(
+      (
+        await admin.query(
+          "SELECT event_id FROM analytics.telemetry_events WHERE event_id=$1",
+          [expiredEventId],
+        )
+      ).rows,
+    ).toHaveLength(0);
+    expect(JSON.parse(run("withdraw").stdout)).toMatchObject({
+      mode: "dry_run",
+      researchRows: 1,
+    });
+    expect(
+      run("withdraw", ["--apply", "--confirm-delete-expired"]).status,
+    ).toBe(0);
+    expect(
+      (
+        await admin.query(
+          "SELECT response_id FROM research.study_responses WHERE response_id=$1",
+          [responseId],
+        )
+      ).rows,
+    ).toHaveLength(0);
+    const malformed = run("retention", [], {
+      PILOT_DATA_OPERATOR_URL: "invalid-private-credential-marker",
+    });
+    expect(malformed.status).toBe(1);
+    expect(malformed.stdout + malformed.stderr).not.toContain(
+      "private-credential-marker",
+    );
+    expect(malformed.stdout + malformed.stderr).not.toContain(code);
+  });
   it("records exact migration content and applies idempotently", async () => {
     const migration = await readMigration();
     expect(await applyAdditiveMigration(admin, true)).toMatchObject({
