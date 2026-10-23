@@ -8,20 +8,15 @@ import {
   applyAdditiveMigration,
   readMigration,
 } from "../../server/telemetry/migration";
+import { operatorConnectionConfiguration } from "../../server/telemetry/operator-connection";
 
 const connectionString = process.env.C_DB_TEST_ADMIN_URL;
 if (!connectionString)
   throw new Error(
     "C_DB_TEST_ADMIN_URL must point to a disposable local PostgreSQL cluster",
   );
-const location = new URL(connectionString);
-if (
-  !["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) &&
-  !(location.searchParams.get("host") ?? "").startsWith("/private/tmp/")
-)
-  throw new Error("Database qualification refuses nonlocal targets");
 const admin = new pg.Client({
-  connectionString,
+  ...operatorConnectionConfiguration(connectionString, true),
   connectionTimeoutMillis: 3000,
   statement_timeout: 5000,
 });
@@ -38,7 +33,7 @@ async function restricted(role: string) {
   url.username = login;
   url.password = password;
   const client = new pg.Client({
-    connectionString: url.toString(),
+    ...operatorConnectionConfiguration(url.toString(), true),
     connectionTimeoutMillis: 3000,
     statement_timeout: 5000,
   });

@@ -4,6 +4,7 @@ import {
   applyAdditiveMigration,
   readMigration,
 } from "../server/telemetry/migration";
+import { operatorConnectionConfiguration } from "../server/telemetry/operator-connection";
 
 async function main() {
   const [operation, ...flags] = process.argv.slice(2);
@@ -29,24 +30,9 @@ async function main() {
       throw new Error(
         "PILOT_DATA_OPERATOR_URL is required for this operator process",
       );
-    const url = new URL(connectionString);
-    const local =
-      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
-      (url.searchParams.get("host") ?? "").startsWith("/private/tmp/");
-    if (
-      !local &&
-      (url.searchParams.has("sslmode") || url.searchParams.has("ssl"))
-    )
-      throw new Error(
-        "Remove URL SSL options; this operator enforces certificate verification",
-      );
-    const client = new pg.Client({
-      connectionString,
-      ssl: local ? false : { rejectUnauthorized: true },
-      connectionTimeoutMillis: 5000,
-      statement_timeout: 15000,
-      application_name: "aifactory-data-operator",
-    });
+    const client = new pg.Client(
+      operatorConnectionConfiguration(connectionString),
+    );
     try {
       await client.connect();
       if (operation === "migrate")
