@@ -46,8 +46,14 @@ jobs:
       - name: Block critical full-tree advisories
         run: npm audit --audit-level=critical
 
-      - name: Install Chromium
-        run: npm exec -- playwright install --with-deps chromium
+      - name: Cache pinned browser binaries
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4, verified upstream tag
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chromium headless runtime and dependencies
+        run: npm exec -- playwright install --with-deps --only-shell chromium
 
       - run: npm run test:e2e
       - run: npm run test:e2e:production
