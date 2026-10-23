@@ -49,8 +49,12 @@ deployment. No database rows were downloaded, migrated or deleted.
   are not attested by application-runtime or container checks.
 - Backup/PITR retention, last successful restore point, restoration evidence,
   access-log retention/IP handling and complete history since October 17 require
-  account-specific provider evidence. A read-only follow-up was requested; no
-  inaccessible metadata is treated as verified.
+  account-specific provider evidence. The read-only follow-up completed: the
+  connected agent could not retrieve those settings/history or a host attestation.
+  It reported production PostgreSQL 16.15 and catalog privileges that could
+  support additive schemas/restricted SQL roles; writable execution and restricted
+  runtime credentials remain unverified. The broad inspection role is not an
+  acceptable application role. No inaccessible metadata is treated as verified.
 - [Replit security](https://replit.com/security) and
   [Neon security](https://neon.com/security) describe platform controls, not this
   application's configured backup policy or a tested restore. A public

@@ -41,6 +41,35 @@ Core health/version/static-serving failures and synthetic startup/save/resume/co
 
 Release A currently has no product telemetry endpoint and `migrationVersion` is `null`.
 
+### Preserved and rehearsed rollback
+
+The first accepted rollback is tag `release-a-2026-10-23`, commit
+`8902ed9062b71afc9dc47cdc8b7207bb64aa6496`. Its
+[release artifacts](https://github.com/mithorizon7/AIFactorySimulatorMH/releases/tag/release-a-2026-10-23)
+include source and checksum plus redacted acceptance evidence. The immutable
+successful provider build is `5e850f10-d17d-4799-99ca-29bc7e14465c`.
+
+On October 23, an isolated clean checkout of that tag completed a fresh offline
+`npm ci --ignore-scripts` and an explicitly SHA-stamped release build on Node
+22.23.4. The resulting JavaScript SHA-256 was
+`38684235e836b16e93f3f1b9ed21e6948ec1cb5c44f2be96663cfcaa2136602f`, exactly
+matching production. All 12 production-mode Chromium browser tests then passed,
+including public-control completion and durable summary, takeover, pause,
+reload and reset. Production itself was not interrupted or rolled backward.
+
+For an actual code rollback, first preserve any newer provider workspace
+checkpoint, fetch the accepted tag, and synchronize a clean checkout to that
+exact SHA. Republish using the same checked-in bootstrap/build/start settings;
+repeat exact-SHA HTTP and browser acceptance on both public origins. If the
+provider still exposes that accepted image in deployment history, its image
+rollback may be used instead, but image retention/selectability must be verified
+at the time. The stable deployment ID alone does not identify the accepted image.
+
+Do not restore, delete or downgrade databases/local saves as part of code
+rollback. A newer unsupported snapshot/database remains preserved and exportable.
+Database recovery is a separate operation with its own backup/restore evidence
+and data-impact authorization; code-rebuild rehearsal is not a PITR test.
+
 ## Provider-side configuration
 
 The checked-in `.replit` source requests Node 22, uses the checksum-pinned
