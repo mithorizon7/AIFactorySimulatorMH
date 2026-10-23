@@ -898,11 +898,6 @@ function calculateRevenue(state: GameStateV2, effects: MutableEffects): void {
     prospectiveUsage / Math.max(1, state.computeCapacity.maxCapacity);
 
   if (pressureRatio >= 0.9 || shortfallRatio > 0) {
-    state.facts.capacityShortfallRatioSum += shortfallRatio;
-    state.facts.peakCapacityShortfallRatio = Math.max(
-      state.facts.peakCapacityShortfallRatio,
-      shortfallRatio,
-    );
     pushEffect(state, effects, {
       type: "CAPACITY_WARNING",
       severity: shortfallRatio > 0 ? "shortfall" : "pressure",
@@ -1395,6 +1390,46 @@ export function advanceGameOneTick(inputState: GameStateV2): EngineResult {
     state.computeCapacity.maxCapacity - state.computeCapacity.used,
   );
   state.computeCapacity.freeCompute = state.computeCapacity.available;
+  // Sample the final customer demand on every active tick, including the four
+  // ticks between revenue settlements. Revenue settlement itself records no
+  // duration facts, so its ticks cannot be counted twice.
+  const apiDemand =
+    state.revenue.apiAvailable &&
+    state.revenue.apiPlatformBuilt &&
+    state.revenue.apiEnabled
+      ? Math.ceil(
+          (Math.floor(
+            (state.revenue.developers *
+              state.revenue.baseApiRate *
+              (1 + state.revenue.developerToolsLevel * 0.05)) /
+              100,
+          ) /
+            1_000) *
+            5,
+        )
+      : 0;
+  const chatbotDemand =
+    state.revenue.chatbotAvailable &&
+    state.revenue.chatbotPlatformBuilt &&
+    state.revenue.chatbotEnabled
+      ? Math.ceil(state.revenue.subscribers * 0.01)
+      : 0;
+  const demand = apiDemand + chatbotDemand;
+  const nonCustomerUsage = Math.max(
+    0,
+    state.computeCapacity.used - state.computeCapacity.customerUsage,
+  );
+  const serviceCapacity = Math.max(
+    0,
+    state.computeCapacity.maxCapacity - nonCustomerUsage,
+  );
+  const shortfallRatio =
+    demand === 0 ? 0 : Math.max(0, 1 - serviceCapacity / demand);
+  state.facts.capacityShortfallRatioSum += shortfallRatio;
+  state.facts.peakCapacityShortfallRatio = Math.max(
+    state.facts.peakCapacityShortfallRatio,
+    shortfallRatio,
+  );
   if (
     state.computeCapacity.used /
       Math.max(1, state.computeCapacity.maxCapacity) >=
