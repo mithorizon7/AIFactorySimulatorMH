@@ -4,6 +4,33 @@ This is an operations template, not participant evidence. Technical readiness
 does not establish usability or learning effectiveness. Recruitment, consent,
 and collection require the research owner's authorization.
 
+Status: **study collection disabled; recruitment not authorized**. The materials
+below are a frozen, reviewable operating package, not completed sessions or an
+approved consent process. Do not create participant records in this repository,
+issue tracker, Actions artifacts, application logs, or general telemetry.
+
+## Frozen operating package
+
+- [Participant notice and assent/permission boundaries](pilot/consent-v1.md),
+  revision `pilot-consent-1`.
+- [Five-question participant assessment](pilot/assessment-v1.md) and
+  [facilitator answer key](pilot/assessment-key-v1.md), revision
+  `pilot-assessment-1`. Same five questions before and after; no answer feedback
+  until post-assessment is complete. This is an unvalidated formative instrument.
+- [Exact tasks, timing and observation rubric](pilot/tasks-rubric-v1.md),
+  revision `pilot-tasks-1`.
+- [Data separation, retention and withdrawal procedure](pilot/data-boundaries-and-withdrawal.md),
+  revision `pilot-data-1`.
+- [Count-based evidence and release observation templates](pilot/evidence-template.md).
+  Blank means not collected, never zero or passed.
+- [Production canary operations](pilot/canary-operations.md) and
+  [verified external capability gaps](pilot/provider-capability-gaps.md).
+
+Changing an assessment question, key, task prompt or scoring rule requires a new
+revision before the next cohort. Retain the old version, record deviations, and
+do not silently pool incompatible cohorts. No scores or named player profiles
+become calibrated merely because these materials exist.
+
 ## Before recruitment
 
 - Name a study owner, facilitator, and restricted research-data custodian.
@@ -13,6 +40,9 @@ and collection require the research owner's authorization.
   process, retention, and an accessible contact channel.
 - Rehearse with synthetic records only and verify deletion and access boundaries.
 - Obtain consent before observing or collecting any participant response.
+- Obtain owner approval for the participant notice/contact, minors' guardian
+  permission/assent requirements, accommodations, collection system and access
+  roles; this document does not establish an exemption or legal compliance.
 - Explain that hosting/access logs can contain IP addresses even when the
   application event database intentionally stores no IP addresses.
 
@@ -78,5 +108,7 @@ paired aggregate results, accessibility findings, deployment evidence, and
 limitations. The custodian records raw-data deletion date and verification.
 
 Close the pilot gate only after real consented sessions and review. Until then,
-label the release "Validated Pilot technical readiness; participant evidence
-pending." Telemetry uptime is not evidence of participant understanding.
+label the work "Release C implementation; technical and participant gates
+pending." Use "technical readiness" only after every mandatory technical gate
+is evidenced, including the external provider controls. Telemetry uptime is not
+evidence of participant understanding.

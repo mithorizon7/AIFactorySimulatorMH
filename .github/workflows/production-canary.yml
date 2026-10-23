@@ -1,0 +1,42 @@
+name: Production core canary
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-core-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    if: vars.PRODUCTION_CANARY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASE_URL: ${{ vars.PRODUCTION_CANARY_ORIGIN }}
+      EXPECTED_BUILD_SHA: ${{ vars.PRODUCTION_CANARY_BUILD_SHA }}
+      EXPECTED_RULESET_VERSION: ${{ vars.PRODUCTION_CANARY_RULESET_VERSION }}
+      EXPECTED_MIGRATION_VERSION: ${{ vars.PRODUCTION_CANARY_MIGRATION_VERSION }}
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/aifactory-canary-browsers
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+      - name: Verify pinned Node and npm before dependency execution
+        run: |
+          npm run check:runtime
+          test "$(npm --version)" = "10.9.9"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm exec -- playwright install --with-deps --only-shell chromium
+      - name: Startup, durable resume, completion and exact deployed identity
+        run: node scripts/canary-production.mjs
+      # No artifact upload: browser traces, snapshots, logs and credentials must
+      # never be published. The runner emits an allowlisted status-only summary.
