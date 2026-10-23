@@ -212,6 +212,14 @@ export function normalizeGameState(input: GameStateV2): GameStateV2 {
     }
   }
 
+  state.facts.startingMoney = roundMoney(state.facts.startingMoney);
+  state.facts.capacityShortfallRatioSum = nonnegative(
+    state.facts.capacityShortfallRatioSum,
+  );
+  state.facts.peakCapacityShortfallRatio = Math.min(
+    1,
+    nonnegative(state.facts.peakCapacityShortfallRatio),
+  );
   state.facts.totalSpend = roundMoney(
     Object.values(state.facts.spendByCategory).reduce(
       (sum, value) => sum + roundMoney(Math.max(0, value)),

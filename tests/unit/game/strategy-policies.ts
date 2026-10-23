@@ -22,7 +22,11 @@ type EmptyCommand = Exclude<
   GameCommand["type"],
   "START_TRAINING" | "SET_MONTHLY_FEE"
 >;
-export function strategy(seed: number, policy: Policy) {
+export function strategy(
+  seed: number,
+  policy: Policy,
+  options: { requireShortfall?: boolean } = {},
+) {
   let serial = 0;
   const accepted: GameCommand[] = [];
   let minimumCash = Infinity;
@@ -166,7 +170,7 @@ export function strategy(seed: number, policy: Policy) {
       serviceTicks++;
     state = advanceGameOneTick(state).state;
     pressureExercised ||=
-      state.facts.capacityPressureTicks > 0 ||
+      (!options.requireShortfall && state.facts.capacityPressureTicks > 0) ||
       state.facts.peakCapacityShortfallRatio > 0;
     minimumCash = Math.min(minimumCash, state.money);
     expectCoreInvariants(state);
