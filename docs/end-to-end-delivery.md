@@ -139,6 +139,26 @@ have not been claimed by B. A remains retained as the prior accepted rollback.
 
 ## Rollback procedure
 
+### C compatibility checkpoint and focus repair —2026-10-23
+
+PR19 merged at `27cb07eb574a638fd6a416463926fcb7e14eb498`, deployed and
+independently verified on both origins. PR20's required CI39934768639 passed;
+merge `edd714075eec03c41d9e52185fe8b3841abce5aa` now independently serves on
+both origins with matching rebuilt assets. Cancel/Escape return focus to Reset;
+save/reload/resume/reset pass without page/console errors. This is a scoped
+checkpoint, not full C release closure.
+
+Replit preserved `safety/c1-publish-checkpoint` at
+`9105a39bf068c97155e5bc9b7b5320f60ee5ab37`, whose tree matches approved C1;
+the existing A/B safety references remain. Only C1/focus or newer compatible
+source establishes safe rollback after exact browser-schema2 upgrade. Never
+delete/downgrade player records to force an older build to load them.
+
+All new detailed verification bundles, screenshots, reports and SBOMs remain
+private by user choice; no new public release asset is authorized.
+
+### Operational rollback
+
 After Release A passes production verification, record its deployment ID and
 immutable Git SHA as the first known-good rollback. Before B/C deployment,
 retain that release and its artifact. If core health/version/static serving or

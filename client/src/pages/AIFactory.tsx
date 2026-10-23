@@ -13,6 +13,8 @@ import RunGoal from "@/components/factory/RunGoal";
 // Unified Tutorial System
 import { UnifiedTutorialSystem } from "@/components/tutorial/UnifiedTutorialSystem";
 import { Button } from "@/components/ui/button";
+import { useProductTelemetry } from "@/hooks/useProductTelemetry";
+import { TelemetryPreferences } from "@/components/telemetry/TelemetryPreferences";
 
 export default function AIFactory() {
   const {
@@ -40,6 +42,25 @@ export default function AIFactory() {
     trainModel,
     formattedTime,
   } = useGameEngine();
+  const telemetry = useProductTelemetry(
+    sessionSnapshot
+      ? {
+          runId: sessionSnapshot.runId,
+          rulesetVersion: simulation.rulesetVersion,
+          writable: sessionSnapshot.writable && !isLifecycleTransition,
+          activeTick: simulation.clock.activeTick,
+          status: simulation.clock.status,
+          era: simulation.currentEra,
+          nonTrainingSpend:
+            simulation.facts.totalSpend -
+            simulation.facts.spendByCategory.training,
+          emergencyInterventions:
+            simulation.facts.emergencyFundingInterventions +
+            simulation.facts.emergencyCapacityInterventions,
+          debriefViewed: sessionSnapshot.experience.debrief.viewed,
+        }
+      : null,
+  );
 
   const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
   const completionPresentedRef = useRef(false);
@@ -105,7 +126,11 @@ export default function AIFactory() {
 
   if (!sessionReady)
     return (
-      <main className="min-h-screen bg-gray-950 p-8 text-white">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="min-h-screen bg-gray-950 p-8 text-white"
+      >
         <p role="status">
           {sessionError ?? "Opening your anonymous saved run…"}
         </p>
@@ -190,76 +215,83 @@ export default function AIFactory() {
               </Button>
             )}
           </div>
-          <fieldset
-            data-testid="game-controls"
-            disabled={!sessionSnapshot?.writable || isLifecycleTransition}
-            className="min-w-0"
-          >
-            {/* Game Header with Controls and Key Metrics */}
-            <GameHeader
-              gameState={gameState}
-              isRunning={isRunning}
-              formattedTime={formattedTime}
-              startGame={startGame}
-              pauseGame={pauseGame}
-              resetGame={resetGame}
-            />
+          <main id="main-content" tabIndex={-1} aria-label="AI Factory lab">
+            <fieldset
+              data-testid="game-controls"
+              disabled={!sessionSnapshot?.writable || isLifecycleTransition}
+              className="min-w-0"
+            >
+              {/* Game Header with Controls and Key Metrics */}
+              <GameHeader
+                gameState={gameState}
+                isRunning={isRunning}
+                formattedTime={formattedTime}
+                startGame={startGame}
+                pauseGame={pauseGame}
+                resetGame={resetGame}
+              />
 
-            <RunGoal
-              simulation={simulation}
-              practice={
-                gameState.tutorial.isActive && !gameState.tutorial.isCompleted
-              }
-              onCommand={dispatchIntent}
-              onNavigate={setActiveTab}
-              onSkipPractice={skipTutorial}
-            />
-
-            {!showSummaryModal && sessionSnapshot && (
-              <SparkMessageQueue
-                experience={sessionSnapshot.experience}
+              <RunGoal
                 simulation={simulation}
-                writable={sessionSnapshot.writable}
-                onDismiss={dismissMessage}
+                practice={
+                  gameState.tutorial.isActive && !gameState.tutorial.isCompleted
+                }
+                onCommand={dispatchIntent}
+                onNavigate={setActiveTab}
+                onSkipPractice={skipTutorial}
+              />
+
+              {!showSummaryModal && sessionSnapshot && (
+                <SparkMessageQueue
+                  experience={sessionSnapshot.experience}
+                  simulation={simulation}
+                  writable={sessionSnapshot.writable}
+                  onDismiss={dismissMessage}
+                />
+              )}
+
+              {/* Main Game Navigation Tabs - Moved directly under the header */}
+              <MainGameTabs
+                gameState={gameState}
+                simulation={simulation}
+                onCommand={dispatchIntent}
+                activeTab={sessionSnapshot?.experience.lastActiveTab}
+                onActiveTabChange={setActiveTab}
+                trainModel={trainModel}
+              />
+            </fieldset>
+            {telemetry && (
+              <footer className="mt-6 rounded-lg border border-gray-700 bg-gray-900 p-4 text-sm text-gray-200">
+                <TelemetryPreferences telemetry={telemetry} />
+              </footer>
+            )}
+            {hasAchievedAgi(gameState) && (
+              <Button
+                id="review-run-summary"
+                onClick={() => setShowSummaryModal(true)}
+                className="mt-4 min-h-11 bg-teal-800 text-white hover:bg-teal-700"
+              >
+                Review run summary
+              </Button>
+            )}
+            {showSummaryModal && (
+              <VictoryScreen
+                gameState={gameState}
+                simulation={sessionSnapshot!.simulation}
+                personalBests={personalBests}
+                onClose={handleCloseSummaryModal}
+                onReset={handleResetAndCloseSummary}
               />
             )}
 
-            {/* Main Game Navigation Tabs - Moved directly under the header */}
-            <MainGameTabs
-              gameState={gameState}
-              simulation={simulation}
-              onCommand={dispatchIntent}
-              activeTab={sessionSnapshot?.experience.lastActiveTab}
-              onActiveTabChange={setActiveTab}
-              trainModel={trainModel}
-            />
-          </fieldset>
-          {hasAchievedAgi(gameState) && (
-            <Button
-              id="review-run-summary"
-              onClick={() => setShowSummaryModal(true)}
-              className="mt-4 min-h-11 bg-teal-800 text-white hover:bg-teal-700"
-            >
-              Review run summary
-            </Button>
-          )}
-          {showSummaryModal && (
-            <VictoryScreen
-              gameState={gameState}
-              simulation={sessionSnapshot!.simulation}
-              personalBests={personalBests}
-              onClose={handleCloseSummaryModal}
-              onReset={handleResetAndCloseSummary}
-            />
-          )}
-
-          {sessionSnapshot?.writable && !isLifecycleTransition && (
-            <UnifiedTutorialSystem
-              gameState={gameState}
-              onDismissWelcome={dismissWelcome}
-              onSkipTutorial={skipTutorial}
-            />
-          )}
+            {sessionSnapshot?.writable && !isLifecycleTransition && (
+              <UnifiedTutorialSystem
+                gameState={gameState}
+                onDismissWelcome={dismissWelcome}
+                onSkipTutorial={skipTutorial}
+              />
+            )}
+          </main>
         </div>
       </div>
     </GamePauseProvider>

@@ -19,13 +19,13 @@ import {
   isSupportedRuleset,
   SNAPSHOT_VERSION,
   COMMAND_SCHEMA_VERSION,
+  PERSISTENCE_DATABASE_VERSION,
 } from "@shared/version";
 
 export const DATABASE_NAME = "ai-factory";
-// Compatibility checkpoint: create v1, but safely read/write the exact known
-// additive v2 layout. The C activation commit changes creation to v2 only after
-// this rollback-compatible core is preserved as an immutable artifact.
-export const GAME_DATABASE_VERSION = 1;
+// The deployed C1 rollback core has independently opened/written this exact
+// additive v2 layout. Simulation/experience snapshot versions stay unchanged.
+export const GAME_DATABASE_VERSION = PERSISTENCE_DATABASE_VERSION;
 export const LEASE_DURATION_MS = 60_000;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const payloadSchema = z
@@ -277,34 +277,53 @@ export class GameRepository {
     }
   }
   static async open(
-    options: { name?: string; factory?: IDBFactory; now?: () => number } = {},
+    options: {
+      name?: string;
+      factory?: IDBFactory;
+      now?: () => number;
+      databaseVersion?: 1 | 2;
+    } = {},
   ): Promise<GameRepository> {
     const factory = options.factory ?? globalThis.indexedDB;
     if (!factory)
       throw new Error(
         "Browser storage is unavailable. This run is temporary until storage is restored.",
       );
-    const opening = factory.open(
-      options.name ?? DATABASE_NAME,
-      GAME_DATABASE_VERSION,
-    );
-    opening.onupgradeneeded = () => {
+    const version = options.databaseVersion ?? GAME_DATABASE_VERSION;
+    let unknownUpgrade = false;
+    const opening = factory.open(options.name ?? DATABASE_NAME, version);
+    opening.onupgradeneeded = (event) => {
       const db = opening.result;
-      // The first schema creates stores only; future migrations must preserve old stores.
-      const runs = db.createObjectStore("runs", { keyPath: "runId" });
-      for (const field of ["status", "savedAt", "rulesetVersion"])
-        runs.createIndex(field, field);
-      const backups = db.createObjectStore("recoveryBackups", {
-        keyPath: "backupId",
-      });
-      for (const field of ["runId", "createdAt"])
-        backups.createIndex(field, field);
-      db.createObjectStore("meta", { keyPath: "key" });
-      db.createObjectStore("completedRuns", { keyPath: "runId" });
-      db.createObjectStore("completedSnapshots", { keyPath: "runId" });
-      db.createObjectStore("personalBests", {
-        keyPath: ["rulesetVersion", "metric"],
-      });
+      if (event.oldVersion === 0) {
+        const runs = db.createObjectStore("runs", { keyPath: "runId" });
+        for (const field of ["status", "savedAt", "rulesetVersion"])
+          runs.createIndex(field, field);
+        const backups = db.createObjectStore("recoveryBackups", {
+          keyPath: "backupId",
+        });
+        for (const field of ["runId", "createdAt"])
+          backups.createIndex(field, field);
+        db.createObjectStore("meta", { keyPath: "key" });
+        db.createObjectStore("completedRuns", { keyPath: "runId" });
+        db.createObjectStore("completedSnapshots", { keyPath: "runId" });
+        db.createObjectStore("personalBests", {
+          keyPath: ["rulesetVersion", "metric"],
+        });
+      } else if (
+        event.oldVersion !== 1 ||
+        !matchesGameStorageLayout(db, false, opening.transaction)
+      ) {
+        unknownUpgrade = true;
+        opening.transaction?.abort();
+        return;
+      }
+      if (version === 2) {
+        const outbox = db.createObjectStore(OUTBOX_STORE, {
+          keyPath: "event.eventId",
+        });
+        outbox.createIndex("queuedAt", "queuedAt");
+        outbox.createIndex("nextAttemptAt", "nextAttemptAt");
+      }
     };
     let blocked = false;
     let db: IDBDatabase;
@@ -314,7 +333,15 @@ export class GameRepository {
           if (blocked) opening.result.close();
           else resolve(opening.result);
         };
-        opening.onerror = () => reject(opening.error);
+        opening.onerror = () =>
+          reject(
+            unknownUpgrade
+              ? new DOMException(
+                  "Unknown storage layout; no migration was applied.",
+                  "VersionError",
+                )
+              : opening.error,
+          );
         opening.onblocked = () => {
           blocked = true;
           reject(
@@ -342,6 +369,13 @@ export class GameRepository {
           "VersionError",
         );
       }
+    }
+    if (db.version === 2 && !isKnownAdditiveV2(db)) {
+      db.close();
+      throw new DOMException(
+        "Unknown storage layout; export it before changing versions.",
+        "VersionError",
+      );
     }
     db.onversionchange = () => db.close();
     const repository = new GameRepository(db, options.now ?? Date.now);
@@ -815,7 +849,13 @@ export class GameRepository {
 
 /** Strict layout recognition, never an attempted downgrade or record rewrite. */
 function isKnownAdditiveV2(db: IDBDatabase): boolean {
-  if (db.version !== 2) return false;
+  return db.version === 2 && matchesGameStorageLayout(db, true);
+}
+function matchesGameStorageLayout(
+  db: IDBDatabase,
+  includeOutbox: boolean,
+  transaction?: IDBTransaction | null,
+): boolean {
   const expected: Record<
     string,
     { key: string | string[]; indexes: string[] }
@@ -826,10 +866,14 @@ function isKnownAdditiveV2(db: IDBDatabase): boolean {
     completedRuns: { key: "runId", indexes: [] },
     completedSnapshots: { key: "runId", indexes: [] },
     personalBests: { key: ["rulesetVersion", "metric"], indexes: [] },
-    [OUTBOX_STORE]: {
-      key: "event.eventId",
-      indexes: ["queuedAt", "nextAttemptAt"],
-    },
+    ...(includeOutbox
+      ? {
+          [OUTBOX_STORE]: {
+            key: "event.eventId",
+            indexes: ["queuedAt", "nextAttemptAt"],
+          },
+        }
+      : {}),
   };
   const names = Array.from(db.objectStoreNames);
   if (
@@ -837,7 +881,7 @@ function isKnownAdditiveV2(db: IDBDatabase): boolean {
     JSON.stringify(Object.keys(expected).sort())
   )
     return false;
-  const tx = db.transaction(names, "readonly");
+  const tx = transaction ?? db.transaction(names, "readonly");
   return names.every((name) => {
     const store = tx.objectStore(name);
     const specification = expected[name];

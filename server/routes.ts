@@ -1,11 +1,13 @@
 import type { Express, Request, Response } from "express";
 import { createSuccessResponse, getRequestId } from "./errorHandler";
 import { getVersionInfo } from "@shared/version";
+import type { TelemetrySink } from "@shared/telemetry/contracts";
 
 export interface RouteDependencies {
   buildSha: string | null;
   migrationVersion: string | null;
   rulesetLoaded: boolean;
+  telemetry?: TelemetrySink;
 }
 
 const RETIRED_ENDPOINT_MESSAGE =
@@ -44,7 +46,7 @@ export function registerRoutes(
           ruleset: dependencies.rulesetLoaded
             ? "validated"
             : "not_yet_integrated",
-          telemetry: "not_configured",
+          telemetry: dependencies.telemetry?.status() ?? "not_configured",
         },
         getRequestId(req),
       ),
@@ -57,9 +59,20 @@ export function registerRoutes(
         {
           ...getVersionInfo(
             dependencies.buildSha,
-            dependencies.migrationVersion,
+            dependencies.telemetry
+              ? dependencies.telemetry.migrationVersion()
+              : dependencies.migrationVersion,
           ),
           nodeVersion: process.version,
+          ...(dependencies.telemetry
+            ? { telemetry: dependencies.telemetry.status() }
+            : {}),
+          ...(dependencies.telemetry
+            ? {
+                migrationAttestation:
+                  dependencies.telemetry.migrationAttestation(),
+              }
+            : {}),
         },
         getRequestId(req),
       ),

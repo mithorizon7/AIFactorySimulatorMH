@@ -31,9 +31,14 @@ Lease fields and save timestamps are excluded. Visible writers heartbeat every f
 
 Starting a new run abandons the active run after confirmation and preserves its recovery record according to retention policy. Completed runs are immutable summaries. Personal bests use the composite key `[rulesetVersion, metric]`.
 
-Database `ai-factory`, version 1, contains `runs` (indexes `status`, `savedAt`,
+Database `ai-factory`, version 2, contains `runs` (indexes `status`, `savedAt`,
 `rulesetVersion`), `meta`, `recoveryBackups`, `completedSnapshots`,
-`completedRuns`, and `personalBests`. `meta.activeRunId` is updated atomically
+`completedRuns`, `personalBests`, and the additive `telemetryOutbox`.
+The outbox uses key `event.eventId` and nonunique/nonmulti-entry indexes
+`queuedAt` and `nextAttemptAt`. Upgrade from exact schema1 adds only that empty
+store; malformed/unknown layouts are preserved and rejected. C1 and the focus
+checkpoint can read/write exact schema2 without downgrading it, which is the
+required rollback boundary. `meta.activeRunId` is updated atomically
 with the run. Canonical checksum keys are `runId`, `revision`, `status`,
 `snapshotVersion`, `rulesetVersion`, `commandSchemaVersion`, `simulationState`,
 and `experienceState`. ISO creation/save/abandonment timestamps, writer identity,
@@ -65,6 +70,34 @@ mechanics, seeded RNG and canonical checksum format; the snapshot header must
 agree with its simulation's ruleset. Ruleset lookup is explicit and rejects
 unsupported versions rather than silently falling forward. B does not change
 the IndexedDB schema version. Normative score and profile versions remain null.
+
+## Optional telemetry and research boundary
+
+Closed product intents observe scalar transitions only; telemetry owns no game
+clock, command, snapshot or save lifecycle. The SDK requires explicit durable
+opt-in, no GPC and matching executing/served build identity. Consent generations
+fence asynchronous capture/retry work across revocation; storage failures latch
+off in memory and warn that the choice could not persist. The queue holds at
+most100 events for24 hours with capped exponential retry, and is purged on
+observed opt-out/GPC. Network cancellation covers headers and JSON body.
+
+The Express product ingress is installed before generic parsing/logging, with
+GPC short-circuit, same-origin/fetch-metadata checks, closed payload validation,
+bounded time/body/batches, concurrency and per-process quotas. Server receipt
+time determines90-day retention. These are safety valves, not a provider-wide
+quota or a substitute for an operational retention job.
+
+Only `TELEMETRY_DATABASE_URL` may activate the verified-TLS, bounded analytics
+pool. It must prove exact role/ACL boundaries and migration checksum; there is
+no legacy credential fallback or automatic DDL. Background verification and
+idle pool errors cannot block core readiness. Cold outage is unverified, not a
+fabricated mismatch; actual mismatch remains a separate failed attestation.
+
+Research definitions and insert/read/custodian roles are separate from product
+telemetry. No research ingress or credential is included in the app runtime.
+Explicit operator tools support additive migration, dry-run retention and code
+withdrawal; production activation remains blocked on real credential custody,
+retention/backup/log evidence and external consent/research ownership.
 
 `getRunGuidance`, `inspectCommand`, `getResearchRate`, `getServiceDemand` and
 `getTrainingDuration` are canonical shared selectors. React does not reproduce
