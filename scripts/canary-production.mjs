@@ -7,6 +7,7 @@ import {
   classifyCanary,
   readCanaryConfiguration,
   normalizeTelemetryStatus,
+  migrationEvidence,
   verifyCoreResponses,
 } from "./canary-policy.mjs";
 
@@ -32,6 +33,7 @@ try {
     artifact: false,
   };
   let telemetry = "unknown";
+  let migration = { state: "unverified", matches: true, verified: false };
   let browser = { status: "not_run", passed: 0, failed: 0, other: 0 };
   try {
     const [health, ready, version, metadata] = await Promise.all([
@@ -41,6 +43,7 @@ try {
       request("/build-meta.json"),
     ]);
     core = verifyCoreResponses(configuration, health, ready, version, metadata);
+    migration = migrationEvidence(configuration, version?.data);
     const value = ready?.data?.telemetry;
     telemetry = normalizeTelemetryStatus(value);
     if (Object.values(core).every(Boolean)) {
@@ -80,6 +83,10 @@ try {
       // Fence a deployment change during the browser sequence, not just startup.
       const finalVersion = await request("/api/version");
       const finalMetadata = await request("/build-meta.json");
+      const finalMigration = migrationEvidence(
+        configuration,
+        finalVersion?.data,
+      );
       core.identity = verifyCoreResponses(
         configuration,
         health,
@@ -88,11 +95,20 @@ try {
         finalMetadata,
       ).identity;
       core.artifact = finalMetadata?.buildSha === configuration.buildSha;
+      migration = {
+        ...finalMigration,
+        verified: migration.verified && finalMigration.verified,
+      };
     }
   } catch {
     core = { ...core, requestCompleted: false };
   }
-  const classification = classifyCanary(core, browser.status, telemetry);
+  const classification = classifyCanary(
+    core,
+    browser.status,
+    telemetry,
+    migration.verified,
+  );
   report = {
     schemaVersion: 1,
     startedAt,
@@ -110,6 +126,8 @@ try {
       other: browser.other,
     },
     telemetry,
+    migrationAttestationState: migration.state,
+    migrationReleaseVerified: migration.verified,
   };
 } catch {
   report = {
@@ -129,12 +147,16 @@ console.log(JSON.stringify(report));
 if (process.env.GITHUB_STEP_SUMMARY) {
   await appendFile(
     process.env.GITHUB_STEP_SUMMARY,
-    `### Production canary\n\nStatus: ${report.status}. Core rollback: ${report.rollback}.\n\nBrowser cases: ${report.browser?.passed ?? 0} passed, ${report.browser?.failed ?? 0} failed. Schedule is best effort, not an SLA.\n`,
+    `### Production canary\n\nStatus: ${report.status}. Core rollback: ${report.rollback}.\n\nBrowser cases: ${report.browser?.passed ?? 0} passed, ${report.browser?.failed ?? 0} failed. Migration sign-off verified: ${report.migrationReleaseVerified ?? false}. Schedule is best effort, not an SLA.\n`,
   );
 }
 if (report.status === "telemetry_degraded")
   console.log(
     "::warning::Telemetry degraded; core remains playable. No telemetry-only rollback.",
+  );
+if (report.status === "migration_unverified")
+  console.log(
+    "::warning::Migration attestation is unverified. Synthetic core checks remain authoritative; no telemetry-only rollback and no migration release sign-off.",
   );
 if (report.status === "core_failed")
   console.log(

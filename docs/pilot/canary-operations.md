@@ -10,19 +10,31 @@ setting or production artifact was changed by this lane.
 Root/operator must first review the exact candidate, pass CI, and configure these
 non-secret repository variables through an authorized operational surface:
 
-| Variable                            | Required value                                                                                       |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| PRODUCTION_CANARY_ENABLED           | Literal `true` to run; absent/other disables the job, never means healthy                            |
-| PRODUCTION_CANARY_ORIGIN            | Exactly `https://aifactorysimulation.com` or `https://ai-factory-mithorizon.replit.app`              |
-| PRODUCTION_CANARY_BUILD_SHA         | Full 40-character approved deployed commit, not the latest default-branch SHA                        |
-| PRODUCTION_CANARY_RULESET_VERSION   | Explicit expected ruleset, currently accepted B `release-b.1`; change only with verified publication |
-| PRODUCTION_CANARY_MIGRATION_VERSION | Explicit expected migration marker, literal `null` when none applies; never infer returned value     |
+| Variable                             | Required value                                                                                              |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| PRODUCTION_CANARY_ENABLED            | Literal `true` to run; absent/other disables the job, never means healthy                                   |
+| PRODUCTION_CANARY_ORIGIN             | Exactly `https://aifactorysimulation.com` or `https://ai-factory-mithorizon.replit.app`                     |
+| PRODUCTION_CANARY_BUILD_SHA          | Full 40-character approved deployed commit, not the latest default-branch SHA                               |
+| PRODUCTION_CANARY_RULESET_VERSION    | Explicit expected ruleset, currently accepted B `release-b.1`; change only with verified publication        |
+| PRODUCTION_CANARY_MIGRATION_VERSION  | Explicit expected migration marker, literal `null` when none applies; never infer returned value            |
+| PRODUCTION_CANARY_MIGRATION_CHECKSUM | Required 64-character reviewed SQL checksum when expected migration is non-null; absent for accepted B/null |
 
 Do not pre-set a C expected SHA before C publication. Pause monitoring during an
 approved change window or coordinate expected-marker update with deployment;
 document the resulting blind interval. The runner verifies health/readiness and
 full API/build-metadata identity before gameplay and rechecks identity afterward,
 so a deployment switch during the run fails rather than mixing artifacts.
+
+For the new migration-attestation API, `verified` must match both the independently
+configured version and checksum; an actual `mismatch` fails core identity even
+when telemetry is degraded. Cold-start database outage may leave attestation
+`unverified` with core readiness healthy and telemetry degraded: continue the
+synthetic core tests, warn about unknown migration proof, and do not roll back
+independently or close migration/release sign-off. `not_configured` with a
+non-null expected migration is also unknown, not proven mismatch. Old accepted
+B/compat APIs without attestation retain exact legacy migrationVersion matching.
+Only the allowlisted attestation state and verification boolean are reported,
+never remote attestation version/checksum or error contents.
 
 The workflow runs on the default branch every ten minutes at minutes
 7, 17, 27, 37, 47 and 57 UTC and supports manual
@@ -59,8 +71,11 @@ EXPECTED_MIGRATION_VERSION=null \
 node scripts/canary-production.mjs
 ```
 
-Use literal approved values in place of the placeholder. Node/npm follow the
-repository pins; `npm ci --ignore-scripts` uses the reviewed lockfile. The
+Use literal approved values in place of the placeholder. When expecting a
+non-null migration, additionally set
+`EXPECTED_MIGRATION_CHECKSUM` from the reviewed migration dry-run/source, not the
+served API response. An unavailable migration cannot be relabeled as verified.
+Node/npm follow the repository pins; `npm ci --ignore-scripts` uses the reviewed lockfile. The
 workflow installs only the locked Chromium runtime in runner-local temporary
 storage. Local test servers require explicit `CANARY_ALLOW_LOOPBACK=1`, an HTTP
 loopback origin and an operator-selected unused port; production workflow never
@@ -81,6 +96,7 @@ synthetic data and review/redact evidence before any separate publication.
 | -------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | healthy                          | 0              | Record observed completion; do not infer health between samples.                                                                                        |
 | telemetry_degraded               | 0 plus warning | Investigate analytics/readiness telemetry status; core remains independent. Never roll back solely because `/api/v1/events` is unavailable or slow.     |
+| migration_unverified             | 0 plus warning | Synthetic core can pass while database attestation remains unknown; no independent rollback and no migration/release gate acceptance.                   |
 | core_failed                      | 1              | Confirm exact served identity and reproduce the failed core boundary. Follow the core rollback runbook; no automatic rollback or provider write occurs. |
 | inconclusive/configuration_error | 2              | Fix runner/config/browser availability and record unknown coverage. A missing browser/report is not proof the app is broken or healthy.                 |
 

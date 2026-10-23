@@ -7,6 +7,7 @@ import {
   classifyCanary,
   readCanaryConfiguration,
   normalizeTelemetryStatus,
+  migrationEvidence,
   verifyCoreResponses,
 } from "../../../scripts/canary-policy.mjs";
 import CanaryReporter from "../../../scripts/canary-reporter.mjs";
@@ -50,8 +51,117 @@ describe("production canary safety and evidence policy", () => {
       readCanaryConfiguration({
         ...base,
         EXPECTED_MIGRATION_VERSION: "c-telemetry-1",
+        EXPECTED_MIGRATION_CHECKSUM: "f".repeat(64),
       }).migrationVersion,
     ).toBe("c-telemetry-1");
+  });
+
+  it("requires the independent checksum for non-null expected migrations", () => {
+    expect(() =>
+      readCanaryConfiguration({
+        ...base,
+        EXPECTED_MIGRATION_VERSION: "c001-telemetry-research",
+      }),
+    ).toThrow();
+    expect(() =>
+      readCanaryConfiguration({
+        ...base,
+        EXPECTED_MIGRATION_VERSION: "c001-telemetry-research",
+        EXPECTED_MIGRATION_CHECKSUM: "short",
+      }),
+    ).toThrow();
+  });
+
+  it("preserves legacy exact migration matching when no attestation exists", () => {
+    const configuration = readCanaryConfiguration(base);
+    expect(
+      migrationEvidence(configuration, { migrationVersion: null }),
+    ).toEqual({ state: "legacy", matches: true, verified: true });
+    expect(
+      migrationEvidence(configuration, { migrationVersion: "wrong" }).matches,
+    ).toBe(false);
+  });
+
+  it("distinguishes cold-start DB uncertainty from a proven migration mismatch", () => {
+    const configuration = readCanaryConfiguration({
+      ...base,
+      EXPECTED_MIGRATION_VERSION: "c001-telemetry-research",
+      EXPECTED_MIGRATION_CHECKSUM: "f".repeat(64),
+    });
+    const uncertain = migrationEvidence(configuration, {
+      migrationVersion: null,
+      migrationAttestation: {
+        state: "unverified",
+        version: null,
+        checksum: null,
+      },
+    });
+    expect(uncertain).toEqual({
+      state: "unverified",
+      matches: true,
+      verified: false,
+    });
+    expect(
+      classifyCanary(healthyCore, "passed", "degraded", uncertain.verified),
+    ).toEqual({
+      status: "migration_unverified",
+      exitCode: 0,
+      rollback: "none",
+    });
+    expect(
+      migrationEvidence(configuration, {
+        migrationAttestation: { state: "not_configured" },
+      }).verified,
+    ).toBe(false);
+    const mismatch = migrationEvidence(configuration, {
+      migrationAttestation: {
+        state: "mismatch",
+        version: "private-remote-value",
+        checksum: "private-value",
+      },
+    });
+    expect(mismatch).toEqual({
+      state: "mismatch",
+      matches: false,
+      verified: false,
+    });
+    expect(
+      classifyCanary(
+        { ...healthyCore, identity: mismatch.matches },
+        "passed",
+        "degraded",
+        false,
+      ).status,
+    ).toBe("core_failed");
+  });
+
+  it("detects same-version wrong checksum without reporting remote values", () => {
+    const configuration = readCanaryConfiguration({
+      ...base,
+      EXPECTED_MIGRATION_VERSION: "c001-telemetry-research",
+      EXPECTED_MIGRATION_CHECKSUM: "f".repeat(64),
+    });
+    const result = (version: string, checksum: string) =>
+      migrationEvidence(configuration, {
+        migrationAttestation: { state: "verified", version, checksum },
+      });
+    expect(result(configuration.migrationVersion, "f".repeat(64))).toEqual({
+      state: "verified",
+      matches: true,
+      verified: true,
+    });
+    expect(result(configuration.migrationVersion, "e".repeat(64)).matches).toBe(
+      false,
+    );
+    expect(result("wrong", "f".repeat(64)).matches).toBe(false);
+    expect(
+      JSON.stringify(result("private-version", "private-checksum")),
+    ).not.toMatch(/private/);
+    expect(
+      migrationEvidence(configuration, {
+        migrationAttestation: { state: "unexpected-secret" },
+      }).state,
+    ).toBe("unverified");
   });
 
   it.each([
