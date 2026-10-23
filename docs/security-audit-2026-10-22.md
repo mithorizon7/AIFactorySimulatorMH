@@ -1,5 +1,11 @@
 # Security audit and local remediation — 2026-10-22
 
+Historical audit snapshot: its deployment-pending statements below describe the
+audit-time access boundary, not current production. Release A was subsequently
+deployed and independently verified. See the
+[October 23 delivery verification addendum](security-delivery-verification-2026-10-23.md)
+for the exact served revision, remediation evidence and still-unverified scope.
+
 ## Bottom line
 
 The checked-in remediation candidate is materially safer: it pins the patched
