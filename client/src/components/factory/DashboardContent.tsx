@@ -92,7 +92,7 @@ export default function DashboardContent({
 
   const nextMilestoneLabel = (() => {
     if (agiAchieved) {
-      return "AGI achieved";
+      return "Scenario complete";
     }
 
     if (gameState.training.active) {
@@ -103,7 +103,7 @@ export default function DashboardContent({
       return `Next milestone: ${nextTrainingRun.name}`;
     }
 
-    return `Reach ${gameState.agiThreshold.toLocaleString()} intelligence`;
+    return `Reach ${gameState.agiThreshold.toLocaleString()} model capability`;
   })();
 
   const getNextActions = () => {
@@ -364,11 +364,11 @@ export default function DashboardContent({
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <BrainCog className="text-amber-400 h-8 w-8" />
-            <h1 className="text-2xl font-bold text-amber-400">AGI Readiness</h1>
+            <h1 className="text-2xl font-bold text-amber-400">Scenario Progress</h1>
             <Clock className="text-gray-400 h-6 w-6" />
           </div>
           <div className="text-gray-300 text-sm">
-            Complete GNT-7 training and reach the intelligence threshold to win
+            Complete GNT-7 training and reach the model capability threshold to finish this scenario
           </div>
         </div>
 

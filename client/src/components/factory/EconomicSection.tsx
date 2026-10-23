@@ -147,7 +147,7 @@ export default function EconomicSection({
                       
                       <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                         <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                        <p className="text-sm text-gray-200 leading-relaxed">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
+                        <p className="text-sm text-gray-200 leading-relaxed">In this simulation, revenue depends on Model Capability and Developer Tools investments. Higher compute usage is the operating cost.</p>
                       </div>
                     </div>
                   }
@@ -204,7 +204,7 @@ export default function EconomicSection({
                       
                       <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                         <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                        <p className="text-sm text-gray-200 leading-relaxed">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
+                        <p className="text-sm text-gray-200 leading-relaxed">In this simulation, growth depends on Model Capability and Data Quality. Chatbot Improvements and Ad Campaigns provide additional growth.</p>
                       </div>
                     </div>
                   }
@@ -266,7 +266,7 @@ export default function EconomicSection({
                       
                       <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                         <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                        <p className="text-sm text-gray-200 leading-relaxed">Revenue depends heavily on raw AI Intelligence score. Boost with Developer Tools investments. High compute usage is the strategic cost.</p>
+                        <p className="text-sm text-gray-200 leading-relaxed">In this simulation, revenue depends on Model Capability and Developer Tools investments. Higher compute usage is the operating cost.</p>
                       </div>
                     </div>
                   }
@@ -304,7 +304,7 @@ export default function EconomicSection({
                       
                       <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                         <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                        <p className="text-sm text-gray-200 leading-relaxed">Growth tied to both AI Intelligence and Data Quality (reliability attracts users). Improve with Chatbot Improvements or boost short-term with Ad Campaigns.</p>
+                        <p className="text-sm text-gray-200 leading-relaxed">In this simulation, growth depends on Model Capability and Data Quality. Chatbot Improvements and Ad Campaigns provide additional growth.</p>
                       </div>
                     </div>
                   }
@@ -348,7 +348,7 @@ export default function EconomicSection({
                       
                       <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                         <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                        <p className="text-sm text-gray-200 leading-relaxed">Depends on breakthrough achievements, regulatory compliance, and rapid intelligence growth. Show consistent progress to attract larger rounds.</p>
+                        <p className="text-sm text-gray-200 leading-relaxed">Simulated funding depends on breakthroughs, regulatory investment, and Model Capability milestones.</p>
                       </div>
                     </div>
                   }
@@ -542,7 +542,7 @@ export default function EconomicSection({
                     
                     <div className="p-3 bg-gray-800 border border-gray-600 rounded-lg">
                       <h5 className="text-green-400 font-semibold text-sm mb-2">How to Improve:</h5>
-                      <p className="text-sm text-gray-200 leading-relaxed">Funding earned by achieving Intelligence Milestones and unlocking Breakthroughs. R&D progress directly attracts investment—not automatic revenue.</p>
+                      <p className="text-sm text-gray-200 leading-relaxed">Funding is earned through Model Capability milestones and Breakthroughs within the simulation.</p>
                     </div>
                   </div>
                 }
@@ -799,7 +799,7 @@ export default function EconomicSection({
               <span className="text-xs bg-gray-700 text-amber-300 px-2 py-1 rounded">{revenue.subscribers.toLocaleString()} Subscribers</span>
             </div>
             <p className="text-xs text-gray-400 mb-2">
-              Launch an advertising campaign to gain new subscribers (scales with your AI's intelligence).
+              Launch an advertising campaign to gain new subscribers (scales with Model Capability in this simulation).
             </p>
             <button 
               className={`w-full py-2 px-4 rounded text-sm flex justify-between items-center transition ${

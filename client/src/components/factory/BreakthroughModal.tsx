@@ -59,7 +59,7 @@ export default function BreakthroughModal({
       case 7:
         return "Combine all your capabilities to create autonomous agents that can operate independently in the real world.";
       default:
-        return "You're at the cutting edge of AI development! Continue pushing all three pillars to achieve artificial general intelligence.";
+        return "Continue developing all three resource pillars to complete this speculative learning scenario.";
     }
   };
 

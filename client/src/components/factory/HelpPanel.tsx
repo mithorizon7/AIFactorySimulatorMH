@@ -48,7 +48,7 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
               Game Guide
             </DialogTitle>
             <DialogDescription className="text-gray-300">
-              Everything you need to know about building Artificial General Intelligence
+              Learn how this AI development simulation works
             </DialogDescription>
           </DialogHeader>
           
@@ -64,15 +64,15 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <h3 className="text-xl font-medium text-amber-400 mb-2">How to Play</h3>
                 <p className="text-gray-300 mb-4">
-                  AI Factory puts you in charge of developing Artificial General Intelligence (AGI). 
-                  You have 20 minutes to reach your intelligence goal by managing resources effectively.
+                  AI Factory puts you in charge of an AI development scenario.
+                  Complete the training ladder and model capability goal by managing resources effectively.
                 </p>
                 
                 <h4 className="text-lg font-medium text-gray-200 mb-2">Core Gameplay</h4>
                 <ul className="list-disc pl-5 space-y-2 text-gray-300">
                   <li>
                     <span className="font-medium text-white">Manage Resources:</span> Balance your 
-                    Compute, Data, and Algorithm resources to increase your AI's intelligence
+                    Compute, Data, and Algorithm resources to increase simulated Model Capability
                   </li>
                   <li>
                     <span className="font-medium text-white">Spend Money:</span> Allocate your budget to 
@@ -227,7 +227,7 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
                     <ul className="list-disc pl-4 text-xs text-gray-300">
                       <li>Compute → Data: Processes data faster</li>
                       <li>Compute → Algorithm: Enables complex models</li>
-                      <li>Compute → Intelligence: Powers AI thinking</li>
+                      <li>Compute → Model Capability: Supports model development</li>
                     </ul>
                   </div>
                   
@@ -236,7 +236,7 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
                     <ul className="list-disc pl-4 text-xs text-gray-300">
                       <li>Data → Compute: Improves efficiency</li>
                       <li>Data → Algorithm: Refines methods</li>
-                      <li>Data → Intelligence: Expands knowledge</li>
+                      <li>Data → Model Capability: Provides training examples</li>
                     </ul>
                   </div>
                   
@@ -245,7 +245,7 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
                     <ul className="list-disc pl-4 text-xs text-gray-300">
                       <li>Algorithm → Compute: Optimizes usage</li>
                       <li>Algorithm → Data: Better data utilization</li>
-                      <li>Algorithm → Intelligence: Smarter reasoning</li>
+                      <li>Algorithm → Model Capability: Changes training efficiency</li>
                     </ul>
                   </div>
                 </div>
@@ -293,14 +293,14 @@ export default function HelpPanel({ currentEra }: HelpPanelProps) {
                     <h4 className={`font-medium ${currentEra === 'GNT-6' ? 'text-amber-400' : 'text-gray-300'}`}>
                       GNT-6 Era
                     </h4>
-                    <p className="text-xs text-gray-400">Advanced autonomous capabilities approaching AGI</p>
+                    <p className="text-xs text-gray-400">Speculative advanced-capability scenario</p>
                   </div>
                   
                   <div className={`p-3 rounded-lg border ${currentEra === 'GNT-7' ? 'bg-amber-900/30 border-amber-700' : 'bg-gray-900 border-gray-700'}`}>
                     <h4 className={`font-medium ${currentEra === 'GNT-7' ? 'text-amber-400' : 'text-gray-300'}`}>
                       GNT-7 Era
                     </h4>
-                    <p className="text-xs text-gray-400">Artificial General Intelligence achievement</p>
+                    <p className="text-xs text-gray-400">Speculative final training scenario</p>
                   </div>
                 </div>
               </div>

@@ -263,7 +263,7 @@ export default function EraProgressionPanel({ gameState }: EraProgressionPanelPr
         <div className="bg-gray-700 p-3 rounded-lg">
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div>
-              <div className="text-xs text-gray-400 mb-1">Intelligence</div>
+              <div className="text-xs text-gray-400 mb-1">Model Capability</div>
               <div className="flex items-center justify-between">
                 <Progress 
                   value={Math.min(100, (intelligence / nextEraRequirements.intelligence) * 100)} 
