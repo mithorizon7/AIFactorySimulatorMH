@@ -10,6 +10,10 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Keep CPU-heavy property/replay fixtures predictable on shared hosts and
+    // two-core CI runners; these tests check invariants, not wall-clock speed.
+    maxWorkers: 2,
+    testTimeout: 30_000,
     include: ["tests/{unit,api,session}/**/*.test.ts"],
     coverage: {
       provider: "v8",
