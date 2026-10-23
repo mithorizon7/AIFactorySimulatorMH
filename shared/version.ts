@@ -4,8 +4,9 @@ export const SUPPORTED_RULESET_VERSIONS = [
 ] as const;
 export type RulesetVersion = (typeof SUPPORTED_RULESET_VERSIONS)[number];
 export const LEGACY_RULESET_VERSION = "release-a.1" as const;
-// Promote only after the separately verified Release B integration gate.
-export const RULESET_VERSION: RulesetVersion = LEGACY_RULESET_VERSION;
+// New runs use the calibrated B rules; saved runs retain their own version.
+// Production promotion remains gated on the complete release acceptance suite.
+export const RULESET_VERSION: RulesetVersion = "release-b.1";
 export function isSupportedRuleset(value: unknown): value is RulesetVersion {
   return SUPPORTED_RULESET_VERSIONS.some((version) => version === value);
 }

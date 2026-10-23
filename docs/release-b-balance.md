@@ -1,6 +1,6 @@
 # Release B balance evidence
 
-This lane supplies version-selected mechanics and canonical action guidance. The default ruleset remains Release A until the integration lead promotes Release B. Nothing here is human playtest, learning-efficacy, scoring-calibration, publication, or deployment evidence.
+This lane supplies version-selected mechanics and canonical action guidance. The lane kept Release A as default; the integration lead subsequently promoted new runs to B on the unreleased integration branch after accepting the corrected matrix. Existing A runs retain A. Production promotion still requires the complete independent release gate. Nothing here is human playtest, learning-efficacy, scoring-calibration, publication, or deployment evidence.
 
 ## Reproduction
 
