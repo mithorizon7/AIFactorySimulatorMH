@@ -50,7 +50,32 @@ gaps, never simulated results.
   database outage. Degraded telemetry keeps core readiness200; unknown schema
   evidence cannot close initial technical qualification.
 
-Accessibility/performance and telemetry implementation lanes remain isolated
-until their exact source and evidence are integrated and independently checked.
-Production remains accepted B until a later checkpoint is explicitly merged,
-deployed and verified. No participant collection is authorized or enabled.
+## Integrated checkpoint —2026-10-23
+
+The lanes are integrated, including independent review of consent revocation,
+asynchronous cancellation and exact schema2 preservation. The actual disposable
+PostgreSQL qualification passes8tests, including the real restricted-pool writer,
+role/ACL drift, idempotence and retention. Two catalog/driver defects discovered
+by those tests were corrected without broadening permissions.
+
+Clean integrated candidate `a147b7c` passes23production-mode browser tests and
+12strict-CSP Chromium/Firefox/WebKit checks. Behavioral coverage passes536tests
+at90.75% statements/87.06% branches; a later added retry-race regression also
+passes and will be included in final CI. Initial graph573811raw/162945gzip bytes.
+Local cold LCPmedian124ms, CLS0, no steady long tasks;30-minute accelerated GNT2
+heap drift+354424bytes with flattening final increment. These are local
+diagnostics, not production/device or leak-certification claims. Native zoom and
+assistive-technology acceptance remain unmeasured. Final served qualification
+and CI remain open, as do the mandatory provider/monitoring gates above.
+
+Production now serves `edd714075eec03c41d9e52185fe8b3841abce5aa` (PR20 after
+CI39934768639). Both origins independently pass exact identity/asset hashes,
+Cancel/Escape focus restoration and save/reload/resume/reset. The earlier C1
+Reset-Cancel focus P2 is preserved historically and closed by observed repair.
+Dedicated C1/A/B rollback references remain retained.
+
+Chrome's existing profile reaches a Replit login screen. Account-specific
+credential binding/exclusion, backup/PITR, log policy, isolated staging and
+research IAM remain unverified. No production DDL, telemetry or participant
+collection is enabled. Detailed evidence bundles/screenshots/reports/SBOM stay
+private by explicit user choice. The C technical gate is not claimed complete.

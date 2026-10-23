@@ -1,8 +1,12 @@
 # Current State
 
-Release B is deployed and independently verified as of 2026-10-23. Both
+Releases A and B are delivered. As of 2026-10-23T10:14Z, both
 https://aifactorysimulation.com and https://ai-factory-mithorizon.replit.app serve
-`fadcea8391a31163c004682d83ea76035404b115` on Node 22.23.4, ruleset `release-b.1`.
+the independently verified C compatibility/focus checkpoint
+`edd714075eec03c41d9e52185fe8b3841abce5aa` on Node22.23.4, ruleset `release-b.1`.
+It enforces nonce-only styles, supports exact additive browser-schema2 rollback,
+and restores Reset trigger focus after Cancel/Escape. It does not activate
+telemetry, research or the full Release C technical gate.
 The preserved execution record distinguishes historical source snapshots,
 subsequent non-runtime Git maintenance, provider builds and served revisions.
 
@@ -33,8 +37,10 @@ See [the security audit and local remediation record](security-audit-2026-10-22.
 3. **Release C — Validated Pilot:** accessibility completion, privacy-separated telemetry/research, formative playtests, performance, monitoring, and deployment evidence.
 
 Release A and B external stop gates passed, including fresh-context production
-verification. Release C technical readiness is now in progress, not deployed or
-human-validated. Its source starts from tag `release-b-2026-10-23`.
+verification. Release C technical readiness is in progress. Only the separate
+compatibility and focus checkpoints are deployed; the integrated pilot candidate
+is still under verification, not released or human-validated. Its source starts
+from tag `release-b-2026-10-23`.
 Existing A runs retain A rules; B will not silently reinterpret their saves.
 Unvalidated normative scores and named strategy profiles remain omitted, with
 independent algorithm/classifier versions explicitly null.
