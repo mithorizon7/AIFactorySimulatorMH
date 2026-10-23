@@ -111,9 +111,15 @@ export const outboxRecordSchema = z
   .strict();
 export type OutboxRecord = z.infer<typeof outboxRecordSchema>;
 export type TelemetryStatus = "not_configured" | "ready" | "degraded";
+export interface MigrationAttestation {
+  state: "not_configured" | "unverified" | "verified" | "mismatch";
+  version: string | null;
+  checksum: string | null;
+}
 export interface TelemetrySink {
   status(): TelemetryStatus;
   migrationVersion(): string | null;
+  migrationAttestation(): MigrationAttestation;
   accept(events: TelemetryEvent[], receivedAt: Date): Promise<void>;
   close(): Promise<void>;
 }

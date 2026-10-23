@@ -11,6 +11,12 @@ constant. It remains null when never configured or never verified. After a
 successful verification the process retains the last verified version during
 an outage; readiness separately reports degraded telemetry. A genuinely
 different applied migration is a deployment mismatch, not a transient outage.
+`migrationAttestation` explicitly distinguishes not-configured, never-verified,
+last-verified and actual mismatch states, including the observed SQL checksum.
+A cold-start database outage is unknown, not evidence of a migration mismatch:
+it degrades analytics but does not independently roll back a passing core
+browser canary. Initial C qualification still requires actual schema/role proof;
+the unknown state cannot close that release gate.
 
 Client analytics is off until explicit opt-in. GPC overrides opt-in. Opt-out
 clears queued events; no event is sent with cookies or third-party endpoints.
