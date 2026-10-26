@@ -1,5 +1,36 @@
 # Release C technical execution record
 
+## Authorized collection-disabled shipment, 2026-10-26
+
+The user authorized finishing PR21 and deploying with telemetry and research
+collection disabled. This shipment does not activate a pilot, apply production
+DDL, change existing database records, or claim the full C research program is
+complete. The full-program gates below remain distinct from this release.
+
+- [ ] G-001 [status:in_progress] Fix the browser gate and newly reported validation dependency advisory; pass final local regressions.
+- [ ] G-002 [status:open] Pass both PR release gates and merge the exact reviewed head without bypass.
+- [ ] G-003 [status:open] Deploy the clean merge to the existing Replit application; independently verify both served origins and collection-disabled behavior.
+- [ ] G-004 [status:open] Observe core startup/save/resume/completion canaries for 30 minutes and retain private release/rollback evidence.
+- [x] Q-101 [status:verified] Correct the lazy-player filename assertion without weakening SVG, reduced-motion, no-eval or initial-load checks. The same locally reproduced failing test now passes.
+- [ ] Q-102 [status:in_progress] Upgrade Zod to patched 4.6.7 and verify persisted snapshots, closed telemetry contracts and strict API rejection.
+- [ ] Q-103 [status:open] Close commit/CI/merge/publication and document remaining external pilot-activation prerequisites with owners.
+- [x] F-101 [status:verified] [P2] Vite development optimization escapes the player filename as lottie___light, causing the old lottie_light assertion to fail despite rendered SVG. Evidence: locally reproduced PR21 browser failure and its network trace; corrected assertion passes.
+- [ ] F-102 [status:in_progress] [P1] Fresh npm audit reports GHSA-mrhx-c7xc-m3w5 for Zod below 4.6.6. Evidence: registry advisory refreshed 2026-10-26; direct dependency upgrade is required before release.
+
+Evidence is retained privately in ignored task-owned output. Existing provider
+data stays untouched; the now-retired ownership migration must not be applied.
+
+Local checkpoint: patched Zod 4.6.7 passes typecheck, 460 behavioral tests,
+74 persistence tests and 83 targeted server/API/telemetry checks, including a
+regression proving oversized invalid batches produce one cardinality issue
+instead of per-event issue accumulation. Build and initial-graph budget pass;
+fresh full-tree npm audit reports zero findings. Full browser and final CI
+verification remain pending. A repository-local Prettier configuration now pins
+the existing CI format rather than inheriting an unrelated parent-directory
+configuration; format and lint pass without reformatting unrelated sources.
+
+## Full program gates
+
 Base: accepted B tag `release-b-2026-10-23`, source
 `fadcea8391a31163c004682d83ea76035404b115`. This checklist executes the frozen
 roadmap; it does not broaden the product or claim participant validation.

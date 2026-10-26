@@ -82,4 +82,18 @@ describe("closed product telemetry boundary", () => {
       ).toBe(false);
     expect(clientTimeIsBounded("invalid", received)).toBe(false);
   });
+  it("rejects oversized batches before accumulating per-event issues", () => {
+    const result = telemetryBatchSchema.safeParse({
+      events: Array.from({ length: 21 }, () => ({ type: "unknown" })),
+    });
+    expect(result.success).toBe(false);
+    if (result.success) throw new Error("Oversized batch was accepted");
+    expect(result.error.issues).toEqual([
+      expect.objectContaining({
+        code: "too_big",
+        path: ["events"],
+        maximum: 20,
+      }),
+    ]);
+  });
 });

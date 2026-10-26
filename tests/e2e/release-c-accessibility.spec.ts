@@ -187,7 +187,8 @@ test("startup fetches no lazy character graph and Spark uses expression-free mot
   const before = await svg.evaluate((element) => element.outerHTML);
   await page.waitForTimeout(250);
   expect(await svg.evaluate((element) => element.outerHTML)).toBe(before);
-  expect(scripts.some((url) => /lottie_light/.test(url))).toBe(true);
+  // Vite's dependency optimizer escapes the underscore in development URLs.
+  expect(scripts.some((url) => /lottie_+light/.test(url))).toBe(true);
   expect(errors).toEqual([]);
   await page.screenshot({
     path: testInfo.outputPath("spark-reduced-motion.png"),
