@@ -137,6 +137,72 @@ Release C technical work may now begin from the verified B tag. Participant
 evidence, full accessibility/performance qualification and C data operations
 have not been claimed by B. A remains retained as the prior accepted rollback.
 
+## Collection-disabled C shipment, 2026-10-26
+
+The user separately approved finishing PR21 and shipping its infrastructure with
+product telemetry and research collection disabled. This is a narrower shipped
+increment, not a claim that all full-program C technical or participant gates
+are complete.
+
+PR21 merged at `fe2e8c98eace7baf440d9bc276ef099366116caf`; its tree is identical
+to accepted head 37ca312. Required CI 40352982776 passed: 544 coverage cases,
+8 actual PostgreSQL 16.15 cases, 23 development/23 production browser cases and
+27 strict-CSP accessibility/privacy cases in Chromium, Firefox and WebKit.
+Full and production npm audits report zero findings. Repairs include patched
+Zod 4.6.7, no-JIT pre-schema initialization and the Vite player filename assertion.
+
+The main-branch recheck 40356043026 was later canceled at its 30-minute limit
+during slow Ubuntu browser OS dependency downloads, not an application failure.
+CI-only [PR22](https://github.com/mithorizon7/AIFactorySimulatorMH/pull/22)
+replaces that repeated install with the official Playwright 1.64.1 Noble image,
+pinned by immutable registry digest, non-root with private shared memory.
+Every existing gate remains enforced, including pinned Node 22.23.4.
+[Qualification run 40362491898](https://github.com/mithorizon7/AIFactorySimulatorMH/actions/runs/40362491898)
+passed: 466 unit, 74 persistence, 26 API, 545 coverage, 8 actual disposable
+PostgreSQL cases and all 23/23/27 browser cases, with zero dependency findings.
+PR22 merged at `6e26a4b71abf0546b84eac6d8439e95f66e5eccf`, the identical
+qualified tree. CI/documentation-only commits do not change the deployed
+application revision or require another publication.
+
+Both existing origins independently serve that exact SHA and ruleset release-b.1
+on Node 22.23.4. Their five JS/CSS assets are byte-identical to the clean local
+merge build; health/readiness, enforced CSP/HSTS and all retired routes pass.
+Browser persistence is schema 2; scoring/classifier and migration versions remain
+null. Optional events are not configured, and no study ingestion route is mounted.
+No production DDL, queries, record exports/deletions or credential changes occurred.
+
+Latest immutable successful Replit build:
+`03edee65-14a6-4182-9b5d-ebeec17d8245`, created 16:09:22.589 UTC and updated
+16:11:02.412 UTC. Served source identity is verified independently via HTTP and
+asset bytes, not inferred solely from that provider record. The post-publication
+checkpoint a94a05e has the same source tree as the approved merge.
+
+Tag `release-c-disabled-2026-10-26` preserves the exact shipped source. Its source
+archive remains private, SHA256
+`aaf1db494c29d6004c827dd5cf65a74f74457a744e4b47dc8933fafa5c4e69dc`.
+The prior accepted focus repair edd7140 is retained as the rollback boundary that
+recognizes the known additive browser schema 2 without deleting it. A production
+rollback was not exercised during this shipment.
+
+Both origins pass all 23 live browser cases, zero failed/flaky/skipped tests,
+including actual startup, save/reload/resume, full completion and factual debrief.
+Six healthy one-off core checks across both origins, 12 browser cases total,
+span 16:18:33.676 to 16:56:58.766 UTC, 38.42 minutes. An additional sandbox-restricted
+attempt failed local DNS before browser startup; its failed report is retained
+and excluded from successful counts. Identical Node requests return 200 outside
+the sandbox, where the final full core check passed. Final HTTP/security,
+exact asset-byte and collection-off probes pass on both origins. Detailed bounded
+observation is recorded in the [C shipment checklist](release-c-technical-checklist.md).
+Recurring canary activation is a separate operational permission: after auto-review blocked it,
+the user explicitly chose to leave recurring monitoring disabled. Its activation
+flag is confirmed false; expected-version variables are configured but no recurring
+coverage or alert delivery is claimed. One-off release QA is not an uptime SLA.
+Private browser evidence is not uploaded publicly.
+
+Provider backup/log/staging/credential evidence, alert-receipt confirmation,
+native assistive-technology acceptance, named consent/data custody and actual
+learner sessions remain external pilot-activation prerequisites with owners.
+
 ## Rollback procedure
 
 ### C compatibility checkpoint and focus repair —2026-10-23

@@ -1,14 +1,18 @@
 # Current State
 
-Releases A and B are delivered. As of 2026-10-23T10:14Z, both
-https://aifactorysimulation.com and https://ai-factory-mithorizon.replit.app serve
-the independently verified C compatibility/focus checkpoint
-`edd714075eec03c41d9e52185fe8b3841abce5aa` on Node22.23.4, ruleset `release-b.1`.
-It enforces nonce-only styles, supports exact additive browser-schema2 rollback,
-and restores Reset trigger focus after Cancel/Escape. It does not activate
-telemetry, research or the full Release C technical gate.
-The preserved execution record distinguishes historical source snapshots,
-subsequent non-runtime Git maintenance, provider builds and served revisions.
+The collection-disabled Release C infrastructure is deployed as of 2026-10-26.
+Both https://aifactorysimulation.com and https://ai-factory-mithorizon.replit.app
+independently serve `fe2e8c98eace7baf440d9bc276ef099366116caf` on Node22.23.4,
+ruleset `release-b.1`, with browser persistence schema2. All five served JS/CSS
+assets on each origin match the exact clean local merge build byte for byte.
+Tag `release-c-disabled-2026-10-26` retains that application source. Later
+CI-only and documentation commits are not new deployed application revisions.
+
+Optional product telemetry and all research collection remain disabled. The
+version API reports `telemetry: not_configured`, migration null and no configured
+database attestation. Both origins pass all23 live browser acceptance cases.
+Bounded observation is recorded in [the C shipment checklist](release-c-technical-checklist.md).
+This is a shipped application increment, not full C pilot acceptance.
 
 ## Delivery security status — 2026-10-23
 
@@ -37,10 +41,10 @@ See [the security audit and local remediation record](security-audit-2026-10-22.
 3. **Release C — Validated Pilot:** accessibility completion, privacy-separated telemetry/research, formative playtests, performance, monitoring, and deployment evidence.
 
 Release A and B external stop gates passed, including fresh-context production
-verification. Release C technical readiness is in progress. Only the separate
-compatibility and focus checkpoints are deployed; the integrated pilot candidate
-is still under verification, not released or human-validated. Its source starts
-from tag `release-b-2026-10-23`.
+verification. Release C's collection-disabled infrastructure is shipped, but
+overall technical pilot readiness and human validation remain open. Its source
+starts from the verified B tag; shipping it does not authorize recruitment or
+data collection. See the [owner-dependent activation prerequisites](pilot/provider-capability-gaps.md).
 Existing A runs retain A rules; B will not silently reinterpret their saves.
 Unvalidated normative scores and named strategy profiles remain omitted, with
 independent algorithm/classifier versions explicitly null.
@@ -51,9 +55,10 @@ independent algorithm/classifier versions explicitly null.
 - Leaderboard controls, submissions, and subjective strategy labels have been removed from the client.
 - `/api/healthz`, `/api/readyz`, and `/api/version` expose bounded operational and version truth.
 - Production uses enforced CSP and does not permit inline/eval scripts.
-- The unused database/auth/query/chart stack was removed; application persistence
-  uses IndexedDB with canonical snapshots, epoch-fenced writers, immutable
-  completed summaries, and recovery/export. Production verification passed.
+- Legacy database/auth/query/chart features were removed from core gameplay;
+  persistence uses IndexedDB with canonical snapshots, epoch-fenced writers,
+  immutable summaries and recovery/export. Optional C PostgreSQL storage remains
+  inactive behind the disabled sink. Production core verification passed.
 
 See [current delivery evidence and rollback](end-to-end-delivery.md) and the
 [immutable Release A release](https://github.com/mithorizon7/AIFactorySimulatorMH/releases/tag/release-a-2026-10-23).

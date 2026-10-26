@@ -40,8 +40,8 @@ npm run check:csp:dev
 npm run test:tutorial
 npm run test:unit
 npm run test:persistence
-npm run test:api
 npm run build
+npm run test:api
 npm run test:e2e
 npm run test:e2e:production
 npm exec -- playwright test --config=tests/config/accessibility.playwright.config.ts
@@ -49,6 +49,8 @@ npm run check:bundle
 ```
 
 Some browser and Supertest checks bind local sockets. Run them in an environment that permits loopback listeners.
+Run this sequence serially. In particular, the development CSP inspector and
+development browser suite share Vite's optimizer cache and must not overlap.
 
 `npm run test:database` separately requires an explicitly supplied disposable
 local PostgreSQL 16.15 database through `C_DB_TEST_ADMIN_URL`; the checked-in
@@ -62,9 +64,11 @@ an exact additive outbox upgrade preserving the six game stores and snapshots.
 Only the verified C1/focus checkpoint or a later compatible build is a safe
 rollback after schema2 exists; do not erase or downgrade player data.
 
-Product analytics is opt-in, honors Global Privacy Control and remains disabled
-unless the separately restricted `TELEMETRY_DATABASE_URL` is configured and
-verified. It never falls back to a legacy database credential. Research schemas
+Product analytics is opt-in and honors Global Privacy Control. It remains off
+unless `TELEMETRY_ENABLED=true` and the separately restricted
+`TELEMETRY_DATABASE_URL` is configured and verified. The shipped Replit development
+and production settings explicitly keep `TELEMETRY_ENABLED=false`.
+It never falls back to a legacy database credential. Research schemas
 and operator tools are separate; no research submission route is installed in
 the application. Production collection must remain off until provider access,
 retention, backup and credential boundaries are verified. See the

@@ -1,9 +1,19 @@
 # Production browser canary operations
 
+Current operator decision, 2026-10-26: the user explicitly chose to leave recurring
+monitoring disabled. `PRODUCTION_CANARY_ENABLED` is confirmed `false`. The
+approved source/origin/ruleset/null-migration variables are prepared, but that is
+not activation. No scheduled coverage, failure notification receipt or uptime SLA
+is claimed. Bounded one-off release checks are recorded separately in
+`docs/release-c-technical-checklist.md`. Do not enable the schedule without a new
+explicit owner decision.
+
 The repository owns `.github/workflows/production-canary.yml` and the
 `scripts/canary-*` runner/config/reporter. Implementation is not activation.
-No repository variable, notification destination, schedule dispatch, provider
-setting or production artifact was changed by this lane.
+The original implementation lane did not change repository variables,
+notification destinations, schedule dispatch, provider settings or production
+artifacts. The later scoped shipment prepared expected-version variables and
+explicitly left activation false, as recorded above.
 
 ## Activation and exact deployed identity
 
