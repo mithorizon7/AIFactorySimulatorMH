@@ -56,7 +56,7 @@ export default function GameHeader({
     <>
       <header className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg shadow-lg border border-gray-700 mb-6">
         <div className="p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col flex-wrap lg:flex-row justify-between items-center gap-4">
             {/* Game Title */}
             <div className="flex items-center gap-2">
               <BrainCircuit className="h-8 w-8 text-amber-400" />
@@ -79,7 +79,7 @@ export default function GameHeader({
                   <BrainCircuit className="h-4 w-4 text-amber-400" />
                   Model Capability
                 </div>
-                <div className="text-xl font-bold text-amber-400">
+                <div className="break-words text-xl font-bold text-amber-400">
                   {gameState.intelligence.toFixed(2)} / {gameState.agiThreshold}
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function GameHeader({
                   <Coins className="h-4 w-4 text-emerald-400" />
                   Budget
                 </div>
-                <div className="text-xl font-bold text-emerald-400">
+                <div className="break-words text-xl font-bold text-emerald-400">
                   {formatCurrency(gameState.money)}
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function GameHeader({
 
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
         <AlertDialogContent
-          className="bg-gray-800 border-gray-700"
+          className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto bg-gray-800 border-gray-700"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             resetButton.current?.focus();

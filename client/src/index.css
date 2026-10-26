@@ -213,6 +213,32 @@
 }
 
 /* Calm learning UI: honor the system's reduced-motion preference everywhere. */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 200;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  background: #0f766e;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+:where(button, a, input, summary, [role="tab"], [tabindex]):focus-visible {
+  outline: 3px solid #fbbf24;
+  outline-offset: 3px;
+}
+.synergy-dashboard :where(.justify-between) {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.synergy-dashboard :where(p, span, h2, h3, h4) {
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

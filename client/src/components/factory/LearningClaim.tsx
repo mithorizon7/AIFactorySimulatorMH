@@ -7,7 +7,7 @@ export default function LearningClaim({ claim }: { claim: Claim }) {
       <p className="text-gray-200">{claim.text}</p>
       <p className="text-xs text-teal-200">{claim.uncertaintyLabel}</p>
       <details className="text-xs text-gray-300">
-        <summary className="min-h-8 cursor-pointer py-1 text-teal-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+        <summary className="min-h-11 cursor-pointer py-3 text-teal-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
           Sources and review
         </summary>
         <p className="mt-2">
@@ -18,7 +18,7 @@ export default function LearningClaim({ claim }: { claim: Claim }) {
             {claim.sourceUrls.map((url) => (
               <li key={url}>
                 <a
-                  className="underline underline-offset-2 hover:text-white"
+                  className="inline-flex min-h-11 min-w-11 items-center break-words py-2 underline underline-offset-2 hover:text-white"
                   href={url}
                   target="_blank"
                   rel="noreferrer"

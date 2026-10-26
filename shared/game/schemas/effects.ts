@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../../validation";
 import { Era } from "../domain/era";
 
 const base = {
@@ -14,7 +14,7 @@ export const engineEffectSchema = z.discriminatedUnion("type", [
       commandId: z.string().uuid(),
       reasonId: z.string().min(1),
       params: z
-        .record(z.union([z.number(), z.string(), z.boolean()]))
+        .record(z.string(), z.union([z.number(), z.string(), z.boolean()]))
         .optional(),
     })
     .strict(),

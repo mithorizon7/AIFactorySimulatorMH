@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { GameStateType, hasAchievedAgi, hasCompletedFinalTraining } from "@/lib/gameState";
+import {
+  GameStateType,
+  hasAchievedAgi,
+  hasCompletedFinalTraining,
+} from "@/lib/gameState";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
-import { 
-  ArrowUpRightIcon, 
-  NetworkIcon, 
-  BrainCircuitIcon, 
+import {
+  ArrowUpRightIcon,
+  NetworkIcon,
+  BrainCircuitIcon,
   LightbulbIcon,
   CpuIcon,
   DatabaseIcon,
@@ -16,7 +20,7 @@ import {
   ShieldIcon,
   BarChart4Icon,
   LayersIcon,
-  CodeXmlIcon
+  CodeXmlIcon,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -27,42 +31,45 @@ interface SynergyDashboardProps {
 export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
   const [activeTab, setActiveTab] = useState<string>("intelligence");
   const {
-    bonuses, 
-    intelligence, 
-    agiThreshold, 
+    bonuses,
+    intelligence,
+    agiThreshold,
     levels,
     production,
     computeInputs,
     dataInputs,
     algorithmInputs,
-    revenue
+    revenue,
   } = gameState;
-  
-  const intelligenceProgress = Math.min(100, Math.round((intelligence / agiThreshold) * 100));
+
+  const intelligenceProgress = Math.min(
+    100,
+    Math.round((intelligence / agiThreshold) * 100),
+  );
   const finalTrainingComplete = hasCompletedFinalTraining(gameState);
   const agiAchieved = hasAchievedAgi(gameState);
-  
+
   // Format bonus values as percentages with a + sign
   const formatBonus = (bonus: number) => {
     // Subtract 1 to show only the bonus percentage (e.g., 1.15 becomes +15%)
     const percentage = Math.round((bonus - 1) * 100);
     return `+${percentage}%`;
   };
-  
+
   // Color coding for the three primary resources
   const resourceColors = {
     compute: "text-blue-400",
     data: "text-green-400",
-    algorithm: "text-purple-400"
+    algorithm: "text-purple-400",
   };
 
   // Format production rates with proper precision
   const formatRate = (rate: number) => {
     return rate.toFixed(1);
   };
-  
+
   return (
-    <div className="bg-gray-800 rounded-lg p-5">
+    <div className="synergy-dashboard min-w-0 bg-gray-800 rounded-lg p-4 sm:p-5">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Resource Synergies</h2>
         <div className="flex items-center">
@@ -70,7 +77,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
           <span className="text-sm text-gray-300">Effect Network</span>
         </div>
       </div>
-      
+
       {/* AGI Readiness */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
@@ -82,67 +89,82 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             {agiAchieved ? "Complete" : `${intelligenceProgress}% threshold`}
           </span>
         </div>
-        <Progress aria-label="Model Capability threshold progress" value={intelligenceProgress} className="h-2 [&>div]:bg-amber-400" />
+        <Progress
+          aria-label="Model Capability threshold progress"
+          value={intelligenceProgress}
+          className="h-2 [&>div]:bg-amber-400"
+        />
         <p className="mt-2 text-xs text-gray-300">
           {finalTrainingComplete
             ? `Final GNT-7 training complete. Reach ${agiThreshold.toLocaleString()} model capability to finish the scenario.`
             : "Scenario completion also requires the final GNT-7 training run."}
         </p>
-        
+
         {/* Revenue Streams */}
-        <div className="grid grid-cols-3 gap-2 mt-4">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-2 mt-4">
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-300">B2B Revenue</div>
-            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2b)} /></div>
+            <div className="text-sm font-medium">
+              $<AnimatedNumber value={formatCurrency(revenue.b2b)} />
+            </div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-300">B2C Revenue</div>
-            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.b2c)} /></div>
+            <div className="text-sm font-medium">
+              $<AnimatedNumber value={formatCurrency(revenue.b2c)} />
+            </div>
           </div>
           <div className="bg-gray-700 p-2 rounded-md">
             <div className="text-xs text-gray-300">Investor Interest</div>
-            <div className="text-sm font-medium">$<AnimatedNumber value={formatCurrency(revenue.investors)} /></div>
+            <div className="text-sm font-medium">
+              $<AnimatedNumber value={formatCurrency(revenue.investors)} />
+            </div>
           </div>
         </div>
       </div>
-      
+
       {/* Synergy Navigation */}
       <Tabs defaultValue="intelligence" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-5 bg-gray-900 [&_[role=tab]]:text-gray-100">
-          <TabsTrigger 
-            value="intelligence" 
+        <TabsList
+          aria-label="Resource synergy views"
+          className="grid h-auto w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-5 bg-gray-900 [&_[role=tab]]:min-h-11 [&_[role=tab]]:min-w-0 [&_[role=tab]]:whitespace-normal [&_[role=tab]]:text-gray-100"
+        >
+          <TabsTrigger
+            value="intelligence"
             className="data-[state=active]:bg-amber-800 text-xs"
           >
             Model Capability
           </TabsTrigger>
-          <TabsTrigger 
-            value="compute" 
+          <TabsTrigger
+            value="compute"
             className="data-[state=active]:bg-blue-800 text-xs"
           >
             Compute
           </TabsTrigger>
-          <TabsTrigger 
-            value="data" 
+          <TabsTrigger
+            value="data"
             className="data-[state=active]:bg-green-800 text-xs"
           >
             Data
           </TabsTrigger>
-          <TabsTrigger 
-            value="algorithm" 
+          <TabsTrigger
+            value="algorithm"
             className="data-[state=active]:bg-purple-800 text-xs"
           >
             Algorithm
           </TabsTrigger>
         </TabsList>
-        
+
         {/* Intelligence Tab */}
         <TabsContent value="intelligence" className="space-y-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-amber-400">Model Capability Growth</h3>
+            <h3 className="text-lg font-medium mb-3 text-amber-400">
+              Model Capability Growth
+            </h3>
             <p className="text-sm text-gray-300 mb-4">
               See how each resource contributes to simulated Model Capability.
             </p>
-            
+
             {/* Compute to Intelligence */}
             <div className="bg-gray-800 p-3 rounded-lg mb-3">
               <div className="flex justify-between mb-2">
@@ -157,14 +179,20 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Compute contribution to Model Capability" value={Math.min(100, Math.round((bonuses.computeToIntelligence - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
+              <Progress
+                aria-label="Compute contribution to Model Capability"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.computeToIntelligence - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400"
+              />
               <div className="mt-1 text-xs text-gray-300 flex justify-between">
                 <span>Level: {levels.compute}</span>
                 <span>Production: {formatRate(production.compute)}/day</span>
               </div>
             </div>
-            
+
             {/* Data to Intelligence */}
             <div className="bg-gray-800 p-3 rounded-lg mb-3">
               <div className="flex justify-between mb-2">
@@ -179,14 +207,22 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Data contribution to Model Capability" value={Math.min(100, Math.round((bonuses.dataToIntelligence - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
+              <Progress
+                aria-label="Data contribution to Model Capability"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.dataToIntelligence - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-green-400"
+              />
               <div className="mt-1 text-xs text-gray-300 flex justify-between">
-                <span title="Data Level increases with Data Quality upgrades">Level: {levels.data}</span>
+                <span title="Data Level increases with Data Quality upgrades">
+                  Level: {levels.data}
+                </span>
                 <span>Production: {formatRate(production.data)}/day</span>
               </div>
             </div>
-            
+
             {/* Algorithm to Intelligence */}
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between mb-2">
@@ -201,8 +237,14 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Algorithm contribution to Model Capability" value={Math.min(100, Math.round((bonuses.algorithmToIntelligence - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
+              <Progress
+                aria-label="Algorithm contribution to Model Capability"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.algorithmToIntelligence - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400"
+              />
               <div className="mt-1 text-xs text-gray-300 flex justify-between">
                 <span>Level: {levels.algorithm}</span>
                 <span>Production: {formatRate(production.algorithm)}/day</span>
@@ -210,62 +252,88 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
             </div>
           </div>
         </TabsContent>
-        
+
         {/* Compute Tab */}
         <TabsContent value="compute" className="space-y-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-blue-400">Compute Effects</h3>
-            
+            <h3 className="text-lg font-medium mb-3 text-blue-400">
+              Compute Effects
+            </h3>
+
             {/* Enabling inputs section */}
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-blue-400 font-medium text-sm">Production: {formatRate(production.compute)}/day</span>
+                <h4 className="text-sm font-medium text-gray-300">
+                  Enabling Inputs
+                </h4>
+                <span className="text-blue-400 font-medium text-sm">
+                  Production: {formatRate(production.compute)}/day
+                </span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <ServerIcon className="h-3 w-3 mr-1 text-blue-400" />
                     <span>Infrastructure</span>
                   </div>
-                  <Progress aria-label="Infrastructure input level" value={Math.min(100, computeInputs.money * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
-                  <div className="text-right text-xs mt-1">Level {computeInputs.money}</div>
+                  <Progress
+                    aria-label="Infrastructure input level"
+                    value={Math.min(100, computeInputs.money * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-blue-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {computeInputs.money}
+                  </div>
                 </div>
-                
+
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <ZapIcon className="h-3 w-3 mr-1 text-yellow-400" />
                     <span>Electricity</span>
                   </div>
-                  <Progress aria-label="Electricity input level" value={Math.min(100, computeInputs.electricity * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-yellow-400" />
-                  <div className="text-right text-xs mt-1">Level {computeInputs.electricity}</div>
+                  <Progress
+                    aria-label="Electricity input level"
+                    value={Math.min(100, computeInputs.electricity * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-yellow-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {computeInputs.electricity}
+                  </div>
                 </div>
-                
+
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <CpuIcon className="h-3 w-3 mr-1 text-red-400" />
                     <span>Hardware</span>
                   </div>
-                  <Progress aria-label="Hardware input level" value={Math.min(100, computeInputs.hardware * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-red-400" />
-                  <div className="text-right text-xs mt-1">Level {computeInputs.hardware}</div>
+                  <Progress
+                    aria-label="Hardware input level"
+                    value={Math.min(100, computeInputs.hardware * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-red-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {computeInputs.hardware}
+                  </div>
                 </div>
-                
+
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <ShieldIcon className="h-3 w-3 mr-1 text-indigo-400" />
                     <span>Regulation</span>
                   </div>
-                  <Progress aria-label="Regulation input level" value={Math.min(100, computeInputs.regulation * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-indigo-400" />
-                  <div className="text-right text-xs mt-1">Level {computeInputs.regulation}</div>
+                  <Progress
+                    aria-label="Regulation input level"
+                    value={Math.min(100, computeInputs.regulation * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-indigo-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {computeInputs.regulation}
+                  </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Compute to Data */}
             <div className="bg-gray-800 p-3 rounded-lg mb-3">
               <div className="flex justify-between mb-2">
@@ -279,13 +347,19 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Compute to data bonus" value={Math.min(100, Math.round((bonuses.computeToData - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
+              <Progress
+                aria-label="Compute to data bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.computeToData - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 Faster compute enables better data processing capabilities
               </p>
             </div>
-            
+
             {/* Compute to Algorithm */}
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between mb-2">
@@ -299,60 +373,87 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Compute to algorithm bonus" value={Math.min(100, Math.round((bonuses.computeToAlgorithm - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400" />
+              <Progress
+                aria-label="Compute to algorithm bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.computeToAlgorithm - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-blue-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 More compute allows experimentation with larger models
               </p>
             </div>
           </div>
         </TabsContent>
-        
+
         {/* Data Tab */}
         <TabsContent value="data" className="space-y-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-green-400">Data Effects</h3>
-            
+            <h3 className="text-lg font-medium mb-3 text-green-400">
+              Data Effects
+            </h3>
+
             {/* Enabling inputs section */}
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-green-400 font-medium text-sm">Production: {formatRate(production.data)}/day</span>
+                <h4 className="text-sm font-medium text-gray-300">
+                  Enabling Inputs
+                </h4>
+                <span className="text-green-400 font-medium text-sm">
+                  Production: {formatRate(production.data)}/day
+                </span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2 mb-1">
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <BarChart4Icon className="h-3 w-3 mr-1 text-green-400" />
                     <span>Quality</span>
                   </div>
-                  <Progress aria-label="Data quality input level" value={Math.min(100, dataInputs.quality * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
-                  <div className="text-right text-xs mt-1">Level {dataInputs.quality}</div>
+                  <Progress
+                    aria-label="Data quality input level"
+                    value={Math.min(100, dataInputs.quality * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-green-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {dataInputs.quality}
+                  </div>
                 </div>
-                
+
                 <div className="bg-gray-700 p-2 rounded-md">
                   <div className="flex items-center text-xs mb-1">
                     <DatabaseIcon className="h-3 w-3 mr-1 text-teal-400" />
                     <span>Quantity</span>
                   </div>
-                  <Progress aria-label="Data quantity input level" value={Math.min(100, dataInputs.quantity * 10)}
-                    className="h-1.5 bg-gray-600 [&>div]:bg-teal-400" />
-                  <div className="text-right text-xs mt-1">Level {dataInputs.quantity}</div>
+                  <Progress
+                    aria-label="Data quantity input level"
+                    value={Math.min(100, dataInputs.quantity * 10)}
+                    className="h-1.5 bg-gray-600 [&>div]:bg-teal-400"
+                  />
+                  <div className="text-right text-xs mt-1">
+                    Level {dataInputs.quantity}
+                  </div>
                 </div>
               </div>
-              
+
               <div className="bg-gray-700 p-2 rounded-md">
                 <div className="flex items-center text-xs mb-1">
                   <LayersIcon className="h-3 w-3 mr-1 text-emerald-400" />
                   <span>Data Formats</span>
                 </div>
-                <Progress aria-label="Data formats input level" value={Math.min(100, dataInputs.formats * 10)}
-                  className="h-1.5 bg-gray-600 [&>div]:bg-emerald-400" />
-                <div className="text-right text-xs mt-1">Level {dataInputs.formats}</div>
+                <Progress
+                  aria-label="Data formats input level"
+                  value={Math.min(100, dataInputs.formats * 10)}
+                  className="h-1.5 bg-gray-600 [&>div]:bg-emerald-400"
+                />
+                <div className="text-right text-xs mt-1">
+                  Level {dataInputs.formats}
+                </div>
               </div>
             </div>
-            
+
             {/* Data to Compute */}
             <div className="bg-gray-800 p-3 rounded-lg mb-3">
               <div className="flex justify-between mb-2">
@@ -366,13 +467,19 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Data to compute bonus" value={Math.min(100, Math.round((bonuses.dataToCompute - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
+              <Progress
+                aria-label="Data to compute bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.dataToCompute - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-green-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 Better data helps optimize compute usage and training efficiency
               </p>
             </div>
-            
+
             {/* Data to Algorithm */}
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between mb-2">
@@ -386,38 +493,55 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Data to algorithm bonus" value={Math.min(100, Math.round((bonuses.dataToAlgorithm - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-green-400" />
+              <Progress
+                aria-label="Data to algorithm bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.dataToAlgorithm - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-green-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 Rich, diverse data drives algorithmic innovation and testing
               </p>
             </div>
           </div>
         </TabsContent>
-        
+
         {/* Algorithm Tab */}
         <TabsContent value="algorithm" className="space-y-4">
           <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-3 text-purple-400">Algorithm Effects</h3>
-            
+            <h3 className="text-lg font-medium mb-3 text-purple-400">
+              Algorithm Effects
+            </h3>
+
             {/* Enabling inputs section */}
             <div className="mb-4 bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium text-gray-300">Enabling Inputs</h4>
-                <span className="text-purple-400 font-medium text-sm">Production: {formatRate(production.algorithm)}/day</span>
+                <h4 className="text-sm font-medium text-gray-300">
+                  Enabling Inputs
+                </h4>
+                <span className="text-purple-400 font-medium text-sm">
+                  Production: {formatRate(production.algorithm)}/day
+                </span>
               </div>
-              
+
               <div className="bg-gray-700 p-2 rounded-md">
                 <div className="flex items-center text-xs mb-1">
                   <CodeXmlIcon className="h-3 w-3 mr-1 text-purple-400" />
                   <span>Model Architectures</span>
                 </div>
-                <Progress aria-label="Architecture input level" value={Math.min(100, algorithmInputs.architectures * 10)}
-                  className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
-                <div className="text-right text-xs mt-1">Level {algorithmInputs.architectures}</div>
+                <Progress
+                  aria-label="Architecture input level"
+                  value={Math.min(100, algorithmInputs.architectures * 10)}
+                  className="h-1.5 bg-gray-600 [&>div]:bg-purple-400"
+                />
+                <div className="text-right text-xs mt-1">
+                  Level {algorithmInputs.architectures}
+                </div>
               </div>
             </div>
-            
+
             {/* Algorithm to Compute */}
             <div className="bg-gray-800 p-3 rounded-lg mb-3">
               <div className="flex justify-between mb-2">
@@ -431,13 +555,19 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Algorithm to compute bonus" value={Math.min(100, Math.round((bonuses.algorithmToCompute - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
+              <Progress
+                aria-label="Algorithm to compute bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.algorithmToCompute - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 Better algorithms optimize compute usage and efficiency
               </p>
             </div>
-            
+
             {/* Algorithm to Data */}
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="flex justify-between mb-2">
@@ -451,8 +581,14 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
                   </span>
                 </div>
               </div>
-              <Progress aria-label="Algorithm to data bonus" value={Math.min(100, Math.round((bonuses.algorithmToData - 1) * 100))}
-                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400" />
+              <Progress
+                aria-label="Algorithm to data bonus"
+                value={Math.min(
+                  100,
+                  Math.round((bonuses.algorithmToData - 1) * 100),
+                )}
+                className="h-1.5 bg-gray-600 [&>div]:bg-purple-400"
+              />
               <p className="text-xs text-gray-300 mt-2">
                 Advanced algorithms improve data extraction and utilization
               </p>
@@ -460,7 +596,7 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
           </div>
         </TabsContent>
       </Tabs>
-      
+
       {/* Synergy Overview */}
       <div className="mt-5 bg-gray-700 p-3 rounded-lg">
         <div className="flex justify-between items-center mb-2">
@@ -470,10 +606,14 @@ export default function SynergyDashboard({ gameState }: SynergyDashboardProps) {
           </h3>
         </div>
         <p className="text-xs text-gray-300">
-          {activeTab === "intelligence" && "Balanced investment across all three resources increases Model Capability in this simulation. Compare bonuses when choosing your next investment."}
-          {activeTab === "compute" && "Compute investment affects your ability to process more data and run larger algorithm experiments. Hardware quality has the strongest effect on computation."}
-          {activeTab === "data" && "Quality data drives both model performance and algorithmic discovery. Multimodal data formats unlock new AI capabilities and bonuses."}
-          {activeTab === "algorithm" && "Algorithmic breakthroughs change compute usage and data utilization. Architecture upgrades increase Model Capability within the simulation."}
+          {activeTab === "intelligence" &&
+            "Balanced investment across all three resources increases Model Capability in this simulation. Compare bonuses when choosing your next investment."}
+          {activeTab === "compute" &&
+            "Compute investment affects your ability to process more data and run larger algorithm experiments. Hardware quality has the strongest effect on computation."}
+          {activeTab === "data" &&
+            "Quality data drives both model performance and algorithmic discovery. Multimodal data formats unlock new AI capabilities and bonuses."}
+          {activeTab === "algorithm" &&
+            "Algorithmic breakthroughs change compute usage and data utilization. Architecture upgrades increase Model Capability within the simulation."}
         </p>
       </div>
     </div>

@@ -22,6 +22,8 @@
     "test:unit": "vitest run tests/unit",
     "test:api": "vitest run tests/api",
     "test:persistence": "vitest run tests/session tests/unit/contracts/completed-runs.test.ts",
+    "test:database": "vitest run --config=vitest.database.config.ts",
+    "data:manage": "node scripts/assert-node-runtime.mjs && node --import tsx scripts/manage-pilot-data.ts",
     "test:coverage": "vitest run --coverage",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
     "check:csp:dev": "node --import tsx scripts/check-vite-csp.ts",
@@ -52,7 +54,7 @@
     "express": "^5.3.0",
     "framer-motion": "^11.18.2",
     "helmet": "^8.2.0",
-    "lottie-react": "^2.4.1",
+    "lottie-web": "5.13.0",
     "lucide-react": "^0.516.0",
     "pg": "8.23.1",
     "react": "^18.3.1",
@@ -60,7 +62,7 @@
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7",
     "wouter": "^3.7.1",
-    "zod": "^3.25.67"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
@@ -76,6 +78,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.12",
     "autoprefixer": "^10.4.21",
+    "es-module-lexer": "2.3.0",
     "esbuild": "^0.28.1",
     "eslint": "^9.39.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",

@@ -25,10 +25,14 @@ function payload(revision = 0) {
     createFreshExperienceState(),
   );
 }
-async function fixture() {
+async function fixture(databaseVersion?: 1 | 2) {
   let now = 1_000_000;
   const factory = new IDBFactory();
-  const repository = await GameRepository.open({ factory, now: () => now });
+  const repository = await GameRepository.open({
+    factory,
+    now: () => now,
+    databaseVersion,
+  });
   return {
     repository,
     factory,
@@ -41,7 +45,7 @@ async function corrupt(
   factory: IDBFactory,
   update: (row: Record<string, unknown>) => void,
 ) {
-  const opening = factory.open("ai-factory", 1);
+  const opening = factory.open("ai-factory");
   const db = await new Promise<IDBDatabase>((resolve) => {
     opening.onsuccess = () => resolve(opening.result);
   });
@@ -59,8 +63,100 @@ async function corrupt(
 }
 
 describe("canonical IndexedDB durability and ownership", () => {
+  it("upgrades v1 by adding only an empty outbox, preserving every game store and verified snapshot", async () => {
+    const { repository, factory } = await fixture(1);
+    const lease = await repository.acquireWriter("old-core");
+    const saved = await repository.save(payload(), lease);
+    repository.close();
+    const before = (await GameRepository.exportUnsupportedDatabase({
+      factory,
+    })) as { stores: Record<string, unknown> };
+    const upgraded = await GameRepository.open({
+      factory,
+      now: () => 1_000_000,
+    });
+    expect(await upgraded.loadActive()).toEqual({
+      kind: "ready",
+      snapshot: saved,
+    });
+    upgraded.close();
+    const after = (await GameRepository.exportUnsupportedDatabase({
+      factory,
+    })) as { databaseVersion: number; stores: Record<string, unknown> };
+    expect(after.databaseVersion).toBe(2);
+    expect(after.stores.telemetryOutbox).toEqual([]);
+    for (const [name, records] of Object.entries(before.stores))
+      expect(after.stores[name]).toEqual(records);
+  });
+  it("aborts migration of an unrecognized v1 layout without adding an outbox or altering its records", async () => {
+    const factory = new IDBFactory();
+    const creating = factory.open("ai-factory", 1);
+    creating.onupgradeneeded = () =>
+      creating.result
+        .createObjectStore("unknown")
+        .put({ preserved: true }, "original");
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      creating.onsuccess = () => resolve(creating.result);
+    });
+    db.close();
+    const before = await GameRepository.exportUnsupportedDatabase({ factory });
+    await expect(GameRepository.open({ factory })).rejects.toMatchObject({
+      name: "VersionError",
+    });
+    expect(await GameRepository.exportUnsupportedDatabase({ factory })).toEqual(
+      before,
+    );
+  });
+  it.each([
+    "extra-store",
+    "wrong-key",
+    "missing-index",
+    "extra-index",
+    "unique-index",
+    "multientry-index",
+  ])(
+    "rejects malformed additive v2 %s without changing its records",
+    async (variant) => {
+      const { repository, factory } = await fixture(1);
+      repository.close();
+      const upgrading = factory.open("ai-factory", 2);
+      upgrading.onupgradeneeded = () => {
+        const db = upgrading.result;
+        const store = db.createObjectStore("telemetryOutbox", {
+          keyPath: variant === "wrong-key" ? "wrong" : "event.eventId",
+        });
+        if (variant !== "missing-index")
+          store.createIndex("queuedAt", "queuedAt", {
+            unique: variant === "unique-index",
+            multiEntry: variant === "multientry-index",
+          });
+        store.createIndex("nextAttemptAt", "nextAttemptAt");
+        if (variant === "extra-index") store.createIndex("unknown", "unknown");
+        if (variant === "extra-store") db.createObjectStore("unknown");
+        store.put({
+          event: { eventId: "preserved" },
+          wrong: "preserved",
+          queuedAt: 1,
+          nextAttemptAt: 2,
+        });
+      };
+      const db = await new Promise<IDBDatabase>((resolve) => {
+        upgrading.onsuccess = () => resolve(upgrading.result);
+      });
+      db.close();
+      const before = await GameRepository.exportUnsupportedDatabase({
+        factory,
+      });
+      await expect(GameRepository.open({ factory })).rejects.toMatchObject({
+        name: "VersionError",
+      });
+      expect(
+        await GameRepository.exportUnsupportedDatabase({ factory }),
+      ).toEqual(before);
+    },
+  );
   it("opens only the known additive v2 layout without downgrading or changing telemetry records", async () => {
-    const { repository, factory } = await fixture();
+    const { repository, factory } = await fixture(1);
     const lease = await repository.acquireWriter("before-upgrade");
     const saved = await repository.save(payload(), lease);
     repository.close();

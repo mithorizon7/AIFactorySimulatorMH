@@ -9,11 +9,12 @@ The current product direction is learning-first and anonymous/local-first. The f
 - Node.js 22.23.4 (`.nvmrc` is committed and CI reads it)
 - npm 10.9.9, the version bundled with Node 22.23.4 (`packageManager` records
   the intended installer)
-- Chromium for Playwright browser checks
+- Pinned Playwright Chromium, Firefox and WebKit for browser checks
 
 The production bundle targets Chrome/Edge 111+, Firefox 114+, and Safari/iOS
-16.4+. Chromium is release-gated today; Firefox and Safari compatibility must
-not be claimed until those browser lanes are added.
+16.4+. Critical accessibility flows are gated in all three browser engines.
+This does not establish every historical version, native zoom, assistive
+technology or physical iOS-device compatibility.
 
 ## Local development
 
@@ -43,10 +44,35 @@ npm run test:api
 npm run build
 npm run test:e2e
 npm run test:e2e:production
+npm exec -- playwright test --config=tests/config/accessibility.playwright.config.ts
 npm run check:bundle
 ```
 
 Some browser and Supertest checks bind local sockets. Run them in an environment that permits loopback listeners.
+
+`npm run test:database` separately requires an explicitly supplied disposable
+local PostgreSQL 16.15 database through `C_DB_TEST_ADMIN_URL`; the checked-in
+operator guard rejects production targets. CI creates its own ephemeral service.
+Never point this test at a provider database.
+
+## Optional pilot infrastructure
+
+Gameplay and saves do not require a server database. Browser storage is schema2,
+an exact additive outbox upgrade preserving the six game stores and snapshots.
+Only the verified C1/focus checkpoint or a later compatible build is a safe
+rollback after schema2 exists; do not erase or downgrade player data.
+
+Product analytics is opt-in, honors Global Privacy Control and remains disabled
+unless the separately restricted `TELEMETRY_DATABASE_URL` is configured and
+verified. It never falls back to a legacy database credential. Research schemas
+and operator tools are separate; no research submission route is installed in
+the application. Production collection must remain off until provider access,
+retention, backup and credential boundaries are verified. See the
+[pilot operations](docs/pilot/data-boundaries-and-withdrawal.md) and
+[remaining provider gates](docs/pilot/provider-capability-gaps.md).
+
+Verification bundles, screenshots, detailed reports and SBOMs remain private;
+the public CI does not upload those artifacts.
 
 ## Release truth
 
@@ -65,6 +91,11 @@ For a deployed artifact, verify core readiness, served SHA/version, and retired 
 ```bash
 BASE_URL=https://example.invalid EXPECTED_BUILD_SHA=<full-commit-sha> EXPECTED_RULESET_VERSION=release-b.1 npm run release:verify
 ```
+
+Migration expectation defaults to `null` while collection is unconfigured. An
+activated SQL migration additionally requires `EXPECTED_MIGRATION_VERSION` and
+the independently recorded `EXPECTED_MIGRATION_CHECKSUM`; an unknown or mismatched
+attestation never counts as migration sign-off.
 
 Build a release artifact with a non-null, full commit SHA:
 

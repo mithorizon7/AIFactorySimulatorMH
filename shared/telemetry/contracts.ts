@@ -1,7 +1,10 @@
-import { z } from "zod";
-import { SUPPORTED_RULESET_VERSIONS } from "../version";
+import { z } from "../validation";
+import {
+  SUPPORTED_RULESET_VERSIONS,
+  TELEMETRY_SCHEMA_VERSION,
+} from "../version";
 
-export const TELEMETRY_SCHEMA_VERSION = 1;
+export { TELEMETRY_SCHEMA_VERSION } from "../version";
 export const TELEMETRY_MIGRATION_VERSION = "c001-telemetry-research";
 export const OUTBOX_DATABASE_VERSION = 2;
 export const OUTBOX_STORE = "telemetryOutbox";
@@ -111,9 +114,15 @@ export const outboxRecordSchema = z
   .strict();
 export type OutboxRecord = z.infer<typeof outboxRecordSchema>;
 export type TelemetryStatus = "not_configured" | "ready" | "degraded";
+export interface MigrationAttestation {
+  state: "not_configured" | "unverified" | "verified" | "mismatch";
+  version: string | null;
+  checksum: string | null;
+}
 export interface TelemetrySink {
   status(): TelemetryStatus;
   migrationVersion(): string | null;
+  migrationAttestation(): MigrationAttestation;
   accept(events: TelemetryEvent[], receivedAt: Date): Promise<void>;
   close(): Promise<void>;
 }

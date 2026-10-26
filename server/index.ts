@@ -5,6 +5,7 @@ import { logger } from "./logger";
 import { readBuildMetadata } from "./buildMetadata";
 import { createFreshGameState } from "../shared/game/factory";
 import { RULESET_VERSION } from "../shared/version";
+import { createTelemetrySink } from "./telemetry/sink";
 
 async function startServer(): Promise<void> {
   const environment =
@@ -16,12 +17,31 @@ async function startServer(): Promise<void> {
     ruleset: RULESET_VERSION,
     seed: 1,
   });
+  const port = Number(process.env.PORT ?? 5000);
+  if (!Number.isInteger(port) || port < 1 || port > 65535)
+    throw new Error("Invalid application port");
+  const telemetry = await createTelemetrySink({ startInBackground: true });
+  const telemetryDegraded = () =>
+    logger.warn(
+      "Optional product telemetry degraded; core remains independent",
+      { operation: "telemetry_degraded" },
+    );
+  if (telemetry.status() === "degraded") telemetryDegraded();
   const app = createApiApp({
     environment,
     buildSha: environment === "production" ? buildMetadata.buildSha : null,
     // No production database schema applies to anonymous browser-local runs.
     migrationVersion: null,
     rulesetLoaded: startupState.rulesetVersion === RULESET_VERSION,
+    telemetry,
+    telemetryOrigins: [
+      "https://aifactorysimulation.com",
+      "https://ai-factory-mithorizon.replit.app",
+      ...(environment === "development"
+        ? [`http://127.0.0.1:${port}`, `http://localhost:${port}`]
+        : []),
+    ],
+    onTelemetryDegraded: telemetryDegraded,
   });
   const server = createServer(app);
 
@@ -41,7 +61,16 @@ async function startServer(): Promise<void> {
     process.exitCode = 1;
   });
 
-  const port = Number(process.env.PORT ?? 5000);
+  let closing = false;
+  const shutdown = () => {
+    if (closing) return;
+    closing = true;
+    server.close(() => {
+      void telemetry.close();
+    });
+  };
+  process.once("SIGTERM", shutdown);
+  process.once("SIGINT", shutdown);
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen({ port, host: "0.0.0.0" }, () => {

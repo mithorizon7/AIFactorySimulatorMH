@@ -9,6 +9,11 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   plugins: [react()],
   html: { cspNonce: "__AI_FACTORY_REQUEST_NONCE__" },
+  define: {
+    "import.meta.env.VITE_APP_BUILD_SHA": JSON.stringify(
+      process.env.BUILD_SHA ?? process.env.GIT_COMMIT_SHA ?? null,
+    ),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
