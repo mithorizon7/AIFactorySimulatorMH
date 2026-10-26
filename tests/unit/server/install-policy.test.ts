@@ -1,5 +1,18 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
+
+it.each(["development", "production"])(
+  "Replit explicitly keeps optional collection off in %s",
+  (environment) => {
+    const configuration = readFileSync(".replit", "utf8");
+    expect(configuration).toMatch(
+      new RegExp(
+        `\\[userenv\\.${environment}\\]\\s+TELEMETRY_ENABLED\\s*=\\s*"false"`,
+      ),
+    );
+  },
+);
 
 it.each([
   ["save", "false"],

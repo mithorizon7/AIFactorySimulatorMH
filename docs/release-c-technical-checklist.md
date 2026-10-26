@@ -7,16 +7,16 @@ collection disabled. This shipment does not activate a pilot, apply production
 DDL, change existing database records, or claim the full C research program is
 complete. The full-program gates below remain distinct from this release.
 
-- [ ] G-001 [status:in_progress] Fix the browser gate and newly reported validation dependency advisory; pass final local regressions.
+- [x] G-001 [status:verified] Fix the browser gate and newly reported validation dependency advisory; pass affected local type, persistence, API, CSP and three-engine regressions. Full final-head CI remains G-002.
 - [ ] G-002 [status:open] Pass both PR release gates and merge the exact reviewed head without bypass.
 - [ ] G-003 [status:open] Deploy the clean merge to the existing Replit application; independently verify both served origins and collection-disabled behavior.
 - [ ] G-004 [status:open] Observe core startup/save/resume/completion canaries for 30 minutes and retain private release/rollback evidence.
 - [x] Q-101 [status:verified] Correct the lazy-player filename assertion without weakening SVG, reduced-motion, no-eval or initial-load checks. The same locally reproduced failing test now passes.
-- [ ] Q-102 [status:in_progress] Upgrade Zod to patched 4.6.7 and verify persisted snapshots, closed telemetry contracts and strict API rejection.
+- [x] Q-102 [status:verified] Upgrade Zod to patched 4.6.7 and verify persisted snapshots, closed telemetry contracts and strict API rejection.
 - [ ] Q-103 [status:open] Close commit/CI/merge/publication and document remaining external pilot-activation prerequisites with owners.
 - [x] F-101 [status:verified] [P2] Vite development optimization escapes the player filename as lottie___light, causing the old lottie_light assertion to fail despite rendered SVG. Evidence: locally reproduced PR21 browser failure and its network trace; corrected assertion passes.
-- [ ] F-102 [status:in_progress] [P1] Fresh npm audit reports GHSA-mrhx-c7xc-m3w5 for Zod below 4.6.6. Evidence: registry advisory refreshed 2026-10-26; direct dependency upgrade is required before release.
-- [ ] F-103 [status:in_progress] [P2] Zod4's default JIT probe triggers the enforced no-eval CSP even though parsing falls back. Route all application schemas through a shared jitless bootstrap before schema creation; keep CSP unchanged and retain browser violation checks.
+- [x] F-102 [status:verified] [P1] Fresh npm audit reports GHSA-mrhx-c7xc-m3w5 for Zod below 4.6.6. Patched 4.6.7 reports zero findings and passes the oversized-invalid-batch regression; final full CI remains G-002.
+- [x] F-103 [status:verified] [P2] Zod4's default JIT probe triggers the enforced no-eval CSP even though parsing falls back. All application schemas now use the shared jitless bootstrap before schema creation. Both affected browser checks pass with unchanged CSP and the violation listener retained.
 
 Evidence is retained privately in ignored task-owned output. Existing provider
 data stays untouched; the now-retired ownership migration must not be applied.
@@ -36,6 +36,16 @@ than a broken keyboard control. A separate development animation failure was a
 browser suite shared Vite's cache; reruns must not overlap those two operations.
 Neither failed run is release acceptance. Final browser and CI checks must pass
 after the no-JIT bootstrap change, including the existing violation listener.
+
+Replit preparation synchronized bcd2832 and preserved the previous published
+checkpoint. Its non-secret environment setter wrote explicit collection-off
+flags into tracked `.replit`, so the strict builder correctly refused the dirty
+tree before installation. Automatic provider checkpoint db28af7 retains that
+change. The same development/production flags are now reviewed in this PR,
+with a configuration regression, instead of bypassing clean-source checks.
+No database queries, migrations, exports or credential changes were performed.
+
+- [x] V-101 [status:verified] Final no-JIT application source bcd2832 passes the two affected development browser checks and all 27 strict-CSP accessibility/privacy cases across Chromium, Firefox and WebKit, with zero skips/retries. Typecheck and 106 targeted validation/persistence/API cases pass after the bootstrap. Both collection-off configuration cases and validation bootstrap/size guards pass (11 targeted cases). Final full release gates rerun on the reviewed configuration follow-up.
 
 ## Full program gates
 

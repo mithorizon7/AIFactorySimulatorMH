@@ -50,3 +50,9 @@ args = "bash tools/with-node22.sh npm ci --ignore-scripts"
 task = "shell.exec"
 args = "bash tools/with-node22.sh npm run dev"
 waitForPort = 5000
+
+[userenv]
+[userenv.development]
+TELEMETRY_ENABLED = "false"
+[userenv.production]
+TELEMETRY_ENABLED = "false"
