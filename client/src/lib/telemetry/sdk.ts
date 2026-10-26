@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@shared/validation";
 import {
   TELEMETRY_SCHEMA_VERSION,
   telemetryEventSchema,

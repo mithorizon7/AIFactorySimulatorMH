@@ -16,6 +16,7 @@ complete. The full-program gates below remain distinct from this release.
 - [ ] Q-103 [status:open] Close commit/CI/merge/publication and document remaining external pilot-activation prerequisites with owners.
 - [x] F-101 [status:verified] [P2] Vite development optimization escapes the player filename as lottie___light, causing the old lottie_light assertion to fail despite rendered SVG. Evidence: locally reproduced PR21 browser failure and its network trace; corrected assertion passes.
 - [ ] F-102 [status:in_progress] [P1] Fresh npm audit reports GHSA-mrhx-c7xc-m3w5 for Zod below 4.6.6. Evidence: registry advisory refreshed 2026-10-26; direct dependency upgrade is required before release.
+- [ ] F-103 [status:in_progress] [P2] Zod4's default JIT probe triggers the enforced no-eval CSP even though parsing falls back. Route all application schemas through a shared jitless bootstrap before schema creation; keep CSP unchanged and retain browser violation checks.
 
 Evidence is retained privately in ignored task-owned output. Existing provider
 data stays untouched; the now-retired ownership migration must not be applied.
@@ -28,6 +29,13 @@ fresh full-tree npm audit reports zero findings. Full browser and final CI
 verification remain pending. A repository-local Prettier configuration now pins
 the existing CI format rather than inheriting an unrelated parent-directory
 configuration; format and lint pass without reformatting unrelated sources.
+
+The first broader browser rerun exposed the Zod JIT/CSP incompatibility rather
+than a broken keyboard control. A separate development animation failure was a
+504 stale optimizer response while the CSP inspection helper and development
+browser suite shared Vite's cache; reruns must not overlap those two operations.
+Neither failed run is release acceptance. Final browser and CI checks must pass
+after the no-JIT bootstrap change, including the existing violation listener.
 
 ## Full program gates
 

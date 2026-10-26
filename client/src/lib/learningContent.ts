@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@shared/validation";
 import { Era } from "@shared/game/domain/era";
 import {
   gameCommandSchema,

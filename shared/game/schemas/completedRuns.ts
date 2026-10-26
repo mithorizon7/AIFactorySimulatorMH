@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../../validation";
 import { Era, ERA_ORDER } from "../domain/era";
 import {
   COMMAND_SCHEMA_VERSION,

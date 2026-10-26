@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../../validation";
 import { Era } from "../domain/era";
 import { TrainingStatus } from "../domain/gameState";
 import { SUPPORTED_RULESET_VERSIONS, SNAPSHOT_VERSION } from "../../version";

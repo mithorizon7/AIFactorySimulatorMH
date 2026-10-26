@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { logger, LogContext } from "./logger";
-import { ZodError } from "zod";
+import { ZodError } from "../shared/validation";
 import { randomUUID } from "crypto";
 
 type RequestWithId = Request & { requestId?: string };

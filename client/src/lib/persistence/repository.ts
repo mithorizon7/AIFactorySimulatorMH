@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@shared/validation";
 import { OUTBOX_STORE } from "@shared/telemetry/contracts";
 import { assertGameStateInvariants } from "@shared/game/normalize";
 import { expectedCash } from "@shared/game/ledger";

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../validation";
 
 export const EXPERIENCE_SCHEMA_VERSION = 1 as const;
 
