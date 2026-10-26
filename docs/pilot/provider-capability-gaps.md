@@ -1,5 +1,11 @@
 # Provider capability gaps — inspected 2026-10-23
 
+Revalidated read-only on 2026-10-26: account-specific backup/PITR and restore
+history, actual hosting/proxy log retention/access, and an isolated exact-artifact
+staging surface remain unexposed to this session. No database records, raw logs
+or secret values were retrieved. Collection-disabled source fe2e8c9 is shipped;
+this does not close these mandatory pilot/collection activation prerequisites.
+
 Source: integration owner's read-only account-control discovery at
 `output/provider-release-c-capabilities-20261023.md`. That private operational
 evidence is not uploaded or copied here. These are scoped observations of exposed

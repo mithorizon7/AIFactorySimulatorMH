@@ -1,5 +1,13 @@
 # Security Audit Work Log, 2026-10-22
 
+Historical checkpoint, superseded for active release delivery by
+`docs/end-to-end-delivery.md` and `docs/release-c-technical-checklist.md`.
+The later approved architecture retires global server saves and uses browser-local
+persistence. Do not execute this log's old ownership migration or treat its
+pending backup/migration queue as a requirement for the collection-disabled
+2026-10-26 release. Legacy provider data remains untouched; provider/device
+assurance gaps are not closed by application deployment.
+
 ## Scope
 
 Repository, installed project dependencies, local runtime validation and accessible

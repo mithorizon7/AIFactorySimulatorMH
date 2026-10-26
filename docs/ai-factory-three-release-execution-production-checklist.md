@@ -1,5 +1,11 @@
 # AI Factory Three-Release Execution Checklist
 
+Current scoped delivery note,2026-10-26: PR21's collection-disabled application
+increment is shipped at fe2e8c9. Its exact release and observation evidence live
+in `docs/release-c-technical-checklist.md`. This parent checklist still governs
+the broader validated-pilot program; shipment does not close owner-dependent
+provider controls or real participant evidence, and collection remains off.
+
 Source of truth checklist for a large/intense task.
 
 ## Metadata
